@@ -103,14 +103,14 @@ settings:
 
 
 resources:
-  uq.mc:
+  rduq.uq.mc:
     threads: 1
 
-  uq.rr:
+  rduq.uq.rr:
     threads: 1
 
-  uncertain_model.macro:
+  rduq.uncertain_model.macro:
     threads: 1
 
-  uncertain_model.micro:
+  rduq.uncertain_model.micro:
     threads: 1

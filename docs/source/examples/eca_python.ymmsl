@@ -27,8 +27,8 @@ models:
       micro.final_state: macro.state_in
 
 resources:
-  macro:
+  elementary_cellular_automata.macro:
     threads: 1
-  micro:
+  elementary_cellular_automata.micro:
     threads: 1
 

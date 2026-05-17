@@ -54,9 +54,9 @@ def test_base_env(tmpdir):
             '      +LD_LIBRARY_PATH: :{ld_lib_path}\n'
             '    executable: {test_component}\n'
             'resources:\n'
-            '  macro:\n'
+            '  test_model.macro:\n'
             '    threads: 1\n'
-            '  micro:\n'
+            '  test_model.micro:\n'
             '    threads: 1\n'
             ).format(ld_lib_path=ld_lib_path, test_component=test_component))
 

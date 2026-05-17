@@ -62,9 +62,9 @@ def programs() -> List[Program]:
 @pytest.fixture
 def requirements() -> Dict[Reference, ResourceRequirements]:
     res_list = [
-            ThreadedResReq(Ref('init'), 4),
-            ThreadedResReq(Ref('macro'), 4),
-            ThreadedResReq(Ref('micro'), 4)]
+            ThreadedResReq(Ref('test_model.init'), 4),
+            ThreadedResReq(Ref('test_model.macro'), 4),
+            ThreadedResReq(Ref('test_model.micro'), 4)]
     return {r.name: r for r in res_list}
 
 
@@ -216,7 +216,7 @@ def test_oversubscribe_single_instance_threaded() -> None:
     model = Model('single_instance', None, '', None, [Component('x', Ports(), '', 'x')])
     programs = [Program(Ref('x'), script='x')]
     reqs: Dict[Reference, ResourceRequirements] = {
-            Ref('x'): ThreadedResReq(Ref('x'), 24)}
+            Ref('single_instance.x'): ThreadedResReq(Ref('single_instance.x'), 24)}
     config = Configuration('config', [], [model], None, None, programs, reqs)
 
     res = resources({'node001': [c(1), c(2), c(3), c(4)]})
@@ -231,7 +231,7 @@ def test_oversubscribe_single_instance_mpi() -> None:
     model = Model('single_instance', None, '', None, [Component('x', Ports(), '', 'x')])
     programs = [Program(Ref('x'), script='x')]
     reqs: Dict[Reference, ResourceRequirements] = {
-            Ref('x'): MPICoresResReq(Ref('x'), 24)}
+            Ref('single_instance.x'): MPICoresResReq(Ref('single_instance.x'), 24)}
     config = Configuration('config', [], [model], None, None, programs, reqs)
 
     res = resources({'node001': [c(1), c(2), c(3), c(4)]})
@@ -249,7 +249,7 @@ def test_virtual_allocation() -> None:
             'ensemble', None, '', None, [Component('x', Ports(), '', 'x', False, 9)])
     programs = [Program(Ref('x'), script='x')]
     reqs: Dict[Ref, ResourceRequirements] = {
-            Ref('x'): MPICoresResReq(Ref('x'), 13)}
+            Ref('ensemble.x'): MPICoresResReq(Ref('ensemble.x'), 13)}
     config = Configuration('config', [], [model], None, None, programs, reqs)
 
     res = resources({'node000001': [c(1), c(2), c(3), c(4)]})
@@ -269,7 +269,7 @@ def test_impossible_virtual_allocation() -> None:
             'ensemble', None, '', None, [Component('x', Ports(), '', 'x', False, 9)])
     program = [Program(Ref('x'), script='x')]
     reqs: Dict[Ref, ResourceRequirements] = {
-            Ref('x'): ThreadedResReq(Ref('x'), 13)}
+            Ref('ensemble.x'): ThreadedResReq(Ref('ensemble.x'), 13)}
     config = Configuration('config', [], [model], None, None, program, reqs)
 
     res = resources({'node000001': [c(1), c(2), c(3), c(4)]})

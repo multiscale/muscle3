@@ -56,9 +56,9 @@ def test_start_mpi(tmpdir, mpi_exec_model):
             '    executable: {}\n'
             '    execution_model: {}\n'
             'resources:\n'
-            '  macro:\n'
+            '  test_model.macro:\n'
             '    threads: 1\n'
-            '  micro:\n'
+            '  test_model.micro:\n'
             '    mpi_processes: 2\n'
             ).format(
                 ld_lib_path, test_component, ld_lib_path, mpi_test_component,

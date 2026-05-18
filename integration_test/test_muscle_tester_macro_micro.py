@@ -74,8 +74,9 @@ def test_macro_model_with_tester(muscle3_tester: MuscleTester) -> None:
 def test_receive_timeout_raises_error(muscle3_tester: MuscleTester) -> None:
     """Test that a RuntimeError is raised when the tester's receive times out.
 
-    The micro model waits to receive on 'final' without sending on 'init', the micro
-    model never sends and the tester's receive will time out and raise a RuntimeError.
+    The tester tries to receive on 'final' without first sending on 'init'. The micro
+    model is blocked waiting to receive on 'init', so it never sends on 'final', and
+    the tester's receive will time out and raise a RuntimeError.
     """
     tester = muscle3_tester.start_implementation(
         YMMSL_CODES_DIR / 'micro1.ymmsl', 'micro1', default_timeout=0.1

@@ -523,8 +523,6 @@ class Planner:
                 if (c.implementation and
                     not programs[c.implementation].can_share_resources)}
 
-        # Build requirements: filling in defaults for DIRECT components
-        # that have no resources defined (default: 1 thread).
         requirements: dict[Reference, ResourceRequirements] = {
             root_model.name + component.name:
                 configuration.get_resources(root_model.name + component.name)

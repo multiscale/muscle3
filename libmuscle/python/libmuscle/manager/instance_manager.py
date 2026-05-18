@@ -141,7 +141,7 @@ class InstanceManager:
 
             request = InstantiationRequest(
                     instance, program,
-                    self._configuration.resources[component.name],
+                    self._configuration.resources[model.name + component.name],
                     resources, idir, workdir, stdout_path, stderr_path)
             _logger.info(f'Instantiating {instance}')
             self._requests_out.put(request)

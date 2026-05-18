@@ -8,7 +8,7 @@ description: |
   parallel implementations, see rd_resources_mpi.ymmsl.
 
 resources:
-  macro:
+  reaction_diffusion.macro:
     threads: 1
-  micro:
+  reaction_diffusion.micro:
     threads: 1

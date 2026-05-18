@@ -64,9 +64,9 @@ def test_start_nested(tmpdir):
             '      +LD_LIBRARY_PATH: :{}\n'
             '    executable: {}\n'
             'resources:\n'
-            '  macro:\n'
+            '  test_model.macro:\n'
             '    threads: 1\n'
-            '  micro.micro:\n'
+            '  test_model.micro.micro:\n'
             '    threads: 1\n'
             ).format(ld_lib_path, test_component))
 

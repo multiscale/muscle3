@@ -1,0 +1,5 @@
+ymmsl_version: v0.2
+# Use three sources to combine
+custom_implementations:
+  combiner.source2: source
+  combiner.source3: source

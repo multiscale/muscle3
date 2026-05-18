@@ -67,7 +67,7 @@ def connected_communicator(communicator):
     peer_locations.update({
         Ref(f'peer2[{s}]'): ['tcp:peer2:9001'] for s in range(13)})
 
-    peer_info = PeerInfo(Ref('component'), [], conduits, peer_dims, peer_locations)
+    peer_info = PeerInfo(Ref('component'), [], conduits, peer_dims, peer_locations, [])
     communicator.set_peer_info(peer_info)
     return communicator
 

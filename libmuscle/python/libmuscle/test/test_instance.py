@@ -1,3 +1,4 @@
+from libmuscle.peer_info import PeerInfo
 from contextlib import nullcontext as does_not_raise
 import logging
 from unittest.mock import MagicMock, patch
@@ -19,7 +20,7 @@ def logger():
 def MMPClient():
     with patch('libmuscle.instance.MMPClient') as MMPClient:
         mmp_client = MMPClient.return_value
-        mmp_client.request_peers.return_value = (MagicMock(), MagicMock(), MagicMock())
+        mmp_client.request_peers.return_value = PeerInfo(*[MagicMock()]*6)
 
         checkpoints = MagicMock()
         checkpoints.__bool__.return_value = False
@@ -211,28 +212,15 @@ def test_create_instance_profiling(
 def test_create_instance_connecting(
         manager_location_argv, instance_argv, mmp_client, port_manager, communicator,
         settings_manager, declared_ports):
-
-    conduits = [MagicMock(), MagicMock()]
-    peer_dims = {'component': [], 'other': []}
-    peer_locations = {
-            'component': ['tcp:localhost:9003'],
-            'other': ['tcp:localhost:9004']}
-    mmp_client.request_peers.return_value = (conduits, peer_dims, peer_locations)
+    peer_info = MagicMock()
+    mmp_client.request_peers.return_value = peer_info
 
     settings = MagicMock()
     mmp_client.get_settings.return_value = settings
 
     instance = Instance(declared_ports)
-
-    port_manager.connect_ports.assert_called_once()
-    peer_info = port_manager.connect_ports.call_args[0][0]
-    assert peer_info._PeerInfo__kernel == Ref('component')
-    assert peer_info._PeerInfo__index == []
-    assert peer_info._PeerInfo__peer_dims == peer_dims
-    assert peer_info._PeerInfo__peer_locations == peer_locations
-
-    communicator.set_peer_info.assert_called_once()
-    assert communicator.set_peer_info.call_args[0][0] == peer_info
+    port_manager.connect_ports.assert_called_once_with(peer_info)
+    communicator.set_peer_info.assert_called_once_with(peer_info)
 
     assert settings_manager.base == settings
     instance.error_shutdown("Ensure all threads and resources are cleaned up")

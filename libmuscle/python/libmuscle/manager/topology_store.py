@@ -1,7 +1,7 @@
 from typing import Dict, List
 from libmuscle.util import generate_indices, instance_indices
 
-from ymmsl.v0_2 import Conduit, Configuration, Reference
+from ymmsl.v0_2 import Conduit, Configuration, Reference, Ports
 
 
 class TopologyStore:
@@ -22,58 +22,65 @@ class TopologyStore:
         Args:
             configuration: A yMMSL configuration.
         """
-        model = config.root_model()
-        self.conduits = model.conduits
-        self.kernel_dimensions = {
-                k.name: k.multiplicity
-                for k in model.components.values()}
+        self.model = config.root_model()
 
-    def has_kernel(self, kernel: Reference) -> bool:
-        """Returns True iff the given kernel is in the model.
+    def has_component(self, component: Reference) -> bool:
+        """Returns True iff the given component is in the model.
 
         Args:
-            kernel: The kernel to check for.
+            component: The component to check for.
         """
-        return kernel in self.kernel_dimensions
+        return component in self.model.components
 
-    def get_conduits(self, kernel_name: Reference) -> List[Conduit]:
-        """Returns the list of conduits that attach to the given kernel.
+    def get_conduits(self, component: Reference) -> List[Conduit]:
+        """Returns the list of conduits that attach to the given component.
 
         Args:
-            kernel_name: Name of the kernel.
+            component: Name of the component.
 
         Returns:
-            All conduits that this kernel is a sender or receiver of.
+            All conduits that this component is a sender or receiver of.
         """
         ret = list()
-        for conduit in self.conduits:
-            if conduit.sending_component() == kernel_name:
+        for conduit in self.model.conduits:
+            if conduit.sending_component() == component:
                 ret.append(conduit)
-            if conduit.receiving_component() == kernel_name:
+            if conduit.receiving_component() == component:
                 ret.append(conduit)
         return ret
 
-    def get_peer_dimensions(self, kernel_name: Reference
-                            ) -> Dict[Reference, List[int]]:
-        """Returns the dimensions of peer kernels.
+    def get_ports(self, component: Reference) -> Ports:
+        """Returns the port declaration (from the yMMSL) for a component.
 
-        For each kernel that the given kernel shares a conduit with,
+        Args:
+            component: The component to request the ports from.
+
+        Returns:
+            The port declaration in the yMMSL (from the model/components section).
+        """
+        return self.model.components[component].ports
+
+    def get_peer_dimensions(self, component: Reference
+                            ) -> Dict[Reference, List[int]]:
+        """Returns the dimensions of peer components.
+
+        For each component that the given component shares a conduit with,
         the returned dictionary has an entry containing its dimensions.
 
         Args:
-            kernel_name: Name of the kernel for which to get peers.
+            component: Name of the component for which to get peers.
 
         Returns:
-            A dict of peer kernels and their dimensions.
+            A dict of peer components and their dimensions.
         """
         ret = dict()
-        for conduit in self.conduits:
-            if conduit.sending_component() == kernel_name:
+        for conduit in self.model.conduits:
+            if conduit.sending_component() == component:
                 recv = conduit.receiving_component()
-                ret[recv] = self.kernel_dimensions[recv]
-            if conduit.receiving_component() == kernel_name:
+                ret[recv] = self.model.components[recv].multiplicity
+            if conduit.receiving_component() == component:
                 snd = conduit.sending_component()
-                ret[snd] = self.kernel_dimensions[snd]
+                ret[snd] = self.model.components[snd].multiplicity
         return ret
 
     def get_peer_instances(self, instance: Reference) -> List[Reference]:
@@ -87,7 +94,7 @@ class TopologyStore:
         """
         component = instance.without_trailing_ints()
         indices = instance_indices(instance)
-        dims = self.kernel_dimensions[component]
+        dims = self.model.components[component].multiplicity
         all_peer_dims = self.get_peer_dimensions(component)
 
         peers = []

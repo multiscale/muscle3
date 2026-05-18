@@ -1,6 +1,6 @@
 import pytest
 
-from ymmsl.v0_2 import Conduit, Identifier as Id, Reference as Ref
+from ymmsl.v0_2 import Conduit, Identifier as Id, Reference as Ref, Port, Operator
 
 from libmuscle.peer_info import PeerInfo
 
@@ -20,7 +20,9 @@ def peer_info() -> PeerInfo:
     peer_locations = {
             Ref('other'): ['tcp:other']}
 
-    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations)
+    ymmsl_ports = [Port(Id("out"), Operator.O_I), Port(Id("in"), Operator.S)]
+
+    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations, ymmsl_ports)
 
 
 @pytest.fixture
@@ -38,7 +40,9 @@ def peer_info2() -> PeerInfo:
     peer_locations = {
             Ref('kernel'): ['tcp:kernel']}
 
-    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations)
+    ymmsl_ports = [Port(Id("out"), Operator.O_F), Port(Id("in"), Operator.F_INIT)]
+
+    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations, ymmsl_ports)
 
 
 @pytest.fixture
@@ -56,7 +60,9 @@ def peer_info3() -> PeerInfo:
     peer_locations = {
             Ref('other'): ['tcp:other']}
 
-    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations)
+    ymmsl_ports = [Port(Id("out"), Operator.O_I), Port(Id("in"), Operator.S)]
+
+    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations, ymmsl_ports)
 
 
 def test_create_peer_info(peer_info) -> None:
@@ -101,3 +107,9 @@ def test_get_peer_endpoint(peer_info, peer_info2, peer_info3) -> None:
 
     assert str(peer_info3.get_peer_endpoints(Id('out'), [42])[0]) == 'other.in[42]'
     assert str(peer_info3.get_peer_endpoints(Id('in'), [42])[0]) == 'other.out[42]'
+
+
+def test_get_ymmsl_ports(peer_info) -> None:
+    assert peer_info.list_ymmsl_ports() == [
+        Port(Id("out"), Operator.O_I), Port(Id("in"), Operator.S)
+    ]

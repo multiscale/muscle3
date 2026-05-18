@@ -7,7 +7,7 @@ MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi ymmsl)
 
 binaries := reaction diffusion mc_driver load_balancer
 binaries += checkpointing_reaction checkpointing_diffusion
-binaries += benchmark buffer
+binaries += benchmark buffer combiner
 mpi_binaries := reaction_mpi
 
 

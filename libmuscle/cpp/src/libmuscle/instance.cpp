@@ -76,7 +76,7 @@ class Instance::Impl {
     public:
         Impl(
                 int argc, char const * const argv[],
-                PortsDescription const & ports,
+                Optional<PortsDescription> const & ports,
                 InstanceFlags flags
 #ifdef MUSCLE_ENABLE_MPI
                 , MPI_Comm const & communicator
@@ -130,7 +130,7 @@ class Instance::Impl {
         MPI_Comm mpi_comm_;
         MPITcpBarrier mpi_barrier_;
 #endif
-        PortsDescription declared_ports_;
+        Optional<PortsDescription> declared_ports_;
         SettingsManager settings_manager_;
         std::unique_ptr<SnapshotManager> snapshot_manager_;
         std::unique_ptr<TriggerManager> trigger_manager_;
@@ -152,8 +152,6 @@ class Instance::Impl {
 
         ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
         std::string extract_manager_location_(int argc, char const * const argv[]) const;
-        ::ymmsl::Reference name_() const;
-        std::vector<int> index_() const;
 
         std::vector<::ymmsl::Port> list_declared_ports_() const;
         void check_port_(
@@ -186,7 +184,7 @@ class Instance::Impl {
 
 Instance::Impl::Impl(
         int argc, char const * const argv[],
-        PortsDescription const & ports,
+        Optional<PortsDescription> const & ports,
         InstanceFlags flags
 #ifdef MUSCLE_ENABLE_MPI
         , MPI_Comm const & communicator
@@ -229,10 +227,13 @@ Instance::Impl::Impl(
         Logger::instance().init(instance_id, log_file, manager_.get());
         profiler_.reset(new Profiler(*manager_));
 
-        port_manager_.reset(new PortManager(index_(), ports));
+        Reference name = instance_to_component(instance_id);
+        std::vector<int> index = instance_indices(instance_id);
+
+        port_manager_.reset(new PortManager(index, ports));
         communicator_.reset(
                 new Communicator(
-                    name_(), index_(), *port_manager_, *profiler_, *manager_));
+                    name, index, *port_manager_, *profiler_, *manager_));
         snapshot_manager_.reset(new SnapshotManager(
                 instance_name_, *manager_, *port_manager_));
         trigger_manager_.reset(new TriggerManager());
@@ -506,11 +507,7 @@ void Instance::Impl::register_() {
 void Instance::Impl::connect_() {
     ProfileEvent connect_event(ProfileEventType::connect, ProfileTimestamp());
 
-    auto peers = manager_->request_peers();
-    PeerInfo peer_info(
-            name_(), index_(), std::get<0>(peers), std::get<1>(peers),
-            std::get<2>(peers));
-
+    auto peer_info = manager_->request_peers();
     port_manager_->connect_ports(peer_info);
     communicator_->set_peer_info(peer_info);
 
@@ -852,31 +849,6 @@ std::string Instance::Impl::extract_manager_location_(
     return "tcp:localhost:9000";
 }
 
-/* Returns the component name of this instance, i.e. without the index.
- */
-Reference Instance::Impl::name_() const {
-    auto it = instance_name_.cbegin();
-    while (it != instance_name_.cend() && it->is_identifier())
-        ++it;
-
-    return Reference(instance_name_.cbegin(), it);
-}
-
-/* Returns the index of this instance, i.e. without the component.
- */
-std::vector<int> Instance::Impl::index_() const {
-    std::vector<int> result;
-    auto it = instance_name_.cbegin();
-    while (it != instance_name_.cend() && it->is_identifier())
-        ++it;
-
-    while (it != instance_name_.cend() && it->is_index()) {
-        result.push_back(it->index());
-        ++it;
-    }
-    return result;
-}
-
 /* Returns a list of declared ports for this instance.
  *
  * This returns a list of ymmsl::Port objects, which have only the name and
@@ -884,7 +856,8 @@ std::vector<int> Instance::Impl::index_() const {
  */
 std::vector<::ymmsl::Port> Instance::Impl::list_declared_ports_() const {
     std::vector<::ymmsl::Port> result;
-    for (auto const & oper_ports : declared_ports_) {
+    if (!declared_ports_.is_set()) return result;
+    for (auto const & oper_ports : declared_ports_.get()) {
         for (auto const & fullname : oper_ports.second) {
             std::string portname(fullname);
             if (fullname.size() > 2 && fullname.substr(fullname.size() - 2) == "[]")

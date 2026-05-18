@@ -61,7 +61,7 @@ struct libmuscle_mmsf_validator : ::testing::Test {
         }
         PeerDims peer_dims({ {"component", {}}});
         PeerLocations peer_locations({{"component", {"direct:test"}}});
-        PeerInfo peer_info(component_id, {}, conduits, peer_dims, peer_locations);
+        PeerInfo peer_info(component_id, {}, conduits, peer_dims, peer_locations, {});
 
         port_manager_->connect_ports(peer_info);
         validator_ = std::make_unique<MMSFValidator>(*port_manager_);

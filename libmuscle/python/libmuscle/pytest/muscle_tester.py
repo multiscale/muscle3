@@ -129,16 +129,10 @@ class MuscleTester:
             description="Manual tester program for implementation testing",
         )
 
-        # The planner looks up resources by the full component path
-        # (model_name.component_name), so we need to re-key any existing resources
-        # that were loaded from the ymmsl file (keyed by just component name) to use
-        # the full path, and add the tester's resource with the full path as well.
-        for component_name in tester_model.components:
-            full_path = Reference(test_model_name) + component_name
-            if component_name in config.resources:
-                config.resources[full_path] = config.resources[component_name]
-            elif full_path not in config.resources:
-                config.resources[full_path] = ThreadedResReq(name=full_path, threads=1)
+        config.resources[Reference(tester_name)] = ThreadedResReq(
+                name=Reference(tester_name),
+                threads=1
+            )
 
         config.models[Reference(test_model_name)] = tester_model
         return config

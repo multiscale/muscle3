@@ -1,9 +1,10 @@
 import os
+from contextlib import contextmanager
 from types import TracebackType
 from pathlib import Path
 import multiprocessing as mp
 from unittest.mock import patch
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Generator, Optional, Tuple, Union
 from multiprocessing.connection import Connection
 
 import ymmsl.v0_2
@@ -41,8 +42,7 @@ class MuscleTester:
         self.run_dir = run_dir
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.implementation_tester: Optional[ImplementationTester] = None
-        self.control_pipe: Optional[Tuple[Connection, Connection]] = None
-        self.process: Optional[mp.Process] = None
+        self._server_ctx: Optional[Any] = None
         self._patcher: Optional[Any] = None
 
     def __enter__(self) -> "MuscleTester":
@@ -168,8 +168,9 @@ class MuscleTester:
         test_ymmsl_path = self.run_dir / "test_config.ymmsl"
         ymmsl.save(test_ymmsl_config, test_ymmsl_path)
 
-        muscle_manager_address, self.control_pipe, self.process = make_server_process(
-            test_ymmsl_config, RunDir(self.run_dir))
+        self._server_ctx = make_server_process(
+            test_ymmsl_config,self.run_dir, True)
+        muscle_manager_address = self._server_ctx.__enter__()
         # monkeypatch ReceiveTimeoutHandler so we can (ab)use it for our timeouts:
         self._patcher = patch.object(ReceiveTimeoutHandler, 'on_timeout', raise_error)
         self._patcher.start()
@@ -191,40 +192,48 @@ class MuscleTester:
         if self._patcher is not None:
             self._patcher.stop()
             self._patcher = None
-        if self.control_pipe is not None and self.process is not None:
-            self.control_pipe[0].send(True)
-            self.control_pipe[0].close()
-            self.process.join()
-            self.control_pipe = None
-            self.process = None
+        if self._server_ctx is not None:
+            self._server_ctx.__exit__(None, None, None)
+            self._server_ctx = None
 
 
 def start_mmp_server(control_pipe: Tuple[Connection, Connection],
                      ymmsl_config: Configuration, run_dir: RunDir,
-                     env: dict[str, str]) -> None:
-    os.environ.clear()
-    os.environ.update(env)
+                     env: dict[str, str], start_instances: bool) -> None:
+    if start_instances:
+        os.environ.clear()
+        os.environ.update(env)
 
     control_pipe[0].close()
     manager = Manager(ymmsl_config, run_dir, 'DEBUG')
     control_pipe[1].send(manager.get_server_location())
-    manager.start_instances()
+
+    if start_instances:
+        manager.start_instances()
+    
     control_pipe[1].recv()
     control_pipe[1].close()
     manager.stop()
 
 
-def make_server_process(ymmsl_config: Configuration, run_dir: RunDir
-                        ) -> Tuple[str, Tuple[Connection, Connection], mp.Process]:
+@contextmanager
+def make_server_process(ymmsl_config: Configuration, run_dir: Path,
+                        start_instances: bool
+                        ) -> Generator[str, None, None]:
+    run_dir_obj = RunDir(run_dir)
     env = os.environ.copy()
-
     control_pipe = mp.Pipe()
     process = mp.Process(
         target=start_mmp_server,
-        args=(control_pipe, ymmsl_config, run_dir, env),
+        args=(control_pipe, ymmsl_config, run_dir_obj, env, start_instances),
         name='Manager'
     )
     process.start()
     control_pipe[1].close()
     muscle_manager_address = control_pipe[0].recv()
-    return muscle_manager_address, control_pipe, process
+    try:
+        yield muscle_manager_address
+    finally:
+        control_pipe[0].send(True)
+        control_pipe[0].close()
+        process.join()

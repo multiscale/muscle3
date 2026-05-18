@@ -3,7 +3,7 @@ import multiprocessing as mp
 import os
 import subprocess
 import sys
-from contextlib import contextmanager, ExitStack
+from contextlib import ExitStack
 from pathlib import Path
 
 import pytest
@@ -12,6 +12,7 @@ import ymmsl
 
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
+from libmuscle.pytest.muscle_tester import make_server_process
 
 
 skip_if_python_only = pytest.mark.skipif(
@@ -46,32 +47,6 @@ def ls_snapshots(run_dir, instance=None):
     """List all snapshots of the instance or workflow"""
     return sorted(run_dir.snapshot_dir(instance).iterdir(),
                   key=lambda path: tuple(map(int, path.stem.split("_")[1:])))
-
-
-def start_mmp_server(control_pipe, ymmsl_doc, run_dir):
-    control_pipe[0].close()
-    manager = Manager(ymmsl_doc, run_dir, 'DEBUG')
-    control_pipe[1].send(manager.get_server_location())
-    control_pipe[1].recv()
-    control_pipe[1].close()
-    manager.stop()
-
-
-def make_server_process(ymmsl_doc, tmpdir):
-    run_dir = RunDir(Path(tmpdir))
-    control_pipe = mp.Pipe()
-    process = mp.Process(target=start_mmp_server,
-                         args=(control_pipe, ymmsl_doc, run_dir),
-                         name='Manager')
-    process.start()
-    control_pipe[1].close()
-    # wait for start
-    try:
-        yield control_pipe[0].recv()
-    finally:
-        control_pipe[0].send(True)
-        control_pipe[0].close()
-        process.join()
 
 
 def _python_wrapper(tmpdir, instance_name, muscle_manager, callable):
@@ -132,10 +107,8 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
     cpp_build_dir = libmuscle_dir / 'cpp' / 'build' / 'libmuscle' / 'tests'
     fortran_build_dir = libmuscle_dir / 'fortran' / 'build' / 'libmuscle' / 'tests'
 
-    with ExitStack() as stack:
-        # start muscle_manager and extract manager location
-        ctx = contextmanager(make_server_process)(ymmsl_doc, tmpdir)
-        env['MUSCLE_MANAGER'] = stack.enter_context(ctx)
+    with make_server_process(ymmsl_doc, Path(tmpdir), False) as muscle_manager_address:
+        env['MUSCLE_MANAGER'] = muscle_manager_address
 
         lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
         if 'LD_LIBRARY_PATH' in env:
@@ -145,40 +118,41 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
 
         native_processes = []
         python_processes = []
-        # start actors
-        for instance_name, (language, actor, *args) in actors.items():
-            if language == "python":
-                # start python actor
-                proc = mp.Process(
-                        target=_python_wrapper,
-                        args=(tmpdir, instance_name, env['MUSCLE_MANAGER'], actor),
-                        name=instance_name)
-                proc.start()
-                python_processes.append(proc)
-                continue
-            elif language == "cpp":
-                # executable = 'gdb'
-                # args = ('--batch', '-ex', 'run', '-ex', 'bt', '--args',
-                #         cpp_build_dir / actor)
-                executable = cpp_build_dir / actor
-            elif language == "mpicpp":
-                assert len(args) > 0, "must provide at least number of mpi instances"
-                executable = 'mpirun'
-                out_file = tmpdir / f'mpi_{instance_name}.log'
-                args = ('-np', args[0], mpirun_outfile_arg(), str(out_file),
-                        str(cpp_build_dir / actor), *args[1:])
-            elif language == "fortran":
-                executable = fortran_build_dir / actor
-            else:
-                raise ValueError(f"Unknown language: {language}")
-            # start native code actor
-            f_out = stack.enter_context(
-                    (tmpdir / f'{instance_name}_stdout.txt').open('w'))
-            f_err = stack.enter_context(
-                    (tmpdir / f'{instance_name}_stderr.txt').open('w'))
-            native_processes.append(subprocess.Popen(
-                    [str(executable), *args, f'--muscle-instance={instance_name}'],
-                    env=env, stdout=f_out, stderr=f_err))
+        with ExitStack() as stack:
+            # start actors
+            for instance_name, (language, actor, *args) in actors.items():
+                if language == "python":
+                    # start python actor
+                    proc = mp.Process(
+                            target=_python_wrapper,
+                            args=(tmpdir, instance_name, env['MUSCLE_MANAGER'], actor),
+                            name=instance_name)
+                    proc.start()
+                    python_processes.append(proc)
+                    continue
+                elif language == "cpp":
+                    # executable = 'gdb'
+                    # args = ('--batch', '-ex', 'run', '-ex', 'bt', '--args',
+                    #         cpp_build_dir / actor)
+                    executable = cpp_build_dir / actor
+                elif language == "mpicpp":
+                    assert len(args) > 0, "must provide at least number of mpi instances"
+                    executable = 'mpirun'
+                    out_file = tmpdir / f'mpi_{instance_name}.log'
+                    args = ('-np', args[0], mpirun_outfile_arg(), str(out_file),
+                            str(cpp_build_dir / actor), *args[1:])
+                elif language == "fortran":
+                    executable = fortran_build_dir / actor
+                else:
+                    raise ValueError(f"Unknown language: {language}")
+                # start native code actor
+                f_out = stack.enter_context(
+                        (tmpdir / f'{instance_name}_stdout.txt').open('w'))
+                f_err = stack.enter_context(
+                        (tmpdir / f'{instance_name}_stderr.txt').open('w'))
+                native_processes.append(subprocess.Popen(
+                        [str(executable), *args, f'--muscle-instance={instance_name}'],
+                        env=env, stdout=f_out, stderr=f_err))
 
         # check results
         for proc in native_processes:
@@ -243,7 +217,8 @@ def mmp_server_config(yatiml_log_warning):
 @pytest.fixture
 def mmp_server_process(mmp_server_config, tmpdir):
     ymmsl_doc = ymmsl.load(mmp_server_config)
-    yield from make_server_process(ymmsl_doc, tmpdir)
+    with make_server_process(ymmsl_doc, Path(tmpdir), False) as muscle_manager_address:
+        yield muscle_manager_address
 
 
 @pytest.fixture
@@ -296,7 +271,8 @@ def mmp_server_config_simple_python(mmp_server_config_simple):
 @pytest.fixture
 def mmp_server_process_simple(mmp_server_config_simple, tmpdir):
     ymmsl_doc = ymmsl.load(mmp_server_config_simple)
-    yield from make_server_process(ymmsl_doc, tmpdir)
+    with make_server_process(ymmsl_doc, Path(tmpdir), False) as muscle_manager_address:
+        yield muscle_manager_address
 
 
 @pytest.fixture

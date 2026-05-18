@@ -18,15 +18,9 @@ verify that it still behaves correctly, without having to test it by hand.
 .. note::
 
    The testing infrastructure described here relies on `pytest
-   <https://docs.pytest.org>`_, which is not installed automatically as
-   part of muscle3. If you have not installed it yet, you can do so with:
-
-   .. code-block:: bash
-
-       pip install pytest
-
-   Tests are written as ordinary Python functions whose names start with
-   ``test_``, and pytest discovers and runs them automatically.
+   <https://docs.pytest.org>`_. Tests are written as ordinary Python functions
+   whose names start with ``test_``, and pytest discovers and runs them
+   automatically.
    
    A *fixture* is a reusable helper that pytest prepares before a test and
    cleans up afterwards. You request a fixture simply by adding a parameter with

@@ -3,8 +3,8 @@ import logging
 from typing import Dict, Iterable, List, Mapping, Set, Tuple
 
 from ymmsl.v0_2 import (
-        Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
-        Operator, Reference, ResourceRequirements, ThreadedResReq)
+        Component, Configuration, Model, MPICoresResReq,
+        MPINodesResReq, Operator, Reference, ResourceRequirements, ThreadedResReq)
 
 from libmuscle.planner.resources import OnNodeResources, Resources
 from libmuscle.util import instance_indices
@@ -517,12 +517,17 @@ class Planner:
         # Analyse model
         root_model = configuration.root_model()
         model = ModelGraph(root_model)
-        requirements = configuration.resources
         programs = configuration.programs
         exclusive = {
                 i for c in model.components() for i in c.instances()
                 if (c.implementation and
                     not programs[c.implementation].can_share_resources)}
+
+        requirements: dict[Reference, ResourceRequirements] = {
+            root_model.name + component.name:
+                configuration.get_resources(root_model.name + component.name)
+            for component in model.components()
+        }
 
         # Allocate
         unallocated_instances = [

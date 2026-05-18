@@ -10,7 +10,10 @@ isolation — without having to set up and run the full coupled simulation. The
 ``muscle3_tester`` pytest fixture) makes this easy: it starts a real MUSCLE3
 manager in the background and connects a *tester component* to all ports of
 your implementation, so you can send and receive messages programmatically from
-within a pytest test.
+within a pytest test. This means you can script the entire testing procedure
+and run it automatically — for example, as part of a continuous integration
+pipeline — so that any time you change your component, you can immediately
+verify that it still behaves correctly, without having to test it by hand.
 
 .. note::
 
@@ -78,14 +81,14 @@ two forms.
         You can embed the yMMSL configuration directly in your test file as a
         string.
         
-        Tip: using ``Path(__file__).parent.resolve()`` gives the absolute path.
+        Tip: ``Path.resolve()`` converts the path to an absolute path.
 
         .. code-block:: python
             :caption: tests/test_micro.py
 
             from pathlib import Path
 
-            PROJECT_DIR = Path(__file__).parent.parent.resolve()
+            PROJECT_DIR = Path(__file__).resolve().parents[1]
 
             CONFIG = f"""
             ymmsl_version: v0.2
@@ -117,7 +120,7 @@ Step 2: Use the ``muscle3_tester`` fixture in your test
             from libmuscle import Message
             from libmuscle.pytest import MuscleTester
 
-            PROJECT_DIR = Path(__file__).parent.parent.resolve()
+            PROJECT_DIR = Path(__file__).resolve().parents[1]
 
 
             def test_micro_model(muscle3_tester: MuscleTester) -> None:
@@ -143,7 +146,7 @@ Step 2: Use the ``muscle3_tester`` fixture in your test
             from libmuscle import Message
             from libmuscle.pytest import MuscleTester
 
-            TESTS_DIR = Path(__file__).parent.parent.resolve()
+            PROJECT_DIR = Path(__file__).resolve().parents[1]
 
             CONFIG = f"""
             ymmsl_version: v0.2
@@ -209,7 +212,7 @@ You can adjust this timeout:
 .. code-block:: python
 
     tester = muscle3_tester.start_implementation(
-        TESTS_DIR / "micro.ymmsl", "micro", default_timeout=5.0
+        PROJECT_DIR / "micro.ymmsl", "micro", default_timeout=5.0
     )
 
 You can also override the timeout for individual receive calls:

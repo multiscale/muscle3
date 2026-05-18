@@ -28,14 +28,14 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
     client.register_instance(['direct:macro'], [])
 
     client2 = MMPClient(Reference('micro[0]'), mmp_server_process)
-    conduits, peer_dims, peer_locations = client2.request_peers()
+    peer_info = client2.request_peers()
     client2.close()
 
-    assert Conduit('macro.out', 'micro.in') in conduits
-    assert Conduit('micro.out', 'macro.in') in conduits
+    assert Conduit('macro.out', 'micro.in') in peer_info._conduits
+    assert Conduit('micro.out', 'macro.in') in peer_info._conduits
 
-    assert peer_dims[Reference('macro')] == []
-    assert peer_locations['macro'] == ['direct:macro']
+    assert peer_info._peer_dims[Reference('macro')] == []
+    assert peer_info._peer_locations['macro'] == ['direct:macro']
 
     with patch('libmuscle.mmp_client.PEER_TIMEOUT', 0.1), \
             patch('libmuscle.mmp_client.PEER_INTERVAL_MIN', 0.01), \
@@ -63,11 +63,11 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
         client2.register_instance([location], [])
         client2.close()
 
-    conduits, peer_dims, peer_locations = client.request_peers()
+    peer_info = client.request_peers()
 
-    assert Conduit('macro.out', 'micro.in') in conduits
-    assert Conduit('micro.out', 'macro.in') in conduits
+    assert Conduit('macro.out', 'micro.in') in peer_info._conduits
+    assert Conduit('micro.out', 'macro.in') in peer_info._conduits
 
-    assert peer_dims[Reference('micro')] == [10]
-    assert peer_locations['micro[7]'] == ['direct:micro[7]']
+    assert peer_info._peer_dims[Reference('micro')] == [10]
+    assert peer_info._peer_locations['micro[7]'] == ['direct:micro[7]']
     client.close()

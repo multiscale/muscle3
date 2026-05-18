@@ -139,9 +139,11 @@ class InstanceManager:
             stdout_path = idir / 'stdout.txt'
             stderr_path = idir / 'stderr.txt'
 
+            res_req = self._configuration.get_resources(model.name + component.name)
+
             request = InstantiationRequest(
                     instance, program,
-                    self._configuration.resources[model.name + component.name],
+                    res_req,
                     resources, idir, workdir, stdout_path, stderr_path)
             _logger.info(f'Instantiating {instance}')
             self._requests_out.put(request)

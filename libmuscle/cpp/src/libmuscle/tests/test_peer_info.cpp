@@ -13,6 +13,8 @@ using libmuscle::_MUSCLE_IMPL_NS::PeerLocations;
 using libmuscle::_MUSCLE_IMPL_NS::PeerInfo;
 using ymmsl::Conduit;
 using ymmsl::Reference;
+using ymmsl::Port;
+using ymmsl::Operator;
 
 
 int main(int argc, char *argv[]) {
@@ -34,7 +36,10 @@ PeerInfo peer_info() {
     PeerLocations peer_locations({
             {Reference("other"), {"tcp:other"}}});
 
-    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations);
+    std::vector<Port> ymmsl_ports({
+        {"out", Operator::O_I}, {"in", Operator::S}});
+
+    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations, ymmsl_ports);
 }
 
 PeerInfo peer_info2() {
@@ -50,7 +55,10 @@ PeerInfo peer_info2() {
     PeerLocations peer_locations({
             {Reference("kernel"), {"tcp:kernel"}}});
 
-    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations);
+    std::vector<Port> ymmsl_ports({
+        {"out", Operator::O_F}, {"in", Operator::F_INIT}});
+
+    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations, ymmsl_ports);
 }
 
 PeerInfo peer_info3() {
@@ -66,7 +74,10 @@ PeerInfo peer_info3() {
     PeerLocations peer_locations({
             {Reference("other"), {"tcp:other"}}});
 
-    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations);
+    std::vector<Port> ymmsl_ports({
+        {"out", Operator::O_I}, {"in", Operator::S}});
+
+    return PeerInfo(kernel, index, conduits, peer_dims, peer_locations, ymmsl_ports);
 }
 
 TEST(libmuscle_peer_info, create_peer_info) {
@@ -134,3 +145,13 @@ TEST(libmuscle_peer_info, get_peer_endpoint) {
     ASSERT_EQ(std::string(pi3.get_peer_endpoints("in", {42})[0]), "other.out[42]");
 }
 
+
+TEST(libmuscle_peer_info, get_ymmsl_ports) {
+    auto pi = peer_info();
+    auto ports = pi.list_ymmsl_ports();
+    ASSERT_EQ(ports.size(), 2);
+    ASSERT_EQ(ports[0].name, "out");
+    ASSERT_EQ(ports[0].oper, Operator::O_I);
+    ASSERT_EQ(ports[1].name, "in");
+    ASSERT_EQ(ports[1].oper, Operator::S);
+}

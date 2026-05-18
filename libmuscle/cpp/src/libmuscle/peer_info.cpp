@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include "peer_info.hpp"
 
 using ymmsl::Conduit;
 using ymmsl::Identifier;
@@ -15,7 +16,8 @@ PeerInfo::PeerInfo(
         std::vector<int> const & index,
         std::vector<Conduit> const & conduits,
         PeerDims const & peer_dims,
-        PeerLocations const & peer_locations
+        PeerLocations const & peer_locations,
+        std::vector<::ymmsl::Port> const & ymmsl_ports
         )
     : kernel_(kernel)
     , index_(index)
@@ -24,6 +26,7 @@ PeerInfo::PeerInfo(
     , peers_()                          // peer port ids, indexed by local kernel.port
     , peer_dims_(peer_dims)             // indexed by peer kernel id
     , peer_locations_(peer_locations)   // indexed by peer instance id
+    , ymmsl_ports_(ymmsl_ports)
 {
     for (auto const & conduit : conduits) {
         if (conduit.sending_component() == kernel_) {
@@ -54,6 +57,10 @@ PeerInfo::PeerInfo(
             peers_.emplace(conduit.receiver, vec);
         }
     }
+}
+
+std::vector<::ymmsl::Port> const & PeerInfo::list_ymmsl_ports() const {
+    return ymmsl_ports_;
 }
 
 IncomingPorts PeerInfo::list_incoming_ports() const {
@@ -119,5 +126,35 @@ std::vector<Endpoint> PeerInfo::get_peer_endpoints(
     return endpoints;
 }
 
-} }
+std::vector<int> PeerInfo::check_peer_dimensions(ymmsl::Identifier port_id) const {
+    if (!is_connected(port_id)) return {};
 
+    auto peer_ports = get_peer_ports(port_id);
+    Reference peer_port = peer_ports.at(0);
+    Reference peer_component(peer_port.cbegin(), std::prev(peer_port.cend()));
+    auto port_peer_dims = get_peer_dims(peer_component);
+    for (std::size_t i = 1; i < peer_ports.size(); i++) {
+        peer_port = peer_ports.at(i);
+        peer_component = Reference(peer_port.cbegin(), std::prev(peer_port.cend()));
+        if (port_peer_dims != get_peer_dims(peer_component)) {
+            std::stringstream ss;
+            ss << "Multicast port \"" << port_id;
+            ss << "\" is connected to peers with different";
+            ss << " dimensions. All peer components that this";
+            ss << " port is connected to must have the same";
+            ss << " multiplicity. Connected to ports: ";
+            bool first = true;
+            for (auto port : peer_ports) {
+                if (first)
+                    first = false;
+                else
+                    ss << ", ";
+                ss << port;
+            }
+            throw std::runtime_error(ss.str());
+        }
+    }
+    return port_peer_dims;
+}
+
+} }

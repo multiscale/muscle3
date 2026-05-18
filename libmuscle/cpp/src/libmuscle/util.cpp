@@ -115,5 +115,27 @@ const double Retrier::default_base_delay_ = 0.5;
 const double Retrier::default_timeout_ = 30.0;
 const double Retrier::factor_ = std::pow(2.0, 1.0 / 3.0);
 
+::ymmsl::Reference instance_to_component(::ymmsl::Reference const & instance_name) {
+    auto it = instance_name.cbegin();
+    while (it != instance_name.cend() && it->is_identifier())
+        ++it;
+
+    return ::ymmsl::Reference(instance_name.cbegin(), it);
+}
+
+std::vector<int> instance_indices(::ymmsl::Reference const & instance_name) {
+    std::vector<int> result;
+    auto it = instance_name.cbegin();
+    while (it != instance_name.cend() && it->is_identifier())
+        ++it;
+
+    while (it != instance_name.cend() && it->is_index()) {
+        result.push_back(it->index());
+        ++it;
+    }
+    return result;
+}
+
+
 } }
 

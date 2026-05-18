@@ -8,14 +8,16 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import msgpack
 from ymmsl.v0_2 import (
         Conduit, Operator, Port, Reference, Settings, Checkpoints,
-        CheckpointRule, CheckpointRangeRule, CheckpointAtRule)
+        CheckpointRule, CheckpointRangeRule, CheckpointAtRule, Identifier)
 
 import libmuscle
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
+from libmuscle.peer_info import PeerInfo
 from libmuscle.profiling import ProfileEvent
 from libmuscle.logging import LogMessage
 from libmuscle.snapshot import SnapshotMetadata
+from libmuscle.util import instance_to_kernel, instance_indices
 
 
 TIMID_WAIT = 1.0
@@ -238,10 +240,7 @@ class MMPClient():
             raise RuntimeError(
                     f'Error registering instance: {response[1]}')
 
-    def request_peers(self) -> Tuple[
-            List[Conduit],
-            Dict[Reference, List[int]],
-            Dict[Reference, List[str]]]:
+    def request_peers(self) -> PeerInfo:
         """Request connection information about peers.
 
         This will repeat the request at an exponentially increasing
@@ -250,13 +249,7 @@ class MMPClient():
         there on, intervals are drawn randomly from that range.
 
         Returns:
-            A tuple containing a list of conduits that this instance is
-            attached to, a dictionary of peer dimensions, which is
-            indexed by Reference to the peer kernel, and specifies how
-            many instances of that kernel there are, and a dictionary
-            of peer instance locations, indexed by Reference to a peer
-            instance, and containing for each peer instance a list of
-            network location strings at which it can be reached.
+            PeerInfo received from the muscle manager.
         """
         sleep_time = 0.1
         start_time = perf_counter()
@@ -293,7 +286,12 @@ class MMPClient():
                 Reference(instance): locs
                 for instance, locs in response[3].items()}
 
-        return conduits, peer_dimensions, peer_locations
+        ports = [
+            Port(Identifier(name), Operator[op]) for name, op in response[4]
+        ]
+        name = instance_to_kernel(self._instance_id)
+        index = instance_indices(self._instance_id)
+        return PeerInfo(name, index, conduits, peer_dimensions, peer_locations, ports)
 
     def deregister_instance(self) -> None:
         """Deregister a component instance with the manager.

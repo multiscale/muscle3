@@ -48,21 +48,32 @@ void test_register_instance(MMPClient & client) {
 }
 
 void test_request_peers(MMPClient & client) {
-    auto result = client.request_peers();
-    assert(std::get<0>(result).size() == 2);
-    assert(std::get<0>(result)[0].sender == "macro.out");
-    assert(std::get<0>(result)[0].receiver == "micro.in");
-    assert(std::get<0>(result)[1].sender == "micro.out");
-    assert(std::get<0>(result)[1].receiver == "macro.in");
+    auto peer_info = client.request_peers();
 
-    assert(std::get<1>(result).size() == 1);
-    assert(std::get<1>(result).at("macro").size() == 1);
-    assert(std::get<1>(result).at("macro").at(0) == 10);
+    auto const & incoming_ports = peer_info.list_incoming_ports();
+    assert(incoming_ports.size() == 1);
+    assert(std::get<0>(incoming_ports[0]) == "micro.in");
 
-    assert(std::get<2>(result).size() == 1);
-    assert(std::get<2>(result).at("macro").size() == 2);
-    assert(std::get<2>(result).at("macro")[0] == "tcp:test3");
-    assert(std::get<2>(result).at("macro")[1] == "tcp:test4");
+    auto const & outgoing_ports = peer_info.list_outgoing_ports();
+    assert(outgoing_ports.size() == 1);
+    assert(std::get<0>(outgoing_ports[0]) == "micro.out");
+
+    auto const & in_peer_ports = peer_info.get_peer_ports("micro.in");
+    assert(in_peer_ports.size() == 1);
+    assert(in_peer_ports[0] == "macro.out");
+
+    auto const & out_peer_ports = peer_info.get_peer_ports("micro.out");
+    assert(out_peer_ports.size() == 1);
+    assert(out_peer_ports[0] == "macro.in");
+
+    auto const & peer_dimensions = peer_info.get_peer_dims("macro");
+    assert(peer_dimensions.size() == 1);
+    assert(peer_dimensions[0] == 10);
+
+    auto const & peer_locations = peer_info.get_peer_locations("macro");
+    assert(peer_locations.size() == 2);
+    assert(peer_locations[0] == "tcp:test3");
+    assert(peer_locations[1] == "tcp:test4");
 }
 
 void test_deregister_instance(MMPClient & client) {

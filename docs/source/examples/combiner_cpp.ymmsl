@@ -1,0 +1,4 @@
+ymmsl_version: v0.2
+# Use the cpp combiner actor instead of the python one
+custom_implementations:
+  combiner.combiner: combiner_cpp

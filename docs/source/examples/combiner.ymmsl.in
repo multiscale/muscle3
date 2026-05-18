@@ -1,0 +1,68 @@
+ymmsl_version: v0.2
+
+models:
+  combiner:
+    description: Model to demonstrate a dynamic combiner component
+    components:
+      source1:
+        description: First data source
+        ports:
+          o_f: data
+        implementation: source
+      source2:
+        description: First data source
+        ports:
+          o_f: data
+      source3:
+        description: First data source
+        ports:
+          o_f: data
+      combiner:
+        description: Combiner component
+        ports:
+          f_init: input1 input2 input3
+          o_f: output
+        implementation: combiner_python
+      destination:
+        description: Destination of combined data
+        ports:
+          f_init: input
+        implementation: destination
+    conduits:
+      source1.data: combiner.input1
+      source2.data: combiner.input2
+      source3.data: combiner.input3
+      combiner.output: destination.input
+
+settings:
+  muscle_local_log_level: DEBUG
+  source1.data: 1
+  source2.data: 2
+  source3.data: 3
+
+programs:
+  source:
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/combiner_test.py source
+  combiner_python:
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/combiner.py
+  combiner_cpp:
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/combiner
+  destination:
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/combiner_test.py destination
+
+resources:
+  source1:
+    threads: 1
+  source2:
+    threads: 1
+  source3:
+    threads: 1
+  combiner:
+    threads: 1
+  destination:
+    threads: 1

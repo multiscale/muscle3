@@ -17,7 +17,3 @@ programs:
       in: Expects a single integer of any value
     executable: python3
     args: "-m macro"
-
-resources:
-  macro:
-    threads: 1

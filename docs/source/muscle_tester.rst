@@ -72,10 +72,6 @@ two forms.
                 executable: python3
                 args: /path/to/my_project/micro.py
 
-            resources:
-              micro:
-                threads: 1
-
     .. group-tab:: Using an inline string
 
         You can embed the yMMSL configuration directly in your test file as a
@@ -100,10 +96,6 @@ two forms.
                   o_f: final
                 executable: python3
                 args: {PROJECT_DIR / "micro.py"}
-
-            resources:
-              micro:
-                threads: 1
             """
 
 Step 2: Use the ``muscle3_tester`` fixture in your test
@@ -158,10 +150,6 @@ Step 2: Use the ``muscle3_tester`` fixture in your test
                   o_f: final
                 executable: python3
                 args: {PROJECT_DIR / "micro.py"}
-
-            resources:
-              micro:
-                threads: 1
             """
 
 

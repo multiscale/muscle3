@@ -1,5 +1,6 @@
 import threading
 from typing import Optional, Tuple
+from typing_extensions import Buffer
 
 
 class SessionState:
@@ -40,7 +41,7 @@ class SessionState:
         self._response_ready = threading.Condition()
 
         self._cur_request = 0
-        self._response: Optional[bytes] = bytes()
+        self._response: Optional[Buffer] = bytes()
 
     def __str__(self) -> str:
         with self._response_ready:
@@ -110,7 +111,7 @@ class SessionState:
 
             return should_process, should_send
 
-    def set_response(self, response: bytes) -> None:
+    def set_response(self, response: Buffer) -> None:
         """Set the response and notify that we're done.
 
         This sets the response and notifies any threads waiting in wait_get_response()
@@ -133,7 +134,7 @@ class SessionState:
             self._response = response
             self._response_ready.notify_all()
 
-    def wait_get_response(self, request_nr: int) -> Optional[bytes]:
+    def wait_get_response(self, request_nr: int) -> Optional[Buffer]:
         """Wait for a response to be available and return it
 
         It shouldn't be possible for anyone to be waiting for response n while response

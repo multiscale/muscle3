@@ -2,6 +2,7 @@ import errno
 import logging
 import time
 from typing import Any, Dict, cast, List, Optional
+from typing_extensions import Buffer
 
 import msgpack
 from ymmsl.v0_2 import (
@@ -99,7 +100,7 @@ class MMPRequestHandler(RequestHandler):
         self._run_dir = run_dir
         self._reference_time = time.monotonic()
 
-    def handle_request(self, request: bytes) -> bytes:
+    def handle_request(self, request: Buffer) -> Buffer:
         """Handles a manager request.
 
         Args:

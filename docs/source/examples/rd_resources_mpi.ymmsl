@@ -8,7 +8,7 @@ description: |
   instead.
 
 resources:
-  macro:
+  reaction_diffusion.macro:
     threads: 1
-  micro:
+  reaction_diffusion.micro:
     mpi_processes: 2

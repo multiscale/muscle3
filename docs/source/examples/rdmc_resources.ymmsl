@@ -1,14 +1,14 @@
 ymmsl_version: v0.2
 
 resources:
-  mc:
+  reaction_diffusion_mc.mc:
     threads: 1
 
-  rr:
+  reaction_diffusion_mc.rr:
     threads: 1
 
-  macro:
+  reaction_diffusion_mc.macro:
     threads: 1
 
-  micro:
+  reaction_diffusion_mc.micro:
     threads: 1

@@ -18,7 +18,7 @@ while [ ! -s manager_location.txt ]; do
 done
 
 # Manually start the macro instance
-DONTPLOT=1 python python/diffusion.py \
+python python/diffusion.py \
         --muscle-manager="$(cat manager_location.txt)" \
         --muscle-instance=macro
 

@@ -44,7 +44,6 @@ class MuscleTester:
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.implementation_tester: Optional[ImplementationTester] = None
         self._exitstack = ExitStack()
-        self._patcher: Optional[Any] = None
 
     def __enter__(self) -> "MuscleTester":
         """Allows usage in a with-statement"""

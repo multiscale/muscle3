@@ -4,7 +4,7 @@ source python/build/venv/bin/activate
 rm -f manager_location.txt
 
 # Start muscle_manager in the background, which starts the micro instance
-DONTPLOT=1 muscle_manager --start-all \
+muscle_manager --start-all \
     --location-file manager_location.txt \
     rd_manual.ymmsl \
     rd_settings.ymmsl \

@@ -213,7 +213,8 @@ def mmp_server_config(yatiml_log_warning):
 @pytest.fixture
 def mmp_server_process(mmp_server_config, tmpdir):
     ymmsl_doc = ymmsl.load(mmp_server_config)
-    yield from make_server_process(ymmsl_doc, Path(tmpdir), False)
+    with make_server_process(ymmsl_doc, Path(tmpdir), False) as addr:
+        yield addr
 
 
 @pytest.fixture
@@ -266,7 +267,8 @@ def mmp_server_config_simple_python(mmp_server_config_simple):
 @pytest.fixture
 def mmp_server_process_simple(mmp_server_config_simple, tmpdir):
     ymmsl_doc = ymmsl.load(mmp_server_config_simple)
-    yield from make_server_process(ymmsl_doc, Path(tmpdir), False)
+    with make_server_process(ymmsl_doc, Path(tmpdir), False) as addr:
+        yield addr
 
 
 @pytest.fixture

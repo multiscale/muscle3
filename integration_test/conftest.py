@@ -11,7 +11,6 @@ import yatiml
 import ymmsl
 
 from libmuscle.manager.manager import Manager
-from libmuscle.manager.run_dir import RunDir
 from libmuscle.pytest.muscle_tester import make_server_process
 
 
@@ -107,8 +106,9 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
     cpp_build_dir = libmuscle_dir / 'cpp' / 'build' / 'libmuscle' / 'tests'
     fortran_build_dir = libmuscle_dir / 'fortran' / 'build' / 'libmuscle' / 'tests'
 
-    with make_server_process(ymmsl_doc, Path(tmpdir), False) as muscle_manager_address:
-        env['MUSCLE_MANAGER'] = muscle_manager_address
+    with ExitStack() as stack:
+        ctx = make_server_process(ymmsl_doc, Path(tmpdir), False)
+        env['MUSCLE_MANAGER'] = stack.enter_context(ctx)
 
         lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
         if 'LD_LIBRARY_PATH' in env:
@@ -118,41 +118,37 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
 
         native_processes = []
         python_processes = []
-        with ExitStack() as stack:
-            # start actors
-            for instance_name, (language, actor, *args) in actors.items():
-                if language == "python":
-                    # start python actor
-                    proc = mp.Process(
-                            target=_python_wrapper,
-                            args=(tmpdir, instance_name, env['MUSCLE_MANAGER'], actor),
-                            name=instance_name)
-                    proc.start()
-                    python_processes.append(proc)
-                    continue
-                elif language == "cpp":
-                    # executable = 'gdb'
-                    # args = ('--batch', '-ex', 'run', '-ex', 'bt', '--args',
-                    #         cpp_build_dir / actor)
-                    executable = cpp_build_dir / actor
-                elif language == "mpicpp":
-                    assert len(args) > 0, "must provide at least number of mpi instances"
-                    executable = 'mpirun'
-                    out_file = tmpdir / f'mpi_{instance_name}.log'
-                    args = ('-np', args[0], mpirun_outfile_arg(), str(out_file),
-                            str(cpp_build_dir / actor), *args[1:])
-                elif language == "fortran":
-                    executable = fortran_build_dir / actor
-                else:
-                    raise ValueError(f"Unknown language: {language}")
-                # start native code actor
-                f_out = stack.enter_context(
-                        (tmpdir / f'{instance_name}_stdout.txt').open('w'))
-                f_err = stack.enter_context(
-                        (tmpdir / f'{instance_name}_stderr.txt').open('w'))
-                native_processes.append(subprocess.Popen(
-                        [str(executable), *args, f'--muscle-instance={instance_name}'],
-                        env=env, stdout=f_out, stderr=f_err))
+        # start actors
+        for instance_name, (language, actor, *args) in actors.items():
+            if language == "python":
+                # start python actor
+                proc = mp.Process(
+                        target=_python_wrapper,
+                        args=(tmpdir, instance_name, env['MUSCLE_MANAGER'], actor),
+                        name=instance_name)
+                proc.start()
+                python_processes.append(proc)
+                continue
+            elif language == "cpp":
+                executable = cpp_build_dir / actor
+            elif language == "mpicpp":
+                assert len(args) > 0, "must provide at least number of mpi instances"
+                executable = 'mpirun'
+                out_file = tmpdir / f'mpi_{instance_name}.log'
+                args = ('-np', args[0], mpirun_outfile_arg(), str(out_file),
+                        str(cpp_build_dir / actor), *args[1:])
+            elif language == "fortran":
+                executable = fortran_build_dir / actor
+            else:
+                raise ValueError(f"Unknown language: {language}")
+            # start native code actor
+            f_out = stack.enter_context(
+                    (tmpdir / f'{instance_name}_stdout.txt').open('w'))
+            f_err = stack.enter_context(
+                    (tmpdir / f'{instance_name}_stderr.txt').open('w'))
+            native_processes.append(subprocess.Popen(
+                    [str(executable), *args, f'--muscle-instance={instance_name}'],
+                    env=env, stdout=f_out, stderr=f_err))
 
         # check results
         for proc in native_processes:

@@ -6,6 +6,7 @@ import multiprocessing as mp
 from unittest.mock import patch
 from typing import Any, Generator, Optional, Tuple, Union
 from multiprocessing.connection import Connection
+from contextlib import ExitStack
 
 import ymmsl.v0_2
 from ymmsl.v0_2 import (
@@ -42,7 +43,7 @@ class MuscleTester:
         self.run_dir = run_dir
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.implementation_tester: Optional[ImplementationTester] = None
-        self._server_ctx: Optional[Any] = None
+        self._exitstack = ExitStack()
         self._patcher: Optional[Any] = None
 
     def __enter__(self) -> "MuscleTester":
@@ -168,15 +169,17 @@ class MuscleTester:
         test_ymmsl_path = self.run_dir / "test_config.ymmsl"
         ymmsl.save(test_ymmsl_config, test_ymmsl_path)
 
-        self._server_ctx = make_server_process(
+        server_ctx = make_server_process(
             test_ymmsl_config,self.run_dir, True)
-        muscle_manager_address = self._server_ctx.__enter__()
-        # monkeypatch ReceiveTimeoutHandler so we can (ab)use it for our timeouts:
-        self._patcher = patch.object(ReceiveTimeoutHandler, 'on_timeout', raise_error)
-        self._patcher.start()
+        muscle_manager_address = self._exitstack.enter_context(server_ctx)
+
+        # patch ReceiveTimeoutHandler so we can (ab)use it for our timeouts:
+        self._exitstack.enter_context(patch.object(ReceiveTimeoutHandler, 'on_timeout',
+                                                    raise_error))
         self.implementation_tester = ImplementationTester(default_timeout,
                                                           muscle_manager_address,
                                                           test_ymmsl_config)
+        self._exitstack.callback(self.implementation_tester.cleanup)
         return self.implementation_tester
 
     def cleanup(self) -> None:
@@ -186,15 +189,8 @@ class MuscleTester:
         :meth:`ReceiveTimeoutHandler.on_timeout`, and shuts down the manager
         subprocess.
         """
-        if self.implementation_tester is not None:
-            self.implementation_tester.cleanup()
-            self.implementation_tester = None
-        if self._patcher is not None:
-            self._patcher.stop()
-            self._patcher = None
-        if self._server_ctx is not None:
-            self._server_ctx.__exit__(None, None, None)
-            self._server_ctx = None
+        self._exitstack.close()
+        self.implementation_tester = None
 
 
 def start_mmp_server(control_pipe: Tuple[Connection, Connection],

@@ -4,7 +4,7 @@ from types import TracebackType
 from pathlib import Path
 import multiprocessing as mp
 from unittest.mock import patch
-from typing import Any, Generator, Optional, Tuple, Union
+from typing import Generator, Optional, Tuple, Union
 from multiprocessing.connection import Connection
 from contextlib import ExitStack
 

@@ -114,7 +114,9 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
         tester.receive('o_f')
     elapsed = time.monotonic() - start
 
-    assert elapsed >= min(_RECONNECT_TIMEOUT, default_timeout), (
-        f"Expected reconnection retries to last at least {_RECONNECT_TIMEOUT} s,"
-        f" and took {elapsed:.1f} s"
+    eps = 0.1
+    max_allowed_time = min(_RECONNECT_TIMEOUT, default_timeout)
+    assert elapsed <= max_allowed_time, (
+        f"Expected reconnection retries to take at most {max_allowed_time:.1f} s "
+        f"(including {eps}s eps), but it took {elapsed:.1f} s"
     )

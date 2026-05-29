@@ -87,7 +87,7 @@ class ImplementationTester:
             # it crashed)
             _logger.error(
                 "ImplementationTester: error while waiting for a message on"
-                " port '%s': %s. Shutting down.", port_name, exc
+                " port '%s'. Shutting down.", port_name
             )
             try:
                 self._instance.error_shutdown(str(exc))

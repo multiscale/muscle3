@@ -1309,7 +1309,22 @@ class Instance:
         if not self.__is_shut_down:
             if message is not None:
                 _logger.critical(message)
-            self._communicator.shutdown()
-            self._deregister()
-            self.__manager.close()
+
+            try:
+                # Attempt graceful component closing and port draining
+                self._communicator.shutdown()
+                self._deregister()
+                self.__manager.close()
+            except RuntimeError:
+                # If a peer is already gone, graceful draining fails.
+                # Execute emergency fallback to clear background threads.
+                self._profiler.shutdown()
+                mpp_server = self._communicator._server
+                post_office = mpp_server._post_office
+                with post_office._outbox_lock:
+                    for outbox in post_office._outboxes.values():
+                        outbox.deposit(b'')
+                for transport_server in mpp_server._servers:
+                    transport_server.close(graceful=False)
+
             self.__is_shut_down = True

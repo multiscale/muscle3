@@ -89,12 +89,8 @@ class ImplementationTester:
                 "ImplementationTester: error while waiting for a message on"
                 " port '%s': %s. Shutting down.", port_name, exc
             )
+            self._instance.error_shutdown(str(exc))
             self._is_shut_down = True
-            try:
-                self._instance.error_shutdown(str(exc))
-            except RuntimeError:
-                # error_shutdown may fail if the peer has already gone away
-                pass
             raise
 
     def cleanup(self) -> None:
@@ -105,26 +101,4 @@ class ImplementationTester:
         """
         if not self._is_shut_down:
             while self._instance.reuse_instance():
-                pass
-        else:
-            # error_shutdown may have failed if the peer was already gone, so the
-            # MPP server threads and/or the profiler thread may still be running.
-            try:
-                self._instance._profiler.shutdown()
-            except Exception:
-                pass
-
-            # The MPP server has handler threads that may be blocked in
-            # PostOffice.get_message() → Outbox.retrieve() → Queue.get(). We unblock
-            # them by depositing an empty sentinel into every outbox, then close
-            # the server without waiting for sessions to drain.
-            try:
-                mpp_server = self._instance._communicator._server
-                post_office = mpp_server._post_office
-                with post_office._outbox_lock:
-                    for outbox in post_office._outboxes.values():
-                        outbox.deposit(b'')
-                for transport_server in mpp_server._servers:
-                    transport_server.close(graceful=False)
-            except Exception:
                 pass

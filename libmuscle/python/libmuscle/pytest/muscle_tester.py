@@ -4,7 +4,7 @@ from types import TracebackType
 from pathlib import Path
 import multiprocessing as mp
 from unittest.mock import patch
-from typing import Callable, Generator, Optional, Tuple, Union
+from typing import Generator, Optional, Tuple, Union
 from multiprocessing.connection import Connection
 from contextlib import ExitStack
 
@@ -25,35 +25,12 @@ from ymmsl.v0_2 import (
 from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
-from libmuscle.mcp.tcp_transport_client import TcpTransportClient, _RECONNECT_TIMEOUT
+from libmuscle.mcp.tcp_transport_client import _RECONNECT_TIMEOUT
 from libmuscle.receive_timeout_handler import ReceiveTimeoutHandler
-from libmuscle.util import Retrier
 
 
 def raise_error(*args: object) -> None:
     raise RuntimeError(args)
-
-
-def make_connection_error_handler(default_timeout: float) -> Callable[..., None]:
-    """Create a replacement for TcpTransportClient._handle_disconnect.
-
-    A lost TCP connection triggers reconnection retries for up to _RECONNECT_TIMEOUT.
-    During testing we want reconnection retries to be bounded by at least 
-    _RECONNECT_TIMEOUT seconds, or default_timeout if that is longer.  The returned
-    handler uses a Retrier initialised with max(_RECONNECT_TIMEOUT, default_timeout) so
-    that it gives up (and raises ConnectionError) once that deadline has been reached.
-    """
-    retrier = Retrier(max(_RECONNECT_TIMEOUT, default_timeout))
-
-    def _handle_disconnect(self: object, _retrier: object) -> None:
-        if retrier.should_give_up():
-            raise ConnectionError(
-                'Connection with the tested component was lost '
-                '(component may have crashed).'
-            )
-        retrier.sleep()
-
-    return _handle_disconnect
 
 
 class MuscleTester:
@@ -199,10 +176,10 @@ class MuscleTester:
         # patch ReceiveTimeoutHandler so we can (ab)use it for our timeouts:
         self._exitstack.enter_context(patch.object(ReceiveTimeoutHandler, 'on_timeout',
                                                     raise_error))
-        self._exitstack.enter_context(patch.object(TcpTransportClient,
-                                                    '_handle_disconnect',
-                                                    make_connection_error_handler(
-                                                        default_timeout)))
+        self._exitstack.enter_context(patch(
+            'libmuscle.mcp.tcp_transport_client._RECONNECT_TIMEOUT',
+            min(_RECONNECT_TIMEOUT, default_timeout)
+            ))
         self.implementation_tester = ImplementationTester(default_timeout,
                                                           muscle_manager_address,
                                                           test_ymmsl_config)

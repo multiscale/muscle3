@@ -92,7 +92,7 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
 
     The test_program registers with MUSCLE3 using start_implementation, then crashes.
     Any subsequent communication attempt should raise a RuntimeError. This RuntimeError
-    should be raised in at least max(_RECONNECT_TIMEOUT, default_timeout) seconds. 
+    should be raised in at least min(_RECONNECT_TIMEOUT, default_timeout) seconds. 
     """
     default_timeout=1.0
     tester = muscle3_tester.start_implementation(
@@ -114,7 +114,7 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
         tester.receive('o_f')
     elapsed = time.monotonic() - start
 
-    assert elapsed >= max(_RECONNECT_TIMEOUT, default_timeout), (
+    assert elapsed >= min(_RECONNECT_TIMEOUT, default_timeout), (
         f"Expected reconnection retries to last at least {_RECONNECT_TIMEOUT} s,"
         f" and took {elapsed:.1f} s"
     )

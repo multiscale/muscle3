@@ -89,7 +89,10 @@ class ImplementationTester:
                 "ImplementationTester: error while waiting for a message on"
                 " port '%s': %s. Shutting down.", port_name, exc
             )
-            self._instance.error_shutdown(str(exc))
+            try:
+                self._instance.error_shutdown(str(exc))
+            except RuntimeError:
+                self._instance.error_shutdown(str(exc), graceful=False)
             self._is_shut_down = True
             raise
 

@@ -267,7 +267,7 @@ class Instance:
         self._api_guard.reuse_instance_done(do_reuse)
         return do_reuse
 
-    def error_shutdown(self, message: str) -> None:
+    def error_shutdown(self, message: str, graceful: bool = True) -> None:
         """Logs an error and shuts down the Instance.
 
         If you detect that something is wrong (invalid input, invalid
@@ -284,8 +284,10 @@ class Instance:
 
         Args:
             message: An error message describing the problem.
+            graceful: If True, attempts to drain pots and synchronize with peers.
+                      If False, bypass blocking waits to drop dead sockets immediately.
         """
-        self.__shutdown(message)
+        self.__shutdown(message, graceful)
 
     def list_settings(self) -> List[str]:
         """List settings by name.
@@ -741,8 +743,12 @@ class Instance:
         self._profiler.record_event(connect_event)
         _logger.info('Received peer locations and base settings')
 
-    def _deregister(self) -> None:
+    def _deregister(self, graceful: bool = True) -> None:
         """Deregister this instance from the manager.
+
+        Args:
+            graceful: If True, attempts to drain pots and synchronize with peers.
+                      If False, bypass blocking waits to drop dead sockets immediately.
         """
         # Make sure we record this even if profiling is disabled, so
         # that we always have register, connect and deregister at
@@ -758,7 +764,9 @@ class Instance:
 
         # This is the last thing we'll profile, so flush messages
         self._profiler.shutdown()
-        self.__manager.deregister_instance()
+
+        if graceful:
+            self.__manager.deregister_instance()
 
         # Remove handler, the manager may be gone at this point so we
         # cannot send it any more log messages.
@@ -1300,31 +1308,22 @@ class Instance:
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
-    def __shutdown(self, message: Optional[str] = None) -> None:
+    def __shutdown(self, message: Optional[str] = None, graceful: bool = True) -> None:
         """Shuts down simulation.
 
         This logs the given error message, if any, communicates to the
         peers that we're shutting down, and deregisters from the manager.
+
+        Args:
+            graceful: If True, attempts to drain pots and synchronize with peers.
+                      If False, bypass blocking waits to drop dead sockets immediately.
         """
         if not self.__is_shut_down:
             if message is not None:
                 _logger.critical(message)
 
-            try:
-                # Attempt graceful component closing and port draining
-                self._communicator.shutdown()
-                self._deregister()
-                self.__manager.close()
-            except RuntimeError:
-                # If a peer is already gone, graceful draining fails.
-                # Execute emergency fallback to clear background threads.
-                self._profiler.shutdown()
-                mpp_server = self._communicator._server
-                post_office = mpp_server._post_office
-                with post_office._outbox_lock:
-                    for outbox in post_office._outboxes.values():
-                        outbox.deposit(b'')
-                for transport_server in mpp_server._servers:
-                    transport_server.close(graceful=False)
+        self._communicator.shutdown(graceful=graceful)
+        self._deregister(graceful=graceful)
+        self.__manager.close()
 
-            self.__is_shut_down = True
+        self.__is_shut_down = True

@@ -184,20 +184,27 @@ class Instance:
         self._f_init_cache: _FInitCacheType = {}
         """Stores pre-received messages for f_init ports"""
 
-        self._register()
-        self._connect()
-        # Note: self._setup_checkpointing() needs to have the ports initialized
-        # so it comes after self._connect()
-        self._setup_checkpointing()
-        # profiling and logging need settings, so come after register_()
-        self._set_local_log_level()
-        self._set_remote_log_level()
-        self._setup_profiling()
-        self._setup_receive_timeout()
-        # MMSFValidator needs a connected port manager, and does some logging
-        self._mmsf_validator = (
-                None if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
-                else MMSFValidator(self._port_manager))
+        try:
+            self._register()
+            self._connect()
+            # Note: self._setup_checkpointing() needs to have the ports initialized
+            # so it comes after self._connect()
+            self._setup_checkpointing()
+            # profiling and logging need settings, so come after register_()
+            self._set_local_log_level()
+            self._set_remote_log_level()
+            self._setup_profiling()
+            self._setup_receive_timeout()
+            # MMSFValidator needs a connected port manager, and does some logging
+            self._mmsf_validator = (
+                    None if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
+                    else MMSFValidator(self._port_manager))
+        except Exception:
+            # Initialisation failed after threads were already started (e.g.
+            # Profiler._communicate and TcpTransportServer.serve_forever).
+            # Shut them down so we don't leave daemon threads running.
+            self.__shutdown()
+            raise
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.

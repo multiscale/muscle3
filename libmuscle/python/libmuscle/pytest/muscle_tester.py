@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import contextmanager
 from types import TracebackType
@@ -26,7 +27,10 @@ from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.mcp.tcp_transport_client import _RECONNECT_TIMEOUT
+from libmuscle.mmp_client import PEER_TIMEOUT
 from libmuscle.receive_timeout_handler import ReceiveTimeoutHandler
+
+logger = logging.getLogger(__name__)
 
 
 def raise_error(*args: object) -> None:
@@ -161,6 +165,11 @@ class MuscleTester:
 
         Returns:
             An ImplementationTester connected to the running manager.
+
+        Raises:
+            RuntimeError: If the :class:`ImplementationTester` could not be
+                initialized, for example because the executable under test does
+                not exist and never registered with the manager.
         """
         ymmsl_config = ymmsl.load_as(ymmsl.v0_2.Configuration, ymmsl_source)
         test_ymmsl_config = self._add_tester_component(ymmsl_config, implementation)
@@ -170,7 +179,7 @@ class MuscleTester:
         ymmsl.save(test_ymmsl_config, test_ymmsl_path)
 
         server_ctx = make_server_process(
-            test_ymmsl_config,self.run_dir, True)
+            test_ymmsl_config, self.run_dir, True)
         muscle_manager_address = self._exitstack.enter_context(server_ctx)
 
         # patch ReceiveTimeoutHandler so we can (ab)use it for our timeouts:
@@ -180,9 +189,21 @@ class MuscleTester:
             'libmuscle.mcp.tcp_transport_client._RECONNECT_TIMEOUT',
             min(_RECONNECT_TIMEOUT, default_timeout)
             ))
-        self.implementation_tester = ImplementationTester(default_timeout,
-                                                          muscle_manager_address,
-                                                          test_ymmsl_config)
+        self._exitstack.enter_context(patch(
+            'libmuscle.mmp_client.PEER_TIMEOUT',
+            min(PEER_TIMEOUT, default_timeout)
+            ))
+        try:
+            self.implementation_tester = ImplementationTester(default_timeout,
+                                                              muscle_manager_address,
+                                                              test_ymmsl_config)
+        except RuntimeError:
+            # ImplementationTester failed to initialise (e.g. the executable
+            # under test does not exist and never registered with the manager).
+            logger.error("Instance to test could not be initialized")
+            self._exitstack.close()
+            raise
+
         self._exitstack.callback(self.implementation_tester.cleanup)
         return self.implementation_tester
 

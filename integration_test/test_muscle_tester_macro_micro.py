@@ -5,6 +5,7 @@ import pytest
 
 from libmuscle import Message
 from libmuscle.mcp.tcp_transport_client import _RECONNECT_TIMEOUT
+from libmuscle.mmp_client import PEER_TIMEOUT
 from libmuscle.pytest import MuscleTester
 
 
@@ -120,3 +121,37 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
         f"Expected reconnection retries to take at most {max_allowed_time:.1f} s "
         f"(including {eps}s eps), but it took {elapsed:.1f} s"
     )
+
+def test_failing_executable(muscle3_tester: MuscleTester) -> None:
+    """Test that a RuntimeError is raised within default_timeout seconds when the
+    executable does not exist and therefore never registers with the manager.
+
+    Because the tester component cannot connect to its peer (which never starts),
+    start_implementation itself should raise a RuntimeError after at most
+    default_timeout seconds.
+    """
+    default_timeout = 1.0
+
+    start = time.monotonic()
+    with pytest.raises(RuntimeError):
+        muscle3_tester.start_implementation(
+            """
+            ymmsl_version: v0.2
+            programs:
+              test_program:
+                ports:
+                  o_f: output
+                executable: pythonX
+            """,
+            "test_program",
+            default_timeout=default_timeout,
+        )
+    elapsed = time.monotonic() - start
+
+    eps = 5
+    max_allowed_time = min(PEER_TIMEOUT, default_timeout) + eps
+    assert elapsed <= max_allowed_time, (
+        f"Expected start_implementation to raise within {max_allowed_time:.1f} s "
+        f"(including {eps}s eps), but it took {elapsed:.1f} s"
+    )
+

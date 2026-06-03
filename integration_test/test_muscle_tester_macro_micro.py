@@ -82,7 +82,7 @@ def test_receive_timeout_raises_error(muscle3_tester: MuscleTester) -> None:
     the tester's receive will time out and raise a RuntimeError.
     """
     tester = muscle3_tester.start_implementation(
-        YMMSL_CODES_DIR / 'micro1.ymmsl', 'micro1', default_timeout=0.1
+        YMMSL_CODES_DIR / 'micro1.ymmsl', 'micro1', default_timeout=0.5
     )
 
     with pytest.raises(RuntimeError):

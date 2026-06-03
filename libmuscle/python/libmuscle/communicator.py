@@ -331,23 +331,22 @@ class Communicator:
 
         return message, mpp_message.saved_until
 
-    def shutdown(self, graceful: bool = True) -> None:
+    def shutdown(self) -> None:
         """Shuts down the Communicator, closing connections.
 
         Args:
             graceful: If True, attempts to drain pots and synchronize with peers.
                       If False, bypass blocking waits to drop dead sockets immediately.
         """
-        if graceful:
-            self._close_ports()
+        self._close_ports()
+        for client in self._clients.values():
+             client.close()
 
-            for client in self._clients.values():
-                client.close()
-
-            wait_event = ProfileEvent(
-                ProfileEventType.DISCONNECT_WAIT, ProfileTimestamp())
-            self._server.wait_for_receivers()
-            self._profiler.record_event(wait_event)
+        wait_event = ProfileEvent(
+            ProfileEventType.DISCONNECT_WAIT, ProfileTimestamp())
+        self._server.wait_for_receivers()
+        self._profiler.record_event(wait_event)
+        self._profiler.record_event(wait_event)
 
         shutdown_event = ProfileEvent(ProfileEventType.SHUTDOWN, ProfileTimestamp())
         self._server.shutdown()
@@ -433,7 +432,10 @@ class Communicator:
         port = self._port_manager.get_port(port_name)
         while port.is_open():
             # TODO: log warning if not a ClosePort
-            self.receive_message(port_name)
+            try:
+                self.receive_message(port_name)
+            except RuntimeError:
+                break
 
     def _drain_incoming_vector_port(self, port_name: str) -> None:
         """Receives messages until a ClosePort is received.

@@ -184,27 +184,26 @@ class Instance:
         self._f_init_cache: _FInitCacheType = {}
         """Stores pre-received messages for f_init ports"""
 
+        self._register()
         try:
-            self._register()
             self._connect()
-            # Note: self._setup_checkpointing() needs to have the ports initialized
-            # so it comes after self._connect()
-            self._setup_checkpointing()
-            # profiling and logging need settings, so come after register_()
-            self._set_local_log_level()
-            self._set_remote_log_level()
-            self._setup_profiling()
-            self._setup_receive_timeout()
-            # MMSFValidator needs a connected port manager, and does some logging
-            self._mmsf_validator = (
-                    None if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
-                    else MMSFValidator(self._port_manager))
         except Exception:
             # Initialisation failed after threads were already started (e.g.
             # Profiler._communicate and TcpTransportServer.serve_forever).
-            # Shut them down so we don't leave daemon threads running.
             self.__shutdown()
             raise
+        # Note: self._setup_checkpointing() needs to have the ports initialized
+        # so it comes after self._connect()
+        self._setup_checkpointing()
+        # profiling and logging need settings, so come after register_()
+        self._set_local_log_level()
+        self._set_remote_log_level()
+        self._setup_profiling()
+        self._setup_receive_timeout()
+        # MMSFValidator needs a connected port manager, and does some logging
+        self._mmsf_validator = (
+                None if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
+                else MMSFValidator(self._port_manager))
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
@@ -750,10 +749,6 @@ class Instance:
 
     def _deregister(self) -> None:
         """Deregister this instance from the manager.
-
-        Args:
-            graceful: If True, attempts to drain pots and synchronize with peers.
-                      If False, bypass blocking waits to drop dead sockets immediately.
         """
         # Make sure we record this even if profiling is disabled, so
         # that we always have register, connect and deregister at
@@ -769,7 +764,6 @@ class Instance:
 
         # This is the last thing we'll profile, so flush messages
         self._profiler.shutdown()
-
         self.__manager.deregister_instance()
 
         # Remove handler, the manager may be gone at this point so we
@@ -1318,13 +1312,10 @@ class Instance:
         This logs the given error message, if any, communicates to the
         peers that we're shutting down, and deregisters from the manager.
         """
-        if self.__is_shut_down:
-            return
-
-        if message is not None:
-            _logger.critical(message)
-
-        self.__is_shut_down = True
-        self._communicator.shutdown()
-        self._deregister()
-        self.__manager.close()
+        if not self.__is_shut_down:
+            if message is not None:
+                _logger.critical(message)
+            self._communicator.shutdown()
+            self._deregister()
+            self.__manager.close()
+            self.__is_shut_down = True

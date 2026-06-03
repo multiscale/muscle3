@@ -333,19 +333,14 @@ class Communicator:
 
     def shutdown(self) -> None:
         """Shuts down the Communicator, closing connections.
-
-        Args:
-            graceful: If True, attempts to drain pots and synchronize with peers.
-                      If False, bypass blocking waits to drop dead sockets immediately.
         """
         self._close_ports()
-        for client in self._clients.values():
-             client.close()
 
-        wait_event = ProfileEvent(
-            ProfileEventType.DISCONNECT_WAIT, ProfileTimestamp())
+        for client in self._clients.values():
+            client.close()
+
+        wait_event = ProfileEvent(ProfileEventType.DISCONNECT_WAIT, ProfileTimestamp())
         self._server.wait_for_receivers()
-        self._profiler.record_event(wait_event)
         self._profiler.record_event(wait_event)
 
         shutdown_event = ProfileEvent(ProfileEventType.SHUTDOWN, ProfileTimestamp())

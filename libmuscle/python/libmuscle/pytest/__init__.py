@@ -18,21 +18,17 @@ def _collect_log_report(run_dir: Path) -> str:
     log_file = run_dir / "muscle3_manager.log"
 
     lines = [f"Contents from: {log_file}", ""]
-
     error_lines = [
         line for line in log_file.read_text().splitlines()
         if " ERROR " in line or " CRITICAL " in line
     ]
-
     if error_lines:
         lines.extend(error_lines)
-
     lines += [
         "",
         "Instance log files can be found in:",
         f"  {run_dir / 'instances'}",
     ]
-
     return "\n".join(lines)
 
 

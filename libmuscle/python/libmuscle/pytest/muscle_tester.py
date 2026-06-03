@@ -190,9 +190,9 @@ class MuscleTester:
             'libmuscle.mmp_client.PEER_TIMEOUT',
             min(PEER_TIMEOUT, default_timeout)
             ))
-        self.implementation_tester = ImplementationTester(default_timeout,
-                                                              muscle_manager_address,
-                                                              test_ymmsl_config)
+        self.implementation_tester = ImplementationTester(default_timeout, 
+                                                          muscle_manager_address,
+                                                          test_ymmsl_config)
         self._exitstack.callback(self.implementation_tester.cleanup)
         return self.implementation_tester
 

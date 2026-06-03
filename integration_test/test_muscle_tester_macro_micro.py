@@ -111,11 +111,11 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
 
     start = time.monotonic()
     with pytest.raises(RuntimeError):
-        tester.receive('o_f')
+        tester.receive('output')
     elapsed = time.monotonic() - start
 
     eps = 5
-    max_allowed_time = min(_RECONNECT_TIMEOUT, default_timeout) + eps
+    max_allowed_time = min(_RECONNECT_TIMEOUT, default_timeout)
     assert elapsed <= max_allowed_time, (
         f"Expected reconnection retries to take at most {max_allowed_time:.1f} s "
         f"(including {eps}s eps), but it took {elapsed:.1f} s"

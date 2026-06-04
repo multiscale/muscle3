@@ -427,10 +427,7 @@ class Communicator:
         port = self._port_manager.get_port(port_name)
         while port.is_open():
             # TODO: log warning if not a ClosePort
-            try:
-                self.receive_message(port_name)
-            except RuntimeError:
-                break
+            self.receive_message(port_name)
 
     def _drain_incoming_vector_port(self, port_name: str) -> None:
         """Receives messages until a ClosePort is received.
@@ -461,10 +458,18 @@ class Communicator:
                     port = self._port_manager.get_port(port_name)
                     if not port.is_connected():
                         continue
-                    if not port.is_vector():
-                        self._drain_incoming_port(port_name)
-                    else:
-                        self._drain_incoming_vector_port(port_name)
+                    try:
+                        if not port.is_vector():
+                            self._drain_incoming_port(port_name)
+                        else:
+                            self._drain_incoming_vector_port(port_name)
+                    except RuntimeError:
+                        _logger.warning(
+                                "Could not drain incoming port '%s': connection with"
+                                " peer was lost. This can happen when a peer crashed"
+                                " after start_implementation (e.g. in a pytest"
+                                " context)." )
+                        break
 
     def _close_ports(self) -> None:
         """Closes all ports.

@@ -95,7 +95,7 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
     Any subsequent communication attempt should raise a RuntimeError. This RuntimeError
     should be raised in at least min(RECONNECT_TIMEOUT, default_timeout) seconds. 
     """
-    default_timeout=1.0
+    default_timeout = 1.0
     tester = muscle3_tester.start_implementation(
         """
         ymmsl_version: v0.2

@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-import os
 
 from libmuscle import Message
 from libmuscle.pytest import MuscleTester

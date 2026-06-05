@@ -25,7 +25,7 @@ from ymmsl.v0_2 import (
 from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
-from libmuscle.mcp.tcp_transport_client import _RECONNECT_TIMEOUT
+from libmuscle.mcp.tcp_transport_client import RECONNECT_TIMEOUT
 from libmuscle.mmp_client import PEER_TIMEOUT
 from libmuscle.receive_timeout_handler import ReceiveTimeoutHandler
 
@@ -183,8 +183,8 @@ class MuscleTester:
         self._exitstack.enter_context(patch.object(ReceiveTimeoutHandler, 'on_timeout',
                                                     raise_error))
         self._exitstack.enter_context(patch(
-            'libmuscle.mcp.tcp_transport_client._RECONNECT_TIMEOUT',
-            min(_RECONNECT_TIMEOUT, default_timeout)
+            'libmuscle.mcp.tcp_transport_client.RECONNECT_TIMEOUT',
+            min(RECONNECT_TIMEOUT, default_timeout)
             ))
         self._exitstack.enter_context(patch(
             'libmuscle.mmp_client.PEER_TIMEOUT',

@@ -16,7 +16,7 @@ _logger = logging.getLogger(__name__)
 
 
 _CONNECT_TIMEOUT = 3.0                      # seconds
-_RECONNECT_TIMEOUT = 60.0                   # seconds
+RECONNECT_TIMEOUT = 60.0                   # seconds
 
 
 class NoPendingResponse(RuntimeError):
@@ -68,7 +68,7 @@ class TcpTransportClient(TransportClient):
             The received response
         """
         self._cur_request += 1
-        retrier = Retrier(_RECONNECT_TIMEOUT)
+        retrier = Retrier(RECONNECT_TIMEOUT)
         deadline = None
         did_timeout = False
 

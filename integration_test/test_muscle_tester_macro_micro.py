@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from libmuscle import Message
-from libmuscle.mcp.tcp_transport_client import _RECONNECT_TIMEOUT
+from libmuscle.mcp.tcp_transport_client import RECONNECT_TIMEOUT
 from libmuscle.mmp_client import PEER_TIMEOUT
 from libmuscle.pytest import MuscleTester
 
@@ -93,7 +93,7 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
 
     The test_program registers with MUSCLE3 using start_implementation, then crashes.
     Any subsequent communication attempt should raise a RuntimeError. This RuntimeError
-    should be raised in at least min(_RECONNECT_TIMEOUT, default_timeout) seconds. 
+    should be raised in at least min(RECONNECT_TIMEOUT, default_timeout) seconds. 
     """
     default_timeout=1.0
     tester = muscle3_tester.start_implementation(
@@ -116,7 +116,7 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
     elapsed = time.monotonic() - start
 
     eps = 5
-    max_allowed_time = min(_RECONNECT_TIMEOUT, default_timeout) + eps
+    max_allowed_time = min(RECONNECT_TIMEOUT, default_timeout) + eps
     assert elapsed <= max_allowed_time, (
         f"Expected reconnection retries to take at most {max_allowed_time:.1f} s "
         f"(including {eps}s eps), but it took {elapsed:.1f} s"

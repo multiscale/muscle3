@@ -465,10 +465,8 @@ class Communicator:
                             self._drain_incoming_vector_port(port_name)
                     except RuntimeError:
                         _logger.warning(
-                                "Could not drain incoming port '%s': connection with"
-                                " peer was lost. This can happen when a peer crashed"
-                                " after start_implementation (e.g. in a pytest"
-                                " context).", port_name)
+                                "Connection with peer '%sa' was lost at the end of the "
+                                "simulation, probably because it crashed.", port_name)
 
     def _close_ports(self) -> None:
         """Closes all ports.

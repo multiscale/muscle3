@@ -185,7 +185,14 @@ class Instance:
         """Stores pre-received messages for f_init ports"""
 
         self._register()
-        self._connect()
+        try:
+            self._connect()
+        except Exception:
+            # Clean up when we cannot connect to our peers. This could happen when peers
+            # are not started (in time) in a pytest context, but we still want to run
+            # more test cases without threads lingering around.
+            self.__shutdown()
+            raise
         # Note: self._setup_checkpointing() needs to have the ports initialized
         # so it comes after self._connect()
         self._setup_checkpointing()

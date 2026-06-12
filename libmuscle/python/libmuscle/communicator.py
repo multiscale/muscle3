@@ -458,10 +458,19 @@ class Communicator:
                     port = self._port_manager.get_port(port_name)
                     if not port.is_connected():
                         continue
-                    if not port.is_vector():
-                        self._drain_incoming_port(port_name)
-                    else:
-                        self._drain_incoming_vector_port(port_name)
+                    try:
+                        if not port.is_vector():
+                            self._drain_incoming_port(port_name)
+                        else:
+                            self._drain_incoming_vector_port(port_name)
+                    except RuntimeError:
+                        peer_endpoints = self._peer_info.get_peer_endpoints(
+                                Identifier(port_name), [])
+                        peer_name = str(peer_endpoints[0].kernel)
+                        _logger.warning(
+                            "Connection with peer '%s' was lost at the end of the "
+                            "simulation, probably because it crashed.", peer_name
+                        )
 
     def _close_ports(self) -> None:
         """Closes all ports.

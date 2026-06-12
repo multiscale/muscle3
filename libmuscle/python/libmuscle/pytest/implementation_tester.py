@@ -72,7 +72,8 @@ class ImplementationTester:
             timeout: Timeout in seconds. If None, uses default_timeout.
 
         Raises:
-            RuntimeError: If a deadlock is detected while waiting for a message.
+            RuntimeError: If a deadlock is detected or the connection to the
+                implementation was lost while waiting for a message.
         """
         if timeout is None:
             timeout = self._default_timeout
@@ -86,10 +87,11 @@ class ImplementationTester:
             # it crashed)
             _logger.error(
                 "ImplementationTester: error while waiting for a message on"
-                " port '%s': %s. Shutting down.", port_name, exc
+                " port '%s'. Shutting down.", port_name
             )
-            self._instance.error_shutdown(str(exc))
+
             self._is_shut_down = True
+            self._instance.error_shutdown(str(exc))
             raise
 
     def cleanup(self) -> None:

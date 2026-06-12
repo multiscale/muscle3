@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.10.0
+
+### Added
+
+- Support for dynamic Oi and S ports
+- Pytest plugin for testing models and model parts in Python using Pytest
+- Resources now default to a single thread
+
+
+### Changed
+
+- In resource declarations, components must now be referenced starting with the name of
+  the top model, like in custom implementations
+
+### Fixed
+
+- Bug in custom_implementations when replacing a submodel
+- Consistency checks now take into account selected model
+
+### Thanks
+
+- Maarten for dynamic Oi and S ports
+- Iris for the Pytest testing support and default resources
+
+### Funding
+
+- The ITER Organization
+
+
 ## 0.9.1
 
 ### Added

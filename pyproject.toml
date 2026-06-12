@@ -10,6 +10,7 @@ readme = "README.rst"
 authors = [
   {name = "Lourens Veen", email = "l.veen@esciencecenter.nl"},
   {name = "Maarten Sebregts", email = "msebregts@ignitioncomputing.com"},
+  {name = "Iris van der Werf", email = "ivanderwerf@ignitioncomputing.com"},
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]

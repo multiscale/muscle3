@@ -2,13 +2,13 @@ from ymmsl.v0_2 import Reference
 
 
 def test_create_topology_store(topology_store) -> None:
-    assert topology_store.conduits[0].sender == 'macro.out'
-    assert topology_store.conduits[0].receiver == 'micro.in'
-    assert topology_store.conduits[1].sender == 'micro.out'
-    assert topology_store.conduits[1].receiver == 'macro.in'
+    assert topology_store.model.conduits[0].sender == 'macro.out'
+    assert topology_store.model.conduits[0].receiver == 'micro.in'
+    assert topology_store.model.conduits[1].sender == 'micro.out'
+    assert topology_store.model.conduits[1].receiver == 'macro.in'
 
-    assert topology_store.kernel_dimensions['macro'] == []
-    assert topology_store.kernel_dimensions['micro'] == [10, 10]
+    assert topology_store.model.components['macro'].multiplicity == []
+    assert topology_store.model.components['micro'].multiplicity == [10, 10]
 
 
 def test_get_conduits(topology_store2) -> None:

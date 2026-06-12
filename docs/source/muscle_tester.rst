@@ -1,0 +1,204 @@
+.. _muscle-tester:
+
+==========================
+Testing your MUSCLE3 model
+==========================
+
+When developing a MUSCLE3 component, it is useful to be able to test it in
+isolation — without having to set up and run the full coupled simulation. The
+:class:`~libmuscle.pytest.MuscleTester` class (together with the
+``muscle3_tester`` pytest fixture) makes this easy: it starts a real MUSCLE3
+manager in the background and connects a *tester component* to all ports of
+your implementation, so you can send and receive messages programmatically from
+within a pytest test. This means you can script the entire testing procedure
+and run it automatically — for example, as part of a continuous integration
+pipeline — so that any time you change your component, you can immediately
+verify that it still behaves correctly, without having to test it by hand.
+
+.. note::
+
+   The testing infrastructure described here relies on `pytest
+   <https://docs.pytest.org>`_. Tests are written as ordinary Python functions
+   whose names start with ``test_``, and pytest discovers and runs them
+   automatically.
+   
+   A *fixture* is a reusable helper that pytest prepares before a test and
+   cleans up afterwards. You request a fixture simply by adding a parameter with
+   the same name to your test function. 
+
+Quick start
+===========
+
+Step 1: Provide the yMMSL configuration for your implementation
+---------------------------------------------------------------
+
+:meth:`~libmuscle.pytest.MuscleTester.start_implementation` accepts the yMMSL in
+two forms.
+
+.. tabs::
+
+    .. group-tab:: Using a Path
+
+        Place the yMMSL file in a ``tests/`` folder at the root of your project, next
+        to your test files:
+
+        .. code-block:: text
+
+            my_project/
+            ├── micro.py
+            ├── micro.ymmsl
+            └── tests/
+                └── test_micro.py
+
+        For example, for a simple micro model that receives a value on ``init`` and
+        sends a result on ``final``:
+
+        .. code-block:: yaml
+            :caption: tests/micro.ymmsl
+
+            ymmsl_version: v0.2
+
+            programs:
+              micro:
+                ports:
+                  f_init: init
+                  o_f: final
+                executable: python3
+                args: /path/to/my_project/micro.py
+
+    .. group-tab:: Using an inline string
+
+        You can embed the yMMSL configuration directly in your test file as a
+        string.
+        
+        Tip: ``Path.resolve()`` converts the path to an absolute path.
+
+        .. code-block:: python
+            :caption: tests/test_micro.py
+
+            from pathlib import Path
+
+            PROJECT_DIR = Path(__file__).resolve().parents[1]
+
+            CONFIG = f"""
+            ymmsl_version: v0.2
+
+            programs:
+              micro:
+                ports:
+                  f_init: init
+                  o_f: final
+                executable: python3
+                args: {PROJECT_DIR / "micro.py"}
+            """
+
+Step 2: Use the ``muscle3_tester`` fixture in your test
+-------------------------------------------------------
+
+.. tabs::
+
+    .. group-tab:: Using a Path
+
+        .. code-block:: python
+            :caption: tests/test_micro.py
+
+            from pathlib import Path
+            from libmuscle import Message
+            from libmuscle.pytest import MuscleTester
+
+            PROJECT_DIR = Path(__file__).resolve().parents[1]
+
+
+            def test_micro_model(muscle3_tester: MuscleTester) -> None:
+                """Test the micro model by acting as the macro."""
+                tester = muscle3_tester.start_implementation(
+                    PROJECT_DIR / "micro.ymmsl", "micro"
+                    )
+
+                # Send a message to the micro model's 'init' port
+                tester.send("init", Message(0.0, 10.0, 42))
+
+                # Receive the result from the micro model's 'final' port
+                reply = tester.receive("final")
+
+                assert reply.data == 42
+
+    .. group-tab:: Using an inline string
+
+        .. code-block:: python
+            :caption: tests/test_micro.py
+
+            from pathlib import Path
+            from libmuscle import Message
+            from libmuscle.pytest import MuscleTester
+
+            PROJECT_DIR = Path(__file__).resolve().parents[1]
+
+            CONFIG = f"""
+            ymmsl_version: v0.2
+
+            programs:
+              micro:
+                ports:
+                  f_init: init
+                  o_f: final
+                executable: python3
+                args: {PROJECT_DIR / "micro.py"}
+            """
+
+
+            def test_micro_model(muscle3_tester: MuscleTester) -> None:
+                """Test the micro model by acting as the macro."""
+                tester = muscle3_tester.start_implementation(CONFIG, "micro")
+
+                # Send a message to the micro model's 'init' port
+                tester.send("init", Message(0.0, 10.0, 42))
+
+                # Receive the result from the micro model's 'final' port
+                reply = tester.receive("final")
+
+                assert reply.data == 42
+
+
+Step 3: Run your tests
+----------------------
+
+Run ``pytest`` from the project root so that all paths resolve correctly:
+
+.. code-block:: bash
+
+    cd my_project
+    pytest
+
+
+Timeouts and error handling
+============================
+
+By default, :meth:`~libmuscle.pytest.MuscleTester.start_implementation`
+uses a 60-second timeout for all receive operations. If the implementation
+does not send a message within that time, a :class:`RuntimeError` is raised
+and the test fails.
+
+You may want to increase the timeout when your implementation performs
+expensive work between messages, for example, a micro-model that runs a
+numerical solver for several minutes per time step. In those cases the default
+60 seconds may expire before the component has had a chance to reply, causing a
+spurious test failure.
+
+Conversely, you may want to decrease the timeout in fast unit tests so
+that a missing ``send`` call is detected quickly rather than making the test
+suite hang for a full minute.
+
+You can adjust this timeout:
+
+.. code-block:: python
+
+    tester = muscle3_tester.start_implementation(
+        PROJECT_DIR / "micro.ymmsl", "micro", default_timeout=5.0
+    )
+
+You can also override the timeout for individual receive calls:
+
+.. code-block:: python
+
+    reply = tester.receive("final", timeout=2.0)

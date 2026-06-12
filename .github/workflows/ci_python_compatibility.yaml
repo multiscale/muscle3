@@ -15,15 +15,15 @@ jobs:
 
     steps:
     - name: Check out the source code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Cache Tox
-      uses: actions/cache@v3
+      uses: actions/cache@v5
       with:
         path: ${{ github.workspace }}/.tox
         key: python-compatibility-${{ matrix.python-version }}-tox

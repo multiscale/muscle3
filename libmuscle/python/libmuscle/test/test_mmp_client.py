@@ -20,7 +20,7 @@ def test_init() -> None:
 def test_connection_fail() -> None:
     ttc = 'libmuscle.mcp.tcp_transport_client'
     with patch(f'{ttc}._CONNECT_TIMEOUT', 0.1):
-        with patch(f'{ttc}._RECONNECT_TIMEOUT', 0.5):
+        with patch(f'{ttc}.RECONNECT_TIMEOUT', 0.5):
             with pytest.raises(ConnectionError):
                 # Port 255 is reserved and privileged, so there's probably
                 # nothing there.
@@ -100,29 +100,38 @@ def test_request_peers(mocked_mmp_client, profile_data) -> None:
 
     result_msg = [
             ResponseType.SUCCESS.value,
-            [['kernel.out', 'other.in']],
+            [['component.out', 'other.in']],
             {'other': [20]},
-            {'other': ['direct:test', 'tcp:test']}]
+            {'other': ['direct:test', 'tcp:test']},
+            [["out", "O_F"]]]
     stub.call.return_value = (
             msgpack.packb(result_msg, use_bin_type=True), profile_data)
 
-    result = client.request_peers()
+    peer_info = client.request_peers()
 
     assert stub.call.called
     sent_msg = msgpack.unpackb(stub.call.call_args[0][0], raw=False)
     assert sent_msg[0] == RequestType.GET_PEERS.value
     assert sent_msg[1] == 'component[13]'
 
-    assert len(result[0]) == 1
-    assert isinstance(result[0][0], Conduit)
-    assert result[0][0].sender == 'kernel.out'
-    assert result[0][0].receiver == 'other.in'
+    assert peer_info._kernel == Reference("component")
+    assert peer_info._index == [13]
 
-    assert isinstance(result[1], dict)
-    assert result[1]['other'] == [20]
+    assert len(peer_info._conduits) == 1
+    assert isinstance(peer_info._conduits[0], Conduit)
+    assert peer_info._conduits[0].sender == 'component.out'
+    assert peer_info._conduits[0].receiver == 'other.in'
 
-    assert isinstance(result[2], dict)
-    assert result[2]['other'] == ['direct:test', 'tcp:test']
+    assert peer_info._incoming_ports == []
+    assert peer_info._outgoing_ports == [Reference("component.out")]
+    assert peer_info._peers == {"component.out": ["other.in"]}
+
+    assert peer_info._peer_dims == {"other": [20]}
+    assert peer_info._peer_locations == {"other": ['direct:test', 'tcp:test']}
+
+    assert len(peer_info._ymmsl_ports) == 1
+    assert peer_info._ymmsl_ports[0].name == "out"
+    assert peer_info._ymmsl_ports[0].operator == Operator.O_F
 
 
 def test_request_peers_error(mocked_mmp_client, profile_data) -> None:

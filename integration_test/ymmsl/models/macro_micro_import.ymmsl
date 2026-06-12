@@ -29,9 +29,9 @@ models:
       micro.final: macro.in
 
 resources:
-  macro:
+  macro_micro.macro:
     threads: 1
-  micro.first:
+  macro_micro.micro.first:
     threads: 1
-  micro.second:
+  macro_micro.micro.second:
     threads: 1

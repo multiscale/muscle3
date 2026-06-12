@@ -112,36 +112,7 @@ PortManager::Ports_ PortManager::ports_from_declared_(PeerInfo const & peer_info
                 throw std::runtime_error(oss.str());
             }
             bool is_connected = peer_info.is_connected(port_name);
-            std::vector<int> port_peer_dims;
-            if (is_connected) {
-                auto peer_ports = peer_info.get_peer_ports(port_name);
-                Reference peer_port = peer_ports.at(0);
-                Reference peer_component(
-                        peer_port.cbegin(), std::prev(peer_port.cend()));
-                port_peer_dims = peer_info.get_peer_dims(peer_component);
-                for (std::size_t i = 1; i < peer_ports.size(); i++) {
-                    peer_port = peer_ports.at(i);
-                    peer_component = Reference(
-                            peer_port.cbegin(), std::prev(peer_port.cend()));
-                    if (port_peer_dims != peer_info.get_peer_dims(peer_component)) {
-                        std::stringstream ss;
-                        ss << "Multicast port \"" << port_name;
-                        ss << "\" is connected to peers with different";
-                        ss << " dimensions. All peer components that this";
-                        ss << " port is connected to must have the same";
-                        ss << " multiplicity. Connected to ports: ";
-                        bool first = true;
-                        for (auto port : peer_ports) {
-                            if (first)
-                                first = false;
-                            else
-                                ss << ", ";
-                            ss << port;
-                        }
-                        throw std::runtime_error(ss.str());
-                    }
-                }
-            }
+            auto port_peer_dims = peer_info.check_peer_dimensions(port_name);
             ports.emplace(port_name, Port(
                     port_name, ppo.first, is_vector, is_connected,
                     index_.size(), port_peer_dims));
@@ -152,38 +123,14 @@ PortManager::Ports_ PortManager::ports_from_declared_(PeerInfo const & peer_info
 
 PortManager::Ports_ PortManager::ports_from_conduits_(PeerInfo const & peer_info) const {
     Ports_ ports;
-
-    auto make_port = [&](
-            Identifier const & port_id, Operator oper,
-            std::vector<int> const & peer_dims) {
-        int ndims = std::max(std::vector<int>::size_type(0u), peer_dims.size() - index_.size());
-        bool is_vector = (ndims == 1);
-        bool is_connected = peer_info.is_connected(port_id);
-        if (std::string(port_id).find("muscle_") != 0u) {
-            ports.emplace(port_id, Port(
-                    port_id, oper, is_vector, is_connected, index_.size(), peer_dims));
-        }
-    };
-
-    for (auto const & port_sender : peer_info.list_incoming_ports()) {
-        std::string port_name(get<0>(port_sender));
-        Reference sending_component(
-                get<1>(port_sender).cbegin(), prev(get<1>(port_sender).cend()));
-
-        auto const & peer_dims = peer_info.get_peer_dims(sending_component);
-        make_port(get<0>(port_sender), Operator::F_INIT, peer_dims);
+    for (auto const & port : peer_info.list_ymmsl_ports()) {
+        bool is_connected = peer_info.is_connected(port.name);
+        auto peer_dims = peer_info.check_peer_dimensions(port.name);
+        bool is_vector = (peer_dims.size() == index_.size() + 1);
+        ports.emplace(port.name, Port(
+                port.name, port.oper, is_vector, is_connected,
+                index_.size(), peer_dims));
     }
-
-    for (auto const & port_recvs : peer_info.list_outgoing_ports()) {
-        std::string port_name(get<0>(port_recvs));
-        Reference receiving_component(
-                get<1>(port_recvs)[0].cbegin(),
-                prev(get<1>(port_recvs)[0].cend()));
-
-        auto const & peer_dims = peer_info.get_peer_dims(receiving_component);
-        make_port(get<0>(port_recvs), Operator::O_F, peer_dims);
-    }
-
     return ports;
 }
 

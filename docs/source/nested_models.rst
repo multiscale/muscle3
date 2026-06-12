@@ -154,8 +154,8 @@ nested models.
 
 The reason for this is that settings may and resources must refer to a specific
 component that they apply to. In a nested simulation, this is done by specifying a
-complete component path, rather than only the local name. For example, here are the
-resource declarations for the nested model:
+complete component path all the way from the top (outermost) model, rather than only the
+local name. For example, here are the resource declarations for the nested model:
 
 .. literalinclude:: examples/nested_rdmc.ymmsl
    :caption: ``docs/source/examples/nested_rdmc.ymmsl, lines 105-116``
@@ -170,8 +170,8 @@ full name consists of all the components we've traversed, separated by periods.
 So, for example, to find the reaction model, we start at the top ``rduq`` model, pick
 the ``uncertain_model`` component, look up its implementation which is the
 ``reaction_diffusion`` model, and inside that find the ``micro`` component, which has
-the reaction model as its implementation. We've passed two components,
-``uncertain_model`` and ``micro``, so the full name is ``uncertain_model.micro``.
+the reaction model as its implementation. We've passed two components below ``rduq``,
+``uncertain_model`` and ``micro``, so the full name is ``rduq.uncertain_model.micro``.
 
 Note that components that are implemented using models, as opposed to programs, don't
 exist at runtime. Any program-implemented components anywhere inside them are
@@ -188,7 +188,8 @@ at run time there is no difference at all between the nested and non-nested vers
 this model.
 
 Settings can be specified as before, except that any settings specific to a particular
-component need to use the full path:
+component need to use the full path (without the top model name this time, although this
+may change in the future for consistency and to enable new features):
 
 .. literalinclude:: examples/nested_rdmc.ymmsl
    :caption: ``docs/source/examples/nested_rdmc.ymmsl, lines 88-102``

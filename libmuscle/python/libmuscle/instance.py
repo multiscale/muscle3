@@ -17,7 +17,6 @@ from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.mmsf_validator import MMSFValidator
-from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import (
@@ -186,7 +185,14 @@ class Instance:
         """Stores pre-received messages for f_init ports"""
 
         self._register()
-        self._connect()
+        try:
+            self._connect()
+        except Exception:
+            # Clean up when we cannot connect to our peers. This could happen when peers
+            # are not started (in time) in a pytest context, but we still want to run
+            # more test cases without threads lingering around.
+            self.__shutdown()
+            raise
         # Note: self._setup_checkpointing() needs to have the ports initialized
         # so it comes after self._connect()
         self._setup_checkpointing()
@@ -733,10 +739,7 @@ class Instance:
         connect_event = ProfileEvent(
                 ProfileEventType.CONNECT, ProfileTimestamp())
 
-        conduits, peer_dims, peer_locations = self.__manager.request_peers()
-
-        peer_info = PeerInfo(
-                self._name, self._index, conduits, peer_dims, peer_locations)
+        peer_info = self.__manager.request_peers()
         self._port_manager.connect_ports(peer_info)
         self._communicator.set_peer_info(peer_info)
 

@@ -11,6 +11,7 @@
 #endif
 
 #include <libmuscle/namespace.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -263,6 +264,14 @@ class Retrier {
         double start_;
         int tries_;
 };
+
+/* Returns the component name of this instance, i.e. without the index.
+ */
+::ymmsl::Reference instance_to_component(::ymmsl::Reference const & instance_name);
+
+/* Returns the index of this instance, i.e. without the component.
+ */
+std::vector<int> instance_indices(::ymmsl::Reference const & instance_name);
 
 
 } }

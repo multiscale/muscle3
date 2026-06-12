@@ -230,7 +230,7 @@ def test_request_peers_fanout(registered_mmp_request_handler):
     result = registered_mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
-    status, conduits, dims, locations = decoded_result
+    status, conduits, dims, locations, ports = decoded_result
     assert status == ResponseType.SUCCESS.value
 
     assert conduits[0][0] == 'macro.out'
@@ -244,6 +244,8 @@ def test_request_peers_fanout(registered_mmp_request_handler):
         assert name == f'micro[{i // 10}][{i % 10}]'
         assert locs == [f'direct:{name}']
 
+    assert ports == [["out", "O_I"], ["in", "S"]]
+
 
 def test_request_peers_fanin(registered_mmp_request_handler):
     request = [RequestType.GET_PEERS.value, 'micro[4][3]']
@@ -252,7 +254,7 @@ def test_request_peers_fanin(registered_mmp_request_handler):
     result = registered_mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
-    status, conduits, dims, locations = decoded_result
+    status, conduits, dims, locations, ports = decoded_result
     assert status == ResponseType.SUCCESS.value
 
     assert conduits[0][0] == 'macro.out'
@@ -264,6 +266,8 @@ def test_request_peers_fanin(registered_mmp_request_handler):
 
     assert locations['macro'] == ['direct:macro']
 
+    assert ports == [["in", "F_INIT"], ["out", "O_F"]]
+
 
 def test_request_peers_bidir(registered_mmp_request_handler2):
     request = [RequestType.GET_PEERS.value, 'meso[2]']
@@ -272,7 +276,7 @@ def test_request_peers_bidir(registered_mmp_request_handler2):
     result = registered_mmp_request_handler2.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
-    status, conduits, dims, locations = decoded_result
+    status, conduits, dims, locations, ports = decoded_result
     assert status == ResponseType.SUCCESS.value
 
     assert conduits[0][0] == 'macro.out'
@@ -293,6 +297,8 @@ def test_request_peers_bidir(registered_mmp_request_handler2):
     for i in range(10):
         assert locations[f'micro[2][{i}]'] == [f'direct:micro[2][{i}]']
 
+    assert ports == [["init", "F_INIT"], ["out", "O_I"], ["in", "S"], ["final", "O_F"]]
+
 
 def test_request_peers_own_conduits(registered_mmp_request_handler2):
     request = [RequestType.GET_PEERS.value, 'macro']
@@ -301,13 +307,15 @@ def test_request_peers_own_conduits(registered_mmp_request_handler2):
     result = registered_mmp_request_handler2.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
-    status, conduits, dims, locations = decoded_result
+    status, conduits, dims, locations, ports = decoded_result
     assert status == ResponseType.SUCCESS.value
 
     assert conduits[0][0] == 'macro.out'
     assert conduits[0][1] == 'meso.init'
     assert conduits[1][0] == 'meso.final'
     assert conduits[1][1] == 'macro.in'
+
+    assert ports == [["out", "O_I"], ["in", "S"]]
 
 
 def test_request_peers_unknown(registered_mmp_request_handler2):

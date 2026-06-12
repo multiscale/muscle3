@@ -122,7 +122,7 @@ struct libmuscle_communicator2 : libmuscle_communicator {
             peer_locations[port_name] = {"tcp:peer2:9001"};
         }
 
-        PeerInfo peer_info("component", {}, conduits, peer_dims, peer_locations);
+        PeerInfo peer_info("component", {}, conduits, peer_dims, peer_locations, {});
         connected_communicator_.set_peer_info(peer_info);
         // disable receive timeouts for these tests, so we can check call
         // signatures: mpp_client->receive.called_with(..., nullptr)

@@ -28,6 +28,7 @@ def mock_peer_info() -> Mock:
     peer_info.is_connected.return_value = True
     peer_info.get_peer_ports.return_value = [Reference("test")]
     peer_info.get_peer_dims.return_value = []
+    peer_info.check_peer_dimensions.return_value = []
     return peer_info
 
 

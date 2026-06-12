@@ -2,11 +2,12 @@ import errno
 import logging
 import time
 from typing import Any, Dict, cast, List, Optional
+from typing_extensions import Buffer
 
 import msgpack
 from ymmsl.v0_2 import (
         CheckpointAtRule, CheckpointRangeRule, CheckpointRule, Checkpoints, Conduit,
-        Configuration, Identifier, Operator, Port, Reference)
+        Configuration, Identifier, Operator, Port, Ports, Reference)
 
 import libmuscle
 from libmuscle.logging import LogLevel
@@ -43,6 +44,14 @@ def decode_port(data: List[str]) -> Port:
 def encode_conduit(conduit: Conduit) -> List[str]:
     """Convert a Conduit to a MsgPack-compatible value."""
     return [str(conduit.sender), str(conduit.receiver)]
+
+
+def encode_ports(ports: Ports) -> list[list[str]]:
+    """Convert a Ports to a MsgPack-compatible value."""
+    return [
+        [str(port_name), ports[port_name].operator.name]
+        for port_name in ports
+    ]
 
 
 def encode_checkpoint_rule(rule: CheckpointRule) -> Dict[str, Any]:
@@ -99,7 +108,7 @@ class MMPRequestHandler(RequestHandler):
         self._run_dir = run_dir
         self._reference_time = time.monotonic()
 
-    def handle_request(self, request: bytes) -> bytes:
+    def handle_request(self, request: Buffer) -> Buffer:
         """Handles a manager request.
 
         Args:
@@ -199,6 +208,7 @@ class MMPRequestHandler(RequestHandler):
                 components
             locations (Dict[str, List[str]]): Locations where peer
                 instances can be contacted.
+            ports (list[list[str]]): Ports declaration from the yMMSL configuration
 
             Or the following values on error:
 
@@ -213,11 +223,13 @@ class MMPRequestHandler(RequestHandler):
         # get info from yMMSL
         instance = Reference(instance_id)
         component = instance.without_trailing_ints()
-        if not self._topology_store.has_kernel(component):
+        if not self._topology_store.has_component(component):
             return [ResponseType.ERROR.value, f'Unknown component {component}']
 
         conduits = self._topology_store.get_conduits(component)
         mmp_conduits = [encode_conduit(c) for c in conduits]
+        ports = self._topology_store.get_ports(component)
+        mmp_ports = encode_ports(ports)
 
         peer_dims = self._topology_store.get_peer_dimensions(component)
         mmp_dimensions = {str(name): dims for name, dims in peer_dims.items()}
@@ -236,7 +248,7 @@ class MMPRequestHandler(RequestHandler):
         _logger.debug(f'Sent peers to {instance_id}')
         return [
                 ResponseType.SUCCESS.value,
-                mmp_conduits, mmp_dimensions, instance_locations]
+                mmp_conduits, mmp_dimensions, instance_locations, mmp_ports]
 
     def _deregister_instance(self, instance_id: str) -> Any:
         """Handle a deregister instance request.

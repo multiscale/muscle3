@@ -7,6 +7,7 @@
 
 #include <libmuscle/logging.hpp>
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/peer_info.hpp>
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/snapshot.hpp>
 #include <libmuscle/timestamp.hpp>
@@ -41,13 +42,7 @@ class MockMMPClient : public MockClass<MockMMPClient> {
 
             // Create some empty return objects for return values with a complex
             // structure, to make it easier to set them in the tests or fixtures.
-            std::vector<::ymmsl::Conduit> conduits;
-            std::unordered_map<::ymmsl::Reference, std::vector<int>> peer_dimensions;
-            std::unordered_map<::ymmsl::Reference, std::vector<std::string>> peer_locations;
-            request_peers.return_value = std::make_tuple(
-                    std::move(conduits),
-                    std::move(peer_dimensions),
-                    std::move(peer_locations));
+            request_peers.return_value = PeerInfo("component", {}, {}, {}, {}, {});
 
             get_settings.return_value = ymmsl::Settings();
 
@@ -94,11 +89,7 @@ class MockMMPClient : public MockClass<MockMMPClient> {
             Val<std::vector<::ymmsl::Port> const &>
             > register_instance;
 
-        MockFun<Val<std::tuple<
-            std::vector<::ymmsl::Conduit>,
-            std::unordered_map<::ymmsl::Reference, std::vector<int>>,
-            std::unordered_map<::ymmsl::Reference, std::vector<std::string>>
-            >>> request_peers;
+        MockFun<Val<PeerInfo>> request_peers;
 
         MockFun<Void> deregister_instance;
 

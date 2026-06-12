@@ -3,6 +3,7 @@ import logging
 import socket
 import time
 from typing import Optional, Tuple
+from typing_extensions import Buffer
 
 from libmuscle.mcp.transport_client import ProfileData, TransportClient, TimeoutHandler
 from libmuscle.mcp.tcp_util import (
@@ -15,7 +16,7 @@ _logger = logging.getLogger(__name__)
 
 
 _CONNECT_TIMEOUT = 3.0                      # seconds
-_RECONNECT_TIMEOUT = 60.0                   # seconds
+RECONNECT_TIMEOUT = 60.0                   # seconds
 
 
 class NoPendingResponse(RuntimeError):
@@ -52,8 +53,8 @@ class TcpTransportClient(TransportClient):
 
         self._reconnect(False)
 
-    def call(self, request: bytes, timeout_handler: Optional[TimeoutHandler] = None
-             ) -> Tuple[bytes, ProfileData]:
+    def call(self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
+             ) -> Tuple[Buffer, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call.
@@ -67,7 +68,7 @@ class TcpTransportClient(TransportClient):
             The received response
         """
         self._cur_request += 1
-        retrier = Retrier(_RECONNECT_TIMEOUT)
+        retrier = Retrier(RECONNECT_TIMEOUT)
         deadline = None
         did_timeout = False
 

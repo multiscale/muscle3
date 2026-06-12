@@ -10,6 +10,7 @@ readme = "README.rst"
 authors = [
   {name = "Lourens Veen", email = "l.veen@esciencecenter.nl"},
   {name = "Maarten Sebregts", email = "msebregts@ignitioncomputing.com"},
+  {name = "Iris van der Werf", email = "ivanderwerf@ignitioncomputing.com"},
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
@@ -31,8 +32,10 @@ dependencies = [
     "msgpack>=1,<2",
     "psutil>=5.0.0",
     "parsimonious",
+    "pytest",
+    "typing_extensions~=4.6",
     "numpy>=1.22",
-    "ymmsl>=0.16.0,<0.17",         # Also in examples requirements.txt
+    "ymmsl>=0.17.0,<0.18",         # Also in examples requirements.txt
     # "ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop",
     "yatiml>=0.12,<0.13",
 ]
@@ -47,6 +50,9 @@ documentation = "https://muscle3.readthedocs.io/"
 [project.scripts]
 muscle_manager = "muscle3.muscle_manager:manage_simulation"
 muscle3 = "muscle3.muscle3:muscle3"
+
+[project.entry-points."pytest11"]
+muscle3 = "libmuscle.pytest"
 
 [tool.setuptools]
 include-package-data = true
@@ -109,7 +115,6 @@ exclude = [
   "docs",
   ".git",
 ]
-include = ["pyproject.toml", "muscle3/**/*.py", "libmuscle/python/libmuscle/**/*.py"]
 # Same as Black
 indent-width = 4
 line-length = 88

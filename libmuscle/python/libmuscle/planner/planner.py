@@ -3,8 +3,8 @@ import logging
 from typing import Dict, Iterable, List, Mapping, Set, Tuple
 
 from ymmsl.v0_2 import (
-        Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
-        Operator, Reference, ResourceRequirements, ThreadedResReq)
+        Component, Configuration, Model, MPICoresResReq,
+        MPINodesResReq, Operator, Reference, ResourceRequirements, ThreadedResReq)
 
 from libmuscle.planner.resources import OnNodeResources, Resources
 from libmuscle.util import instance_indices
@@ -515,13 +515,19 @@ class Planner:
         _logger.debug(f'Planning on resources {self._all_resources}')
 
         # Analyse model
-        model = ModelGraph(configuration.root_model())
-        requirements = configuration.resources
+        root_model = configuration.root_model()
+        model = ModelGraph(root_model)
         programs = configuration.programs
         exclusive = {
                 i for c in model.components() for i in c.instances()
                 if (c.implementation and
                     not programs[c.implementation].can_share_resources)}
+
+        requirements: dict[Reference, ResourceRequirements] = {
+            root_model.name + component.name:
+                configuration.get_resources(root_model.name + component.name)
+            for component in model.components()
+        }
 
         # Allocate
         unallocated_instances = [
@@ -531,7 +537,7 @@ class Planner:
             leftover_instances.clear()
 
             to_allocate = self._sort_instances(
-                    unallocated_instances, requirements)
+                    root_model.name, unallocated_instances, requirements)
 
             for instance in to_allocate:
                 _logger.debug(f'Placing {instance}')
@@ -544,14 +550,14 @@ class Planner:
                     try:
                         result[instance] = self._assign_instance(
                                 instance, component,
-                                requirements[component.name],
+                                requirements[root_model.name + component.name],
                                 conflicting_names, virtual)
                         done = True
                     except InsufficientResourcesAvailable:
                         if virtual:
                             self._expand_resources(
                                     component.name,
-                                    requirements[component.name])
+                                    requirements[root_model.name + component.name])
                         else:
                             leftover_instances.append(instance)
                             done = True
@@ -569,7 +575,7 @@ class Planner:
         return result
 
     def _sort_instances(
-            self, instances: List[Reference],
+            self, model_name: Reference, instances: List[Reference],
             requirements: Mapping[Reference, ResourceRequirements]
             ) -> List[Reference]:
         """Return to be allocated components in optimal order.
@@ -578,12 +584,13 @@ class Planner:
         give decent results most of the time.
 
         Args:
+            model_name: Name of the model we're planning for
             instances: The instances to sort
             requirements: The resource requirements for their
                 components, indexed by name
         """
         cmp_names = map(Reference.without_trailing_ints, instances)
-        reqs = map(lambda n: requirements[n], cmp_names)
+        reqs = map(lambda n: requirements[model_name + n], cmp_names)
         instances_reqs = list(zip(instances, reqs))
         threaded = [
                 (i, r.threads) for i, r in instances_reqs

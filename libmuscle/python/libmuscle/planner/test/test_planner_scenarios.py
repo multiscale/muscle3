@@ -33,8 +33,8 @@ s0_programs = [
 
 
 s0_requirements = [
-        ThreadedResReq(Reference('macro'), 2),
-        ThreadedResReq(Reference('micro'), 2)]
+        ThreadedResReq(Reference('semidetached_macro_micro.macro'), 2),
+        ThreadedResReq(Reference('semidetached_macro_micro.micro'), 2)]
 
 
 s0_config = Configuration(
@@ -76,10 +76,10 @@ s1_programs = [
 
 
 s1_requirements = [
-        ThreadedResReq(Reference('macro'), 4),
-        ThreadedResReq(Reference('micro1'), 2),
-        ThreadedResReq(Reference('micro2'), 2),
-        ThreadedResReq(Reference('micro3'), 1)]
+        ThreadedResReq(Reference('serial_micros.macro'), 4),
+        ThreadedResReq(Reference('serial_micros.micro1'), 2),
+        ThreadedResReq(Reference('serial_micros.micro2'), 2),
+        ThreadedResReq(Reference('serial_micros.micro3'), 1)]
 
 
 s1_config = Configuration(
@@ -117,9 +117,9 @@ s2_programs = [
 
 
 s2_requirements = [
-        ThreadedResReq(Reference('macro'), 1),
-        ThreadedResReq(Reference('micro1'), 3),
-        ThreadedResReq(Reference('micro2'), 2)]
+        ThreadedResReq(Reference('parallel_micros.macro'), 1),
+        ThreadedResReq(Reference('parallel_micros.micro1'), 3),
+        ThreadedResReq(Reference('parallel_micros.micro2'), 2)]
 
 
 s2_config = Configuration(
@@ -160,10 +160,10 @@ s3_programs = [
 
 
 s3_requirements = [
-        ThreadedResReq(Reference('a'), 1),
-        MPICoresResReq(Reference('b1'), 6),
-        ThreadedResReq(Reference('b2'), 2),
-        ThreadedResReq(Reference('c'), 4)]
+        ThreadedResReq(Reference('diamond.a'), 1),
+        MPICoresResReq(Reference('diamond.b1'), 6),
+        ThreadedResReq(Reference('diamond.b2'), 2),
+        ThreadedResReq(Reference('diamond.c'), 4)]
 
 
 s3_config = Configuration(
@@ -208,9 +208,9 @@ s4_programs = [
 
 
 s4_requirements = [
-        ThreadedResReq(Reference('macro1'), 2),
-        ThreadedResReq(Reference('macro2'), 3),
-        ThreadedResReq(Reference('micro'), 3)]
+        ThreadedResReq(Reference('lockstep_macros_micro.macro1'), 2),
+        ThreadedResReq(Reference('lockstep_macros_micro.macro2'), 3),
+        ThreadedResReq(Reference('lockstep_macros_micro.micro'), 3)]
 
 
 s4_config = Configuration(
@@ -258,10 +258,10 @@ s5_programs = [
 
 
 s5_requirements = [
-        ThreadedResReq(Reference('init'), 4),
-        MPICoresResReq(Reference('repeater'), 1),
-        ThreadedResReq(Reference('macro'), 4),
-        ThreadedResReq(Reference('micro'), 4)]
+        ThreadedResReq(Reference('repeater_model.init'), 4),
+        MPICoresResReq(Reference('repeater_model.repeater'), 1),
+        ThreadedResReq(Reference('repeater_model.macro'), 4),
+        ThreadedResReq(Reference('repeater_model.micro'), 4)]
 
 
 s5_config = Configuration(
@@ -305,9 +305,9 @@ s6_programs = [
 
 
 s6_requirements = [
-        ThreadedResReq(Reference('a'), 4),
-        MPICoresResReq(Reference('b'), 16),
-        ThreadedResReq(Reference('tcf'), 1)]
+        ThreadedResReq(Reference('scale_overlap.a'), 4),
+        MPICoresResReq(Reference('scale_overlap.b'), 16),
+        ThreadedResReq(Reference('scale_overlap.tcf'), 1)]
 
 
 s6_config = Configuration(
@@ -362,10 +362,10 @@ s7_programs = [
 
 
 s7_requirements = [
-        ThreadedResReq(Reference('mc'), 1),
-        ThreadedResReq(Reference('init'), 4),
-        ThreadedResReq(Reference('macro'), 4),
-        MPICoresResReq(Reference('micro'), 4)]
+        ThreadedResReq(Reference('monte_carlo_init_macro_micro.mc'), 1),
+        ThreadedResReq(Reference('monte_carlo_init_macro_micro.init'), 4),
+        ThreadedResReq(Reference('monte_carlo_init_macro_micro.macro'), 4),
+        MPICoresResReq(Reference('monte_carlo_init_macro_micro.micro'), 4)]
 
 
 s7_config = Configuration(
@@ -460,9 +460,9 @@ s8_programs = [
 
 
 s8_requirements = [
-        ThreadedResReq(Reference('macro'), 1),
-        ThreadedResReq(Reference('micro1'), 3),
-        ThreadedResReq(Reference('micro2'), 2)]
+        ThreadedResReq(Reference('serial_micros_exclusive_macro.macro'), 1),
+        ThreadedResReq(Reference('serial_micros_exclusive_macro.micro1'), 3),
+        ThreadedResReq(Reference('serial_micros_exclusive_macro.micro2'), 2)]
 
 
 s8_config = Configuration(
@@ -505,11 +505,11 @@ s9_programs = [
 
 
 s9_requirements = [
-        ThreadedResReq(Reference('a'), 1),
-        ThreadedResReq(Reference('b'), 1),
-        ThreadedResReq(Reference('c'), 1),
-        ThreadedResReq(Reference('d'), 1),
-        ThreadedResReq(Reference('e'), 1)]
+        ThreadedResReq(Reference('converging_graph.a'), 1),
+        ThreadedResReq(Reference('converging_graph.b'), 1),
+        ThreadedResReq(Reference('converging_graph.c'), 1),
+        ThreadedResReq(Reference('converging_graph.d'), 1),
+        ThreadedResReq(Reference('converging_graph.e'), 1)]
 
 
 s9_config = Configuration(
@@ -562,10 +562,10 @@ s10_programs = [
 
 
 s10_requirements = [
-        ThreadedResReq(Reference('mc'), 1),
-        ThreadedResReq(Reference('rr'), 1),
-        ThreadedResReq(Reference('macro'), 4),
-        ThreadedResReq(Reference('micro'), 2)]
+        ThreadedResReq(Reference('rdmc_mismatched_resources.mc'), 1),
+        ThreadedResReq(Reference('rdmc_mismatched_resources.rr'), 1),
+        ThreadedResReq(Reference('rdmc_mismatched_resources.macro'), 4),
+        ThreadedResReq(Reference('rdmc_mismatched_resources.micro'), 2)]
 
 
 s10_config = Configuration(
@@ -638,10 +638,10 @@ s11_programs = [
 
 
 s11_requirements = [
-        ThreadedResReq(Reference('macro1'), 4),
-        ThreadedResReq(Reference('micro1'), 4),
-        ThreadedResReq(Reference('macro2'), 4),
-        ThreadedResReq(Reference('micro2'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.macro1'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.micro1'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.macro2'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.micro2'), 4),
         ]
 
 
@@ -678,10 +678,10 @@ s12_model.components[Reference('micro2')].multiplicity = [4]
 
 
 s12_requirements = [
-        ThreadedResReq(Reference('macro1'), 4),
-        ThreadedResReq(Reference('micro1'), 8),
-        ThreadedResReq(Reference('macro2'), 4),
-        ThreadedResReq(Reference('micro2'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.macro1'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.micro1'), 8),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.macro2'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.micro2'), 4),
         ]
 
 
@@ -711,10 +711,10 @@ s13_model.components[Reference('micro2')].multiplicity = [5, 2]
 
 
 s13_requirements = [
-        ThreadedResReq(Reference('macro1'), 4),
-        ThreadedResReq(Reference('micro1'), 2),
-        ThreadedResReq(Reference('macro2'), 4),
-        ThreadedResReq(Reference('micro2'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.macro1'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.micro1'), 2),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.macro2'), 4),
+        ThreadedResReq(Reference('ensemble_of_dispatch_of_macro_micro.micro2'), 4),
         ]
 
 
@@ -800,9 +800,9 @@ s14_programs = [
 
 
 s14_requirements = [
-        ThreadedResReq(Reference('a'), 2),
-        ThreadedResReq(Reference('b'), 2),
-        ThreadedResReq(Reference('c'), 2),
+        ThreadedResReq(Reference('triangle.a'), 2),
+        ThreadedResReq(Reference('triangle.b'), 2),
+        ThreadedResReq(Reference('triangle.c'), 2),
         ]
 
 
@@ -853,7 +853,7 @@ def test_scenarios(scenario: _Scenario) -> None:
         # check that we have enough cores
         component = [
             c for c in model_graph.components()
-            if c.name == cname][0]
+            if c.name == cname[1:]][0]
 
         if isinstance(req, ThreadedResReq):
             for instance in component.instances():

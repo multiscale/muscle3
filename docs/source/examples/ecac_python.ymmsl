@@ -39,9 +39,9 @@ models:
       cache.front_out: macro.state_in
 
 resources:
-  macro:
+  elementary_cellular_automata.macro:
     threads: 1
-  cache:
+  elementary_cellular_automata.cache:
     threads: 1
-  micro:
+  elementary_cellular_automata.micro:
     threads: 1

@@ -114,7 +114,6 @@ exclude = [
   "docs",
   ".git",
 ]
-include = ["pyproject.toml", "muscle3/**/*.py", "libmuscle/python/libmuscle/**/*.py"]
 # Same as Black
 indent-width = 4
 line-length = 88

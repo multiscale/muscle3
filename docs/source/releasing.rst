@@ -67,7 +67,7 @@ Update version
 
 Next, the version should be updated. There is a single version tag in the
 ``VERSION`` file in the root of the repository. On the development branch, the
-version should be set to ``x.y.z-dev``, where ``x.y.z`` is the next expected
+version should be set to ``x.y.z-dev0``, where ``x.y.z`` is the next expected
 version (it's fine if that changes later, e.g. because you end up releasing
 2.0.0 rather than 1.4.0).  On the release branch, it should be set to the number
 of this release of course.
@@ -201,7 +201,7 @@ that we want to have back on the develop branch. So we'll merge it back in:
 
 We use --no-commit to give ourselves a chance to edit the changes before
 committing them. Make sure that README.rst is taken from the develop side,
-and that VERSION is given a new number, probably x.y.{z+1}-dev unless you have big
+and that VERSION is given a new number, probably x.y.{z+1}-dev0 unless you have big
 plans. When done, commit the merge and continue developing.
 
 Update issues

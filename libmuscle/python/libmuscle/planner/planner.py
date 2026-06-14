@@ -721,7 +721,7 @@ class Planner:
                     raise RuntimeError(
                             'Multiple threads per MPI process is not supported'
                             ' yet. Please make an issue on GitHub.')
-                for proc in range(requirements.mpi_processes):
+                for _ in range(requirements.mpi_processes):
                     block = self._assign_thread_block(
                                 free_resources, requirements.threads_per_mpi_process)
                     assignment.by_rank.append(block)
@@ -803,7 +803,7 @@ class Planner:
                         ' make an issue on GitHub.')
 
             free_resources = copy(self._all_resources)
-            for proc in range(requirements.mpi_processes):
+            for _ in range(requirements.mpi_processes):
                 if free_resources.total_cores() < requirements.threads_per_mpi_process:
                     free_resources = copy(self._all_resources)
 

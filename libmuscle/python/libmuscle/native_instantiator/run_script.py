@@ -70,7 +70,7 @@ def impi_prep_resources(resources: ResourceAssignment) -> tuple[str, dict[str, s
     machine_nodes: list[str] = list()
     pin_masks: list[int] = list()
 
-    for rank, res in enumerate(resources.by_rank):
+    for _, res in enumerate(resources.by_rank):
         machine_nodes.append(res.node_name)
         pin_masks.append(sum(1 << c for c in res.hwthreads()))
 

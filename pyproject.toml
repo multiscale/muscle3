@@ -125,11 +125,11 @@ select = [
   "E",
   # Pyflakes
   "F",
-  # TODO: enable these at some point?
   # pyupgrade
   "UP",
   # flake8-bugbear
-  #"B",
+  "B",
+  # TODO: enable these at some point?
   # flake8-simplify
   #"SIM",
   # isort

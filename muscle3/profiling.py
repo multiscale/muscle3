@@ -62,7 +62,7 @@ def plot_resources(performance_file: Path) -> None:
 
     palette = dict()
     next_color = 0
-    for core, data in stats.items():
+    for data in stats.values():
         for instance in data.keys():
             if instance not in palette:
                 palette[instance] = f'C{next_color}'

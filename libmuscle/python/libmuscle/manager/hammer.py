@@ -214,8 +214,8 @@ def glue_partial_conduits(
     for port in ports:
         incoming_conduits = plate.pop_by_receiver(parent_path + port)
         outgoing_conduits = plate.pop_by_sender(parent_path + port)
-        for incoming, (in_cdt, snd_final) in incoming_conduits.items():
-            for outgoing, (out_cdt, recv_final) in outgoing_conduits.items():
+        for in_cdt, snd_final in incoming_conduits.values():
+            for out_cdt, recv_final in outgoing_conduits.values():
                 joined_cdt = Conduit(
                         str(in_cdt.sender), str(out_cdt.receiver),
                         in_cdt.filters + out_cdt.filters)

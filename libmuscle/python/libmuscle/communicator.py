@@ -378,7 +378,7 @@ class Communicator:
         try:
             port = Identifier(port_name)
         except ValueError as e:
-            raise ValueError(f'"{port_name}" is not a valid port name: {e}')
+            raise ValueError(f'"{port_name}" is not a valid port name: {e}') from None
 
         return Endpoint(self._kernel, self._index, port, slot)
 

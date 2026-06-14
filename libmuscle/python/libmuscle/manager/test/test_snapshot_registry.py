@@ -398,7 +398,7 @@ def test_heuristic_rollbacks() -> None:
         snapshot_registry._add_snapshot(comp1, make_snapshot(o_f=[i]))
     assert len(snapshot_registry._snapshots[comp1]) == 4
 
-    for i in range(10):
+    for _ in range(10):
         snapshot_registry._add_snapshot(
                 comp2, make_snapshot(f_i=[1], o_f=[0]))
         snapshot_registry._add_snapshot(

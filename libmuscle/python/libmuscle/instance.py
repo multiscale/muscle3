@@ -102,6 +102,9 @@ _CHECKPOINT_SUPPORT_MASK = (
         InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE)
 
 
+_NO_INSTANCE_FLAGS = InstanceFlags(0)
+
+
 class Instance:
     """Represents a component instance in a MUSCLE3 simulation.
 
@@ -110,7 +113,7 @@ class Instance:
     """
     def __init__(
             self, ports: Optional[dict[Operator, list[str]]] = None,
-            flags: InstanceFlags = InstanceFlags(0)) -> None:
+            flags: InstanceFlags = _NO_INSTANCE_FLAGS) -> None:
         """Create an Instance.
 
         Args:

@@ -268,7 +268,7 @@ def create_run_dir(run_dir: Optional[str], model: v0_2.Model) -> RunDir:
         A RunDir object pointing to the created directory
     """
     if run_dir is None:
-        for i in range(10):
+        for _ in range(10):
             timestamp = datetime.now()
             timestr = timestamp.strftime('%Y%m%d_%H%M%S')
             run_dir_path = Path.cwd() / f'run_{model.name}_{timestr}'

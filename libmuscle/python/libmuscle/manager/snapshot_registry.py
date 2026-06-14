@@ -491,7 +491,11 @@ class SnapshotRegistry(Thread):
                 peer_snapshot.consistent_peers[snapshot.instance].remove(
                         snapshot)
 
-    @cache
+    # The use of @cache on class methods can lead to a memory leak because the global
+    # cache keeps a reference to the instance, keeping it from being garbage collected.
+    # However, there's normally only one instance of this and it lives as long as the
+    # simulation, so that's not a problem here.
+    @cache  # noqa: B019
     def _get_peers(self, instance: Reference) -> frozenset[Reference]:
         """Return the set of peers for the given instance.
 
@@ -506,7 +510,7 @@ class SnapshotRegistry(Thread):
         """
         return frozenset(self._topology_store.get_peer_instances(instance))
 
-    @cache
+    @cache  # noqa: B019
     def _get_connections(self, instance: Reference, peer: Reference
                          ) -> list[_ConnectionType]:
         """Get the list of connections between instance and peer.
@@ -563,7 +567,7 @@ class SnapshotRegistry(Thread):
                         conn_type))
         return connected_ports
 
-    @cache
+    @cache  # noqa: B019
     def _implementation(self, kernel: Reference) -> Optional[Program]:
         """Return the implementation of a kernel.
 

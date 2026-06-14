@@ -109,7 +109,7 @@ class ProfileDatabase:
                 warn(
                         f'Instance {name} seems to have never registered with the'
                         ' manager, and will be omitted from the results. Did it crash'
-                        ' on startup?')
+                        ' on startup?', stacklevel=2)
 
         cur.execute(
                 "SELECT instance, start_time"
@@ -132,7 +132,7 @@ class ProfileDatabase:
                     # as a last resort, just take the last registered event
                     warn(
                             f'Instance {name} did not shut down cleanly, data may be'
-                            ' inaccurate or missing')
+                            ' inaccurate or missing', stacklevel=2)
 
                     cur.execute(
                             "SELECT stop_time"

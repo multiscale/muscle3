@@ -27,4 +27,5 @@ class Timestamp:
         """
         date_time = datetime.datetime.fromtimestamp(self.seconds)
         whole_part = date_time.strftime('%Y-%m-%d %H:%M:%S')
-        return '%s,%03d' % (whole_part, date_time.time().microsecond / 1000)
+        return '%s,%03d' % (    # noqa: UP031
+                whole_part, date_time.time().microsecond / 1000)

@@ -1,4 +1,3 @@
-from typing import List
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 
@@ -8,7 +7,7 @@ import pytest
 
 
 @pytest.fixture
-def index() -> List[int]:
+def index() -> list[int]:
     return [13]
 
 
@@ -21,7 +20,7 @@ def port_manager(index) -> PortManager:
 
 
 @pytest.fixture
-def index2() -> List[int]:
+def index2() -> list[int]:
     return []
 
 

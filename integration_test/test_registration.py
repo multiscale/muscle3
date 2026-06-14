@@ -44,9 +44,9 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
             client.request_peers()
 
     for i in range(5):
-        instance = Reference('micro[{}]'.format(i))
+        instance = Reference(f'micro[{i}]')
         client2 = MMPClient(instance, mmp_server_process)
-        location = 'direct:{}'.format(instance)
+        location = f'direct:{instance}'
         client2.register_instance([location], [])
         client2.close()
 
@@ -57,9 +57,9 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
             client.request_peers()
 
     for i in range(5, 10):
-        instance = Reference('micro[{}]'.format(i))
+        instance = Reference(f'micro[{i}]')
         client2 = MMPClient(instance, mmp_server_process)
-        location = 'direct:{}'.format(instance)
+        location = f'direct:{instance}'
         client2.register_instance([location], [])
         client2.close()
 

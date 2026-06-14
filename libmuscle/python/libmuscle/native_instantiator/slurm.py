@@ -1,10 +1,11 @@
+from collections.abc import Sequence
 from itertools import product
 import logging
 import os
 from parsimonious import Grammar, NodeVisitor
 from parsimonious.nodes import Node
 import subprocess
-from typing import Any, cast, List, Optional, Sequence, Tuple
+from typing import Any, cast, Optional
 
 
 _logger = logging.getLogger(__name__)
@@ -33,8 +34,8 @@ class NREVisitor(NodeVisitor):
     """
     def visit_nre(
             self, node: Node,
-            visited_children: Tuple[List[str], Sequence[Tuple[Any, List[str]]]]
-            ) -> List[str]:
+            visited_children: tuple[list[str], Sequence[tuple[Any, list[str]]]]
+            ) -> list[str]:
         """Return a list of nodes corresponding to the NRE."""
         nodes = visited_children[0].copy()
         for _, more_nodes in visited_children[1]:
@@ -42,17 +43,17 @@ class NREVisitor(NodeVisitor):
         return nodes
 
     def visit_nre_parts(
-            self, node: Node, visited_children: Sequence[Tuple[str, List[str]]]
-            ) -> List[str]:
+            self, node: Node, visited_children: Sequence[tuple[str, list[str]]]
+            ) -> list[str]:
         """Return a list of node ids for the part."""
         fmt = ''.join([c[0] + '{}' for c in visited_children])
         index_lists = [c[1] for c in visited_children]
         return [fmt.format(*idxs) for idxs in product(*index_lists)]
 
     def visit_nre_part(
-            self, node: Node, visited_children: Tuple[
-                str, Sequence[Tuple[Any, List[str], Any]]]
-            ) -> Tuple[str, List[str]]:
+            self, node: Node, visited_children: tuple[
+                str, Sequence[tuple[Any, list[str], Any]]]
+            ) -> tuple[str, list[str]]:
         """Return the identifier part and a list of indexes for the set."""
         identifier = visited_children[0]
         if not visited_children[1]:
@@ -63,8 +64,8 @@ class NREVisitor(NodeVisitor):
 
     def visit_index_set(
             self, node: Node,
-            visited_children: Tuple[List[str], Sequence[Tuple[Any, List[str]]]]
-            ) -> List[str]:
+            visited_children: tuple[list[str], Sequence[tuple[Any, list[str]]]]
+            ) -> list[str]:
         """Return a list of indexes corresponding to the set."""
         indexes = visited_children[0].copy()
         for _, more_indexes in visited_children[1]:
@@ -73,12 +74,12 @@ class NREVisitor(NodeVisitor):
 
     def visit_index_range(
             self, node: Node,
-            visited_children: Tuple[
-                Tuple[int, int],
+            visited_children: tuple[
+                tuple[int, int],
                 Sequence[
-                    Tuple[Any, Tuple[int, int]]
+                    tuple[Any, tuple[int, int]]
                     ]]
-            ) -> List[str]:
+            ) -> list[str]:
         """Return a list of indexes corresponding to the range."""
 
         def format_str(width: int) -> str:
@@ -99,16 +100,16 @@ class NREVisitor(NodeVisitor):
         return node.text
 
     def visit_integer(
-            self, node: Node, visited_children: Sequence[Tuple[int, int]]
-            ) -> Tuple[int, int]:
+            self, node: Node, visited_children: Sequence[tuple[int, int]]
+            ) -> tuple[int, int]:
         """Returns the value of the int, and a field width or -1."""
         return visited_children[0]
 
-    def visit_int(self, node: Node, _: Sequence[Any]) -> Tuple[int, int]:
+    def visit_int(self, node: Node, _: Sequence[Any]) -> tuple[int, int]:
         """Returns the value and a field width of -1."""
         return int(node.text), -1
 
-    def visit_padded_int(self, node: Node, _: Sequence[Any]) -> Tuple[int, int]:
+    def visit_padded_int(self, node: Node, _: Sequence[Any]) -> tuple[int, int]:
         """Returns the value of the int and the field width."""
         return int(node.text), len(node.text)
 
@@ -120,7 +121,7 @@ class NREVisitor(NodeVisitor):
 _nre_visitor = NREVisitor()
 
 
-def parse_slurm_nodelist(s: str) -> List[str]:
+def parse_slurm_nodelist(s: str) -> list[str]:
     """Parse a SLURM node range expression and produce node names.
 
     Exactly what the syntax is for a "node range expression" isn't entirely
@@ -147,7 +148,7 @@ def parse_slurm_nodelist(s: str) -> List[str]:
     corresponding list of node names.
     """
     ast = _node_range_expression_grammar.parse(s)
-    return cast(List[str], _nre_visitor.visit(ast))
+    return cast(list[str], _nre_visitor.visit(ast))
 
 
 _nodes_cores_expression_grammar = Grammar(
@@ -168,8 +169,8 @@ class NCEVisitor(NodeVisitor):
     """
     def visit_nce(
             self, node: Node,
-            visited_children: Tuple[List[int], Sequence[Tuple[Any, List[int]]]]
-            ) -> List[int]:
+            visited_children: tuple[list[int], Sequence[tuple[Any, list[int]]]]
+            ) -> list[int]:
         """Return a list of nodes corresponding to the NRE."""
         nodes_cores = visited_children[0].copy()
         for _, more_nodes_cores in visited_children[1]:
@@ -178,8 +179,8 @@ class NCEVisitor(NodeVisitor):
 
     def visit_nce_run(
             self, node: Node,
-            visited_children: Tuple[int, Sequence[Tuple[Any, int, Any]]]
-            ) -> List[int]:
+            visited_children: tuple[int, Sequence[tuple[Any, int, Any]]]
+            ) -> list[int]:
         """Return a list of core counts produced by this run."""
         num_cores = visited_children[0]
         result = [num_cores]
@@ -190,7 +191,7 @@ class NCEVisitor(NodeVisitor):
         return result
 
     def visit_run_length(
-            self, node: Node, visited_children: Tuple[str, int]) -> int:
+            self, node: Node, visited_children: tuple[str, int]) -> int:
         """Return the number of repetitions."""
         return visited_children[1]
 
@@ -206,7 +207,7 @@ class NCEVisitor(NodeVisitor):
 _nce_visitor = NCEVisitor()
 
 
-def parse_slurm_nodes_cores(s: str) -> List[int]:
+def parse_slurm_nodes_cores(s: str) -> list[int]:
     """Parse a SLURM nodes cores expression and produce node names.
 
     The sbatch documentation page describes the format under
@@ -220,7 +221,7 @@ def parse_slurm_nodes_cores(s: str) -> List[int]:
     node names.
     """
     ast = _nodes_cores_expression_grammar.parse(s)
-    return cast(List[int], _nce_visitor.visit(ast))
+    return cast(list[int], _nce_visitor.visit(ast))
 
 
 class SlurmQuirks:
@@ -249,7 +250,7 @@ class SlurmInfo:
         """
         return 'SLURM_JOB_ID' in os.environ
 
-    def get_nodes(self) -> List[str]:
+    def get_nodes(self) -> list[str]:
         """Get a list of node names from SLURM_JOB_NODELIST.
 
         This inspects SLURM_JOB_NODELIST or SLURM_NODELIST and returns an
@@ -268,7 +269,7 @@ class SlurmInfo:
 
         return parse_slurm_nodelist(nodelist)
 
-    def get_logical_cpus_per_node(self) -> List[int]:
+    def get_logical_cpus_per_node(self) -> list[int]:
         """Return the number of logical CPU cores per node.
 
         This returns a list with the number of cores of each node in the result of
@@ -297,7 +298,7 @@ class SlurmInfo:
                 ' SLURM_NNODES is set. Please create an issue on GitHub with the output'
                 ' of "sbatch --version" on this cluster.')
 
-    def agent_launch_command(self, agent_cmd: List[str], nnodes: int) -> List[str]:
+    def agent_launch_command(self, agent_cmd: list[str], nnodes: int) -> list[str]:
         """Return a command for launching one agent on each node.
 
         Args:
@@ -320,7 +321,7 @@ class SlurmInfo:
 
         return srun_cmd + agent_cmd
 
-    def _slurm_version(self) -> Tuple[int, int]:
+    def _slurm_version(self) -> tuple[int, int]:
         """Obtains current version of SLURM from srun -v.
 
         This returns only the first two numbers, hopefully there won't be any changes in

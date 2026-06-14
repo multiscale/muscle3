@@ -1,6 +1,6 @@
+from collections.abc import Iterable, Mapping
 from copy import copy
 import logging
-from typing import Dict, Iterable, List, Mapping, Set, Tuple
 
 from ymmsl.v0_2 import (
         Component, Configuration, Model, MPICoresResReq,
@@ -13,7 +13,7 @@ from libmuscle.util import instance_indices
 _logger = logging.getLogger(__name__)
 
 
-_PredSuccType = Dict[Component, Set[Tuple[Component, int]]]
+_PredSuccType = dict[Component, set[tuple[Component, int]]]
 
 
 class ModelGraph:
@@ -93,7 +93,7 @@ class ModelGraph:
         """
         return self._model.components[name]
 
-    def successors(self, component: Component) -> Set[Tuple[Component, int]]:
+    def successors(self, component: Component) -> set[tuple[Component, int]]:
         """Return the successors of the given component.
 
         Args:
@@ -109,7 +109,7 @@ class ModelGraph:
         """
         return self._successors[component]
 
-    def predecessors(self, component: Component) -> Set[Tuple[Component, int]]:
+    def predecessors(self, component: Component) -> set[tuple[Component, int]]:
         """Return the predecessors of the given component.
 
         Args:
@@ -125,7 +125,7 @@ class ModelGraph:
         """
         return self._predecessors[component]
 
-    def macros(self, component: Component) -> Set[Tuple[Component, int]]:
+    def macros(self, component: Component) -> set[tuple[Component, int]]:
         """Return the macros of the given component.
 
         These are components that are both before the component's
@@ -140,7 +140,7 @@ class ModelGraph:
         """
         return self._superpreds[component] & self._supersuccs[component]
 
-    def micros(self, component: Component) -> Set[Tuple[Component, int]]:
+    def micros(self, component: Component) -> set[tuple[Component, int]]:
         """Return the micros of the given component.
 
         These are components that are in between the component's
@@ -156,8 +156,8 @@ class ModelGraph:
         return self._subsuccs[component] & self._subpreds[component]
 
     def _propagate(
-            self, from_set: Set[Tuple[Component, int]],
-            to_set: Set[Tuple[Component, int]], shared_dims: int
+            self, from_set: set[tuple[Component, int]],
+            to_set: set[tuple[Component, int]], shared_dims: int
             ) -> None:
         """Propagates from_set into to_set.
 
@@ -201,10 +201,10 @@ class ModelGraph:
                 for c in self._model.components.values()}
 
         todo = set(self._model.components.values())
-        started: Set[Component] = set()
-        doing: Set[Component] = set()
-        finished: Set[Component] = set()
-        done: Set[Component] = set()
+        started: set[Component] = set()
+        doing: set[Component] = set()
+        finished: set[Component] = set()
+        done: set[Component] = set()
         while todo or doing:
             started.clear()
             for component in todo:
@@ -299,10 +299,10 @@ class ModelGraph:
                 for c in self._model.components.values()}
 
         todo = set(self._model.components.values())
-        started: Set[Component] = set()
-        doing: Set[Component] = set()
-        finished: Set[Component] = set()
-        done: Set[Component] = set()
+        started: set[Component] = set()
+        doing: set[Component] = set()
+        finished: set[Component] = set()
+        done: set[Component] = set()
         while todo or doing:
             started.clear()
             for component in todo:
@@ -432,7 +432,7 @@ class ResourceAssignment:
         by_rank: List of OnNodeResources objects containing assigned resources,
         indexed by rank.
     """
-    def __init__(self, by_rank: List[OnNodeResources]) -> None:
+    def __init__(self, by_rank: list[OnNodeResources]) -> None:
         """Create a ResourceAssignment.
 
         Args:
@@ -481,13 +481,13 @@ class Planner:
                     for the planner to use.
         """
         self._all_resources = all_resources
-        self._allocations: Dict[Reference, Resources] = {}
-        self._oversubscribed: Dict[Reference, Resources] = {}
+        self._allocations: dict[Reference, Resources] = {}
+        self._oversubscribed: dict[Reference, Resources] = {}
         self._next_virtual_node = 1
 
     def allocate_all(
             self, configuration: Configuration, virtual: bool = False
-            ) -> Dict[Reference, ResourceAssignment]:
+            ) -> dict[Reference, ResourceAssignment]:
         """Allocates resources for the given components.
 
         Allocation can occur either on a fixed set of available
@@ -510,7 +510,7 @@ class Planner:
         Returns:
             Assigned resources for each instance required by the model.
         """
-        result: Dict[Reference, ResourceAssignment] = {}
+        result: dict[Reference, ResourceAssignment] = {}
 
         _logger.debug(f'Planning on resources {self._all_resources}')
 
@@ -532,7 +532,7 @@ class Planner:
         # Allocate
         unallocated_instances = [
                 i for c in model.components() for i in c.instances()]
-        leftover_instances: List[Reference] = []
+        leftover_instances: list[Reference] = []
         while unallocated_instances:
             leftover_instances.clear()
 
@@ -575,9 +575,9 @@ class Planner:
         return result
 
     def _sort_instances(
-            self, model_name: Reference, instances: List[Reference],
+            self, model_name: Reference, instances: list[Reference],
             requirements: Mapping[Reference, ResourceRequirements]
-            ) -> List[Reference]:
+            ) -> list[Reference]:
         """Return to be allocated components in optimal order.
 
         This is a heuristic, it's not actually optimal but it should
@@ -607,8 +607,8 @@ class Planner:
         return sorted_threaded_instances + sorted_mpi_instances
 
     def _conflicting_names(
-            self, model: ModelGraph, exclusive: Set[Reference],
-            component: Component, instance: Reference) -> Set[Reference]:
+            self, model: ModelGraph, exclusive: set[Reference],
+            component: Component, instance: Reference) -> set[Reference]:
         """Find conflicting components.
 
         This returns the names of instances that cannot share resources
@@ -617,7 +617,7 @@ class Planner:
 
         Args:
             model: Model to search
-            exclusive: List of instances that cannot share resources
+            exclusive: list of instances that cannot share resources
             component: Component to find conflicts for
             instance: Instance (of component) to find conflicts for
         """
@@ -628,7 +628,7 @@ class Planner:
             return idx1[:dims] == idx2[:dims]
 
         def matching_instances(
-                others: Set[Tuple[Component, int]]) -> Set[Reference]:
+                others: set[tuple[Component, int]]) -> set[Reference]:
             return {
                     i for c, d in others for i in c.instances()
                     if indices_match(i, instance, d)}
@@ -655,7 +655,7 @@ class Planner:
         """Adds an extra virtual node to the available resources."""
         taken = True
         while taken:
-            new_node_name = 'node{:06d}'.format(self._next_virtual_node)
+            new_node_name = f'node{self._next_virtual_node:06d}'
             taken = new_node_name in self._all_resources.nodes()
             self._next_virtual_node += 1
 
@@ -682,7 +682,7 @@ class Planner:
     def _assign_instance(
             self, instance: Reference, component: Component,
             requirements: ResourceRequirements,
-            simultaneous_instances: Set[Reference], virtual: bool
+            simultaneous_instances: set[Reference], virtual: bool
             ) -> ResourceAssignment:
         """Allocates resources for the given instance.
 
@@ -791,7 +791,7 @@ class Planner:
                 f'Instance {instance} requires more resources than are available in'
                 ' total. Oversubscribing this instance.')
 
-        res_by_rank: List[OnNodeResources] = list()
+        res_by_rank: list[OnNodeResources] = list()
 
         if isinstance(requirements, ThreadedResReq):
             res_by_rank.append(copy(next(iter(self._all_resources))))

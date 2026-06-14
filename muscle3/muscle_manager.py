@@ -1,10 +1,11 @@
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 import sys
 import textwrap
 from time import sleep
 import traceback
-from typing import cast, List, Optional, Sequence
+from typing import cast, Optional
 from warnings import catch_warnings, filterwarnings
 
 import click
@@ -223,7 +224,7 @@ def load_configuration(paths: Sequence[str]) -> v0_2.Configuration:
         return config_v2
 
 
-def load_files(paths: Sequence[str]) -> List[Document]:
+def load_files(paths: Sequence[str]) -> list[Document]:
     """Load the given files and return a list of documents.
 
     This doesn't convert or merge anything, it just loads the files as they are. If an

@@ -1,13 +1,13 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Flag, auto
-from functools import lru_cache
+from functools import cache
 from itertools import chain, zip_longest
 from operator import attrgetter
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from typing import Dict, Optional, Set, FrozenSet, List, Tuple, TypeVar
+from typing import Optional, TypeVar
 
 from ymmsl.v0_2 import Configuration, Identifier, Program, Reference
 from ymmsl import save
@@ -18,16 +18,16 @@ from libmuscle.snapshot import SnapshotMetadata
 
 _MAX_FILE_EXISTS_CHECK = 100
 
-_SnapshotDictType = Dict[Reference, List["SnapshotNode"]]
-_ConnectionType = Tuple[Identifier, Identifier, "_ConnectionInfo"]
-_QueueItemType = Optional[Tuple[Reference, SnapshotMetadata]]
+_SnapshotdictType = dict[Reference, list["SnapshotNode"]]
+_ConnectionType = tuple[Identifier, Identifier, "_ConnectionInfo"]
+_QueueItemType = Optional[tuple[Reference, SnapshotMetadata]]
 _T = TypeVar("_T")
 
 # this snapshot is used as a placeholder for restarting from scratch
 _NULL_SNAPSHOT = SnapshotMetadata(["Instance start"], 0, 0, None, {}, True, '')
 
 
-def safe_get(lst: List[_T], index: int, default: _T) -> _T:
+def safe_get(lst: list[_T], index: int, default: _T) -> _T:
     """Get an item from the list, returning default when it does not exist.
 
     Args:
@@ -68,7 +68,7 @@ def calc_consistency(
 
 
 def calc_consistency_list(
-        num1: List[int], num2: List[int], first_is_sent: bool,
+        num1: list[int], num2: list[int], first_is_sent: bool,
         num2_is_restart: bool) -> bool:
     """Calculate consistency of message counts.
 
@@ -108,8 +108,8 @@ class SnapshotNode:
     num: int
     instance: Reference
     snapshot: SnapshotMetadata
-    peers: FrozenSet[Reference]
-    consistent_peers: Dict[Reference, List["SnapshotNode"]] = field(
+    peers: frozenset[Reference]
+    consistent_peers: dict[Reference, list["SnapshotNode"]] = field(
             default_factory=dict, repr=False)
 
     def __hash__(self) -> int:
@@ -124,7 +124,7 @@ class SnapshotNode:
     def do_consistency_check(
             self,
             peer_node: "SnapshotNode",
-            connections: List[_ConnectionType]) -> bool:
+            connections: list[_ConnectionType]) -> bool:
         """Check if the snapshot of the peer is consistent with us.
 
         When the peer snapshot is consistent, adds it to our list of consistent
@@ -196,9 +196,9 @@ class SnapshotRegistry(Thread):
         self._topology_store = topology_store
 
         self._queue: Queue[_QueueItemType] = Queue()
-        self._snapshots: _SnapshotDictType = {}
+        self._snapshots: _SnapshotdictType = {}
 
-        self._instances: Set[Reference] = set()
+        self._instances: set[Reference] = set()
         for component in self._model.components.values():
             self._instances.update(component.instances())
 
@@ -269,7 +269,7 @@ class SnapshotRegistry(Thread):
         self._cleanup_snapshots(workflow_snapshots)
 
     def _get_workflow_snapshots(
-            self, snapshot: SnapshotNode) -> List[List[SnapshotNode]]:
+            self, snapshot: SnapshotNode) -> list[list[SnapshotNode]]:
         """Return all workflow snapshots which contain the provided node.
 
         Args:
@@ -289,7 +289,7 @@ class SnapshotRegistry(Thread):
         # to further restrict the sets of snapshots as peer snapshots are
         # selected.
         # First restriction is that the snapshots have to be locally consistent.
-        allowed_snapshots: Dict[Reference, FrozenSet[SnapshotNode]] = {}
+        allowed_snapshots: dict[Reference, frozenset[SnapshotNode]] = {}
         for instance in instances_to_cover:
             allowed_snapshots[instance] = frozenset(
                     i_snapshot
@@ -316,7 +316,7 @@ class SnapshotRegistry(Thread):
         workflow_snapshots = []
         selected_snapshots = [snapshot]
         # This stack stores history of allowed_snapshots and enables roll back
-        stack: List[Dict[Reference, FrozenSet[SnapshotNode]]] = []
+        stack: list[dict[Reference, frozenset[SnapshotNode]]] = []
 
         # Update allowed_snapshots for peers of the selected snapshot
         for peer, snapshots in snapshot.consistent_peers.items():
@@ -383,7 +383,7 @@ class SnapshotRegistry(Thread):
                 return workflow_snapshots
 
     def _write_snapshot_ymmsl(
-            self, selected_snapshots: List[SnapshotNode]) -> None:
+            self, selected_snapshots: list[SnapshotNode]) -> None:
         """Write the snapshot ymmsl file to the snapshot folder.
 
         Args:
@@ -406,7 +406,7 @@ class SnapshotRegistry(Thread):
                            ' exists.')
 
     def _generate_snapshot_config(
-                self, selected_snapshots: List[SnapshotNode], now: datetime
+                self, selected_snapshots: list[SnapshotNode], now: datetime
                 ) -> Configuration:
         """Generate ymmsl configuration for snapshot file
         """
@@ -422,10 +422,10 @@ class SnapshotRegistry(Thread):
         return Configuration(resume=resume, description=description)
 
     def _generate_description(
-            self, selected_snapshots: List[SnapshotNode], now: datetime) -> str:
+            self, selected_snapshots: list[SnapshotNode], now: datetime) -> str:
         """Generate a human-readable description of the workflow snapshot.
         """
-        triggers: Dict[str, List[str]] = {}
+        triggers: dict[str, list[str]] = {}
         component_info = []
         max_instance_len = len('Instance ')
         for node in selected_snapshots:
@@ -454,7 +454,7 @@ class SnapshotRegistry(Thread):
                 '\n'.join(component_table) + '\n')
 
     def _cleanup_snapshots(
-            self, workflow_snapshots: List[List[SnapshotNode]]) -> None:
+            self, workflow_snapshots: list[list[SnapshotNode]]) -> None:
         """Remove all snapshots that are older than the selected snapshots.
 
         Args:
@@ -472,7 +472,7 @@ class SnapshotRegistry(Thread):
                     newest_snapshots[snapshot.instance] = snapshot
 
         # Remove all snapshots that are older than the newest snapshots
-        removed_snapshots: Set[SnapshotNode] = set()
+        removed_snapshots: set[SnapshotNode] = set()
         for snapshot in newest_snapshots.values():
             all_snapshots = self._snapshots[snapshot.instance]
             idx = all_snapshots.index(snapshot)
@@ -491,8 +491,8 @@ class SnapshotRegistry(Thread):
                 peer_snapshot.consistent_peers[snapshot.instance].remove(
                         snapshot)
 
-    @lru_cache(maxsize=None)
-    def _get_peers(self, instance: Reference) -> FrozenSet[Reference]:
+    @cache
+    def _get_peers(self, instance: Reference) -> frozenset[Reference]:
         """Return the set of peers for the given instance.
 
         Note: instance is assumed to contain the full index, not just the
@@ -506,9 +506,9 @@ class SnapshotRegistry(Thread):
         """
         return frozenset(self._topology_store.get_peer_instances(instance))
 
-    @lru_cache(maxsize=None)
+    @cache
     def _get_connections(self, instance: Reference, peer: Reference
-                         ) -> List[_ConnectionType]:
+                         ) -> list[_ConnectionType]:
         """Get the list of connections between instance and peer.
 
         Args:
@@ -533,7 +533,7 @@ class SnapshotRegistry(Thread):
         instance_kernel = instance.without_trailing_ints()
         peer_kernel = peer.without_trailing_ints()
 
-        connected_ports: List[_ConnectionType] = []
+        connected_ports: list[_ConnectionType] = []
         for conduit in self._model.conduits:
             if (conduit.sending_component() == instance_kernel and
                     conduit.receiving_component() == peer_kernel):
@@ -563,7 +563,7 @@ class SnapshotRegistry(Thread):
                         conn_type))
         return connected_ports
 
-    @lru_cache(maxsize=None)
+    @cache
     def _implementation(self, kernel: Reference) -> Optional[Program]:
         """Return the implementation of a kernel.
 

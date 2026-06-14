@@ -22,44 +22,43 @@ def test_crash_cleanup(tmpdir):
     crash_component = cpp_test_dir / 'crashing_component_test'
 
     # make config
-    ymmsl_text = ((
-            'ymmsl_version: v0.2\n'
-            'description: A crash cleanup test model\n'
-            'models:\n'
-            '- name: test_model\n'
-            '  description: A macro-micro model that crashes\n'
-            '  components:\n'
-            '    macro:\n'
-            '      ports:\n'
-            '        o_i: out\n'
-            '        s: in\n'
-            '      description: A crashing macro model\n'
-            '      implementation: crashing_component\n'
-            '    micro:\n'
-            '      ports:\n'
-            '        f_init: init\n'
-            '        o_f: result\n'
-            '      description: A non-crashing micro model\n'
-            '      implementation: component\n'
-            '  conduits:\n'
-            '    macro.out: micro.init\n'
-            '    micro.result: macro.in\n'
-            'programs:\n'
-            '  crashing_component:\n'
-            '    env:\n'
-            '      LD_LIBRARY_PATH: {}\n'
-            '    executable: {}\n'
-            '  component:\n'
-            '    env:\n'
-            '      LD_LIBRARY_PATH: {}\n'
-            '    executable: {}\n'
-            'resources:\n'
-            '  test_model.macro:\n'
-            '    threads: 1\n'
-            '  test_model.micro:\n'
-            '    threads: 1\n'
-            ).format(
-                ld_lib_path, crash_component, ld_lib_path, test_component))
+    ymmsl_text = f"""
+ymmsl_version: v0.2
+description: A crash cleanup test model
+models:
+- name: test_model
+  description: A macro-micro model that crashes
+  components:
+    macro:
+      ports:
+        o_i: out
+        s: in
+      description: A crashing macro model
+      implementation: crashing_component
+    micro:
+      ports:
+        f_init: init
+        o_f: result
+      description: A non-crashing micro model
+      implementation: component
+  conduits:
+    macro.out: micro.init
+    micro.result: macro.in
+programs:
+  crashing_component:
+    env:
+      LD_LIBRARY_PATH: {ld_lib_path}
+    executable: {crash_component}
+  component:
+    env:
+      LD_LIBRARY_PATH: {ld_lib_path}
+    executable: {test_component}
+resources:
+  test_model.macro:
+    threads: 1
+  test_model.micro:
+    threads: 1
+"""
 
     config = ymmsl.load(ymmsl_text)
 

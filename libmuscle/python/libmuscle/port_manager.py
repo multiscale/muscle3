@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from ymmsl.v0_2 import Identifier, Operator
 
@@ -9,7 +9,7 @@ from libmuscle.port import Port
 class PortManager:
     """Manages sending and receiving ports of the current instance."""
     def __init__(
-            self, index: List[int], declared_ports: Optional[Dict[Operator, List[str]]]
+            self, index: list[int], declared_ports: Optional[dict[Operator, list[str]]]
             ) -> None:
         """Create a PortManager.
 
@@ -19,7 +19,7 @@ class PortManager:
                     user when creating the Instance object.
         """
         self._index = index
-        self._ports: Dict[str, Port] = {}
+        self._ports: dict[str, Port] = {}
         self._declared_ports = declared_ports
 
     def connect_ports(self, peer_info: PeerInfo) -> None:
@@ -53,7 +53,7 @@ class PortManager:
         """Returns whether muscle_settings_in is connected."""
         return self._muscle_settings_in.is_connected()
 
-    def list_ports(self) -> Dict[Operator, List[str]]:
+    def list_ports(self) -> dict[Operator, list[str]]:
         """Returns a description of the ports this PortManager has.
 
         Returns:
@@ -61,7 +61,7 @@ class PortManager:
             port names. Operators with no associated ports are not
             included.
         """
-        result: Dict[Operator, List[str]] = {}
+        result: dict[Operator, list[str]] = {}
         for port_name, port in self._ports.items():
             if port.operator not in result:
                 result[port.operator] = list()
@@ -91,7 +91,7 @@ class PortManager:
         return self._ports[port_name]
 
     def restore_message_counts(
-            self, port_message_counts: Dict[str, List[int]]) -> None:
+            self, port_message_counts: dict[str, list[int]]) -> None:
         """Restore message counts on all ports.
 
         Args:
@@ -108,7 +108,7 @@ class PortManager:
                                    ' Have your port definitions changed since'
                                    ' the snapshot was taken?')
 
-    def get_message_counts(self) -> Dict[str, List[int]]:
+    def get_message_counts(self) -> dict[str, list[int]]:
         """Get message counts for all ports on the communicator.
 
         Returns:
@@ -137,7 +137,7 @@ class PortManager:
         return Port(
                 str(msi), Operator.F_INIT, False, False, len(self._index), [])
 
-    def _ports_from_declared(self, peer_info: PeerInfo) -> Dict[str, Port]:
+    def _ports_from_declared(self, peer_info: PeerInfo) -> dict[str, Port]:
         """Derives port definitions from supplied declaration.
 
         Args:
@@ -156,7 +156,7 @@ class PortManager:
                 if port_name.startswith('muscle_'):
                     raise RuntimeError(
                             'Port names starting with "muscle_" are reserved for'
-                            ' MUSCLE, please rename port "{}"'.format(port_name))
+                            f' MUSCLE, please rename port "{port_name}"')
                 port_id = Identifier(port_name)
                 is_connected = peer_info.is_connected(port_id)
                 peer_dims = peer_info.check_peer_dimensions(port_id)
@@ -165,7 +165,7 @@ class PortManager:
                         len(self._index), peer_dims)
         return ports
 
-    def _ports_from_conduits(self, peer_info: PeerInfo) -> Dict[str, Port]:
+    def _ports_from_conduits(self, peer_info: PeerInfo) -> dict[str, Port]:
         """Derives port definitions from the yMMSL configuration.
 
         Args:
@@ -183,7 +183,7 @@ class PortManager:
                 len(self._index), peer_dims)
         return ports
 
-    def _split_port_desc(self, port_desc: str) -> Tuple[str, bool]:
+    def _split_port_desc(self, port_desc: str) -> tuple[str, bool]:
         """Split a port description into its name and dimensionality.
 
         Expects a port description of the form port_name or
@@ -199,8 +199,8 @@ class PortManager:
             port_desc = port_desc[:-2]
 
         if port_desc.endswith('[]'):
-            raise ValueError(('Port description "{}" is invalid: ports can'
-                              ' have at most one dimension.').format(
-                                  port_desc))
+            raise ValueError(
+                    f'Port description "{port_desc}" is invalid: ports can have at most'
+                    ' one dimension.')
 
         return port_desc, is_vector

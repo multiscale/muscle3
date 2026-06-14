@@ -1,7 +1,6 @@
 from random import uniform
 from threading import Condition, Lock, Thread
 import time
-from typing import List
 
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiling import ProfileEvent, ProfileTimestamp
@@ -24,7 +23,7 @@ class Profiler:
 
         self._manager = manager
         self._enabled = True
-        self._events: List[ProfileEvent] = []
+        self._events: list[ProfileEvent] = []
         self._thread = Thread(target=self._communicate, daemon=True)
         self._done_cv = Condition(self._mutex)
         self._done = False

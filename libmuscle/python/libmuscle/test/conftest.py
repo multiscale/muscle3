@@ -1,6 +1,6 @@
 from copy import copy
 import pytest
-from typing import Dict, List, Set, Union
+from typing import Union
 from unittest.mock import patch
 
 from ymmsl.v0_2 import Operator, Reference, Settings
@@ -108,14 +108,14 @@ def core(hwthread_id: int) -> Core:
     return Core(hwthread_id, {hwthread_id})
 
 
-def on_node_resources(node_name: str, cores: Union[int, Set[int]]) -> OnNodeResources:
+def on_node_resources(node_name: str, cores: Union[int, set[int]]) -> OnNodeResources:
     """Helper that defines resources on a node from the name and a CPU core."""
     if isinstance(cores, int):
         cores = {cores}
     return OnNodeResources(node_name, CoreSet([Core(core, {core}) for core in cores]))
 
 
-def resources(node_resources: Dict[str, List[Core]]) -> Resources:
+def resources(node_resources: dict[str, list[Core]]) -> Resources:
     """Helper that defines a Resources from a dict."""
     return Resources([
         OnNodeResources(node_name, CoreSet(cores))

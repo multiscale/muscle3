@@ -21,44 +21,44 @@ def test_base_env(tmpdir):
     test_component = cpp_test_dir / 'component_test'
 
     # make config
-    ymmsl_text = ((
-            'ymmsl_version: v0.2\n'
-            'description: Testing base_env option\n'
-            'models:\n'
-            '- name: test_model\n'
-            '  components:\n'
-            '    macro:\n'
-            '      description: A macro model\n'
-            '      ports:\n'
-            '        o_i: out\n'
-            '        s: in\n'
-            '      implementation: component_clean\n'
-            '    micro:\n'
-            '      description: A micro model\n'
-            '      ports:\n'
-            '        f_init: init\n'
-            '        o_f: result\n'
-            '      implementation: component_login\n'
-            '  conduits:\n'
-            '    macro.out: micro.init\n'
-            '    micro.result: macro.in\n'
-            'programs:\n'
-            '  component_clean:\n'
-            '    base_env: clean\n'
-            '    env:\n'
-            '      +LD_LIBRARY_PATH: :{ld_lib_path}\n'
-            '    executable: {test_component}\n'
-            '  component_login:\n'
-            '    base_env: login\n'
-            '    env:\n'
-            '      +LD_LIBRARY_PATH: :{ld_lib_path}\n'
-            '    executable: {test_component}\n'
-            'resources:\n'
-            '  test_model.macro:\n'
-            '    threads: 1\n'
-            '  test_model.micro:\n'
-            '    threads: 1\n'
-            ).format(ld_lib_path=ld_lib_path, test_component=test_component))
+    ymmsl_text = (f"""
+ymmsl_version: v0.2
+description: Testing base_env option
+models:
+- name: test_model
+  components:
+    macro:
+      description: A macro model
+      ports:
+        o_i: out
+        s: in
+      implementation: component_clean
+    micro:
+      description: A micro model
+      ports:
+        f_init: init
+        o_f: result
+      implementation: component_login
+  conduits:
+    macro.out: micro.init
+    micro.result: macro.in
+programs:
+  component_clean:
+    base_env: clean
+    env:
+      +LD_LIBRARY_PATH: :{ld_lib_path}
+    executable: {test_component}
+  component_login:
+    base_env: login
+    env:
+      +LD_LIBRARY_PATH: :{ld_lib_path}
+    executable: {test_component}
+resources:
+  test_model.macro:
+    threads: 1
+  test_model.micro:
+    threads: 1
+""")
 
     config = ymmsl.load(ymmsl_text)
 

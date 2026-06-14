@@ -127,7 +127,7 @@ select = [
   "F",
   # TODO: enable these at some point?
   # pyupgrade
-  # "UP",
+  "UP",
   # flake8-bugbear
   #"B",
   # flake8-simplify

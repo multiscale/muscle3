@@ -18,9 +18,9 @@ def message():
     return MPPMessage(
             Ref('sender.out'), Ref('receiver.in'),
             None, 0.0, 1.0,
-            bytes(),
+            b'',
             0, 1.0,
-            'testing'.encode('utf-8'))
+            b'testing')
 
 
 def test_create_outbox():

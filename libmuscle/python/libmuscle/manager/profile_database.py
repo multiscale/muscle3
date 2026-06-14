@@ -3,7 +3,7 @@ from pathlib import Path
 import sqlite3
 import threading
 from types import TracebackType
-from typing import Any, cast, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, cast, Optional, Union
 from warnings import warn
 
 
@@ -57,7 +57,7 @@ class ProfileDatabase:
             self._local.conn.close()
 
     def instance_stats(
-            self) -> Tuple[List[str], List[float], List[float], List[float]]:
+            self) -> tuple[list[str], list[float], list[float], list[float]]:
         """Calculate per-instance statistics.
 
         This calculates the total time spent computing, the total time
@@ -176,7 +176,7 @@ class ProfileDatabase:
 
         return complete_instances, run_times, comm_times, wait_times
 
-    def resource_stats(self) -> Dict[str, Dict[str, float]]:
+    def resource_stats(self) -> dict[str, dict[str, float]]:
         """Calculate per-core statistics.
 
         This function calculates the amount of time each core has
@@ -211,7 +211,7 @@ class ProfileDatabase:
         cur.execute("COMMIT")
         cur.close()
 
-        result: Dict[str, Dict[str, float]] = defaultdict(dict)
+        result: dict[str, dict[str, float]] = defaultdict(dict)
         for core, instances in instances_by_core.items():
             for instance in instances:
                 result[core][instance] = active_times[instance]
@@ -397,14 +397,15 @@ class ProfileDatabase:
         def get_sum_count(
                 cur: sqlite3.Cursor, etype: Optional[str], timestamp: str,
                 instance: Optional[str], port: Optional[str],
-                slot: Optional[int]) -> Tuple[int, int, int]:
+                slot: Optional[int]) -> tuple[int, int, int]:
             """Get sums and count for one time point."""
             cur.execute("BEGIN TRANSACTION")
             query = (
-                    "SELECT SUM({0} >> 32), SUM({0} & 0xffffffff), COUNT(*)"
+                    f"SELECT SUM({timestamp} >> 32), SUM({timestamp} & 0xffffffff),"
+                    " COUNT(*)"
                     " FROM all_events"
-                    " WHERE type = ?".format(timestamp))
-            qargs: List[Any] = [etype]
+                    " WHERE type = ?")
+            qargs: list[Any] = [etype]
 
             if instance is not None:
                 query += " AND instance = ?"
@@ -421,7 +422,7 @@ class ProfileDatabase:
             cur.execute(query, qargs)
             result = cur.fetchone()
             cur.execute("COMMIT")
-            return cast(Tuple[int, int, int], result)
+            return cast(tuple[int, int, int], result)
 
         cur = self._get_cursor()
         sum1_high, sum1_low, count1 = get_sum_count(
@@ -455,7 +456,7 @@ class ProfileDatabase:
         return self
 
     def __exit__(
-            self, exc_type: Optional[Type[BaseException]],
+            self, exc_type: Optional[type[BaseException]],
             exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]
             ) -> None:
         self.close()

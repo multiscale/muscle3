@@ -1,6 +1,6 @@
 import sqlite3
 from pathlib import Path
-from typing import cast, List, Optional, Tuple
+from typing import cast, Optional
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -253,7 +253,7 @@ class TimelinePlot:
 
     def get_data(
             self, event_type: str, xmin: float, xmax: float
-            ) -> Tuple[List[int], List[float], List[float], Optional[float]]:
+            ) -> tuple[list[int], list[float], list[float], Optional[float]]:
         """Get events from the database
 
         Returns three lists with instance oid, start time and duration, and

@@ -1,5 +1,5 @@
+from collections.abc import Iterator
 import pytest
-from typing import Iterator
 from pathlib import Path
 
 from libmuscle.pytest.implementation_tester import ImplementationTester

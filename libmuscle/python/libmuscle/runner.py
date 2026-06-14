@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 from time import sleep
 import traceback
-from typing import Callable, Dict, List, Set, Tuple, cast
+from typing import Callable, cast
 from warnings import catch_warnings, filterwarnings
 
 from ymmsl import convert_to, Document
@@ -30,7 +30,7 @@ __all__ = ['run_simulation']
 _logger = logging.getLogger(__name__)
 
 
-Pipe = Tuple[mpc.Connection, mpc.Connection]
+Pipe = tuple[mpc.Connection, mpc.Connection]
 
 
 class MMPServerController:
@@ -103,8 +103,8 @@ def implementation_process(
         instance_id: str, manager_location: str,
         implementation: Callable) -> None:
     prefix_tag = '--muscle-prefix='
-    name_prefix = str()
-    index_prefix: List[int] = []
+    name_prefix = ''
+    index_prefix: list[int] = []
 
     instance = Reference(instance_id)
 
@@ -119,10 +119,10 @@ def implementation_process(
             index = index_prefix + index
 
             # replace it with the combined one
-            sys.argv[i] = '--muscle-instance={}'.format(str(name + index))
+            sys.argv[i] = f'--muscle-instance={name + index}'
             break
     else:
-        sys.argv.append('--muscle-instance={}'.format(instance_id))
+        sys.argv.append(f'--muscle-instance={instance_id}')
 
     for arg in sys.argv:
         if arg.startswith('--muscle-manager='):
@@ -147,7 +147,7 @@ def implementation_process(
         exit(1)
 
 
-def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
+def _parse_prefix(prefix: str) -> tuple[str, list[int]]:
     """Parse a --muscle-prefix argument.
 
     This is like a Reference, but not quite, because the
@@ -163,22 +163,22 @@ def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
     Returns:
         The identifier sequence and the list of ints.
     """
-    def parse_identifier(prefix: str, i: int) -> Tuple[str, int]:
-        name = str()
+    def parse_identifier(prefix: str, i: int) -> tuple[str, int]:
+        name = ''
         while i < len(prefix) and prefix[i] not in '[.':
             name += prefix[i]
             i += 1
         return name, i
 
-    def parse_number(prefix: str, i: int) -> Tuple[int, int]:
-        number = str()
+    def parse_number(prefix: str, i: int) -> tuple[int, int]:
+        number = ''
         while i < len(prefix) and prefix[i] in '0123456789':
             number += prefix[i]
             i += 1
         return int(number), i
 
-    name = str()
-    index: List[int] = []
+    name = ''
+    index: list[int] = []
     i = 0
 
     if i == len(prefix):
@@ -201,14 +201,14 @@ def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
         i += 1
 
     if i < len(prefix):
-        raise ValueError(('Found invalid extra character {} in'
-                          ' --muscle-prefix.').format(prefix[i]))
+        raise ValueError(
+                f'Found invalid extra character {prefix[i]} in --muscle-prefix.')
 
     return name, index
 
 
-def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
-    index: List[int] = []
+def _split_reference(ref: Reference) -> tuple[Reference, list[int]]:
+    index: list[int] = []
     i = 0
     while i < len(ref) and isinstance(ref[i], Identifier):
         i += 1
@@ -222,7 +222,7 @@ def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
 
 
 def run_instances(
-        instances: Dict[str, Callable], manager_location: str) -> None:
+        instances: dict[str, Callable], manager_location: str) -> None:
     """Runs the given instances and waits for them to finish.
 
     The instances are described in a dictionary with their instance
@@ -246,8 +246,8 @@ def run_instances(
         instance_processes.append(process)
 
     # wait for them to finish or one to fail
-    failed_processes: List[mp.Process] = list()
-    done_processes: Set[mp.Process] = set()
+    failed_processes: list[mp.Process] = list()
+    done_processes: set[mp.Process] = set()
     while len(done_processes) < len(instance_processes) and not failed_processes:
         sleep(0.5)
         for instance_process in instance_processes:
@@ -270,8 +270,8 @@ def run_instances(
         log_files = [Path(f'muscle3.{name}.log') for name in failed_names]
         outputs = [last_lines(log_file, 20) for log_file in log_files]
         msg = (
-                'Instance(s) {} failed to shut down cleanly. Here is the final'
-                ' bit of the output:').format(', '.join(failed_names))
+                f'Instance(s) {failed_names} failed to shut down cleanly. Here is the'
+                ' final bit of the output:')
         for name, output in zip(failed_names, outputs):
             msg += '\n ---------- ' + name + ' ----------\n'
             msg += output + '\n'
@@ -281,7 +281,7 @@ def run_instances(
 
 
 def run_simulation(
-        configuration: Document, implementations: Dict[str, Callable]
+        configuration: Document, implementations: dict[str, Callable]
         ) -> None:
     """Runs a simulation with the given configuration and instances.
 
@@ -317,9 +317,9 @@ def run_simulation(
     for ce in model.components.values():
         impl_name = str(ce.implementation)
         if impl_name not in implementations:
-            raise ValueError(('The model specifies an implementation named'
-                              ' "{}" but the given set of implementations does'
-                              ' not include it.').format(impl_name))
+            raise ValueError(
+                    f'The model specifies an implementation named "{impl_name}" but the'
+                    ' given set of implementations does not include it.')
 
         impl_fn = implementations[impl_name]
         if not ce.multiplicity:

@@ -19,7 +19,7 @@ def macro():
 
             # s/b
             msg = instance.receive('in')
-            assert msg.data == 'testing back {}'.format(i)
+            assert msg.data == f'testing back {i}'
             assert msg.timestamp == i * 10.0
 
 

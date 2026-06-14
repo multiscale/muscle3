@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Optional, cast
 from ymmsl.v0_2 import Identifier, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
@@ -71,7 +71,7 @@ class Communicator:
     servers and clients.
     """
     def __init__(
-            self, kernel: Reference, index: List[int],
+            self, kernel: Reference, index: list[int],
             port_manager: PortManager, profiler: Profiler,
             manager: MMPClient) -> None:
         """Create a Communicator.
@@ -98,9 +98,9 @@ class Communicator:
         self._server = MPPServer()
 
         # indexed by remote instance id
-        self._clients: Dict[Reference, MPPClient] = {}
+        self._clients: dict[Reference, MPPClient] = {}
 
-    def get_locations(self) -> List[str]:
+    def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.
 
         These locations are of the form 'protocol:location', where
@@ -150,10 +150,10 @@ class Communicator:
                 should save a snapshot (wallclock time).
         """
         if slot is None:
-            _logger.debug('Sending message on {}'.format(port_name))
-            slot_list: List[int] = []
+            _logger.debug(f'Sending message on {port_name}')
+            slot_list: list[int] = []
         else:
-            _logger.debug('Sending message on {}[{}]'.format(port_name, slot))
+            _logger.debug(f'Sending message on {port_name}[{slot}]')
             slot_list = [slot]
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
@@ -194,7 +194,7 @@ class Communicator:
             self._profiler.record_event(profile_event)
 
     def receive_message(
-            self, port_name: str, slot: Optional[int] = None) -> Tuple[Message, float]:
+            self, port_name: str, slot: Optional[int] = None) -> tuple[Message, float]:
         """Receive a message and attached settings overlay.
 
         Receiving is a blocking operation. This function will contact
@@ -227,11 +227,11 @@ class Communicator:
 
         if slot is None:
             port_and_slot = port_name
-            slot_list: List[int] = []
+            slot_list: list[int] = []
         else:
             port_and_slot = f"{port_name}[{slot}]"
             slot_list = [slot]
-        _logger.debug('Waiting for message on {}'.format(port_and_slot))
+        _logger.debug(f'Waiting for message on {port_and_slot}')
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
@@ -325,9 +325,9 @@ class Communicator:
                                ' from an inconsistent snapshot?')
         port.increment_num_messages(slot)
 
-        _logger.debug('Received message on {}'.format(port_and_slot))
+        _logger.debug(f'Received message on {port_and_slot}')
         if isinstance(mpp_message.data, ClosePort):
-            _logger.debug('Port {} is now closed'.format(port_and_slot))
+            _logger.debug(f'Port {port_and_slot} is now closed')
 
         return message, mpp_message.saved_until
 
@@ -368,7 +368,7 @@ class Communicator:
 
         return self._clients[instance]
 
-    def __get_endpoint(self, port_name: str, slot: List[int]) -> Endpoint:
+    def __get_endpoint(self, port_name: str, slot: list[int]) -> Endpoint:
         """Determines the endpoint on our side.
 
         Args:
@@ -378,8 +378,7 @@ class Communicator:
         try:
             port = Identifier(port_name)
         except ValueError as e:
-            raise ValueError('"{}" is not a valid port name: {}'.format(
-                port_name, e))
+            raise ValueError(f'"{port_name}" is not a valid port name: {e}')
 
         return Endpoint(self._kernel, self._index, port, slot)
 
@@ -395,9 +394,9 @@ class Communicator:
         """
         message = Message(float('inf'), None, ClosePort(), Settings())
         if slot is None:
-            _logger.debug('Closing port {}'.format(port_name))
+            _logger.debug(f'Closing port {port_name}')
         else:
-            _logger.debug('Closing port {}[{}]'.format(port_name, slot))
+            _logger.debug(f'Closing port {port_name}[{slot}]')
         self.send_message(port_name, message, slot)
 
     def _close_outgoing_ports(self) -> None:

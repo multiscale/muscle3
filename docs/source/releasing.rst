@@ -27,7 +27,7 @@ exactly the same process, so it's best to check.
 Check metadata
 --------------
 
-- Check the metadata in ``setup.py``, and update as necessary
+- Check the metadata in ``pyproject.toml``, and update as necessary
 - Check the dependencies, and fix them to an appropriate range of versions
 - Check the copyright date and owners in ``README.rst`` and ``docs/source/conf.py``
   and update as necessary.
@@ -165,12 +165,7 @@ can start using it. To build, use:
 
 .. code-block:: bash
 
-  rm -r ./build
-  python3 setup.py sdist bdist_wheel
-
-Note that we remove ``./build``, which is the build directory setuptools uses,
-to ensure that we're doing a clean build, I've seen some weird mixes of versions
-on occasion so it's better to be safe than sorry.
+  python3 -m build
 
 We can then check to see if everything is okay using
 

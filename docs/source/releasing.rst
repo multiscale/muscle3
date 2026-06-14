@@ -27,7 +27,7 @@ exactly the same process, so it's best to check.
 Check metadata
 --------------
 
-- Check the metadata in ``setup.py``, and update as necessary
+- Check the metadata in ``pyproject.toml``, and update as necessary
 - Check the dependencies, and fix them to an appropriate range of versions
 - Check the copyright date and owners in ``README.rst`` and ``docs/source/conf.py``
   and update as necessary.
@@ -67,7 +67,7 @@ Update version
 
 Next, the version should be updated. There is a single version tag in the
 ``VERSION`` file in the root of the repository. On the development branch, the
-version should be set to ``x.y.z-dev``, where ``x.y.z`` is the next expected
+version should be set to ``x.y.z-dev0``, where ``x.y.z`` is the next expected
 version (it's fine if that changes later, e.g. because you end up releasing
 2.0.0 rather than 1.4.0).  On the release branch, it should be set to the number
 of this release of course.
@@ -84,9 +84,9 @@ shows up:
 
 It may give some warnings about missing references, that's a known issue and
 normally harmless. Next, point your web browser to
-``docs/build/html/index.html`` and verify that the documentation built
-correctly. In particular, the new version number should be in the browser's
-title bar as well as in the blue box on the top left of the page.
+``docs/build/index.html`` and verify that the documentation built
+correctly. Also check that the new version number is in the browser's
+title bar.
 
 Run tests
 ---------
@@ -165,12 +165,7 @@ can start using it. To build, use:
 
 .. code-block:: bash
 
-  rm -r ./build
-  python3 setup.py sdist bdist_wheel
-
-Note that we remove ``./build``, which is the build directory setuptools uses,
-to ensure that we're doing a clean build, I've seen some weird mixes of versions
-on occasion so it's better to be safe than sorry.
+  python3 -m build
 
 We can then check to see if everything is okay using
 
@@ -206,9 +201,8 @@ that we want to have back on the develop branch. So we'll merge it back in:
 
 We use --no-commit to give ourselves a chance to edit the changes before
 committing them. Make sure that README.rst is taken from the develop side,
-CHANGELOG.md comes from the release branch, and VERSION is given a new number,
-probably x.y.{z+1}-dev unless you have big plans. When done, commit the merge
-and continue developing.
+and that VERSION is given a new number, probably x.y.{z+1}-dev0 unless you have big
+plans. When done, commit the merge and continue developing.
 
 Update issues
 -------------

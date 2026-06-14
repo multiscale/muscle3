@@ -1,4 +1,3 @@
-from typing import List
 from typing_extensions import Buffer
 
 import msgpack
@@ -53,13 +52,13 @@ class MPPServer:
     def __init__(self) -> None:
         self._post_office = PostOffice()
         self._handler = MPPRequestHandler(self._post_office)
-        self._servers: List[TransportServer] = []
+        self._servers: list[TransportServer] = []
 
         for server_type in transport_server_types:
             server = server_type(self._handler)
             self._servers.append(server)
 
-    def get_locations(self) -> List[str]:
+    def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.
 
         These locations are of the form 'protocol:location', where

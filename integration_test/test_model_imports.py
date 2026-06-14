@@ -1,7 +1,7 @@
 from multiprocessing import Process
 import os
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Sequence
 
 from muscle3.muscle_manager import _manage_simulation
 

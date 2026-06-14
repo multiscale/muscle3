@@ -1,5 +1,3 @@
-from typing import List
-
 from ymmsl.v0_2 import Identifier, Reference
 
 
@@ -38,8 +36,8 @@ class Endpoint:
     Conduit instances are never actually created in the code, but
     Endpoints are.
     """
-    def __init__(self, kernel: Reference, index: List[int], port: Identifier,
-                 slot: List[int]) -> None:
+    def __init__(self, kernel: Reference, index: list[int], port: Identifier,
+                 slot: list[int]) -> None:
         """Create an Endpoint
 
         Note: kernel is a Reference, not an Identifier, because it may

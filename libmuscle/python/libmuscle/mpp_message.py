@@ -118,7 +118,7 @@ def _data_encoder(obj: Any) -> Any:
     numpy.ndarray objects the user may want to send.
     """
     if isinstance(obj, ClosePort):
-        return msgpack.ExtType(ExtTypeId.CLOSE_PORT, bytes())
+        return msgpack.ExtType(ExtTypeId.CLOSE_PORT, b'')
     elif isinstance(obj, Settings):
         packed_data = msgpack.packb(obj.as_ordered_dict(),
                                     use_bin_type=True)

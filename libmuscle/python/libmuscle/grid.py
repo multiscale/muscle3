@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 
@@ -16,10 +16,10 @@ class Grid:
 
     Attributes:
         array (np.ndarray): An array of data
-        indexes (Optional[List[str]]): The names of the array's indexes.
+        indexes (Optional[list[str]]): The names of the array's indexes.
     """
     def __init__(
-            self, array: np.ndarray, indexes: Optional[List[str]] = None
+            self, array: np.ndarray, indexes: Optional[list[str]] = None
             ) -> None:
         """Creates a Grid object.
 

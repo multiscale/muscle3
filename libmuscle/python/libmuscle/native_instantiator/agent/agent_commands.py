@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
 
 
 class AgentCommand:
@@ -11,8 +10,8 @@ class AgentCommand:
 class StartCommand(AgentCommand):
     name: str
     work_dir: Path
-    args: List[str]
-    env: Dict[str, str]
+    args: list[str]
+    env: dict[str, str]
     stdout: Path
     stderr: Path
 

@@ -1,7 +1,7 @@
 import bisect
 import logging
 import time
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from ymmsl.v0_2 import (
         CheckpointRangeRule, CheckpointAtRule, CheckpointRule, Checkpoints)
@@ -44,7 +44,7 @@ class AtCheckpointTrigger(CheckpointTrigger):
     This triggers at the specified times.
     """
 
-    def __init__(self, at_rules: List[CheckpointAtRule]) -> None:
+    def __init__(self, at_rules: list[CheckpointAtRule]) -> None:
         """Create an "at" checkpoint trigger
 
         Args:
@@ -118,14 +118,14 @@ class CombinedCheckpointTriggers(CheckpointTrigger):
     """Checkpoint trigger based on a combination of "at" and "ranges"
     """
 
-    def __init__(self, checkpoint_rules: List[CheckpointRule]) -> None:
+    def __init__(self, checkpoint_rules: list[CheckpointRule]) -> None:
         """Create a new combined checkpoint trigger from the given rules
 
         Args:
             checkpoint_rules: checkpoint rules (from ymmsl)
         """
-        self._triggers: List[CheckpointTrigger] = []
-        at_rules: List[CheckpointAtRule] = []
+        self._triggers: list[CheckpointTrigger] = []
+        at_rules: list[CheckpointAtRule] = []
         for rule in checkpoint_rules:
             if isinstance(rule, CheckpointAtRule):
                 if rule.at:
@@ -162,7 +162,7 @@ class TriggerManager:
 
     def __init__(self) -> None:
         self._has_checkpoints = False
-        self._last_triggers: List[str] = []
+        self._last_triggers: list[str] = []
         self._cpts_considered_until = float('-inf')
 
     def set_checkpoint_info(
@@ -251,7 +251,7 @@ class TriggerManager:
         self._prevsim = timestamp
         self._nextsim = self._sim.next_checkpoint(timestamp)
 
-    def get_triggers(self) -> List[str]:
+    def get_triggers(self) -> list[str]:
         """Get trigger description(s) for the current reason for checkpointing.
         """
         triggers = self._last_triggers

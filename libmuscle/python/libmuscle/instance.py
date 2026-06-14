@@ -3,7 +3,7 @@ from enum import Flag, auto
 import logging
 import os
 import sys
-from typing import cast, Dict, List, Literal, Optional, Tuple, overload
+from typing import cast, Literal, Optional, overload
 
 from ymmsl.v0_2 import (
         Identifier, Operator, SettingValue, Port, Reference, Settings)
@@ -28,7 +28,7 @@ from libmuscle.util import extract_log_file_location
 _logger = logging.getLogger(__name__)
 
 
-_FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
+_FInitCacheType = dict[tuple[str, Optional[int]], Message]
 
 
 class InstanceFlags(Flag):
@@ -102,6 +102,9 @@ _CHECKPOINT_SUPPORT_MASK = (
         InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE)
 
 
+_NO_INSTANCE_FLAGS = InstanceFlags(0)
+
+
 class Instance:
     """Represents a component instance in a MUSCLE3 simulation.
 
@@ -109,8 +112,8 @@ class Instance:
     to use.
     """
     def __init__(
-            self, ports: Optional[Dict[Operator, List[str]]] = None,
-            flags: InstanceFlags = InstanceFlags(0)) -> None:
+            self, ports: Optional[dict[Operator, list[str]]] = None,
+            flags: InstanceFlags = _NO_INSTANCE_FLAGS) -> None:
         """Create an Instance.
 
         Args:
@@ -294,8 +297,8 @@ class Instance:
         """
         self.__shutdown(message)
 
-    def list_settings(self) -> List[str]:
-        """List settings by name.
+    def list_settings(self) -> list[str]:
+        """list settings by name.
 
         This function returns a list of names of the available settings.
 
@@ -328,18 +331,18 @@ class Instance:
 
     @overload
     def get_setting(self, name: str, typ: Literal['[int]'], *,
-                    default: Optional[List[int]] = None) -> List[int]:
+                    default: Optional[list[int]] = None) -> list[int]:
         ...
 
     @overload
     def get_setting(self, name: str, typ: Literal['[float]'], *,
-                    default: Optional[List[float]] = None) -> List[float]:
+                    default: Optional[list[float]] = None) -> list[float]:
         ...
 
     @overload
     def get_setting(
             self, name: str, typ: Literal['[[float]]'], *,
-            default: Optional[List[List[float]]] = None) -> List[List[float]]:
+            default: Optional[list[list[float]]] = None) -> list[list[float]]:
         ...
 
     @overload
@@ -382,7 +385,7 @@ class Instance:
                 return default
             raise
 
-    def list_ports(self) -> Dict[Operator, List[str]]:
+    def list_ports(self) -> dict[Operator, list[str]]:
         """Returns a description of the ports that this Instance has.
 
         Note that the result has almost the same format as the port
@@ -829,7 +832,7 @@ class Instance:
         """
         id_str = str(self._instance_id)
 
-        logfile = extract_log_file_location('muscle3.{}.log'.format(id_str))
+        logfile = extract_log_file_location(f'muscle3.{id_str}.log')
         if logfile is not None:
             local_handler = logging.FileHandler(str(logfile), mode='w')
             formatter = logging.Formatter(
@@ -971,31 +974,31 @@ class Instance:
                     raise RuntimeError(err_msg)
             else:
                 if port.is_connected():
-                    err_msg = (('Tried to receive twice on the same'
-                                ' port "{}", that\'s not possible.'
-                                ' Did you forget to call'
-                                ' reuse_instance() in your reuse loop?'
-                                ).format(port_name))
+                    err_msg = ('Tried to receive twice on the same'
+                               f' port "{port_name}", that\'s not possible.'
+                               ' Did you forget to call'
+                               ' reuse_instance() in your reuse loop?'
+                               )
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
                 else:
                     if default is not None:
                         return default
-                    err_msg = (('Tried to receive on port "{}",'
-                                ' which is not connected, and no'
-                                ' default value was given. Please'
-                                ' connect this port!').format(port_name))
+                    err_msg = (f'Tried to receive on port "{port_name}",'
+                               ' which is not connected, and no'
+                               ' default value was given. Please'
+                               ' connect this port!')
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
 
         else:
             if not port.is_connected():
                 if default is None:
-                    raise RuntimeError(('Tried to receive on port "{}", which is'
-                                        ' disconnected, and no default value was'
+                    raise RuntimeError(f'Tried to receive on port "{port_name}", which'
+                                        ' is disconnected, and no default value was'
                                         ' given. Either specify a default, or'
                                         ' connect a sending component to this'
-                                        ' port.').format(port_name))
+                                        ' port.')
                 else:
                     _logger.debug(
                             f'No message received on {port_name} as it is not'
@@ -1005,9 +1008,8 @@ class Instance:
             else:
                 msg, saved_until = self._communicator.receive_message(port_name, slot)
                 if not port.is_open(slot):
-                    err_msg = (('Port {} was closed while trying to'
-                                ' receive on it, did the peer crash?'
-                                ).format(port_name))
+                    err_msg = (f'Port {port_name} was closed while trying to'
+                                ' receive on it, did the peer crash?')
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
                 if not with_settings:
@@ -1017,14 +1019,14 @@ class Instance:
         return msg
 
     def __make_full_name(self
-                         ) -> Tuple[Reference, List[int]]:
+                         ) -> tuple[Reference, list[int]]:
         """Returns instance name and index.
 
         This takes the argument to the --muscle-instance= command-line
         option and splits it into a component name and an index.
         """
-        def split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
-            index: List[int] = []
+        def split_reference(ref: Reference) -> tuple[Reference, list[int]]:
+            index: list[int] = []
             i = 0
             while i < len(ref) and isinstance(ref[i], Identifier):
                 i += 1
@@ -1051,13 +1053,13 @@ class Instance:
                 prefix_ref = Reference(os.environ['MUSCLE_INSTANCE'])
                 name, index = split_reference(prefix_ref)
             else:
-                raise RuntimeError((
+                raise RuntimeError(
                     'A --muscle-instance command line argument or'
                     ' MUSCLE_INSTANCE environment variable is required to'
-                    ' identify this instance. Please add one.'))
+                    ' identify this instance. Please add one.')
         return name, index
 
-    def __list_declared_ports(self) -> List[Port]:
+    def __list_declared_ports(self) -> list[Port]:
         """Returns a list of declared ports.
 
         This returns a list of ymmsl.Port objects, which have only the
@@ -1076,9 +1078,9 @@ class Instance:
             self, port_name: str, slot: Optional[int], is_send: bool,
             allow_slot_out_of_range: bool = False) -> None:
         if not self._port_manager.port_exists(port_name):
-            err_msg = (('Port "{}" does not exist on "{}". Please check'
-                        ' the name and the list of ports you gave for'
-                        ' this component.').format(port_name, self._name))
+            err_msg = (f'Port "{port_name}" does not exist on "{self._name}". Please'
+                        ' check the name and the list of ports you gave for'
+                        ' this component.')
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
@@ -1163,11 +1165,9 @@ class Instance:
         if isinstance(message.data, ClosePort):
             return False
         if not isinstance(message.data, Settings):
-            err_msg = ('"{}" received a message on'
-                       ' muscle_settings_in that is not a'
-                       ' Settings. It seems that your'
-                       ' simulation is miswired or the sending'
-                       ' instance is broken.'.format(self._instance_id))
+            err_msg = (f'"{self._instance_id}" received a message on'
+                       ' muscle_settings_in that is not a Settings. It seems that your'
+                       ' simulation is miswired or the sending instance is broken.')
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
@@ -1199,7 +1199,7 @@ class Instance:
         self._f_init_cache = dict()
         ports = self._port_manager.list_ports()
         for port_name in ports.get(Operator.F_INIT, []):
-            _logger.debug('Pre-receiving on port {}'.format(port_name))
+            _logger.debug(f'Pre-receiving on port {port_name}')
             port = self._port_manager.get_port(port_name)
             if not port.is_connected():
                 continue
@@ -1240,10 +1240,9 @@ class Instance:
 
         except KeyError:
             _logger.warning(
-                ('muscle_remote_log_level is set to {}, which is not a'
-                 ' valid remote log level. Please use one of DEBUG, INFO,'
-                 ' WARNING, ERROR, CRITICAL, or DISABLED').format(
-                     log_level_str))
+                f'muscle_remote_log_level is set to {log_level_str}, which is not a'
+                ' valid remote log level. Please use one of DEBUG, INFO, WARNING,'
+                ' ERROR, CRITICAL, or DISABLED')
             return
 
     def _set_local_log_level(self) -> None:
@@ -1266,10 +1265,9 @@ class Instance:
             log_level = LogLevel[log_level_str.upper()]
         except KeyError:
             _logger.warning(
-                ('muscle_local_log_level is set to {}, which is not a'
-                 ' valid log level. Please use one of DEBUG, INFO,'
-                 ' WARNING, ERROR, CRITICAL, or DISABLED').format(
-                     log_level_str))
+                f'muscle_local_log_level is set to {log_level_str}, which is not a'
+                ' valid log level. Please use one of DEBUG, INFO, WARNING, ERROR,'
+                ' CRITICAL, or DISABLED')
             return
 
         py_level = log_level.as_python_level()
@@ -1298,12 +1296,11 @@ class Instance:
         if overlay is None:
             return
         if self._settings_manager.overlay != overlay:
-            err_msg = (('Unexpectedly received data from a'
-                        ' parallel universe on port "{}". My'
-                        ' settings are "{}" and I received'
-                        ' from a universe with "{}".').format(
-                            port_name, self._settings_manager.overlay,
-                            overlay))
+            err_msg = (
+                    'Unexpectedly received data from a parallel universe on port'
+                    f' "{port_name}". My settings are'
+                    f' "{self._settings_manager.overlay}" and I received from a'
+                    f' universe with "{overlay}".')
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 

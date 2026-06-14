@@ -1,4 +1,4 @@
-from typing import cast, Dict, List, Tuple
+from typing import cast
 
 from ymmsl.v0_2 import Conduit, Identifier, Reference, Port
 
@@ -8,10 +8,10 @@ from libmuscle.endpoint import Endpoint
 class PeerInfo:
     """Interprets information about peers for a Communicator
     """
-    def __init__(self, kernel: Reference, index: List[int],
-                 conduits: List[Conduit],
-                 peer_dims: Dict[Reference, List[int]],
-                 peer_locations: Dict[Reference, List[str]],
+    def __init__(self, kernel: Reference, index: list[int],
+                 conduits: list[Conduit],
+                 peer_dims: dict[Reference, list[int]],
+                 peer_locations: dict[Reference, list[str]],
                  ymmsl_ports: list[Port]) -> None:
         """Create a PeerInfo.
 
@@ -37,11 +37,11 @@ class PeerInfo:
         self._index = index
         self._conduits = conduits
 
-        self._incoming_ports: List[Reference] = []
-        self._outgoing_ports: List[Reference] = []
+        self._incoming_ports: list[Reference] = []
+        self._outgoing_ports: list[Reference] = []
 
         # peer port ids, indexed by local kernel.port id
-        self._peers: Dict[Reference, List[Reference]] = {}
+        self._peers: dict[Reference, list[Reference]] = {}
 
         for conduit in conduits:
             if str(conduit.sending_component()) == str(kernel):
@@ -54,10 +54,9 @@ class PeerInfo:
             if str(conduit.receiving_component()) == str(kernel):
                 # we receive on the port this conduit attaches to
                 if conduit.receiver in self._peers:
-                    raise RuntimeError(('Receiving port "{}" is connected by'
-                                        ' multiple conduits, but at most one'
-                                        ' is allowed.'
-                                        ).format(conduit.receiving_port()))
+                    raise RuntimeError(
+                            f'Receiving port "{conduit.receiving_port()}" is connected'
+                            ' by multiple conduits, but at most one is allowed.')
                 self._incoming_ports.append(conduit.receiver)
                 self._peers[conduit.receiver] = [conduit.sender]
 
@@ -66,11 +65,11 @@ class PeerInfo:
         self._ymmsl_ports = ymmsl_ports
 
     def list_ymmsl_ports(self) -> list[Port]:
-        """List ports declared in the yMMSL configuration"""
+        """list ports declared in the yMMSL configuration"""
         return self._ymmsl_ports
 
-    def list_incoming_ports(self) -> List[Tuple[Identifier, Reference]]:
-        """List incoming ports.
+    def list_incoming_ports(self) -> list[tuple[Identifier, Reference]]:
+        """list incoming ports.
 
         Returns:
             A list of tuples containing a port id and a reference to the
@@ -80,8 +79,8 @@ class PeerInfo:
                 (cast(Identifier, port_ref[-1]), self._peers[port_ref][0])
                 for port_ref in self._incoming_ports]
 
-    def list_outgoing_ports(self) -> List[Tuple[Identifier, List[Reference]]]:
-        """List outgoing ports.
+    def list_outgoing_ports(self) -> list[tuple[Identifier, list[Reference]]]:
+        """list outgoing ports.
 
         Returns:
             A list of tuples containing a port id and a list of references
@@ -100,7 +99,7 @@ class PeerInfo:
         recv_port_full = self._kernel + port
         return recv_port_full in self._peers
 
-    def get_peer_ports(self, port: Identifier) -> List[Reference]:
+    def get_peer_ports(self, port: Identifier) -> list[Reference]:
         """Get a reference for the peer ports.
 
         Args:
@@ -108,7 +107,7 @@ class PeerInfo:
         """
         return self._peers[self._kernel + port]
 
-    def get_peer_dims(self, peer_kernel: Reference) -> List[int]:
+    def get_peer_dims(self, peer_kernel: Reference) -> list[int]:
         """Get the dimensions of a peer kernel.
 
         Args:
@@ -116,7 +115,7 @@ class PeerInfo:
         """
         return self._peer_dims[peer_kernel]
 
-    def get_peer_locations(self, peer_instance: Reference) -> List[str]:
+    def get_peer_locations(self, peer_instance: Reference) -> list[str]:
         """Get the locations of a peer instance.
 
         There may be multiple, if the peer supports more than one
@@ -127,8 +126,8 @@ class PeerInfo:
         """
         return self._peer_locations[peer_instance]
 
-    def get_peer_endpoints(self, port: Identifier, slot: List[int]
-                           ) -> List[Endpoint]:
+    def get_peer_endpoints(self, port: Identifier, slot: list[int]
+                           ) -> list[Endpoint]:
         """Determine the peer endpoints for the given port and slot.
 
         Args:

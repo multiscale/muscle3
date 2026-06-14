@@ -1,10 +1,11 @@
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 import sys
 import textwrap
 from time import sleep
 import traceback
-from typing import cast, List, Optional, Sequence
+from typing import cast, Optional
 from warnings import catch_warnings, filterwarnings
 
 import click
@@ -223,7 +224,7 @@ def load_configuration(paths: Sequence[str]) -> v0_2.Configuration:
         return config_v2
 
 
-def load_files(paths: Sequence[str]) -> List[Document]:
+def load_files(paths: Sequence[str]) -> list[Document]:
     """Load the given files and return a list of documents.
 
     This doesn't convert or merge anything, it just loads the files as they are. If an
@@ -267,7 +268,7 @@ def create_run_dir(run_dir: Optional[str], model: v0_2.Model) -> RunDir:
         A RunDir object pointing to the created directory
     """
     if run_dir is None:
-        for i in range(10):
+        for _ in range(10):
             timestamp = datetime.now()
             timestr = timestamp.strftime('%Y%m%d_%H%M%S')
             run_dir_path = Path.cwd() / f'run_{model.name}_{timestr}'

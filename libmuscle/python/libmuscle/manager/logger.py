@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.util import extract_log_file_location
@@ -25,12 +25,13 @@ class Formatter(logging.Formatter):
         Returns:
             The formatted message.
         """
+        # disabled the linter here; this follows the Python logging docs
         if 'instance' in record.__dict__:
             return (
-                    '%(instance)-14s %(iasctime)-15s %(levelname)-7s'
-                    ' %(name)s: %(message)s' % record.__dict__)
+                    '%(instance)-14s %(iasctime)-15s %(levelname)-7s'   # noqa: UP031
+                    ' %(name)s: %(message)s' % record.__dict__)         # noqa: UP031
         return (
-                'muscle_manager %(asctime)s %(levelname)-7s %(name)s:'
+                'muscle_manager %(asctime)s %(levelname)-7s %(name)s:'  # noqa: UP031
                 ' %(message)s' % record.__dict__)
 
 
@@ -141,7 +142,7 @@ def last_lines(file: Path, count: int) -> str:
     file_size = file.stat().st_size
     start_point = max(file_size - 10000, 0)
 
-    lines: List[str] = []
+    lines: list[str] = []
     with file.open('r') as f:
         f.seek(start_point)
         f.readline()    # skip partial line

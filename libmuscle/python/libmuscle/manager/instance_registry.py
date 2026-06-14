@@ -1,5 +1,4 @@
 from threading import Condition
-from typing import Dict, List, Set
 
 from ymmsl.v0_2 import Port, Reference
 
@@ -17,19 +16,19 @@ class InstanceRegistry:
     def __init__(self) -> None:
         """Construct an empty InstanceRegistry"""
         self._deregistered_one = Condition()    # doubles as lock
-        self._locations: Dict[Reference, List[str]] = {}
-        self._ports: Dict[Reference, List[Port]] = {}
-        self._seen: Set[Reference] = set()
+        self._locations: dict[Reference, list[str]] = {}
+        self._ports: dict[Reference, list[Port]] = {}
+        self._seen: set[Reference] = set()
         self._startup = True
 
-    def add(self, name: Reference, locations: List[str], ports: List[Port]
+    def add(self, name: Reference, locations: list[str], ports: list[Port]
             ) -> None:
         """Add an instance to the registry.
 
         Args:
             name: Name of the instance.
             locations: Network locations where it can be reached.
-            ports: List of ports of this instance.
+            ports: list of ports of this instance.
 
         Raises:
             ValueError: If an instance with this name has already been
@@ -37,15 +36,14 @@ class InstanceRegistry:
         """
         with self._deregistered_one:
             if name in self._locations:
-                raise AlreadyRegistered(
-                        'Instance {} tried to register twice'.format(name))
+                raise AlreadyRegistered(f'Instance {name} tried to register twice')
 
             self._locations[name] = locations
             self._ports[name] = ports
             self._seen.add(name)
             self._startup = False
 
-    def get_locations(self, name: Reference) -> List[str]:
+    def get_locations(self, name: Reference) -> list[str]:
         """Retrieves the locations of a registered instance.
 
         Args:
@@ -57,7 +55,7 @@ class InstanceRegistry:
         with self._deregistered_one:
             return self._locations[name]
 
-    def get_ports(self, name: Reference) -> List[Port]:
+    def get_ports(self, name: Reference) -> list[Port]:
         """Retrieves the ports of a registered instance.
 
         Args:

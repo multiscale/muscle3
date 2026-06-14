@@ -1,5 +1,5 @@
 import threading
-from typing import Optional, Tuple
+from typing import Optional
 from typing_extensions import Buffer
 
 
@@ -41,7 +41,7 @@ class SessionState:
         self._response_ready = threading.Condition()
 
         self._cur_request = 0
-        self._response: Optional[Buffer] = bytes()
+        self._response: Optional[Buffer] = b''
 
     def __str__(self) -> str:
         with self._response_ready:
@@ -50,7 +50,7 @@ class SessionState:
     def __repr__(self) -> str:
         return self.__str__()
 
-    def triage_request(self, request_nr: int) -> Tuple[bool, bool]:
+    def triage_request(self, request_nr: int) -> tuple[bool, bool]:
         """Decide what to do about an incoming request
 
         This returns a tuple (should_process, should_send) that tells the handler

@@ -1,4 +1,4 @@
-from typing import List, Optional, Set
+from typing import Optional
 
 from ymmsl.v0_2 import SettingValue, Reference, Settings
 
@@ -46,7 +46,7 @@ def has_setting_type(value: SettingValue, typ: str) -> bool:
                 # a full type check, so we just need to discriminate.
                 return True
         return False
-    raise ValueError('Invalid setting type specified: {}'.format(typ))
+    raise ValueError(f'Invalid setting type specified: {typ}')
 
 
 class SettingsManager:
@@ -70,7 +70,7 @@ class SettingsManager:
         self.base = Settings()
         self.overlay = Settings()
 
-    def list_settings(self, instance_id: Reference) -> List[str]:
+    def list_settings(self, instance_id: Reference) -> list[str]:
         """Returns the names of all the settings.
 
         This returns the names of all the settings, as the model would
@@ -95,8 +95,8 @@ class SettingsManager:
         Return:
             A list of setting names.
         """
-        def extract_names(settings: Settings) -> Set[str]:
-            result: Set[str] = set()
+        def extract_names(settings: Settings) -> set[str]:
+            result: set[str] = set()
             for name in settings:
                 if len(name) == 1:
                     result.add(str(name))
@@ -143,11 +143,11 @@ class SettingsManager:
                 value = self.base[name]
                 break
         else:
-            raise KeyError((f'Value for setting "{setting_name}" was not set.'))
+            raise KeyError(f'Value for setting "{setting_name}" was not set.')
 
         if typ is not None:
             if not has_setting_type(value, typ):
-                raise TypeError('Value for setting "{}" is of type {},'
-                                ' where {} was expected.'.format(
-                                    name, type(value), typ))
+                raise TypeError(
+                        f'Value for setting "{name}" is of type {type(value)}, where'
+                        f' {typ} was expected.')
         return value

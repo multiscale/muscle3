@@ -1,4 +1,3 @@
-from typing import Dict, List
 from libmuscle.util import generate_indices, instance_indices
 
 from ymmsl.v0_2 import Conduit, Configuration, Reference, Ports
@@ -11,7 +10,7 @@ class TopologyStore:
     submodels are connected.
 
     Attributes:
-        conduits (List[Conduit]): A list of conduits.
+        conduits (list[Conduit]): A list of conduits.
     """
     def __init__(self, config: Configuration) -> None:
         """Creates a TopologyStore.
@@ -32,7 +31,7 @@ class TopologyStore:
         """
         return component in self.model.components
 
-    def get_conduits(self, component: Reference) -> List[Conduit]:
+    def get_conduits(self, component: Reference) -> list[Conduit]:
         """Returns the list of conduits that attach to the given component.
 
         Args:
@@ -61,7 +60,7 @@ class TopologyStore:
         return self.model.components[component].ports
 
     def get_peer_dimensions(self, component: Reference
-                            ) -> Dict[Reference, List[int]]:
+                            ) -> dict[Reference, list[int]]:
         """Returns the dimensions of peer components.
 
         For each component that the given component shares a conduit with,
@@ -83,7 +82,7 @@ class TopologyStore:
                 ret[snd] = self.model.components[snd].multiplicity
         return ret
 
-    def get_peer_instances(self, instance: Reference) -> List[Reference]:
+    def get_peer_instances(self, instance: Reference) -> list[Reference]:
         """Generates the names of all peer instances of an instance.
 
         Args:

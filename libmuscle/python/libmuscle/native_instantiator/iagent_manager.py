@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from libmuscle.planner.resources import OnNodeResources
 
 
@@ -20,7 +18,7 @@ class IAgentManager:
         """
         raise NotImplementedError()
 
-    def report_result(self, names_exit_codes: List[Tuple[str, int]]) -> None:
+    def report_result(self, names_exit_codes: list[tuple[str, int]]) -> None:
         """Report results of finished processes.
 
         Called by MAPServer from a server thread.

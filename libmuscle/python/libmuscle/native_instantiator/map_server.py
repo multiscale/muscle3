@@ -1,6 +1,6 @@
 import errno
 import logging
-from typing import Any, Dict, cast, List, Optional
+from typing import Any, cast, Optional
 from typing_extensions import Buffer
 
 import msgpack
@@ -54,7 +54,7 @@ class MAPRequestHandler(RequestHandler):
         return cast(Buffer, msgpack.packb(response, use_bin_type=True))
 
     def _report_resources(
-            self, node_name: str, data: Dict[str, Any]) -> Any:
+            self, node_name: str, data: dict[str, Any]) -> Any:
         """Handle a report resources request.
 
         This is used by the agent to report available resources on its node when
@@ -67,7 +67,7 @@ class MAPRequestHandler(RequestHandler):
                 id at index [0] followed by the hwthread ids of all hwthreads in this
                 core.
         """
-        cores = CoreSet((Core(ids[0], set(ids[1:])) for ids in data['cpu']))
+        cores = CoreSet(Core(ids[0], set(ids[1:])) for ids in data['cpu'])
         node_resources = OnNodeResources(node_name, cores)
         self._agent_manager.report_resources(node_resources)
         return [ResponseType.SUCCESS.value]
@@ -95,14 +95,14 @@ class MAPRequestHandler(RequestHandler):
 
         return [ResponseType.PENDING.value]
 
-    def _report_result(self, instances: List[List[Any]]) -> Any:
+    def _report_result(self, instances: list[list[Any]]) -> Any:
         """Handle a report result request.
 
         This is sent by the agent if an instance it launched exited.
 
         Args:
             instances: List of instance descriptions, comprising an id str and exit
-                    code int. Really a List[Tuple[str, int]] but msgpack doesn't know
+                    code int. Really a list[Tuple[str, int]] but msgpack doesn't know
                     about tuples.
         """
         self._agent_manager.report_result(list(map(tuple, instances)))

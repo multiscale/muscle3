@@ -3,7 +3,7 @@
 import argparse
 from copy import copy, deepcopy
 from textwrap import dedent
-from typing import List, cast
+from typing import cast
 
 from api_generator import (
         API, Array, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
@@ -50,23 +50,24 @@ class GridConstructor(MultiMemFun):
             typ.name = 'data_array'
             typ.set_ns_prefix({}, 'LIBMUSCLE', 'LIBMUSCLE')
 
-            instance_params: List[Par] = [Array(1, copy(typ), 'data_array')]
+            instance_params: list[Par] = [Array(1, copy(typ), 'data_array')]
             if not with_names:
-                instance_name = 'grid_{}_a'.format(typ.tname())
-                chain_call = lambda **kwargs: (  # noqa: E731
-                        '{}::grid(data_array_p,'
-                        ' data_array_shape_v, {{}},'
-                        ' libmuscle::StorageOrder::first_adjacent'
-                        ')').format(kwargs['class_name'])
+                instance_name = f'grid_{typ.tname()}_a'
+                def flex_chain_call(**kwargs: str) -> str:
+                    return (
+                        f'{kwargs["class_name"]}::grid(data_array_p,'
+                        ' data_array_shape_v, {},'
+                        ' libmuscle::StorageOrder::first_adjacent)')
                 self.instances.append(NamedConstructor(
                     instance_params, instance_name, cpp_func_name='grid',
-                    cpp_chain_call=chain_call, f_override=''))
+                    cpp_chain_call=flex_chain_call, f_override=''))
             else:
                 for i in range(1, 8):
-                    arg_name = 'index_name_{}'.format(i)
+                    arg_name = f'index_name_{i}'
                     instance_params.append(String(arg_name))
-                instance_name = 'grid_{}_n'.format(typ.tname())
-                fc_override = dedent("""\
+                instance_name = f'grid_{typ.tname()}_n'
+
+                tmpl = dedent("""\
                     std::intptr_t $C_PREFIX$_$CLASSNAME$_create_grid_{0}_n_(
                             {1} * data_array,
                             std::size_t * data_array_shape,
@@ -103,7 +104,9 @@ class GridConstructor(MultiMemFun):
                                 names_v, libmuscle::StorageOrder::first_adjacent));
                         return reinterpret_cast<std::intptr_t>(result);
                     }}\n
-                    """).format(typ.tname(), typ.fc_cpp_type())
+                    """)
+                fc_override = tmpl.format(typ.tname(), typ.fc_cpp_type())
+
                 self.instances.append(NamedConstructor(
                     instance_params, instance_name, fc_override=fc_override,
                     f_override=''))
@@ -114,23 +117,23 @@ class GridConstructor(MultiMemFun):
                 instance_params = [Array(ndims, copy(typ), 'data_array')]
                 if with_names:
                     for i in range(1, ndims+1):
-                        arg_name = 'index_name_{}'.format(i)
+                        arg_name = f'index_name_{i}'
                         instance_params.append(String(arg_name))
 
-                instance_name = 'grid_{}_{}_{}'.format(
-                        ndims, typ.tname(), 'n' if with_names else 'a')
+                instance_name = (
+                        f'grid_{ndims}_{typ.tname()}_{"n" if with_names else "a"}')
 
                 if with_names:
                     arg_list = [
-                            'index_name_{}'.format(i)
+                            f'index_name_{i}'
                             for i in range(1, ndims+1)]
                     name_args = ', &\n        '.join(arg_list)
                     name_types = ''.join([
-                            '    character (len=*), intent(in) :: {}\n'.format(arg)
+                            f'    character (len=*), intent(in) :: {arg}\n'
                             for arg in arg_list])
                     name_params = ', &\n'.join([(
-                        '            index_name_{0},'
-                        ' int(len(index_name_{0}), c_size_t)').format(dim)
+                        f'            index_name_{dim},'
+                        f' int(len(index_name_{dim}), c_size_t)')
                         for dim in range(1, ndims+1)])
                     if ndims < 7:
                         name_params += ', &\n'
@@ -141,7 +144,7 @@ class GridConstructor(MultiMemFun):
 
                     dim_list = ', '.join([':'] * ndims)
 
-                    f_override = dedent("""\
+                    tmpl = dedent("""\
                         function $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n( &
                                 data_array, &
                                 {2})
@@ -163,7 +166,8 @@ class GridConstructor(MultiMemFun):
                             $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n%ptr = ret_val
                         end function $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n
 
-                        """).format(  # noqa: E501
+                        """)    # noqa: E501 Line too long
+                    f_override = tmpl.format(
                                 ndims, typ.tname(), name_args, name_types.strip(),
                                 name_params, filler_params,
                                 typ.f_type()[0][0], typ.f_chain_arg(),
@@ -173,14 +177,14 @@ class GridConstructor(MultiMemFun):
                         instance_params, instance_name,
                         f_override=f_override, fc_override=''))
                 else:
-                    chain_call = lambda tname=typ.tname(), **a: (  # noqa: E731
-                            '{}_{}_create_grid_{}_a_( &\n{})'.format(
-                                a['ns_prefix'], a['class_name'], tname,
-                                a['fc_args']))
+                    def inst_chain_call(tname: str = typ.tname(), **a: str) -> str:
+                        return (
+                            f'{a["ns_prefix"]}_{a["class_name"]}_create_grid_'
+                            f'{tname}_a_( &\n{a["fc_args"]})')
 
                     self.instances.append(NamedConstructor(
                         instance_params, instance_name, cpp_func_name='grid',
-                        fc_chain_call=chain_call, fc_override=''))
+                        fc_chain_call=inst_chain_call, fc_override=''))
 
     def __copy__(self) -> 'GridConstructor':
         result = GridConstructor(self.with_names)
@@ -214,8 +218,8 @@ class Elements(MultiMemFun):
             # The dict is only used by Obj, which we don't have.
             typ.name = 'elements'
             typ.set_ns_prefix({}, 'LIBMUSCLE', 'LIBMUSCLE')
-            func_name = 'elements_{}'.format(typ.tname())
-            fc_override = dedent("""\
+            func_name = f'elements_{typ.tname()}'
+            tmpl = dedent("""\
                     void $C_PREFIX$_$CLASSNAME$_elements_{0}_(
                             std::intptr_t self,
                             std::size_t ndims,
@@ -247,7 +251,8 @@ class Elements(MultiMemFun):
                         }}
                     }}
 
-                    """).format(typ.tname(), typ.fc_cpp_type())  # noqa: E501
+                    """)    # noqa: E501 Line too long
+            fc_override = tmpl.format(typ.tname(), typ.fc_cpp_type())
 
             self.instances.append(MemFun(
                     Array(1, copy(typ), 'elements'), func_name, [Sizet('ndims')],
@@ -256,10 +261,10 @@ class Elements(MultiMemFun):
         # Generate API
         for typ in self.types:
             for ndims in range(1, 8):
-                func_name = 'elements_{}_{}'.format(ndims, typ.tname())
+                func_name = f'elements_{ndims}_{typ.tname()}'
                 dims_list = ', '.join([':']*ndims)
                 rev_dims = ', '.join(map(str, reversed(range(1, ndims+1))))
-                f_override = dedent("""\
+                tmpl = dedent("""\
                     subroutine $F_PREFIX$_$CLASSNAME$_elements_{0}_{1}( &
                             self, &
                             elements, &
@@ -329,7 +334,8 @@ class Elements(MultiMemFun):
                         end if
                     end subroutine $F_PREFIX$_$CLASSNAME$_elements_{0}_{1}
 
-                    """).format(  # noqa: E501
+                    """)    # noqa: E501 Line too long
+                f_override = tmpl.format(
                         ndims, typ.tname(), typ.f_ret_type()[1][0][0],
                         dims_list, typ.fi_ret_type()[0][0], rev_dims)
 
@@ -353,7 +359,7 @@ class Elements(MultiMemFun):
 
 
 create_grid_overloads = [
-        'create_grid_{}_{}_{}'.format(ndims, typ, with_names_tag)
+        f'create_grid_{ndims}_{typ}_{with_names_tag}'
         for ndims in range(1, 8)
         for typ in ['logical', 'int4', 'int8', 'real4', 'real8']
         for with_names_tag in ['n', 'a']]
@@ -791,12 +797,10 @@ message_desc = Class('Message', None, [
         cpp_chain_call=lambda **kwargs: 'self_p->data()'),
     MemFun(
         Void(), 'set_data_d', [Obj('Data', 'data')],
-        cpp_chain_call=lambda **kwargs: 'self_p->set_data({})'.format(
-            kwargs['cpp_args'])),
+        cpp_chain_call=lambda **kwargs: f'self_p->set_data({kwargs["cpp_args"]})'),
     MemFun(
         Void(), 'set_data_dcr', [Obj('DataConstRef', 'data')],
-        cpp_chain_call=lambda **kwargs: 'self_p->set_data({})'.format(
-            kwargs['cpp_args'])),
+        cpp_chain_call=lambda **kwargs: f'self_p->set_data({kwargs["cpp_args"]})'),
     OverloadSet('set_data', ['set_data_d', 'set_data_dcr'], False),
     MemFun(Bool(), 'has_settings'),
     MemFun(
@@ -962,22 +966,21 @@ instance_members = [
         [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
          Vec2Dbl('value')],
         Bool(), 'is_setting_a', [String('name')], True,
-        cpp_chain_call=lambda **kwargs: 'self_p->get_setting({}).is_a<{}>()'.format(
-                kwargs['cpp_args'], kwargs['tpl_type'])
-        ),
+        cpp_chain_call=lambda **kwargs:\
+            f'self_p->get_setting({kwargs["cpp_args"]}).is_a<{kwargs["tpl_type"]}>()'),
     MemFunTmpl(
         [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
          Vec2Dbl('value')],
         T(), 'get_setting_as1', [String('name')], True,
-        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: (
-            f'self_p->get_setting_as<{tpl_type}>({cpp_args})')),
+        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs:\
+            f'self_p->get_setting_as<{tpl_type}>({cpp_args})'),
     MemFunTmpl(
         [String(), Int64t(), Double(), Bool(), VecInt64t('value'),
          VecDbl('value'), Vec2Dbl('value')],
         T(), 'get_setting_as2',
         [String('name'), T('default_value')], True,
-        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: (
-            f'self_p->get_setting_as<{tpl_type}>({cpp_args})')),
+        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs:\
+            f'self_p->get_setting_as<{tpl_type}>({cpp_args})'),
     OverloadSetTmpl(
         [String(), Int64t(), Double(), Bool(), VecInt64t('value'),
          VecDbl('value'), Vec2Dbl('value')],
@@ -992,54 +995,48 @@ instance_members = [
 
     MemFun(Void(), 'send_pm',
            [String('port_name'), Obj('Message', 'message')],
-           cpp_chain_call=lambda **kwargs: 'self_p->send({})'.format(
-               kwargs['cpp_args'])),
+           cpp_chain_call=lambda **kwargs: f'self_p->send({kwargs["cpp_args"]})'),
     MemFun(Void(), 'send_pms',
            [String('port_name'), Obj('Message', 'message'), Int('slot')],
-           cpp_chain_call=lambda **kwargs: 'self_p->send({})'.format(
-               kwargs['cpp_args'])),
+           cpp_chain_call=lambda **kwargs: f'self_p->send({kwargs["cpp_args"]})'),
     OverloadSet('send', ['send_pm', 'send_pms'], False),
 
     MemFun(Obj('Message'), 'receive_p', [String('port_name')], True,
-           cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
-               kwargs['cpp_args'])),
+           cpp_chain_call=lambda **kwargs: f'self_p->receive({kwargs["cpp_args"]})'),
     MemFun(Obj('Message'), 'receive_pd',
            [String('port_name'), Obj('Message', 'default_msg')], True,
-           cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
-               kwargs['cpp_args'])),
+           cpp_chain_call=lambda **kwargs: f'self_p->receive({kwargs["cpp_args"]})'),
     OverloadSet('receive', ['receive_p', 'receive_pd'], False),
 
     MemFun(Obj('Message'), 'receive_ps', [String('port_name'), Int('slot')],
            True,
-           cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
-               kwargs['cpp_args'])),
+           cpp_chain_call=lambda **kwargs: f'self_p->receive({kwargs["cpp_args"]})'),
     MemFun(Obj('Message'), 'receive_psd',
            [String('port_name'), Int('slot'), Obj('Message', 'default_message')],
            True,
-           cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
-               kwargs['cpp_args'])),
+           cpp_chain_call=lambda **kwargs: f'self_p->receive({kwargs["cpp_args"]})'),
     OverloadSet('receive_on_slot', ['receive_ps', 'receive_psd'], False),
 
     MemFun(Obj('Message'), 'receive_with_settings_p',
            [String('port_name')], True,
-           cpp_chain_call=lambda **kwargs: ('self_p->receive_with_settings({})'.format(
-               kwargs['cpp_args']))),
+           cpp_chain_call=lambda **kwargs:
+                f'self_p->receive_with_settings({kwargs["cpp_args"]})'),
     MemFun(Obj('Message'), 'receive_with_settings_pd',
            [String('port_name'), Obj('Message', 'default_msg')], True,
-           cpp_chain_call=lambda **kwargs: ('self_p->receive_with_settings({})'.format(
-               kwargs['cpp_args']))),
+           cpp_chain_call=lambda **kwargs:
+               f'self_p->receive_with_settings({kwargs["cpp_args"]})'),
     OverloadSet('receive_with_settings',
-                ['receive_with_settings_p', 'receive_with_settings_pd'], False),
+               ['receive_with_settings_p', 'receive_with_settings_pd'], False),
 
     MemFun(Obj('Message'), 'receive_with_settings_ps',
            [String('port_name'), Int('slot')], True,
-           cpp_chain_call=lambda **kwargs: ('self_p->receive_with_settings({})'.format(
-               kwargs['cpp_args']))),
+           cpp_chain_call=lambda **kwargs:
+               f'self_p->receive_with_settings({kwargs["cpp_args"]})'),
     MemFun(Obj('Message'), 'receive_with_settings_psd',
            [String('port_name'), Int('slot'), Obj('Message', 'default_msg')],
            True,
-           cpp_chain_call=lambda **kwargs: ('self_p->receive_with_settings({})'.format(
-               kwargs['cpp_args']))),
+           cpp_chain_call=lambda **kwargs:
+               f'self_p->receive_with_settings({kwargs["cpp_args"]})'),
     OverloadSet('receive_with_settings_on_slot',
                 ['receive_with_settings_ps', 'receive_with_settings_psd'], False),
     MemFun(Bool(), 'resuming'),

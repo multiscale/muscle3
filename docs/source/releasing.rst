@@ -201,9 +201,8 @@ that we want to have back on the develop branch. So we'll merge it back in:
 
 We use --no-commit to give ourselves a chance to edit the changes before
 committing them. Make sure that README.rst is taken from the develop side,
-CHANGELOG.md comes from the release branch, and VERSION is given a new number,
-probably x.y.{z+1}-dev unless you have big plans. When done, commit the merge
-and continue developing.
+and that VERSION is given a new number, probably x.y.{z+1}-dev unless you have big
+plans. When done, commit the merge and continue developing.
 
 Update issues
 -------------

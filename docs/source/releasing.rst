@@ -85,8 +85,8 @@ shows up:
 It may give some warnings about missing references, that's a known issue and
 normally harmless. Next, point your web browser to
 ``docs/build/index.html`` and verify that the documentation built
-correctly. In particular, the new version number should be in the browser's
-title bar as well as in the blue box on the top left of the page.
+correctly. Also check that the new version number is in the browser's
+title bar.
 
 Run tests
 ---------

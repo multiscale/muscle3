@@ -4,7 +4,12 @@ from unittest.mock import MagicMock
 
 import msgpack
 from ymmsl.v0_2 import (
-        Operator, Reference, Checkpoints, CheckpointRangeRule, CheckpointAtRule)
+    CheckpointAtRule,
+    CheckpointRangeRule,
+    Checkpoints,
+    Operator,
+    Reference,
+)
 
 import libmuscle
 from libmuscle.logging import LogLevel

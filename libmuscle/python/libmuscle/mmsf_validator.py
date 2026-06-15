@@ -3,9 +3,9 @@ import sys
 import types
 from typing import Optional
 
-from libmuscle.port_manager import PortManager
 from ymmsl.v0_2 import Operator
 
+from libmuscle.port_manager import PortManager
 
 _logger = logging.getLogger(__name__)
 

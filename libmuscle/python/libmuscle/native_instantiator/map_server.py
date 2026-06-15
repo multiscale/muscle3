@@ -1,21 +1,23 @@
 import errno
 import logging
-from typing import Any, cast, Optional
-from typing_extensions import Buffer
+from typing import Any, Optional, cast
 
 import msgpack
+from typing_extensions import Buffer
+from ymmsl.v0_2 import Reference
 
 from libmuscle.mcp.protocol import AgentCommandType, RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
 from libmuscle.native_instantiator.agent.agent_commands import (
-        AgentCommand, CancelAllCommand, ShutdownCommand, StartCommand)
+    AgentCommand,
+    CancelAllCommand,
+    ShutdownCommand,
+    StartCommand,
+)
 from libmuscle.native_instantiator.iagent_manager import IAgentManager
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
 from libmuscle.post_office import PostOffice
-
-from ymmsl.v0_2 import Reference
-
 
 _logger = logging.getLogger(__name__)
 

@@ -1,6 +1,5 @@
-from typing_extensions import Buffer
-
 import msgpack
+from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference
 
 from libmuscle.mcp.protocol import RequestType

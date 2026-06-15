@@ -1,9 +1,8 @@
 import ymmsl
-from ymmsl.v0_2 import Reference
-
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.manager.manager import Manager
 from libmuscle.mmp_client import MMPClient
+from ymmsl.v0_2 import Reference
 
 
 def test_logging(log_file_in_tmpdir, caplog):

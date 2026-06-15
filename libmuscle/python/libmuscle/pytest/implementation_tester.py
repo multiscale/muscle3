@@ -1,9 +1,10 @@
 import logging
 import os
 from typing import Optional
-from libmuscle import Instance, InstanceFlags, Message
+
 from ymmsl.v0_2 import Configuration, Operator, Reference
 
+from libmuscle import Instance, InstanceFlags, Message
 
 _logger = logging.getLogger(__name__)
 

@@ -4,8 +4,11 @@ import time
 from typing import Optional, Union
 
 from ymmsl.v0_2 import (
-        CheckpointRangeRule, CheckpointAtRule, CheckpointRule, Checkpoints)
-
+    CheckpointAtRule,
+    CheckpointRangeRule,
+    CheckpointRule,
+    Checkpoints,
+)
 
 _logger = logging.getLogger(__name__)
 

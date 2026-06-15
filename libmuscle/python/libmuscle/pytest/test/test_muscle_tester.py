@@ -1,18 +1,17 @@
-import pytest
 from pathlib import Path
 
+import pytest
+from libmuscle.pytest.muscle_tester import MuscleTester
 from ymmsl.v0_2 import (
+    Conduit,
     Configuration,
     ExecutionModel,
+    Identifier,
     Model,
     Ports,
     Program,
     Reference,
-    Conduit,
-    Identifier
 )
-
-from libmuscle.pytest.muscle_tester import MuscleTester
 
 
 @pytest.fixture

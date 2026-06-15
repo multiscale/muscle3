@@ -1,8 +1,8 @@
-from collections.abc import Generator
 import itertools
-from pathlib import Path
 import sys
 import time
+from collections.abc import Generator
+from pathlib import Path
 from typing import Optional, cast
 
 from ymmsl.v0_2 import Reference

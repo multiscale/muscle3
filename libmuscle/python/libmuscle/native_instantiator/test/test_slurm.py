@@ -1,8 +1,8 @@
-from libmuscle.native_instantiator.slurm import (
-        parse_slurm_nodelist, parse_slurm_nodes_cores)
-
 import pytest
-
+from libmuscle.native_instantiator.slurm import (
+    parse_slurm_nodelist,
+    parse_slurm_nodes_cores,
+)
 
 NRES_ = [
         # from various bits of SLURM documentation

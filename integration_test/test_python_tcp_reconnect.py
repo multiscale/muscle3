@@ -1,19 +1,23 @@
-import time
-import math
-
 import logging
-from random import random, choice, uniform
+import math
+import time
+from random import choice, random, uniform
 from socket import SHUT_RD, SHUT_RDWR, SHUT_WR, SocketType
 from unittest.mock import patch
 
 import pytest
-
+from libmuscle.runner import run_simulation
 from ymmsl.v0_2 import (
-        Component, Conduit, Configuration, Operator, Ports, Model, Settings)
+    Component,
+    Conduit,
+    Configuration,
+    Model,
+    Operator,
+    Ports,
+    Settings,
+)
 
 from libmuscle import Instance, Message
-from libmuscle.runner import run_simulation
-
 
 _FAULT_PROB_MAX = 0.1
 

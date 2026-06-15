@@ -1,12 +1,11 @@
-from enum import Enum
 import logging
+from enum import Enum
 from socket import gethostname
 from typing import Optional
 
 import psutil
 
 from libmuscle.native_instantiator.slurm import slurm
-
 
 _logger = logging.getLogger(__name__)
 

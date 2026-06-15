@@ -1,24 +1,29 @@
 import logging
+from multiprocessing import Queue
 from pathlib import Path
+from queue import Empty
 from textwrap import indent
 from threading import Thread
 from typing import Optional, Union
-from multiprocessing import Queue
-from queue import Empty
 
 from ymmsl.v0_2 import Configuration, ExecutionModel, Reference
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
-        CancelAllRequest, CrashedResult, InstantiatorRequest,
-        InstantiationRequest, Process, ProcessStatus, ShutdownRequest)
+    CancelAllRequest,
+    CrashedResult,
+    InstantiationRequest,
+    InstantiatorRequest,
+    Process,
+    ProcessStatus,
+    ShutdownRequest,
+)
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
 from libmuscle.planner.planner import Planner, ResourceAssignment
 from libmuscle.planner.resources import Resources
-
 
 _logger = logging.getLogger(__name__)
 

@@ -1,9 +1,8 @@
 from unittest.mock import patch
 
 import pytest
-from ymmsl.v0_2 import Conduit, Operator, Port, Reference
-
 from libmuscle.mmp_client import MMPClient
+from ymmsl.v0_2 import Conduit, Operator, Port, Reference
 
 
 def test_registration(log_file_in_tmpdir, mmp_server):

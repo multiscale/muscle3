@@ -1,10 +1,10 @@
-from libmuscle.outbox import Outbox
-from libmuscle.mpp_message import MPPMessage
-
 from copy import copy
-import pytest
 
+import pytest
 from ymmsl.v0_2 import Reference
+
+from libmuscle.mpp_message import MPPMessage
+from libmuscle.outbox import Outbox
 
 
 @pytest.fixture

@@ -5,8 +5,8 @@ from unittest.mock import Mock
 import pytest
 from ymmsl.v0_2 import Operator, Reference
 
-from libmuscle.port_manager import PortManager
 from libmuscle.mmsf_validator import MMSFValidator
+from libmuscle.port_manager import PortManager
 
 
 class Contains:

@@ -1,13 +1,14 @@
-from libmuscle.peer_info import PeerInfo
-from contextlib import nullcontext as does_not_raise
 import logging
+from contextlib import nullcontext as does_not_raise
 from unittest.mock import MagicMock, patch
 
 import pytest
+from ymmsl.v0_2 import Checkpoints, Operator, Settings
+from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.instance import Instance, InstanceFlags
 from libmuscle.mpp_message import ClosePort
-from ymmsl.v0_2 import Checkpoints, Operator, Reference as Ref, Settings
+from libmuscle.peer_info import PeerInfo
 
 
 @pytest.fixture

@@ -1,11 +1,11 @@
 import sqlite3
 from pathlib import Path
-from typing import cast, Optional
+from typing import Optional, cast
 
 import numpy as np
+from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib import pyplot as plt
 
 from libmuscle import ProfileDatabase
 

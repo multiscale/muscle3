@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ymmsl.v0_2 import SettingValue, Reference, Settings
+from ymmsl.v0_2 import Reference, Settings, SettingValue
 
 
 def has_setting_type(value: SettingValue, typ: str) -> bool:

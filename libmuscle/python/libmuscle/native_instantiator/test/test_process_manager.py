@@ -1,7 +1,6 @@
 from time import monotonic, sleep
 
 import pytest
-
 from libmuscle.native_instantiator.process_manager import ProcessManager
 
 

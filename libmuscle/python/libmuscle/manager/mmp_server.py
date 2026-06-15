@@ -1,32 +1,39 @@
 import errno
 import logging
 import time
-from typing import Any, cast, Optional
-from typing_extensions import Buffer
+from typing import Any, Optional, cast
 
 import msgpack
+from typing_extensions import Buffer
 from ymmsl.v0_2 import (
-        CheckpointAtRule, CheckpointRangeRule, CheckpointRule, Checkpoints, Conduit,
-        Configuration, Identifier, Operator, Port, Ports, Reference)
+    CheckpointAtRule,
+    CheckpointRangeRule,
+    CheckpointRule,
+    Checkpoints,
+    Conduit,
+    Configuration,
+    Identifier,
+    Operator,
+    Port,
+    Ports,
+    Reference,
+)
 
 import libmuscle
 from libmuscle.logging import LogLevel
-from libmuscle.manager.instance_registry import (
-        AlreadyRegistered, InstanceRegistry)
+from libmuscle.manager.deadlock_detector import DeadlockDetector
+from libmuscle.manager.instance_registry import AlreadyRegistered, InstanceRegistry
 from libmuscle.manager.logger import Logger
+from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
-from libmuscle.manager.profile_store import ProfileStore
-from libmuscle.manager.deadlock_detector import DeadlockDetector
-from libmuscle.profiling import (
-        ProfileEvent, ProfileEventType, ProfileTimestamp)
+from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
-
 
 _logger = logging.getLogger(__name__)
 

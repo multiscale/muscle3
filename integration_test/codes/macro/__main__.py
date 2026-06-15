@@ -1,6 +1,6 @@
-from libmuscle import Instance, Message
 from ymmsl import Operator
 
+from libmuscle import Instance, Message
 
 instance = Instance({
         Operator.O_I: ['out'],

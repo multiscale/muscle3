@@ -1,6 +1,7 @@
 from collections.abc import Iterator
-import pytest
 from pathlib import Path
+
+import pytest
 
 from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.pytest.muscle_tester import MuscleTester

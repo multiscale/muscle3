@@ -2,7 +2,7 @@ import pytest
 from ymmsl.v0_2 import Settings
 
 from libmuscle.communicator import Message
-from libmuscle.snapshot import Snapshot, MsgPackSnapshot, SnapshotMetadata
+from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
 
 
 @pytest.fixture

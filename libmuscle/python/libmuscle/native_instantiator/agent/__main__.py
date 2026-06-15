@@ -1,16 +1,19 @@
 import logging
 import os
-import psutil
-from socket import gethostname
 import sys
+from socket import gethostname
 from time import sleep
 
-from libmuscle.native_instantiator.process_manager import ProcessManager
-from libmuscle.native_instantiator.agent.map_client import MAPClient
-from libmuscle.native_instantiator.agent.agent_commands import (
-        CancelAllCommand, ShutdownCommand, StartCommand)
-from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
+import psutil
 
+from libmuscle.native_instantiator.agent.agent_commands import (
+    CancelAllCommand,
+    ShutdownCommand,
+    StartCommand,
+)
+from libmuscle.native_instantiator.agent.map_client import MAPClient
+from libmuscle.native_instantiator.process_manager import ProcessManager
+from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
 
 _logger = logging.getLogger(__name__)
 

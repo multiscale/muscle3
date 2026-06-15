@@ -1,14 +1,21 @@
-from collections.abc import Iterable
 import logging
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Optional
+
+from ymmsl.v0_2 import (
+    BaseEnv,
+    ExecutionModel,
+    MPICoresResReq,
+    MPINodesResReq,
+    Program,
+    ResourceRequirements,
+    ThreadedResReq,
+)
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.native_instantiator.slurm import slurm
 from libmuscle.planner.planner import ResourceAssignment
-from ymmsl.v0_2 import (
-        BaseEnv, ExecutionModel, MPICoresResReq, MPINodesResReq, Program,
-        ResourceRequirements, ThreadedResReq)
 
 
 def direct_prep_resources(resources: ResourceAssignment) -> tuple[str, dict[str, str]]:

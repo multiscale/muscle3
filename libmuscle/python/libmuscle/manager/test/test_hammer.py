@@ -1,9 +1,8 @@
+import pytest
 from ymmsl import load
 from ymmsl.v0_2 import Conduit, Model, Reference, resolve
 
-from libmuscle.manager.hammer import flatten, Plate
-
-import pytest
+from libmuscle.manager.hammer import Plate, flatten
 
 
 @pytest.fixture

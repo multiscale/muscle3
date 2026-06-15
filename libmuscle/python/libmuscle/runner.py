@@ -7,22 +7,21 @@ support for it in this module.
 import logging
 import multiprocessing as mp
 import multiprocessing.connection as mpc
-from pathlib import Path
 import sys
-from time import sleep
 import traceback
+from pathlib import Path
+from time import sleep
 from typing import Callable, cast
 from warnings import catch_warnings, filterwarnings
 
-from ymmsl import convert_to, Document
 import ymmsl.v0_1 as v0_1
+from ymmsl import Document, convert_to
 from ymmsl.v0_2 import Configuration, Identifier, Reference
 
-from libmuscle.util import generate_indices
 from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
-
+from libmuscle.util import generate_indices
 
 __all__ = ['run_simulation']
 

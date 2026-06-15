@@ -1,24 +1,34 @@
 import logging
 import multiprocessing as mp
-from pathlib import Path
 import queue
 import sys
-from time import sleep
 import traceback
+from pathlib import Path
+from time import sleep
 from typing import Optional
+
+from ymmsl.v0_2 import (
+    MPICoresResReq,
+    MPINodesResReq,
+    ResourceRequirements,
+    ThreadedResReq,
+)
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instantiator import (
-        CancelAllRequest, CrashedResult, create_instance_env, InstantiationRequest,
-        Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
+    CancelAllRequest,
+    CrashedResult,
+    InstantiationRequest,
+    Process,
+    ProcessStatus,
+    ShutdownRequest,
+    create_instance_env,
+    reconfigure_logging,
+)
 from libmuscle.native_instantiator.agent_manager import AgentManager
 from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.native_instantiator.run_script import make_script, prep_resources
 from libmuscle.planner.resources import OnNodeResources, Resources
-
-from ymmsl.v0_2 import (
-        MPICoresResReq, MPINodesResReq, ResourceRequirements, ThreadedResReq)
-
 
 _logger = logging.getLogger(__name__)
 

@@ -1,12 +1,11 @@
 import logging
 import os
+import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import time
 
 import cerulean
 import pytest
-
 
 _logger = logging.getLogger(__name__)
 

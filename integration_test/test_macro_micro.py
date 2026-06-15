@@ -1,12 +1,11 @@
 import sqlite3
 
 import numpy as np
-
-from libmuscle import Instance, Grid, Message
 from ymmsl.v0_2 import Operator
 
-from .conftest import (
-        skip_if_python_only, skip_if_no_fortran, run_manager_with_actors)
+from libmuscle import Grid, Instance, Message
+
+from .conftest import run_manager_with_actors, skip_if_no_fortran, skip_if_python_only
 
 
 def check_settings(instance):

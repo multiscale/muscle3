@@ -1,15 +1,13 @@
 import multiprocessing as mp
 import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import msgpack
-
+from libmuscle.mcp.protocol import RequestType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mpp_message import MPPMessage
-from libmuscle.mcp.protocol import RequestType
-
 from ymmsl.v0_2 import Reference, Settings
 
 from .conftest import skip_if_python_only

@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, cast
-from typing_extensions import Buffer
 
 import msgpack
+from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference, Settings
 
-from libmuscle.mpp_message import MPPMessage
 from libmuscle import communicator
+from libmuscle.mpp_message import MPPMessage
 
 
 class Snapshot(ABC):

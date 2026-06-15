@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import ymmsl
-
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 

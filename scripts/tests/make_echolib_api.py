@@ -3,10 +3,28 @@
 import argparse
 
 from api_generator import (
-        API, Bool, Bytes, Class, Constructor, Destructor, Double, Enum,
-        EnumVal, Int, Int64t, MemFun, MemFunTmpl, Namespace, Obj, OverloadSet,
-        String, T, VecDbl, Vec2Dbl, Void)
-
+    API,
+    Bool,
+    Bytes,
+    Class,
+    Constructor,
+    Destructor,
+    Double,
+    Enum,
+    EnumVal,
+    Int,
+    Int64t,
+    MemFun,
+    MemFunTmpl,
+    Namespace,
+    Obj,
+    OverloadSet,
+    String,
+    T,
+    Vec2Dbl,
+    VecDbl,
+    Void,
+)
 
 color_desc = Enum('Color', [('RED', 1), ('GREEN', 2), ('BLUE', 3)])
 

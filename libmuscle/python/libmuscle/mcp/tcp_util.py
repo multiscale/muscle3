@@ -1,5 +1,6 @@
 from errno import EBADF, ENOTCONN
 from socket import SocketType
+
 from typing_extensions import Buffer
 
 import libmuscle.mark as mark

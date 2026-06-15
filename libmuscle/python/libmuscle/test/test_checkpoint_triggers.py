@@ -1,10 +1,14 @@
 import time
+
 import pytest
-from ymmsl.v0_2 import CheckpointRangeRule, CheckpointAtRule, Checkpoints
+from ymmsl.v0_2 import CheckpointAtRule, CheckpointRangeRule, Checkpoints
 
 from libmuscle.checkpoint_triggers import (
-    CombinedCheckpointTriggers, AtCheckpointTrigger, RangeCheckpointTrigger,
-    TriggerManager)
+    AtCheckpointTrigger,
+    CombinedCheckpointTriggers,
+    RangeCheckpointTrigger,
+    TriggerManager,
+)
 
 
 def test_at_checkpoint_trigger():

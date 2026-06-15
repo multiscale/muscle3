@@ -1,17 +1,19 @@
 import logging
+import sys
 from pathlib import Path
 from subprocess import Popen, TimeoutExpired
-import sys
 from threading import Lock
 from time import sleep
 
 from libmuscle.native_instantiator.agent.agent_commands import (
-        CancelAllCommand, StartCommand, ShutdownCommand)
+    CancelAllCommand,
+    ShutdownCommand,
+    StartCommand,
+)
+from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.native_instantiator.iagent_manager import IAgentManager
 from libmuscle.native_instantiator.map_server import MAPServer
-from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.planner.resources import OnNodeResources, Resources
-
 
 _logger = logging.getLogger(__name__)
 

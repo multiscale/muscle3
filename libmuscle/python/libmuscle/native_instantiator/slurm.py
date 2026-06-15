@@ -1,12 +1,12 @@
-from collections.abc import Sequence
-from itertools import product
 import logging
 import os
+import subprocess
+from collections.abc import Sequence
+from itertools import product
+from typing import Any, Optional, cast
+
 from parsimonious import Grammar, NodeVisitor
 from parsimonious.nodes import Node
-import subprocess
-from typing import Any, cast, Optional
-
 
 _logger = logging.getLogger(__name__)
 

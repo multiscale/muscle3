@@ -1,7 +1,8 @@
-from libmuscle import Instance, Message
 from ymmsl.v0_2 import Operator
 
-from .conftest import run_manager_with_actors, skip_if_python_only, skip_if_no_mpi_cpp
+from libmuscle import Instance, Message
+
+from .conftest import run_manager_with_actors, skip_if_no_mpi_cpp, skip_if_python_only
 
 
 def macro():

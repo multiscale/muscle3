@@ -4,12 +4,24 @@ from unittest.mock import MagicMock
 
 import pytest
 from ymmsl.v0_2 import (
-        Configuration, Model, Component, Conduit, KeepsStateForNextUse, Ports, Program,
-        Reference)
+    Component,
+    Conduit,
+    Configuration,
+    KeepsStateForNextUse,
+    Model,
+    Ports,
+    Program,
+    Reference,
+)
 
 from libmuscle.manager.snapshot_registry import (
-    SnapshotNode, SnapshotRegistry, calc_consistency, calc_consistency_list,
-    safe_get, _ConnectionInfo)
+    SnapshotNode,
+    SnapshotRegistry,
+    _ConnectionInfo,
+    calc_consistency,
+    calc_consistency_list,
+    safe_get,
+)
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.snapshot import SnapshotMetadata
 

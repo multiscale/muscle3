@@ -1,15 +1,22 @@
 import pytest
+from libmuscle.manager.run_dir import RunDir
+from ymmsl import dump, load
 from ymmsl.v0_2 import Operator
-from ymmsl import load, dump
 
 from libmuscle import (
-        Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
-from libmuscle.manager.run_dir import RunDir
+    KEEPS_NO_STATE_FOR_NEXT_USE,
+    USES_CHECKPOINT_API,
+    Instance,
+    Message,
+)
 
 from .conftest import (
-        run_manager_with_actors, ls_snapshots, skip_if_python_only, skip_if_no_fortran,
-        skip_if_no_mpi_cpp)
-
+    ls_snapshots,
+    run_manager_with_actors,
+    skip_if_no_fortran,
+    skip_if_no_mpi_cpp,
+    skip_if_python_only,
+)
 
 _LOG_LEVEL = 'INFO'  # set to DEBUG for additional debug info
 

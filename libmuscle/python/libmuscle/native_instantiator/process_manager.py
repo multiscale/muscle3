@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 from subprocess import Popen
 
-
 _logger = logging.getLogger(__name__)
 
 

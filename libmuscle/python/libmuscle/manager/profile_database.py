@@ -1,9 +1,9 @@
-from collections import defaultdict
-from pathlib import Path
 import sqlite3
 import threading
+from collections import defaultdict
+from pathlib import Path
 from types import TracebackType
-from typing import Any, cast, Optional, Union
+from typing import Any, Optional, Union, cast
 from warnings import warn
 
 

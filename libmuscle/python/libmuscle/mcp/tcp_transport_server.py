@@ -7,11 +7,15 @@ from typing import Any, cast
 import psutil
 
 from libmuscle.mcp.session_state import SessionState
-from libmuscle.mcp.transport_server import RequestHandler, TransportServer
 from libmuscle.mcp.tcp_util import (
-        is_disconnect, recv_frame, recv_int64, send_frame, send_int64)
+    is_disconnect,
+    recv_frame,
+    recv_int64,
+    send_frame,
+    send_int64,
+)
+from libmuscle.mcp.transport_server import RequestHandler, TransportServer
 from libmuscle.util import Retrier
-
 
 _logger = logging.getLogger(__name__)
 

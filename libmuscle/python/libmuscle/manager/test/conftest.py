@@ -78,7 +78,7 @@ def loaded_instance_registry(instance_registry):
     for j in range(10):
         for i in range(10):
             name = Reference('micro') + j + i
-            location = 'direct:{}'.format(name)
+            location = f'direct:{name}'
             instance_registry.add(name, [location], [])
     return instance_registry
 
@@ -135,13 +135,13 @@ def loaded_instance_registry2():
 
     for j in range(5):
         name = Reference('meso') + j
-        location = 'direct:{}'.format(name)
+        location = f'direct:{name}'
         instance_registry.add(name, [location], [])
 
     for j in range(5):
         for i in range(10):
             name = Reference('micro') + j + i
-            location = 'direct:{}'.format(name)
+            location = f'direct:{name}'
             instance_registry.add(name, [location], [])
     return instance_registry
 

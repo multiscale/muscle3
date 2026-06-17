@@ -1,6 +1,5 @@
 from threading import Lock
 import time
-from typing import Dict
 from typing_extensions import Buffer
 
 from ymmsl.v0_2 import Reference
@@ -17,7 +16,7 @@ class PostOffice:
     def __init__(self) -> None:
         """Create a PostOffice.
         """
-        self._outboxes: Dict[Reference, Outbox] = {}
+        self._outboxes: dict[Reference, Outbox] = {}
 
         self._outbox_lock = Lock()
 

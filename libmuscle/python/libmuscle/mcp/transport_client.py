@@ -1,10 +1,10 @@
-from typing import Optional, Tuple
+from typing import Optional
 from typing_extensions import Buffer
 
 from libmuscle.profiling import ProfileTimestamp
 
 
-ProfileData = Tuple[ProfileTimestamp, ProfileTimestamp, ProfileTimestamp]
+ProfileData = tuple[ProfileTimestamp, ProfileTimestamp, ProfileTimestamp]
 
 
 class TimeoutHandler:
@@ -49,7 +49,7 @@ class TransportClient:
         raise NotImplementedError()     # pragma: no cover
 
     def call(self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
-             ) -> Tuple[Buffer, ProfileData]:
+             ) -> tuple[Buffer, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call. Besides the result, this function

@@ -1,4 +1,4 @@
-from typing import Callable, Set
+from typing import Callable
 
 import pytest
 
@@ -111,7 +111,7 @@ def run_until_before(guard: APIGuard, excluded: Callable) -> None:
         fun(guard, *args)
 
 
-def check_all_raise_except(guard: APIGuard, excluded: Set[Callable]) -> None:
+def check_all_raise_except(guard: APIGuard, excluded: set[Callable]) -> None:
     for fun, args in _api_guard_funs:
         if fun.__name__.startswith('verify_'):
             if fun not in excluded:

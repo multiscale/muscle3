@@ -1,10 +1,10 @@
 from copy import deepcopy
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from ymmsl.v0_2 import Conduit, Configuration, Model, Ports, Reference
 
 
-ConduitIndex = Dict[Reference, Tuple[Conduit, bool]]
+ConduitIndex = dict[Reference, tuple[Conduit, bool]]
 
 
 class Plate:
@@ -28,8 +28,8 @@ class Plate:
     """
     def __init__(self) -> None:
         """Create a Plate."""
-        self._by_snd: Dict[Reference, ConduitIndex] = {}
-        self._by_recv: Dict[Reference, ConduitIndex] = {}
+        self._by_snd: dict[Reference, ConduitIndex] = {}
+        self._by_recv: dict[Reference, ConduitIndex] = {}
 
     def add(self, conduit: Conduit, snd_final: bool, recv_final: bool) -> None:
         """Add a conduit to the plate.
@@ -84,7 +84,7 @@ class Plate:
         return result
 
 
-Node = Tuple[Model, Reference, List[int]]
+Node = tuple[Model, Reference, list[int]]
 """Describes a model to be processed while flattening.
 
 This contains a model, its component path from the root, and a multiplicity.
@@ -94,7 +94,7 @@ being added to the flattened model.
 
 
 def process_components(
-        nested_config: Configuration, flat_model: Model, node: Node) -> List[Node]:
+        nested_config: Configuration, flat_model: Model, node: Node) -> list[Node]:
     """Copy components to the flattened model.
 
     This copies the components in the given model in nested_config to flat_model,
@@ -214,8 +214,8 @@ def glue_partial_conduits(
     for port in ports:
         incoming_conduits = plate.pop_by_receiver(parent_path + port)
         outgoing_conduits = plate.pop_by_sender(parent_path + port)
-        for incoming, (in_cdt, snd_final) in incoming_conduits.items():
-            for outgoing, (out_cdt, recv_final) in outgoing_conduits.items():
+        for in_cdt, snd_final in incoming_conduits.values():
+            for out_cdt, recv_final in outgoing_conduits.values():
                 joined_cdt = Conduit(
                         str(in_cdt.sender), str(out_cdt.receiver),
                         in_cdt.filters + out_cdt.filters)
@@ -262,7 +262,7 @@ def flatten(
             str(root_model.name), Ports(), root_model.description,
             root_model.supported_settings, [], [])
 
-    queue: List[Node] = [(root_model, Reference([]), [])]
+    queue: list[Node] = [(root_model, Reference([]), [])]
     while queue:
         node = queue.pop(0)
         queue.extend(process_components(config, flat_model, node))

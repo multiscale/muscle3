@@ -339,7 +339,7 @@ def hwthread_to_core():
     a function that takes a comma-separated list of hwthread ids and returns a list of
     corresponding core ids.
     """
-    with open('/proc/cpuinfo', 'r') as f:
+    with open('/proc/cpuinfo') as f:
         cpuinfo = f.readlines()
 
     def get_values(cpuinfo, field):

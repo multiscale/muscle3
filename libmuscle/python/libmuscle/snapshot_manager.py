@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import cast, List, Optional
+from typing import cast, Optional
 
 from ymmsl.v0_2 import Reference, Operator, Settings
 
@@ -111,7 +111,7 @@ class SnapshotManager:
 
     def save_snapshot(
             self, msg: Optional[Message], final: bool,
-            triggers: List[str], wallclock_time: float,
+            triggers: list[str], wallclock_time: float,
             f_init_max_timestamp: Optional[float],
             settings_overlay: Settings
             ) -> float:

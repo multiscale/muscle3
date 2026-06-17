@@ -1,9 +1,10 @@
+from collections.abc import Iterable
 import logging
 from pathlib import Path
 from queue import Queue
 from sqlite3 import Cursor
 from threading import Thread
-from typing import cast, Dict, Iterable, List, Optional, Tuple
+from typing import cast, Optional
 
 from libmuscle.planner.planner import ResourceAssignment
 from libmuscle.profiling import ProfileEvent, ProfileEventType
@@ -46,7 +47,7 @@ class ProfileStore(ProfileDatabase):
         self._init_database()
 
         # 500 batches is about 250MB
-        Item = Optional[Tuple[Reference, Iterable[ProfileEvent]]]
+        Item = Optional[tuple[Reference, Iterable[ProfileEvent]]]
         self._queue: Queue[Item] = Queue(500)
         self._confirmation_queue: Queue[None] = Queue()
         self._thread = Thread(target=self._storage_thread, daemon=True)
@@ -62,7 +63,7 @@ class ProfileStore(ProfileDatabase):
         super().close()
 
     def store_instances(
-            self, instances: List[Reference]) -> None:
+            self, instances: list[Reference]) -> None:
         """Store names of instances in the simulation.
 
         Args:
@@ -77,7 +78,7 @@ class ProfileStore(ProfileDatabase):
         cur.execute("COMMIT")
         cur.close()
 
-    def store_resources(self, resources: Dict[Reference, ResourceAssignment]) -> None:
+    def store_resources(self, resources: dict[Reference, ResourceAssignment]) -> None:
         """Store resource assignments into the database.
 
         Args:
@@ -122,7 +123,7 @@ class ProfileStore(ProfileDatabase):
         threads. So we use a single background thread now to do the
         writing.
         """
-        Record = Tuple[
+        Record = tuple[
                 int, int, float, float, Optional[str], Optional[int],
                 Optional[int], Optional[int], Optional[int], Optional[int],
                 Optional[float]]

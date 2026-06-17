@@ -1,5 +1,4 @@
 from copy import deepcopy
-from typing import Dict, Tuple
 
 import pytest
 from ymmsl.v0_2 import (
@@ -12,10 +11,10 @@ from libmuscle.planner.resources import Resources
 from libmuscle.test.conftest import core as c, on_node_resources as onr, resources
 
 
-_ResReqs = Dict[Reference, ResourceRequirements]
+_ResReqs = dict[Reference, ResourceRequirements]
 
 
-_Scenario = Tuple[Configuration, Resources]
+_Scenario = tuple[Configuration, Resources]
 
 
 s0_model = Model(

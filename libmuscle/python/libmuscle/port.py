@@ -1,4 +1,4 @@
-from typing import List, Optional, TypeVar
+from typing import Optional, TypeVar
 
 from ymmsl.v0_2 import Identifier, Operator
 import ymmsl
@@ -7,7 +7,7 @@ import ymmsl
 _T = TypeVar("_T")
 
 
-def _extend_list_to_size(lst: List[_T], size: int, padding: _T) -> None:
+def _extend_list_to_size(lst: list[_T], size: int, padding: _T) -> None:
     """When lst is smaller than size, extend to size using padding as values
     """
     num_extend = size - len(lst)
@@ -32,7 +32,7 @@ class Port(ymmsl.v0_2.Port):
     """
 
     def __init__(self, name: str, operator: Operator, is_vector: bool,
-                 is_connected: bool, our_ndims: int, peer_dims: List[int]
+                 is_connected: bool, our_ndims: int, peer_dims: list[int]
                  ) -> None:
         """Create a Port.
 
@@ -54,33 +54,27 @@ class Port(ymmsl.v0_2.Port):
             elif our_ndims + 1 == len(peer_dims):
                 self._length = peer_dims[-1]
             elif our_ndims > len(peer_dims):
-                raise RuntimeError(('Vector port "{}" is connected to an'
-                                    ' instance set with fewer dimensions.'
-                                    ' It should be connected to a scalar'
-                                    ' port on a set with one more dimension,'
-                                    ' or to a vector port on a set with the'
-                                    ' same number of dimensions.').format(
-                                        name))
+                raise RuntimeError(
+                        f'Vector port "{name}" is connected to an instance set with'
+                        ' fewer dimensions. It should be connected to a scalar port on'
+                        ' a set with one more dimension, or to a vector port on a set'
+                        ' with the same number of dimensions.')
             else:
-                raise RuntimeError(('Port "{}" is connected to an instance set'
-                                    ' with more than one dimension more than'
-                                    ' its own, which is not possible.').format(
-                                        name))
+                raise RuntimeError(
+                        f'Port "{name}" is connected to an instance set with more than'
+                        ' one dimension more than its own, which is not possible.')
             self._is_open = [True] * self._length
         else:
             if our_ndims < len(peer_dims):
-                raise RuntimeError(('Scalar port "{}" is connected to an'
-                                    ' instance set with more dimensions.'
-                                    ' It should be connected to a scalar'
-                                    ' port on an instance set with the same'
-                                    ' dimensions, or to a vector port on an'
-                                    ' instance set with one less dimension.'
-                                    ).format(name))
+                raise RuntimeError(
+                        f'Scalar port "{name}" is connected to an instance set with'
+                        ' more dimensions. It should be connected to a scalar port on'
+                        ' an instance set with the same dimensions, or to a vector port'
+                        ' on an instance set with one less dimension.')
             elif our_ndims > len(peer_dims) + 1:
-                raise RuntimeError(('Scalar port "{}" is connected to an'
-                                    ' instance set with at least two fewer'
-                                    ' dimensions, which is not possible.'
-                                    ).format(name))
+                raise RuntimeError(
+                        f'Scalar port "{name}" is connected to an instance set with at'
+                        ' least two fewer dimensions, which is not possible.')
             self._length = None
             self._is_open = [True]
 
@@ -127,8 +121,7 @@ class Port(ymmsl.v0_2.Port):
             RuntimeError: If this port is a scalar port.
         """
         if self._length is None:
-            raise RuntimeError(('Tried to get length of scalar port {}'
-                                ).format(self.name))
+            raise RuntimeError(f'Tried to get length of scalar port {self.name}')
         return self._length
 
     def set_length(self, length: int) -> None:
@@ -143,8 +136,8 @@ class Port(ymmsl.v0_2.Port):
             RuntimeError: If the port is not resizable.
         """
         if not self._is_resizable:
-            raise RuntimeError(('Tried to resize port {}, but it is not'
-                                ' resizable.'.format(self.name)))
+            raise RuntimeError(
+                    f'Tried to resize port {self.name}, but it is not resizable.')
         if length != self._length:
             self._length = length
             self._is_open = [True] * self._length
@@ -162,7 +155,7 @@ class Port(ymmsl.v0_2.Port):
         else:
             self._is_open = [False]
 
-    def restore_message_counts(self, num_messages: List[int]) -> None:
+    def restore_message_counts(self, num_messages: list[int]) -> None:
         """Restore message counts from a snapshot
         """
         self._num_messages = num_messages
@@ -170,7 +163,7 @@ class Port(ymmsl.v0_2.Port):
         _extend_list_to_size(self._num_messages, self._length or 1, 0)
         _extend_list_to_size(self._is_resuming, self._length or 1, False)
 
-    def get_message_counts(self) -> List[int]:
+    def get_message_counts(self) -> list[int]:
         """Get a list of message counts for all slots in this port
         """
         return self._num_messages.copy()

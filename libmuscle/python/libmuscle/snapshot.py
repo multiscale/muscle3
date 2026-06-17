@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, List, Optional, cast
+from typing import Optional, cast
 from typing_extensions import Buffer
 
 import msgpack
@@ -18,9 +18,9 @@ class Snapshot(ABC):
     SNAPSHOT_VERSION_BYTE = b'\0'
 
     def __init__(self,
-                 triggers: List[str],
+                 triggers: list[str],
                  wallclock_time: float,
-                 port_message_counts: Dict[str, List[int]],
+                 port_message_counts: dict[str, list[int]],
                  is_final_snapshot: bool,
                  message: Optional['communicator.Message'],
                  settings_overlay: Settings) -> None:
@@ -110,11 +110,11 @@ class MsgPackSnapshot(Snapshot):
 class SnapshotMetadata:
     """Metadata of a snapshot for sending to the muscle_manager.
     """
-    triggers: List[str]
+    triggers: list[str]
     wallclock_time: float
     timestamp: float
     next_timestamp: Optional[float]
-    port_message_counts: Dict[str, List[int]]
+    port_message_counts: dict[str, list[int]]
     is_final_snapshot: bool
     # storing as str, because Path cannot be serialized by msgpack
     snapshot_filename: str

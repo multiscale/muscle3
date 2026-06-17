@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 from subprocess import Popen
-from typing import Dict, List, Tuple
 
 
 _logger = logging.getLogger(__name__)
@@ -11,10 +10,10 @@ class ProcessManager:
     """Manages a set of running processes."""
     def __init__(self) -> None:
         """Create a ProcessManager."""
-        self._processes: Dict[str, Popen] = dict()
+        self._processes: dict[str, Popen] = dict()
 
     def start(
-            self, name: str, work_dir: Path, args: List[str], env: Dict[str, str],
+            self, name: str, work_dir: Path, args: list[str], env: dict[str, str],
             stdout: Path, stderr: Path) -> None:
         """Start a process.
 
@@ -49,13 +48,13 @@ class ProcessManager:
         for process in self._processes.values():
             process.kill()
 
-    def get_finished(self) -> List[Tuple[str, int]]:
+    def get_finished(self) -> list[tuple[str, int]]:
         """Returns names and exit codes of finished processes.
 
         This returns all processes that have finished running since the previous call;
         each started process will be returned exactly once.
         """
-        result: List[Tuple[str, int]] = list()
+        result: list[tuple[str, int]] = list()
 
         for name, process in self._processes.items():
             exit_code = process.poll()

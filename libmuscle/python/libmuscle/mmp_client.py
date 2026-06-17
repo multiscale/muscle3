@@ -1,9 +1,10 @@
+from collections.abc import Iterable
 import dataclasses
 from pathlib import Path
 from random import uniform
 from threading import get_ident, RLock
 from time import perf_counter, sleep
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Optional
 
 import msgpack
 from ymmsl.v0_2 import (
@@ -26,7 +27,7 @@ PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0
 
-_CheckpointInfoType = Tuple[
+_CheckpointInfoType = tuple[
         float, Checkpoints, Optional[Path], Optional[Path]]
 
 
@@ -35,7 +36,7 @@ def encode_operator(op: Operator) -> str:
     return op.name
 
 
-def encode_port(port: Port) -> List[str]:
+def encode_port(port: Port) -> list[str]:
     """Convert a Port to a MsgPack-compatible value."""
     return [str(port.name), encode_operator(port.operator)]
 
@@ -62,7 +63,7 @@ def encode_profile_event(event: ProfileEvent) -> Any:
             event.message_number, event.message_size, event.message_timestamp]
 
 
-def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
+def decode_checkpoint_rule(rule: dict[str, Any]) -> CheckpointRule:
     """Decode a checkpoint rule from a MsgPack-compatible value."""
     if rule.keys() == {'at'}:
         return CheckpointAtRule(**rule)
@@ -73,7 +74,7 @@ def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
 
 def decode_checkpoint_info(
         elapsed_time: float,
-        checkpoints_dict: Dict[str, Any],
+        checkpoints_dict: dict[str, Any],
         resume: Optional[str],
         snapshot_dir: Optional[str]
         ) -> _CheckpointInfoType:
@@ -106,7 +107,7 @@ class ConnectionLockedError(RuntimeError):
     pass
 
 
-class MMPClient():
+class MMPClient:
     """The client for the MUSCLE Manager Protocol.
 
     This class connects to the Manager and communicates with it on
@@ -222,7 +223,7 @@ class MMPClient():
         return decode_checkpoint_info(*response[1:])
 
     def register_instance(
-            self, locations: List[str], ports: List[Port]) -> None:
+            self, locations: list[str], ports: list[Port]) -> None:
         """Register a component instance with the manager.
 
         Args:
@@ -273,8 +274,7 @@ class MMPClient():
             raise RuntimeError('Timeout waiting for peers to appear')
 
         if response[0] == ResponseType.ERROR.value:
-            raise RuntimeError('Error getting peers from manager: {}'.format(
-                    response[1]))
+            raise RuntimeError(f'Error getting peers from manager: {response[1]}')
 
         conduits = [Conduit(snd, recv) for snd, recv in response[1]]
 
@@ -301,8 +301,7 @@ class MMPClient():
         response = self._call_manager(request)
 
         if response[0] == ResponseType.ERROR.value:
-            raise RuntimeError('Error deregistering instance: {}'.format(
-                    response[1]))
+            raise RuntimeError(f'Error deregistering instance: {response[1]}')
 
     def waiting_for_receive(
             self, peer_instance_id: Reference, port_name: str, slot: Optional[int]

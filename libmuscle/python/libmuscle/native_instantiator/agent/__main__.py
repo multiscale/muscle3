@@ -4,7 +4,6 @@ import psutil
 from socket import gethostname
 import sys
 from time import sleep
-from typing import Dict, Set, Tuple
 
 from libmuscle.native_instantiator.process_manager import ProcessManager
 from libmuscle.native_instantiator.agent.map_client import MAPClient
@@ -82,17 +81,17 @@ class Agent:
             A dict mapping resource types to resource descriptions.
         """
         if hasattr(os, 'sched_getaffinity'):
-            hwthreads_by_core_tuple: Dict[Tuple[int, int], Set[int]] = dict()
+            hwthreads_by_core_tuple: dict[tuple[int, int], set[int]] = dict()
 
             # these are the logical hwthread ids that we can use
             hwthread_ids = list(os.sched_getaffinity(0))
 
             for hwthread_id in hwthread_ids:
                 topdir = f'/sys/devices/system/cpu/cpu{hwthread_id}/topology'
-                with open(f'{topdir}/core_id', 'r') as f:
+                with open(f'{topdir}/core_id') as f:
                     # this gets the logical core id for the hwthread
                     core_id = int(f.read())
-                with open(f'{topdir}/physical_package_id', 'r') as f:
+                with open(f'{topdir}/physical_package_id') as f:
                     # this gets the die/socket id for the hwthread
                     package_id = int(f.read())
 
@@ -148,14 +147,14 @@ class Agent:
                         ' still appreciate an issue, because it is unexpected for sure.'
                         )
 
-            cores = CoreSet((
+            cores = CoreSet(
                     Core(
                         cid,
                         set(range(
                             cid * hwthreads_per_core, (cid + 1) * hwthreads_per_core))
                         )
                     for cid in range(ncores)
-                    ))
+                    )
 
         resources = OnNodeResources(self._node_name, cores)
         _logger.info(f'Found resources: {resources}')

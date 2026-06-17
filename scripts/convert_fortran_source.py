@@ -1,6 +1,5 @@
 import re
 import pathlib
-from typing import List
 
 import click
 
@@ -9,7 +8,7 @@ import click
 @click.argument("fortran_files", nargs=-1, required=True, type=click.Path(
             exists=True, file_okay=True, dir_okay=False, readable=True,
             allow_dash=True, resolve_path=True, path_type=pathlib.Path))
-def convert(fortran_files: List[pathlib.Path]) -> None:
+def convert(fortran_files: list[pathlib.Path]) -> None:
     """Convert a Fortran file using the old-style Fortran libmuscle API to the new
     object-oriented API.
     """

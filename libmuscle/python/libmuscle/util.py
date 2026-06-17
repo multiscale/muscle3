@@ -1,8 +1,9 @@
+from collections.abc import Generator
 import itertools
 from pathlib import Path
 import sys
 import time
-from typing import Generator, List, Optional, cast
+from typing import Optional, cast
 
 from ymmsl.v0_2 import Reference
 
@@ -22,7 +23,7 @@ def instance_to_kernel(instance: Reference) -> Reference:
     return instance[:i]
 
 
-def instance_indices(instance: Reference) -> List[int]:
+def instance_indices(instance: Reference) -> list[int]:
     """Extracts the indices from an instance name.
 
     Args:
@@ -40,14 +41,14 @@ def instance_indices(instance: Reference) -> List[int]:
     return [cast(int, instance[j]) for j in range(i, len(instance))]
 
 
-def generate_indices(dims: List[int]) -> Generator[List[int], None, None]:
+def generate_indices(dims: list[int]) -> Generator[list[int], None, None]:
     """Generates all indices in a block of the given dimensions.
 
     Args:
         dims: The dimensions of the block.
 
     Yields:
-        Lists of indices, one for each point in the block.
+        lists of indices, one for each point in the block.
     """
     for index in itertools.product(*map(range, dims)):
         yield list(index)

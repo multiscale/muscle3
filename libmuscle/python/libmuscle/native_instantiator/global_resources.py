@@ -1,7 +1,7 @@
 from enum import Enum
 import logging
 from socket import gethostname
-from typing import List, Optional
+from typing import Optional
 
 import psutil
 
@@ -55,7 +55,7 @@ class GlobalResources:
         """Return whether we're running on a cluster."""
         return self.scheduler != Scheduler.NONE
 
-    def agent_launch_command(self, agent_cmd: List[str]) -> List[str]:
+    def agent_launch_command(self, agent_cmd: list[str]) -> list[str]:
         """Return a command for launching one agent on each node.
 
         Args:

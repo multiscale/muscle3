@@ -1,7 +1,7 @@
 import sys
 from collections import OrderedDict
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 import click
 import ymmsl
@@ -216,7 +216,7 @@ def _load_ymmsl_files(ymmsl_files: Sequence[str]) -> Configuration:
     """Loads and merges yMMSL files."""
     configuration = None
     for path in ymmsl_files:
-        with open(path, 'r') as f:
+        with open(path) as f:
             config = ymmsl.load_as(Configuration, f)
         if not configuration:
             configuration = config

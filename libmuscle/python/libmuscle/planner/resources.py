@@ -186,8 +186,9 @@ psutil      physical        counted by psutil.cpu_count(logical=False)
 ```
 
 """
+from collections.abc import Iterable, Iterator
 from copy import copy, deepcopy
-from typing import Dict, Iterable, Iterator, List, Optional, Set, Tuple
+from typing import Optional
 
 
 class Core:
@@ -224,7 +225,7 @@ class Core:
         cid: ID of this core, to be used to refer to it
         hwthreads: Ids of hwthreads (logical CPUs) belonging to this core
     """
-    def __init__(self, cid: int, hwthreads: Set[int]) -> None:
+    def __init__(self, cid: int, hwthreads: set[int]) -> None:
         """Create a Core"""
         self.cid = cid
         self.hwthreads = copy(hwthreads)
@@ -353,7 +354,7 @@ class CoreSet:
         return self
 
     def __str__(self) -> str:
-        def collapse_ranges(ids: List[int]) -> str:
+        def collapse_ranges(ids: list[int]) -> str:
             if len(ids) == 0:
                 return ''
 
@@ -372,8 +373,8 @@ class CoreSet:
                 i += 1
             return ','.join(result)
 
-        cores = sorted((c.cid for c in self._cores.values()))
-        hwthreads = sorted((t for c in self._cores.values() for t in c.hwthreads))
+        cores = sorted(c.cid for c in self._cores.values())
+        hwthreads = sorted(t for c in self._cores.values() for t in c.hwthreads)
 
         return f'{collapse_ranges(cores)}({collapse_ranges(hwthreads)})'
 
@@ -498,7 +499,7 @@ class Resources:
             nodes: OnNodeResourcess to be designated by this object.
         """
         if nodes is None:
-            self._nodes: Dict[str, OnNodeResources] = {}
+            self._nodes: dict[str, OnNodeResources] = {}
         else:
             self._nodes = {n.node_name: n for n in nodes}
 
@@ -529,7 +530,7 @@ class Resources:
 
     def __copy__(self) -> 'Resources':
         """Copy the object."""
-        return Resources((copy(n) for n in self._nodes.values()))
+        return Resources(copy(n) for n in self._nodes.values())
 
     def __ior__(self, other: object) -> 'Resources':
         """Add the resources in the argument to this object."""
@@ -574,15 +575,15 @@ class Resources:
 
     def total_cores(self) -> int:
         """Return the total number of cores (not hwthreads) designated."""
-        return sum((len(n.cpu_cores) for n in self._nodes.values()))
+        return sum(len(n.cpu_cores) for n in self._nodes.values())
 
-    def cores(self) -> Iterable[Tuple[str, int]]:
+    def cores(self) -> Iterable[tuple[str, int]]:
         """Return this resources as a list of node, core."""
         return (
                 (node.node_name, core.cid)
                 for node in self._nodes.values() for core in node.cpu_cores)
 
-    def hwthreads(self) -> Iterable[Tuple[str, int]]:
+    def hwthreads(self) -> Iterable[tuple[str, int]]:
         """Return this resources as a list of node, hwthread."""
         return (
                 (node.node_name, hwthread)

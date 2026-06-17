@@ -1,7 +1,7 @@
 import logging
 import sys
 import types
-from typing import List, Optional
+from typing import Optional
 
 from libmuscle.port_manager import PortManager
 from ymmsl.v0_2 import Operator
@@ -95,7 +95,7 @@ class MMSFValidator:
                     "which are not supported by the MMSF Validator.")
 
         # State tracking
-        self._current_ports_used: List[str] = []
+        self._current_ports_used: list[str] = []
         self._current_operator: Operator = Operator.NONE
 
     def check_send(self, port_name: str, slot: Optional[int]) -> None:

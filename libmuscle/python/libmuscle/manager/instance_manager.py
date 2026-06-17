@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from textwrap import indent
 from threading import Thread
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 from multiprocessing import Queue
 from queue import Empty
 
@@ -87,7 +87,7 @@ class InstanceManager:
         self._log_handler = LogHandlingThread(self._log_records_in)
         self._log_handler.start()
 
-        self._allocations: Optional[Dict[Reference, ResourceAssignment]] = None
+        self._allocations: Optional[dict[Reference, ResourceAssignment]] = None
 
         resources = self._resources_in.get()
         _logger.debug(f'Got resources {resources}')
@@ -149,7 +149,7 @@ class InstanceManager:
             self._requests_out.put(request)
             self._num_running += 1
 
-    def get_resources(self) -> Dict[Reference, ResourceAssignment]:
+    def get_resources(self) -> dict[Reference, ResourceAssignment]:
         """Returns the resources allocated to each instance.
 
         Only call this after start_all() has been called, or it will raise
@@ -175,7 +175,7 @@ class InstanceManager:
                 all_seemingly_okay = False
 
         # Get all results
-        results: List[Process] = list()
+        results: list[Process] = list()
 
         while self._num_running > 0:
             result = self._results_in.get()
@@ -197,8 +197,8 @@ class InstanceManager:
             self._num_running -= 1
 
         # Summarise outcome
-        crashes: List[Tuple[Process, Path]] = list()
-        indirect_crashes: List[Tuple[Process, Path]] = list()
+        crashes: list[tuple[Process, Path]] = list()
+        indirect_crashes: list[tuple[Process, Path]] = list()
 
         for result in results:
             if result.status == ProcessStatus.CANCELED:
@@ -307,7 +307,7 @@ class InstanceManager:
         self._log_handler.shutdown()
         self._log_handler.join()
         # Close multiprocessing.Queues and ensure their feeder threads exit
-        queues: List[Queue] = [
+        queues: list[Queue] = [
                 self._resources_in, self._requests_out,
                 self._results_in, self._log_records_in]
         for queue in queues:

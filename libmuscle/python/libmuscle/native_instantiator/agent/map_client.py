@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 import msgpack
 
@@ -76,7 +76,7 @@ class MAPClient:
 
         raise Exception('Unknown AgentCommand')
 
-    def report_result(self, names_exit_codes: List[Tuple[str, int]]) -> None:
+    def report_result(self, names_exit_codes: list[tuple[str, int]]) -> None:
         """Report results of finished processes.
 
         Args:

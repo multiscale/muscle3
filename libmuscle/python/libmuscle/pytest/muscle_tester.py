@@ -1,10 +1,11 @@
+from collections.abc import Generator
 import os
 from contextlib import contextmanager
 from types import TracebackType
 from pathlib import Path
 import multiprocessing as mp
 from unittest.mock import patch
-from typing import Generator, Optional, Tuple, Union
+from typing import Optional, Union
 from multiprocessing.connection import Connection
 from contextlib import ExitStack
 
@@ -207,7 +208,7 @@ class MuscleTester:
         self.implementation_tester = None
 
 
-def start_mmp_server(control_pipe: Tuple[Connection, Connection],
+def start_mmp_server(control_pipe: tuple[Connection, Connection],
                      ymmsl_config: Configuration, run_dir: RunDir,
                      env: dict[str, str], start_instances: bool) -> None:
     if start_instances:

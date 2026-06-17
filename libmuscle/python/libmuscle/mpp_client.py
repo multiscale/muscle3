@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Optional
 from typing_extensions import Buffer
 
 import msgpack
@@ -15,7 +15,7 @@ class MPPClient:
     This client connects to a peer to retrieve messages. It uses an MCP
     Transport to connect.
     """
-    def __init__(self, locations: List[str]) -> None:
+    def __init__(self, locations: list[str]) -> None:
         """Create an MPPClient for the given peer.
 
         The client will connect to the peer on one of its locations. It
@@ -42,7 +42,7 @@ class MPPClient:
         self._transport_client = client
 
     def receive(self, receiver: Reference, timeout_handler: Optional[TimeoutHandler]
-                ) -> Tuple[Buffer, ProfileData]:
+                ) -> tuple[Buffer, ProfileData]:
         """Receive a message from a port this client connects to.
 
         Args:

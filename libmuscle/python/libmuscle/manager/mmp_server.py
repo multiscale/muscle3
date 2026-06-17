@@ -1,7 +1,7 @@
 import errno
 import logging
 import time
-from typing import Any, Dict, cast, List, Optional
+from typing import Any, cast, Optional
 from typing_extensions import Buffer
 
 import msgpack
@@ -36,12 +36,12 @@ def decode_operator(data: str) -> Operator:
     return Operator[data]
 
 
-def decode_port(data: List[str]) -> Port:
+def decode_port(data: list[str]) -> Port:
     """Create a Port from a MsgPack-compatible value."""
     return Port(Identifier(data[0]), decode_operator(data[1]))
 
 
-def encode_conduit(conduit: Conduit) -> List[str]:
+def encode_conduit(conduit: Conduit) -> list[str]:
     """Convert a Conduit to a MsgPack-compatible value."""
     return [str(conduit.sender), str(conduit.receiver)]
 
@@ -54,7 +54,7 @@ def encode_ports(ports: Ports) -> list[list[str]]:
     ]
 
 
-def encode_checkpoint_rule(rule: CheckpointRule) -> Dict[str, Any]:
+def encode_checkpoint_rule(rule: CheckpointRule) -> dict[str, Any]:
     """Convert a CheckpointRule to a MsgPack-compatible value."""
     if isinstance(rule, CheckpointAtRule):
         return {'at': list(map(float, rule.at))}
@@ -66,7 +66,7 @@ def encode_checkpoint_rule(rule: CheckpointRule) -> Dict[str, Any]:
     raise TypeError(f"Unknown checkpoint rule type: {type(rule)}.")
 
 
-def encode_checkpoints(checkpoints: Checkpoints) -> Dict[str, Any]:
+def encode_checkpoints(checkpoints: Checkpoints) -> dict[str, Any]:
     """Convert a Checkpoins to a MsgPack-compatible value."""
     return {
         "at_end": checkpoints.at_end,
@@ -154,8 +154,8 @@ class MMPRequestHandler(RequestHandler):
         self._profile_store.close()
 
     def _register_instance(
-            self, instance_id: str, locations: List[str],
-            ports: List[List[str]], version: str = '') -> Any:
+            self, instance_id: str, locations: list[str],
+            ports: list[list[str]], version: str = '') -> Any:
         """Handle a register instance request.
 
         Args:
@@ -203,10 +203,10 @@ class MMPRequestHandler(RequestHandler):
             A list containing the following values on success:
 
             status (ResponseType): SUCCESS
-            conduits (List[List[str]]): Conduits from/to peers
-            dimensions (Dict[str, List[int]]): Dimensions of peer
+            conduits (list[list[str]]): Conduits from/to peers
+            dimensions (dict[str, list[int]]): Dimensions of peer
                 components
-            locations (Dict[str, List[str]]): Locations where peer
+            locations (dict[str, list[str]]): Locations where peer
                 instances can be contacted.
             ports (list[list[str]]): Ports declaration from the yMMSL configuration
 
@@ -282,7 +282,7 @@ class MMPRequestHandler(RequestHandler):
             A list containing the following values on success:
 
             status (ResponseType): SUCCESS
-            settings (Dict[str, SettingValue]): The global settings
+            settings (dict[str, SettingValue]): The global settings
         """
         return [
                 ResponseType.SUCCESS.value,
@@ -309,7 +309,7 @@ class MMPRequestHandler(RequestHandler):
         return [ResponseType.SUCCESS.value]
 
     def _submit_profile_events(
-            self, instance_id: str, events: List[List[Any]]) -> Any:
+            self, instance_id: str, events: list[list[Any]]) -> Any:
         """Handle a submit profile events request.
 
         Args:
@@ -333,7 +333,7 @@ class MMPRequestHandler(RequestHandler):
         return [ResponseType.SUCCESS.value]
 
     def _submit_snapshot(
-            self, instance_id: str, snapshot: Dict[str, Any]) -> Any:
+            self, instance_id: str, snapshot: dict[str, Any]) -> Any:
         """Handle a submit snapshot request.
 
         Returns:
@@ -358,7 +358,7 @@ class MMPRequestHandler(RequestHandler):
             status (ResponseType): SUCCESS
             wallclock_reference_time (float): Unix timestamp (in UTC) indicating
                 wallclock time of the start of the workflow.
-            checkpoints (dict): Dictionary encoding a ymmsl.Checkpoints object.
+            checkpoints (dict): dictionary encoding a ymmsl.Checkpoints object.
             resume_path (Optional[str]): Checkpoint filename to resume from.
             snapshot_directory (Optional[str]): Directory to store instance
                 snapshots.

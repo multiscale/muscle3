@@ -23,52 +23,51 @@ def test_start_script(tmpdir):
     mpi_test_component = cpp_test_dir / 'mpi_component_test'
 
     # make config
-    ymmsl_text = ((
-            'ymmsl_version: v0.2\n'
-            'description: Configuration with a program with a start script\n'
-            'models:\n'
-            '- name: test_model\n'
-            '  description: A macro micro model\n'
-            '  components:\n'
-            '    macro:\n'
-            '      ports:\n'
-            '        o_i: out\n'
-            '        s: in\n'
-            '      description: The macro model\n'
-            '      implementation: program\n'
-            '    micro:\n'
-            '      ports:\n'
-            '        f_init: init\n'
-            '        o_f: result\n'
-            '      description: The micro model, with a script implementation\n'
-            '      implementation: mpi_program\n'
-            '  conduits:\n'
-            '    macro.out: micro.init\n'
-            '    micro.result: macro.in\n'
-            'programs:\n'
-            '  program:\n'
-            '    description: A program that is started with a script\n'
-            '    script: |\n'
-            '      #!/bin/bash\n'
-            '\n'
-            '      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{}\n'
-            '\n'
-            '      {}\n'
-            '  mpi_program:\n'
-            '    description: An MPI program that is started with a script\n'
-            '    script:\n'
-            '    - "#!/bin/bash"\n'
-            '    - ""\n'
-            '    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{}\n'
-            '    - ""\n'
-            '    - mpirun -n ${{MUSCLE_MPI_PROCESSES}} {}\n'
-            'resources:\n'
-            '  test_model.macro:\n'
-            '    threads: 1\n'
-            '  test_model.micro:\n'
-            '    mpi_processes: 2\n'
-            ).format(
-                ld_lib_path, test_component, ld_lib_path, mpi_test_component))
+    ymmsl_text = f"""
+ymmsl_version: v0.2
+description: Configuration with a program with a start script
+models:
+- name: test_model
+  description: A macro micro model
+  components:
+    macro:
+      ports:
+        o_i: out
+        s: in
+      description: The macro model
+      implementation: program
+    micro:
+      ports:
+        f_init: init
+        o_f: result
+      description: The micro model, with a script implementation
+      implementation: mpi_program
+  conduits:
+    macro.out: micro.init
+    micro.result: macro.in
+programs:
+  program:
+    description: A program that is started with a script
+    script: |
+      #!/bin/bash
+
+      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{ld_lib_path}
+
+      {test_component}
+  mpi_program:
+    description: An MPI program that is started with a script
+    script:
+    - "#!/bin/bash"
+    - ""
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{ld_lib_path}
+    - ""
+    - mpirun -n ${{MUSCLE_MPI_PROCESSES}} {mpi_test_component}
+resources:
+  test_model.macro:
+    threads: 1
+  test_model.micro:
+    mpi_processes: 2
+"""
 
     config = ymmsl.load(ymmsl_text)
 

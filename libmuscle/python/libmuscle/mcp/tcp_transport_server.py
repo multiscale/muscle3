@@ -2,7 +2,7 @@ import logging
 import socket
 import socketserver as ss
 import threading
-from typing import Any, cast, Dict, List, Tuple, Type
+from typing import Any, cast
 
 import psutil
 
@@ -20,8 +20,8 @@ class TcpTransportServerImpl(ss.ThreadingMixIn, ss.TCPServer):
     daemon_threads = True
     allow_reuse_address = True
 
-    def __init__(self, host_port_tuple: Tuple[str, int],
-                 streamhandler: Type, transport_server: 'TcpTransportServer'
+    def __init__(self, host_port_tuple: tuple[str, int],
+                 streamhandler: type, transport_server: 'TcpTransportServer'
                  ) -> None:
         super().__init__(host_port_tuple, streamhandler)
         self.transport_server = transport_server
@@ -30,7 +30,7 @@ class TcpTransportServerImpl(ss.ThreadingMixIn, ss.TCPServer):
         if hasattr(socket, "TCP_QUICKACK"):
             self.socket.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
 
-        self.session_store: Dict[int, SessionState] = dict()
+        self.session_store: dict[int, SessionState] = dict()
         self.session_lock = threading.Lock()
         self.next_session = 1
 
@@ -159,9 +159,9 @@ class TcpTransportServer(TransportServer):
         # IPv6 may give two more (unneeded) items, so can't unpack directly
         port = self._server.server_address[1]
 
-        locs: List[str] = []
+        locs: list[str] = []
         for address in self._get_if_addresses():
-            locs.append('{}:{}'.format(address, port))
+            locs.append(f'{address}:{port}')
         return 'tcp:{}'.format(','.join(locs))
 
     def close(self, graceful: bool = True) -> None:
@@ -185,7 +185,7 @@ class TcpTransportServer(TransportServer):
         self._server_thread.join()
         self._server.server_close()
 
-    def _get_if_addresses(self) -> List[str]:
+    def _get_if_addresses(self) -> list[str]:
         """Returns a list of local addresses.
 
         This returns a list of strings containing all IPv4 and IPv6 network
@@ -194,7 +194,7 @@ class TcpTransportServer(TransportServer):
         from the client. So we get all of them here, and the client can
         then try them all and find one that works.
         """
-        all_addresses: List[str] = []
+        all_addresses: list[str] = []
         ifs = psutil.net_if_addrs()
         for _, addresses in ifs.items():
             for addr in addresses:

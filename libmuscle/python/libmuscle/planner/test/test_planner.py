@@ -1,5 +1,4 @@
 import pytest
-from typing import Dict, List
 
 from ymmsl.v0_2 import (
         Component, Conduit, Configuration, Model, MPICoresResReq, Ports, Program,
@@ -52,7 +51,7 @@ def model(init: Component, macro: Component, micro: Component) -> Model:
 
 
 @pytest.fixture
-def programs() -> List[Program]:
+def programs() -> list[Program]:
     return [
             Program(Ref('init'), script='init'),
             Program(Ref('macro'), script='macro'),
@@ -60,7 +59,7 @@ def programs() -> List[Program]:
 
 
 @pytest.fixture
-def requirements() -> Dict[Reference, ResourceRequirements]:
+def requirements() -> dict[Reference, ResourceRequirements]:
     res_list = [
             ThreadedResReq(Ref('test_model.init'), 4),
             ThreadedResReq(Ref('test_model.macro'), 4),
@@ -70,8 +69,8 @@ def requirements() -> Dict[Reference, ResourceRequirements]:
 
 @pytest.fixture
 def configuration(
-        model: Model, programs: List[Program],
-        requirements: Dict[Reference, ResourceRequirements]) -> Configuration:
+        model: Model, programs: list[Program],
+        requirements: dict[Reference, ResourceRequirements]) -> Configuration:
     return Configuration('config', [], [model], None, None, programs, requirements)
 
 
@@ -215,7 +214,7 @@ def test_oversubscribe(
 def test_oversubscribe_single_instance_threaded() -> None:
     model = Model('single_instance', None, '', None, [Component('x', Ports(), '', 'x')])
     programs = [Program(Ref('x'), script='x')]
-    reqs: Dict[Reference, ResourceRequirements] = {
+    reqs: dict[Reference, ResourceRequirements] = {
             Ref('single_instance.x'): ThreadedResReq(Ref('single_instance.x'), 24)}
     config = Configuration('config', [], [model], None, None, programs, reqs)
 
@@ -230,7 +229,7 @@ def test_oversubscribe_single_instance_threaded() -> None:
 def test_oversubscribe_single_instance_mpi() -> None:
     model = Model('single_instance', None, '', None, [Component('x', Ports(), '', 'x')])
     programs = [Program(Ref('x'), script='x')]
-    reqs: Dict[Reference, ResourceRequirements] = {
+    reqs: dict[Reference, ResourceRequirements] = {
             Ref('single_instance.x'): MPICoresResReq(Ref('single_instance.x'), 24)}
     config = Configuration('config', [], [model], None, None, programs, reqs)
 
@@ -248,7 +247,7 @@ def test_virtual_allocation() -> None:
     model = Model(
             'ensemble', None, '', None, [Component('x', Ports(), '', 'x', False, 9)])
     programs = [Program(Ref('x'), script='x')]
-    reqs: Dict[Ref, ResourceRequirements] = {
+    reqs: dict[Ref, ResourceRequirements] = {
             Ref('ensemble.x'): MPICoresResReq(Ref('ensemble.x'), 13)}
     config = Configuration('config', [], [model], None, None, programs, reqs)
 
@@ -268,7 +267,7 @@ def test_impossible_virtual_allocation() -> None:
     model = Model(
             'ensemble', None, '', None, [Component('x', Ports(), '', 'x', False, 9)])
     program = [Program(Ref('x'), script='x')]
-    reqs: Dict[Ref, ResourceRequirements] = {
+    reqs: dict[Ref, ResourceRequirements] = {
             Ref('ensemble.x'): ThreadedResReq(Ref('ensemble.x'), 13)}
     config = Configuration('config', [], [model], None, None, program, reqs)
 

@@ -5,7 +5,7 @@ import queue
 import sys
 from time import sleep
 import traceback
-from typing import Dict, List, Optional
+from typing import Optional
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instantiator import (
@@ -44,7 +44,7 @@ class NativeInstantiator(mp.Process):
         self._log_records_out = log_records
         self._run_dir = run_dir
 
-        self._processes: Dict[str, Process] = dict()
+        self._processes: dict[str, Process] = dict()
 
     def run(self) -> None:
         """Entry point for the process"""
@@ -244,7 +244,7 @@ class NativeInstantiator(mp.Process):
         return run_script_file
 
     def _add_resources(
-            self, env: Dict[str, str], res_req: ResourceRequirements) -> None:
+            self, env: dict[str, str], res_req: ResourceRequirements) -> None:
         """Add resource env vars to the given env."""
         if isinstance(res_req, ThreadedResReq):
             num_threads = res_req.threads
@@ -265,7 +265,7 @@ class NativeInstantiator(mp.Process):
 
     def _report_failed_processes(self) -> None:
         """Get processes that failed to start and report their status."""
-        failed_processes: List[str] = list()
+        failed_processes: list[str] = list()
 
         for name, process in self._processes.items():
             if process.status == ProcessStatus.ERROR:

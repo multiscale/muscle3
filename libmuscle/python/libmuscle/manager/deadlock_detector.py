@@ -1,6 +1,6 @@
 import logging
 from threading import Lock
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 
 _logger = logging.getLogger(__name__)
@@ -21,12 +21,12 @@ class DeadlockDetector:
         """Construct a new DeadlockDetector."""
         self._mutex = Lock()
         """Mutex that should be locked before accessing instance variables."""
-        self._waiting_instances: Dict[str, str] = {}
+        self._waiting_instances: dict[str, str] = {}
         """Maps instance IDs to the peer instance IDs they are waiting for."""
-        self._waiting_instance_ports: Dict[str, Tuple[str, Optional[int]]] = {}
+        self._waiting_instance_ports: dict[str, tuple[str, Optional[int]]] = {}
         """Maps instance IDs to the port/slot they are waiting for.."""
-        self._detected_deadlocks: List[List[str]] = []
-        """List of deadlocked instance cycles. Set by _handle_potential_deadlock."""
+        self._detected_deadlocks: list[list[str]] = []
+        """list of deadlocked instance cycles. Set by _handle_potential_deadlock."""
 
     def waiting_for_receive(
             self, instance_id: str, peer_instance_id: str,
@@ -110,7 +110,7 @@ class DeadlockDetector:
             deadlock_instances.append(cur_instance)
         _logger.debug("No deadlock detected")
 
-    def _handle_potential_deadlock(self, deadlock_instances: List[str]) -> None:
+    def _handle_potential_deadlock(self, deadlock_instances: list[str]) -> None:
         """Handle a potential deadlock.
 
         Make sure to lock self._mutex before calling this.
@@ -120,7 +120,7 @@ class DeadlockDetector:
         """
         self._detected_deadlocks.append(deadlock_instances)
 
-    def _format_deadlock(self, deadlock_instances: List[str]) -> str:
+    def _format_deadlock(self, deadlock_instances: list[str]) -> str:
         """Create and return formatted deadlock debug info.
 
         Args:

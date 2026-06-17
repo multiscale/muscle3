@@ -4,7 +4,6 @@ from subprocess import Popen, TimeoutExpired
 import sys
 from threading import Lock
 from time import sleep
-from typing import Dict, List, Tuple
 
 from libmuscle.native_instantiator.agent.agent_commands import (
         CancelAllCommand, StartCommand, ShutdownCommand)
@@ -39,11 +38,11 @@ class AgentManager(IAgentManager):
             agent_dir: Directory in which agents can write log files.
         """
         self._expected_nodes = global_resources().nodes
-        self._nodes: Dict[str, str] = dict()
+        self._nodes: dict[str, str] = dict()
         self._resources: Resources = Resources([])
         self._resources_lock = Lock()   # protects _nodes and _resources
 
-        self._finished_processes: List[Tuple[str, int]] = list()
+        self._finished_processes: list[tuple[str, int]] = list()
         self._finished_processes_lock = Lock()
 
         self._server = MAPServer(self)
@@ -60,8 +59,8 @@ class AgentManager(IAgentManager):
         return self._resources
 
     def start(
-            self, node_name: str, name: str, work_dir: Path, args: List[str],
-            env: Dict[str, str], stdout: Path, stderr: Path) -> None:
+            self, node_name: str, name: str, work_dir: Path, args: list[str],
+            env: dict[str, str], stdout: Path, stderr: Path) -> None:
         """Start a process on a node.
 
         The files that the output is directed to will be overwritten if they already
@@ -90,7 +89,7 @@ class AgentManager(IAgentManager):
         for node_host_name in self._nodes.values():
             self._server.deposit_command(node_host_name, CancelAllCommand())
 
-    def get_finished(self) -> List[Tuple[str, int]]:
+    def get_finished(self) -> list[tuple[str, int]]:
         """Returns names and exit codes of finished processes.
 
         This returns all processes that have finished running since the previous call;
@@ -153,7 +152,7 @@ class AgentManager(IAgentManager):
             self._nodes[resources.node_name] = agent_hostname
             self._resources.add_node(resources)
 
-    def report_result(self, names_exit_codes: List[Tuple[str, int]]) -> None:
+    def report_result(self, names_exit_codes: list[tuple[str, int]]) -> None:
         """Report results of finished processes.
 
         Called by MAPServer from a server thread.

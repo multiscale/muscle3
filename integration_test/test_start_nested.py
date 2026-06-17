@@ -22,53 +22,53 @@ def test_start_nested(tmpdir):
     test_component = cpp_test_dir / 'component_test'
 
     # make config
-    ymmsl_text = ((
-            'ymmsl_version: v0.2\n'
-            'description: Nested version of the test_start_all model\n'
-            'models:\n'
-            '  test_model:\n'
-            '    components:\n'
-            '      macro:\n'
-            '        ports:\n'
-            '          o_i: out\n'
-            '          s: in\n'
-            '        description: The macro model\n'
-            '        implementation: component\n'
-            '      micro:\n'
-            '        ports:\n'
-            '          f_init: in\n'
-            '          o_f: out\n'
-            '        description: The micro model, wrapped in a submodel\n'
-            '    conduits:\n'
-            '      macro.out: micro.in\n'
-            '      micro.out: macro.in\n'
-            '  submodel:\n'
-            '    ports:\n'
-            '      f_init: in\n'
-            '      o_f: out\n'
-            '    components:\n'
-            '      micro:\n'
-            '        ports:\n'
-            '          f_init: init\n'
-            '          o_f: result\n'
-            '        description: The micro model\n'
-            '        implementation: component\n'
-            '    conduits:\n'
-            '      in: micro.init\n'
-            '      micro.result: out\n'
-            'custom_implementations:\n'
-            '  micro.implementation: submodel\n'
-            'programs:\n'
-            '  component:\n'
-            '    env:\n'
-            '      +LD_LIBRARY_PATH: :{}\n'
-            '    executable: {}\n'
-            'resources:\n'
-            '  test_model.macro:\n'
-            '    threads: 1\n'
-            '  test_model.micro.micro:\n'
-            '    threads: 1\n'
-            ).format(ld_lib_path, test_component))
+    ymmsl_text = f"""
+ymmsl_version: v0.2
+description: Nested version of the test_start_all model
+models:
+  test_model:
+    components:
+      macro:
+        ports:
+          o_i: out
+          s: in
+        description: The macro model
+        implementation: component
+      micro:
+        ports:
+          f_init: in
+          o_f: out
+        description: The micro model, wrapped in a submodel
+    conduits:
+      macro.out: micro.in
+      micro.out: macro.in
+  submodel:
+    ports:
+      f_init: in
+      o_f: out
+    components:
+      micro:
+        ports:
+          f_init: init
+          o_f: result
+        description: The micro model
+        implementation: component
+    conduits:
+      in: micro.init
+      micro.result: out
+custom_implementations:
+  micro.implementation: submodel
+programs:
+  component:
+    env:
+      +LD_LIBRARY_PATH: :{ld_lib_path}
+    executable: {test_component}
+resources:
+  test_model.macro:
+    threads: 1
+  test_model.micro.micro:
+    threads: 1
+"""
 
     config = flatten(ymmsl.load(ymmsl_text))
 

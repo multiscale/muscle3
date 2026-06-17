@@ -21,38 +21,38 @@ def test_start_all(tmpdir):
     test_component = cpp_test_dir / 'component_test'
 
     # make config
-    ymmsl_text = ((
-            'ymmsl_version: v0.2\n'
-            'description: A simple test model to test starting programs\n'
-            'models:\n'
-            '- name: test_model\n'
-            '  components:\n'
-            '    macro:\n'
-            '      ports:\n'
-            '        o_i: out\n'
-            '        s: in\n'
-            '      description: The macro model\n'
-            '      implementation: component\n'
-            '    micro:\n'
-            '      ports:\n'
-            '        f_init: init\n'
-            '        o_f: result\n'
-            '      description: The micro model\n'
-            '      implementation: component\n'
-            '  conduits:\n'
-            '    macro.out: micro.init\n'
-            '    micro.result: macro.in\n'
-            'programs:\n'
-            '  component:\n'
-            '    env:\n'
-            '      +LD_LIBRARY_PATH: :{}\n'
-            '    executable: {}\n'
-            'resources:\n'
-            '  test_model.macro:\n'
-            '    threads: 1\n'
-            '  test_model.micro:\n'
-            '    threads: 1\n'
-            ).format(ld_lib_path, test_component))
+    ymmsl_text = f"""
+ymmsl_version: v0.2
+description: A simple test model to test starting programs
+models:
+- name: test_model
+  components:
+    macro:
+      ports:
+        o_i: out
+        s: in
+      description: The macro model
+      implementation: component
+    micro:
+      ports:
+        f_init: init
+        o_f: result
+      description: The micro model
+      implementation: component
+  conduits:
+    macro.out: micro.init
+    micro.result: macro.in
+programs:
+  component:
+    env:
+      +LD_LIBRARY_PATH: :{ld_lib_path}
+    executable: {test_component}
+resources:
+  test_model.macro:
+    threads: 1
+  test_model.micro:
+    threads: 1
+"""
 
     config = ymmsl.load(ymmsl_text)
 

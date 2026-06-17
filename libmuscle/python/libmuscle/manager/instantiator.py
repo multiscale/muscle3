@@ -4,7 +4,7 @@ import multiprocessing as mp
 import os
 from pathlib import Path
 import traceback
-from typing import Dict, Optional
+from typing import Optional
 
 from ymmsl.v0_2 import BaseEnv, Program, Reference, ResourceRequirements
 
@@ -158,8 +158,8 @@ def reconfigure_logging(queue: mp.Queue) -> None:
 
 
 def create_instance_env(
-        instance: Reference, base_env: BaseEnv, overlay: Dict[str, str]
-        ) -> Dict[str, str]:
+        instance: Reference, base_env: BaseEnv, overlay: dict[str, str]
+        ) -> dict[str, str]:
     """Creates an environment for an instance.
 
     This takes the current (manager) environment variables and makes

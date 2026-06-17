@@ -4,7 +4,6 @@ from libmuscle import Instance, Message
 
 from .conftest import run_manager_with_actors, skip_if_python_only
 
-
 YMMSL = """\
 ymmsl_version: v0.2
 

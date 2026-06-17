@@ -1,8 +1,15 @@
+from libmuscle.runner import run_simulation
 from ymmsl.v0_2 import (
-        Component, Conduit, Configuration, Operator, Ports, Model, Settings)
+    Component,
+    Conduit,
+    Configuration,
+    Model,
+    Operator,
+    Ports,
+    Settings,
+)
 
 from libmuscle import Instance, Message
-from libmuscle.runner import run_simulation
 
 
 def duplication_mapper():

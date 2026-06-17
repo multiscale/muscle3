@@ -2,8 +2,9 @@ import logging
 import os
 import socket
 
-from libmuscle import Instance, Message
 from ymmsl.v0_2 import Operator
+
+from libmuscle import Instance, Message
 
 
 def log_location() -> None:

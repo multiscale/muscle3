@@ -1,6 +1,6 @@
-from typing_extensions import Buffer
-
 from queue import Queue
+
+from typing_extensions import Buffer
 
 
 class Outbox:

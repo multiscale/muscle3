@@ -1,20 +1,19 @@
 import logging
 from typing import Any, Optional, cast
+
 from ymmsl.v0_2 import Identifier, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
-from libmuscle.mmp_client import MMPClient
-from libmuscle.mpp_message import ClosePort, MPPMessage
-from libmuscle.mpp_client import MPPClient
-from libmuscle.mpp_server import MPPServer
 from libmuscle.mcp.tcp_util import SocketClosed
+from libmuscle.mmp_client import MMPClient
+from libmuscle.mpp_client import MPPClient
+from libmuscle.mpp_message import ClosePort, MPPMessage
+from libmuscle.mpp_server import MPPServer
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import (
-        ProfileEvent, ProfileEventType, ProfileTimestamp)
+from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
-
 
 _logger = logging.getLogger(__name__)
 

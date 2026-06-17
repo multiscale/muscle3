@@ -9,12 +9,11 @@ from queue import Queue
 from threading import Thread
 from typing import Optional, TypeVar
 
-from ymmsl.v0_2 import Configuration, Identifier, Program, Reference
 from ymmsl import save
+from ymmsl.v0_2 import Configuration, Identifier, Program, Reference
 
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.snapshot import SnapshotMetadata
-
 
 _MAX_FILE_EXISTS_CHECK = 100
 

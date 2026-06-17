@@ -3,13 +3,13 @@ import sys
 from pathlib import Path
 
 import pytest
-from ymmsl.v0_2 import Operator
-from ymmsl import load, dump
-
-from libmuscle import Instance, Message, USES_CHECKPOINT_API
 from libmuscle.manager.run_dir import RunDir
+from ymmsl import dump, load
+from ymmsl.v0_2 import Operator
 
-from .conftest import run_manager_with_actors, ls_snapshots
+from libmuscle import USES_CHECKPOINT_API, Instance, Message
+
+from .conftest import ls_snapshots, run_manager_with_actors
 
 # Make interact_coupling.py available (from docs/sources/examples)
 sys.path.append(str(

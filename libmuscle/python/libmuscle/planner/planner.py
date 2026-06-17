@@ -1,14 +1,21 @@
+import logging
 from collections.abc import Iterable, Mapping
 from copy import copy
-import logging
 
 from ymmsl.v0_2 import (
-        Component, Configuration, Model, MPICoresResReq,
-        MPINodesResReq, Operator, Reference, ResourceRequirements, ThreadedResReq)
+    Component,
+    Configuration,
+    Model,
+    MPICoresResReq,
+    MPINodesResReq,
+    Operator,
+    Reference,
+    ResourceRequirements,
+    ThreadedResReq,
+)
 
 from libmuscle.planner.resources import OnNodeResources, Resources
 from libmuscle.util import instance_indices
-
 
 _logger = logging.getLogger(__name__)
 

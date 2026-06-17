@@ -2,7 +2,6 @@ import logging
 from threading import Lock
 from typing import Optional
 
-
 _logger = logging.getLogger(__name__)
 
 

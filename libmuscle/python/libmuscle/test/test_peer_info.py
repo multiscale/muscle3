@@ -1,6 +1,7 @@
 import pytest
-
-from ymmsl.v0_2 import Conduit, Identifier as Id, Reference as Ref, Port, Operator
+from ymmsl.v0_2 import Conduit, Operator, Port
+from ymmsl.v0_2 import Identifier as Id
+from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.peer_info import PeerInfo
 

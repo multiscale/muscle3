@@ -1,10 +1,10 @@
-from libmuscle.profiling import (
-        ProfileEvent, ProfileEventType, ProfileTimestamp)
-from libmuscle.manager.profile_store import ProfileStore
-from ymmsl.v0_2 import Operator, Port, Reference
-
 import sqlite3
 from unittest.mock import patch
+
+from ymmsl.v0_2 import Operator, Port, Reference
+
+from libmuscle.manager.profile_store import ProfileStore
+from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 
 
 def test_create_profile_store(tmp_path):

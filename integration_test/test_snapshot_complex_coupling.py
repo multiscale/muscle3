@@ -2,16 +2,19 @@ import random
 import time
 
 import pytest
+from libmuscle.manager.run_dir import RunDir
+from ymmsl import dump, load
 from ymmsl.v0_2 import Operator
-from ymmsl import load, dump
 
 from libmuscle import (
-        Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API,
-        SKIP_MMSF_SEQUENCE_CHECKS)
-from libmuscle.manager.run_dir import RunDir
+    KEEPS_NO_STATE_FOR_NEXT_USE,
+    SKIP_MMSF_SEQUENCE_CHECKS,
+    USES_CHECKPOINT_API,
+    Instance,
+    Message,
+)
 
-from .conftest import run_manager_with_actors, ls_snapshots
-
+from .conftest import ls_snapshots, run_manager_with_actors
 
 _LOG_LEVEL = 'INFO'  # set to DEBUG for additional debug info
 

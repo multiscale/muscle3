@@ -1,6 +1,6 @@
-from libmuscle.util import generate_indices, instance_indices
+from ymmsl.v0_2 import Conduit, Configuration, Ports, Reference
 
-from ymmsl.v0_2 import Conduit, Configuration, Reference, Ports
+from libmuscle.util import generate_indices, instance_indices
 
 
 class TopologyStore:

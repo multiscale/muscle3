@@ -1,8 +1,7 @@
 from typing import Optional, TypeVar
 
-from ymmsl.v0_2 import Identifier, Operator
 import ymmsl
-
+from ymmsl.v0_2 import Identifier, Operator
 
 _T = TypeVar("_T")
 

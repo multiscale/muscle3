@@ -6,7 +6,6 @@ from ymmsl.v0_2 import Reference
 from libmuscle.mcp.transport_client import TimeoutHandler
 from libmuscle.mmp_client import MMPClient
 
-
 _logger = logging.getLogger(__name__)
 
 

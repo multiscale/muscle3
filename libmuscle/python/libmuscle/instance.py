@@ -1,29 +1,26 @@
-from copy import copy
-from enum import Flag, auto
 import logging
 import os
 import sys
-from typing import cast, Literal, Optional, overload
+from copy import copy
+from enum import Flag, auto
+from typing import Literal, Optional, cast, overload
 
-from ymmsl.v0_2 import (
-        Identifier, Operator, SettingValue, Port, Reference, Settings)
+from ymmsl.v0_2 import Identifier, Operator, Port, Reference, Settings, SettingValue
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager
 from libmuscle.communicator import Communicator, Message
-from libmuscle.settings_manager import SettingsManager
 from libmuscle.logging import LogLevel
 from libmuscle.logging_handler import MuscleManagerHandler
-from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.mmsf_validator import MMSFValidator
+from libmuscle.mpp_message import ClosePort
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import (
-        ProfileEvent, ProfileEventType, ProfileTimestamp)
+from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
+from libmuscle.settings_manager import SettingsManager
 from libmuscle.snapshot_manager import SnapshotManager
 from libmuscle.util import extract_log_file_location
-
 
 _logger = logging.getLogger(__name__)
 

@@ -1,15 +1,23 @@
 from copy import deepcopy
 
 import pytest
-from ymmsl.v0_2 import (
-        Component, Conduit, Configuration, Model, MPICoresResReq, Ports, Program,
-        Reference, ResourceRequirements, ThreadedResReq)
-
 from libmuscle.planner.planner import ModelGraph, Planner, ResourceAssignment
 from libmuscle.planner.resources import Resources
-
-from libmuscle.test.conftest import core as c, on_node_resources as onr, resources
-
+from libmuscle.test.conftest import core as c
+from libmuscle.test.conftest import on_node_resources as onr
+from libmuscle.test.conftest import resources
+from ymmsl.v0_2 import (
+    Component,
+    Conduit,
+    Configuration,
+    Model,
+    MPICoresResReq,
+    Ports,
+    Program,
+    Reference,
+    ResourceRequirements,
+    ThreadedResReq,
+)
 
 _ResReqs = dict[Reference, ResourceRequirements]
 

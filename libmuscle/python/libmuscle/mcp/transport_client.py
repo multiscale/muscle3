@@ -1,8 +1,8 @@
 from typing import Optional
+
 from typing_extensions import Buffer
 
 from libmuscle.profiling import ProfileTimestamp
-
 
 ProfileData = tuple[ProfileTimestamp, ProfileTimestamp, ProfileTimestamp]
 

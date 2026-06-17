@@ -1,10 +1,9 @@
+import time
 from random import uniform
 from threading import Condition, Lock, Thread
-import time
 
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiling import ProfileEvent, ProfileTimestamp
-
 
 _COMMUNICATION_INTERVAL = 10.0  # seconds
 

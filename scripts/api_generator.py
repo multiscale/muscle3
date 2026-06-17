@@ -3,9 +3,8 @@
 import abc
 from collections.abc import Sequence
 from copy import copy
-from textwrap import indent, dedent
+from textwrap import dedent, indent
 from typing import Any, Callable, Optional, Union, cast
-
 
 error_codes = {
         'success': 0,

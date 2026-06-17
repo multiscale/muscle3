@@ -1,9 +1,10 @@
+import pytest
+from ymmsl.v0_2 import Conduit, Operator, Port
+from ymmsl.v0_2 import Identifier as Id
+from ymmsl.v0_2 import Reference as Ref
+
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
-
-from ymmsl.v0_2 import Conduit, Identifier as Id, Operator, Reference as Ref, Port
-
-import pytest
 
 
 @pytest.fixture

@@ -2,12 +2,11 @@ import time
 from pathlib import Path
 
 import pytest
-
-from libmuscle import Message
 from libmuscle.mcp.tcp_transport_client import RECONNECT_TIMEOUT
 from libmuscle.mmp_client import PEER_TIMEOUT
 from libmuscle.pytest import MuscleTester
 
+from libmuscle import Message
 
 YMMSL_CODES_DIR = Path(__file__).parent / 'ymmsl' / 'codes'
 CODES_DIR = Path(__file__).parent / 'codes'

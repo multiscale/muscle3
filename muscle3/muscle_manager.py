@@ -1,25 +1,24 @@
+import sys
+import textwrap
+import traceback
 from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
-import sys
-import textwrap
 from time import sleep
-import traceback
-from typing import cast, Optional
+from typing import Optional, cast
 from warnings import catch_warnings, filterwarnings
 
 import click
-from yatiml import RecognitionError
-from ymmsl import Document
 import ymmsl
 import ymmsl.v0_1 as v0_1
 import ymmsl.v0_2 as v0_2
-from ymmsl.v0_2 import ExecutionModel
-
 from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
+from yatiml import RecognitionError
+from ymmsl import Document
+from ymmsl.v0_2 import ExecutionModel
 
 
 @click.command(no_args_is_help=True)

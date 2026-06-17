@@ -4,9 +4,8 @@ from queue import Empty
 from unittest.mock import patch
 
 import pytest
-
 import ymmsl
-from ymmsl.v0_2 import (Configuration, Reference)
+from ymmsl.v0_2 import Configuration, Reference
 
 from libmuscle.manager.instance_manager import InstanceManager
 from libmuscle.manager.instance_registry import InstanceRegistry

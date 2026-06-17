@@ -1,16 +1,16 @@
-from collections.abc import Iterable
 import logging
+from collections.abc import Iterable
 from pathlib import Path
 from queue import Queue
 from sqlite3 import Cursor
 from threading import Thread
-from typing import cast, Optional
+from typing import Optional, cast
 
-from libmuscle.planner.planner import ResourceAssignment
-from libmuscle.profiling import ProfileEvent, ProfileEventType
-from libmuscle.manager.profile_database import ProfileDatabase
 from ymmsl.v0_2 import Operator, Reference
 
+from libmuscle.manager.profile_database import ProfileDatabase
+from libmuscle.planner.planner import ResourceAssignment
+from libmuscle.profiling import ProfileEvent, ProfileEventType
 
 _logger = logging.getLogger(__name__)
 

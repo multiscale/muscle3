@@ -4,12 +4,30 @@ import argparse
 from textwrap import dedent
 
 from api_generator import (
-        API, Bool, Class, Constructor,
-        Destructor, Double, Enum, EqualsOperator,
-        IndexAssignmentOperator, Int32t, Int64t, MemFun,
-        MemFunTmpl, Namespace, Obj, OverloadSet,
-        Sizet, String, T, VecInt64t, VecDbl, Vec2Dbl, Void)
-
+    API,
+    Bool,
+    Class,
+    Constructor,
+    Destructor,
+    Double,
+    Enum,
+    EqualsOperator,
+    IndexAssignmentOperator,
+    Int32t,
+    Int64t,
+    MemFun,
+    MemFunTmpl,
+    Namespace,
+    Obj,
+    OverloadSet,
+    Sizet,
+    String,
+    T,
+    Vec2Dbl,
+    VecDbl,
+    VecInt64t,
+    Void,
+)
 
 # These need to kept in sync with the values in the C++ implementation
 operator_desc = Enum('Operator', [

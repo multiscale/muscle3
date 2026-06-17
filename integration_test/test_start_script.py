@@ -1,11 +1,10 @@
 from pathlib import Path
 
 import ymmsl
-
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 
-from .conftest import skip_if_python_only, skip_if_no_mpi_cpp
+from .conftest import skip_if_no_mpi_cpp, skip_if_python_only
 
 
 @skip_if_python_only

@@ -2,11 +2,12 @@ import logging
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+from ymmsl.v0_2 import Conduit, Settings
+from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.communicator import Communicator, Message
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.peer_info import PeerInfo
-from ymmsl.v0_2 import Conduit, Reference as Ref, Settings
 
 
 @pytest.fixture

@@ -1,25 +1,33 @@
-from collections.abc import Iterable
 import dataclasses
+from collections.abc import Iterable
 from pathlib import Path
 from random import uniform
-from threading import get_ident, RLock
+from threading import RLock, get_ident
 from time import perf_counter, sleep
 from typing import Any, Optional
 
 import msgpack
 from ymmsl.v0_2 import (
-        Conduit, Operator, Port, Reference, Settings, Checkpoints,
-        CheckpointRule, CheckpointRangeRule, CheckpointAtRule, Identifier)
+    CheckpointAtRule,
+    CheckpointRangeRule,
+    CheckpointRule,
+    Checkpoints,
+    Conduit,
+    Identifier,
+    Operator,
+    Port,
+    Reference,
+    Settings,
+)
 
 import libmuscle
+from libmuscle.logging import LogMessage
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.peer_info import PeerInfo
 from libmuscle.profiling import ProfileEvent
-from libmuscle.logging import LogMessage
 from libmuscle.snapshot import SnapshotMetadata
-from libmuscle.util import instance_to_kernel, instance_indices
-
+from libmuscle.util import instance_indices, instance_to_kernel
 
 TIMID_WAIT = 1.0
 

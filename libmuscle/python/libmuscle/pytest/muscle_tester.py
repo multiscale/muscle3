@@ -1,33 +1,32 @@
-from collections.abc import Generator
-import os
-from contextlib import contextmanager
-from types import TracebackType
-from pathlib import Path
 import multiprocessing as mp
-from unittest.mock import patch
-from typing import Optional, Union
+import os
+from collections.abc import Generator
+from contextlib import ExitStack, contextmanager
 from multiprocessing.connection import Connection
-from contextlib import ExitStack
+from pathlib import Path
+from types import TracebackType
+from typing import Optional, Union
+from unittest.mock import patch
 
 import ymmsl.v0_2
 from ymmsl.v0_2 import (
     Component,
     Conduit,
-    Ports,
     Configuration,
-    Reference,
-    Program,
     ExecutionModel,
     Implementation,
     Model,
+    Ports,
+    Program,
+    Reference,
     ThreadedResReq,
 )
 
-from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.mcp.tcp_transport_client import RECONNECT_TIMEOUT
 from libmuscle.mmp_client import PEER_TIMEOUT
+from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.receive_timeout_handler import ReceiveTimeoutHandler
 
 

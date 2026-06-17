@@ -1,10 +1,13 @@
-import cerulean
 import logging
+
+import cerulean
 import pytest
 
 from integration_test.cluster_test.conftest import (
-        REMOTE_SHARED, ssh_term, skip_unless_cluster)
-
+    REMOTE_SHARED,
+    skip_unless_cluster,
+    ssh_term,
+)
 
 _logger = logging.getLogger(__name__)
 

@@ -1,18 +1,14 @@
+from pathlib import Path
 from unittest.mock import patch
+
+import pytest
+from ymmsl.v0_2 import Operator, Port, Reference
 
 from libmuscle.manager.profile_database import ProfileDatabase
 from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.planner.planner import ResourceAssignment
-from libmuscle.profiling import (
-        ProfileEvent, ProfileEventType, ProfileTimestamp)
-
+from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.test.conftest import on_node_resources as onr
-
-from ymmsl.v0_2 import Operator, Port, Reference
-
-import pytest
-
-from pathlib import Path
 
 
 @pytest.fixture

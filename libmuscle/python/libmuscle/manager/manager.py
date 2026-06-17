@@ -1,23 +1,22 @@
-from pathlib import Path
 import logging
 import sys
 import traceback
+from pathlib import Path
 from typing import Optional
 
-from ymmsl.v0_2 import Configuration
 from ymmsl import save as save_ymmsl
+from ymmsl.v0_2 import Configuration
 
 import libmuscle
+from libmuscle.manager.deadlock_detector import DeadlockDetector
+from libmuscle.manager.instance_manager import InstanceManager
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.instance_manager import InstanceManager
 from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
-from libmuscle.manager.deadlock_detector import DeadlockDetector
-
 
 _logger = logging.getLogger(__name__)
 

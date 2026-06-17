@@ -1,11 +1,11 @@
 from typing import Optional
-from typing_extensions import Buffer
 
 import msgpack
+from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference
 
 from libmuscle.mcp.protocol import RequestType
-from libmuscle.mcp.transport_client import ProfileData, TransportClient, TimeoutHandler
+from libmuscle.mcp.transport_client import ProfileData, TimeoutHandler, TransportClient
 from libmuscle.mcp.type_registry import transport_client_types
 
 

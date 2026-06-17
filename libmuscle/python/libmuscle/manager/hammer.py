@@ -3,7 +3,6 @@ from typing import Optional
 
 from ymmsl.v0_2 import Conduit, Configuration, Model, Ports, Reference
 
-
 ConduitIndex = dict[Reference, tuple[Conduit, bool]]
 
 

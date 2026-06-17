@@ -2,7 +2,7 @@ from ymmsl.v0_2 import Operator
 
 from libmuscle import Instance
 
-from .conftest import skip_if_python_only, run_manager_with_actors
+from .conftest import run_manager_with_actors, skip_if_python_only
 
 
 def receiver():

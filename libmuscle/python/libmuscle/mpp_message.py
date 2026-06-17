@@ -1,10 +1,9 @@
 from enum import IntEnum
-from typing import Any, cast, Optional
-from typing_extensions import Buffer
+from typing import Any, Optional, cast
 
 import msgpack
 import numpy as np
-
+from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.grid import Grid

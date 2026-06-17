@@ -129,9 +129,9 @@ select = [
   "UP",
   # flake8-bugbear
   "B",
+  # isort
+  "I",
   # TODO: enable these at some point?
   # flake8-simplify
   #"SIM",
-  # isort
-  # "I",
 ]

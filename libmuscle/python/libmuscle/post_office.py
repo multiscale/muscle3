@@ -1,7 +1,7 @@
-from threading import Lock
 import time
-from typing_extensions import Buffer
+from threading import Lock
 
+from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference
 
 from libmuscle.outbox import Outbox

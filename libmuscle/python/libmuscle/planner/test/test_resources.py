@@ -1,7 +1,6 @@
 from copy import copy
 
 import pytest
-
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 
 

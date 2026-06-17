@@ -1,11 +1,17 @@
 from collections import OrderedDict
 
-from ymmsl.v0_2 import (
-        Component, Conduit, Configuration, Model, Operator, Ports, Settings)
-
-from libmuscle import Instance, Message, DONT_APPLY_OVERLAY
 from libmuscle.runner import run_simulation
+from ymmsl.v0_2 import (
+    Component,
+    Conduit,
+    Configuration,
+    Model,
+    Operator,
+    Ports,
+    Settings,
+)
 
+from libmuscle import DONT_APPLY_OVERLAY, Instance, Message
 
 _ENSEMBLE_SIZE = 2
 

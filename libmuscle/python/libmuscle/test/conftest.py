@@ -1,8 +1,8 @@
 from copy import copy
-import pytest
 from typing import Union
 from unittest.mock import patch
 
+import pytest
 from ymmsl.v0_2 import Operator, Reference, Settings
 
 from libmuscle.api_guard import APIGuard

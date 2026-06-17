@@ -9,10 +9,8 @@ from pathlib import Path
 import pytest
 import yatiml
 import ymmsl
-
 from libmuscle.manager.manager import Manager
 from libmuscle.pytest.muscle_tester import make_server_process
-
 
 skip_if_python_only = pytest.mark.skipif(
         'MUSCLE_TEST_PYTHON_ONLY' in os.environ,

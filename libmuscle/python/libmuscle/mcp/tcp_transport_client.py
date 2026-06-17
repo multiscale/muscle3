@@ -1,16 +1,21 @@
-import select
 import logging
+import select
 import socket
 import time
 from typing import Optional
+
 from typing_extensions import Buffer
 
-from libmuscle.mcp.transport_client import ProfileData, TransportClient, TimeoutHandler
 from libmuscle.mcp.tcp_util import (
-        is_disconnect, recv_frame, recv_int64, send_frame, send_int64)
+    is_disconnect,
+    recv_frame,
+    recv_int64,
+    send_frame,
+    send_int64,
+)
+from libmuscle.mcp.transport_client import ProfileData, TimeoutHandler, TransportClient
 from libmuscle.profiling import ProfileTimestamp
 from libmuscle.util import Retrier
-
 
 _logger = logging.getLogger(__name__)
 

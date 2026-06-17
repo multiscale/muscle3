@@ -1,7 +1,6 @@
-from libmuscle.profiling import (
-        ProfileEvent, ProfileEventType, ProfileTimestamp)
-
 import time
+
+from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 
 
 def test_recording_events(mocked_profiler) -> None:

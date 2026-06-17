@@ -1,14 +1,14 @@
 import pytest
 from ymmsl.v0_2 import Component, Conduit, Configuration, Model, Ports, Reference
 
+from libmuscle.manager.deadlock_detector import DeadlockDetector
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPRequestHandler
+from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
-from libmuscle.manager.profile_store import ProfileStore
-from libmuscle.manager.deadlock_detector import DeadlockDetector
 
 
 @pytest.fixture

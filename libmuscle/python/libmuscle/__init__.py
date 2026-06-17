@@ -3,8 +3,9 @@ from libmuscle.grid import Grid
 from libmuscle.instance import Instance, InstanceFlags
 from libmuscle.manager.profile_database import ProfileDatabase
 from libmuscle.version import __version__
-from libmuscle import runner
 
+# This must be imported after communicator to avoid a circular import error
+from libmuscle import runner  # isort: skip
 
 # Note that libmuscle.version above is created by the build system; it's okay
 # that it's not present.

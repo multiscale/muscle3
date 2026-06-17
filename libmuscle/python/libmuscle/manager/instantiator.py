@@ -2,8 +2,8 @@ import enum
 import logging
 import multiprocessing as mp
 import os
-from pathlib import Path
 import traceback
+from pathlib import Path
 from typing import Optional
 
 from ymmsl.v0_2 import BaseEnv, Program, Reference, ResourceRequirements

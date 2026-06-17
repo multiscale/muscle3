@@ -1,6 +1,6 @@
 from typing import cast
 
-from ymmsl.v0_2 import Conduit, Identifier, Reference, Port
+from ymmsl.v0_2 import Conduit, Identifier, Port, Reference
 
 from libmuscle.endpoint import Endpoint
 

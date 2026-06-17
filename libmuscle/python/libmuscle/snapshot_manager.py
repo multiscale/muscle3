@@ -1,12 +1,12 @@
 import logging
 from pathlib import Path
-from typing import cast, Optional
+from typing import Optional, cast
 
-from ymmsl.v0_2 import Reference, Operator, Settings
+from ymmsl.v0_2 import Operator, Reference, Settings
 
 from libmuscle.communicator import Message
-from libmuscle.port_manager import PortManager
 from libmuscle.mmp_client import MMPClient
+from libmuscle.port_manager import PortManager
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
 
 _logger = logging.getLogger(__name__)

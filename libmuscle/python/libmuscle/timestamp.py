@@ -9,6 +9,7 @@ class Timestamp:
     Args:
         seconds: The number of seconds since the start of 1970.
     """
+
     def __init__(self, seconds: Optional[float] = None) -> None:
         """Create a Timestamp representing the given time, or now.
 
@@ -26,6 +27,8 @@ class Timestamp:
             by Python's logging subsystem.
         """
         date_time = datetime.datetime.fromtimestamp(self.seconds)
-        whole_part = date_time.strftime('%Y-%m-%d %H:%M:%S')
-        return '%s,%03d' % (    # noqa: UP031
-                whole_part, date_time.time().microsecond / 1000)
+        whole_part = date_time.strftime("%Y-%m-%d %H:%M:%S")
+        return "%s,%03d" % (  # noqa: UP031
+            whole_part,
+            date_time.time().microsecond / 1000,
+        )

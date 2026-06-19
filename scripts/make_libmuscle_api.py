@@ -75,31 +75,40 @@ class GridConstructor(MultiMemFun):
         super().__init__()
         self.with_names = with_names
         self.types = [Bool(), Int32t(), Int64t(), Float(), Double()]
-        self.name = 'grid'
+        self.name = "grid"
 
         # generate flexible C functions
         for typ in self.types:
             # This is not set yet here, but f_type() needs it.
             # The dict is only used by Obj, which we don't have.
-            typ.name = 'data_array'
-            typ.set_ns_prefix({}, 'LIBMUSCLE', 'LIBMUSCLE')
+            typ.name = "data_array"
+            typ.set_ns_prefix({}, "LIBMUSCLE", "LIBMUSCLE")
 
-            instance_params: list[Par] = [Array(1, copy(typ), 'data_array')]
+            instance_params: list[Par] = [Array(1, copy(typ), "data_array")]
             if not with_names:
-                instance_name = f'grid_{typ.tname()}_a'
+                instance_name = f"grid_{typ.tname()}_a"
+
                 def flex_chain_call(**kwargs: str) -> str:
                     return (
-                        f'{kwargs["class_name"]}::grid(data_array_p,'
-                        ' data_array_shape_v, {},'
-                        ' libmuscle::StorageOrder::first_adjacent)')
-                self.instances.append(NamedConstructor(
-                    instance_params, instance_name, cpp_func_name='grid',
-                    cpp_chain_call=flex_chain_call, f_override=''))
+                        f"{kwargs['class_name']}::grid(data_array_p,"
+                        " data_array_shape_v, {},"
+                        " libmuscle::StorageOrder::first_adjacent)"
+                    )
+
+                self.instances.append(
+                    NamedConstructor(
+                        instance_params,
+                        instance_name,
+                        cpp_func_name="grid",
+                        cpp_chain_call=flex_chain_call,
+                        f_override="",
+                    )
+                )
             else:
                 for i in range(1, 8):
-                    arg_name = f'index_name_{i}'
+                    arg_name = f"index_name_{i}"
                     instance_params.append(String(arg_name))
-                instance_name = f'grid_{typ.tname()}_n'
+                instance_name = f"grid_{typ.tname()}_n"
 
                 tmpl = dedent("""\
                     std::intptr_t $C_PREFIX$_$CLASSNAME$_create_grid_{0}_n_(
@@ -141,42 +150,59 @@ class GridConstructor(MultiMemFun):
                     """)
                 fc_override = tmpl.format(typ.tname(), typ.fc_cpp_type())
 
-                self.instances.append(NamedConstructor(
-                    instance_params, instance_name, fc_override=fc_override,
-                    f_override=''))
+                self.instances.append(
+                    NamedConstructor(
+                        instance_params,
+                        instance_name,
+                        fc_override=fc_override,
+                        f_override="",
+                    )
+                )
 
         # generate instances
         for typ in self.types:
             for ndims in range(1, 8):
-                instance_params = [Array(ndims, copy(typ), 'data_array')]
+                instance_params = [Array(ndims, copy(typ), "data_array")]
                 if with_names:
-                    for i in range(1, ndims+1):
-                        arg_name = f'index_name_{i}'
+                    for i in range(1, ndims + 1):
+                        arg_name = f"index_name_{i}"
                         instance_params.append(String(arg_name))
 
                 instance_name = (
-                        f'grid_{ndims}_{typ.tname()}_{"n" if with_names else "a"}')
+                    f"grid_{ndims}_{typ.tname()}_{'n' if with_names else 'a'}"
+                )
 
                 if with_names:
-                    arg_list = [
-                            f'index_name_{i}'
-                            for i in range(1, ndims+1)]
-                    name_args = ', &\n        '.join(arg_list)
-                    name_types = ''.join([
-                            f'    character (len=*), intent(in) :: {arg}\n'
-                            for arg in arg_list])
-                    name_params = ', &\n'.join([(
-                        f'            index_name_{dim},'
-                        f' int(len(index_name_{dim}), c_size_t)')
-                        for dim in range(1, ndims+1)])
+                    arg_list = [f"index_name_{i}" for i in range(1, ndims + 1)]
+                    name_args = ", &\n        ".join(arg_list)
+                    name_types = "".join(
+                        [
+                            f"    character (len=*), intent(in) :: {arg}\n"
+                            for arg in arg_list
+                        ]
+                    )
+                    name_params = ", &\n".join(
+                        [
+                            (
+                                f"            index_name_{dim},"
+                                f" int(len(index_name_{dim}), c_size_t)"
+                            )
+                            for dim in range(1, ndims + 1)
+                        ]
+                    )
                     if ndims < 7:
-                        name_params += ', &\n'
-                    filler_params = ', &\n'.join([(
-                        '            index_name_1,'
-                        ' int(len(index_name_1), c_size_t)')
-                        for dim in range(ndims+1, 8)])
+                        name_params += ", &\n"
+                    filler_params = ", &\n".join(
+                        [
+                            (
+                                "            index_name_1,"
+                                " int(len(index_name_1), c_size_t)"
+                            )
+                            for dim in range(ndims + 1, 8)
+                        ]
+                    )
 
-                    dim_list = ', '.join([':'] * ndims)
+                    dim_list = ", ".join([":"] * ndims)
 
                     tmpl = dedent("""\
                         function $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n( &
@@ -200,27 +226,46 @@ class GridConstructor(MultiMemFun):
                             $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n%ptr = ret_val
                         end function $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n
 
-                        """)    # noqa: E501 Line too long
+                        """)  # noqa: E501 Line too long
                     f_override = tmpl.format(
-                                ndims, typ.tname(), name_args, name_types.strip(),
-                                name_params, filler_params,
-                                typ.f_type()[0][0], typ.f_chain_arg(),
-                                dim_list)
+                        ndims,
+                        typ.tname(),
+                        name_args,
+                        name_types.strip(),
+                        name_params,
+                        filler_params,
+                        typ.f_type()[0][0],
+                        typ.f_chain_arg(),
+                        dim_list,
+                    )
 
-                    self.instances.append(NamedConstructor(
-                        instance_params, instance_name,
-                        f_override=f_override, fc_override=''))
+                    self.instances.append(
+                        NamedConstructor(
+                            instance_params,
+                            instance_name,
+                            f_override=f_override,
+                            fc_override="",
+                        )
+                    )
                 else:
+
                     def inst_chain_call(tname: str = typ.tname(), **a: str) -> str:
                         return (
-                            f'{a["ns_prefix"]}_{a["class_name"]}_create_grid_'
-                            f'{tname}_a_( &\n{a["fc_args"]})')
+                            f"{a['ns_prefix']}_{a['class_name']}_create_grid_"
+                            f"{tname}_a_( &\n{a['fc_args']})"
+                        )
 
-                    self.instances.append(NamedConstructor(
-                        instance_params, instance_name, cpp_func_name='grid',
-                        fc_chain_call=inst_chain_call, fc_override=''))
+                    self.instances.append(
+                        NamedConstructor(
+                            instance_params,
+                            instance_name,
+                            cpp_func_name="grid",
+                            fc_chain_call=inst_chain_call,
+                            fc_override="",
+                        )
+                    )
 
-    def __copy__(self) -> 'GridConstructor':
+    def __copy__(self) -> "GridConstructor":
         result = GridConstructor(self.with_names)
         result.c_prefix = self.c_prefix
         result.f_prefix = self.f_prefix
@@ -244,15 +289,15 @@ class Elements(MultiMemFun):
     def __init__(self) -> None:
         super().__init__()
         self.types = [Bool(), Int32t(), Int64t(), Float(), Double()]
-        self.name = 'elements'
+        self.name = "elements"
 
         # Generate ABI
         for typ in self.types:
             # This is not set yet here, but f_type() needs it.
             # The dict is only used by Obj, which we don't have.
-            typ.name = 'elements'
-            typ.set_ns_prefix({}, 'LIBMUSCLE', 'LIBMUSCLE')
-            func_name = f'elements_{typ.tname()}'
+            typ.name = "elements"
+            typ.set_ns_prefix({}, "LIBMUSCLE", "LIBMUSCLE")
+            func_name = f"elements_{typ.tname()}"
             tmpl = dedent("""\
                     void $C_PREFIX$_$CLASSNAME$_elements_{0}_(
                             std::intptr_t self,
@@ -285,19 +330,26 @@ class Elements(MultiMemFun):
                         }}
                     }}
 
-                    """)    # noqa: E501 Line too long
+                    """)  # noqa: E501 Line too long
             fc_override = tmpl.format(typ.tname(), typ.fc_cpp_type())
 
-            self.instances.append(MemFun(
-                    Array(1, copy(typ), 'elements'), func_name, [Sizet('ndims')],
-                    True, f_override='', fc_override=fc_override))
+            self.instances.append(
+                MemFun(
+                    Array(1, copy(typ), "elements"),
+                    func_name,
+                    [Sizet("ndims")],
+                    True,
+                    f_override="",
+                    fc_override=fc_override,
+                )
+            )
 
         # Generate API
         for typ in self.types:
             for ndims in range(1, 8):
-                func_name = f'elements_{ndims}_{typ.tname()}'
-                dims_list = ', '.join([':']*ndims)
-                rev_dims = ', '.join(map(str, reversed(range(1, ndims+1))))
+                func_name = f"elements_{ndims}_{typ.tname()}"
+                dims_list = ", ".join([":"] * ndims)
+                rev_dims = ", ".join(map(str, reversed(range(1, ndims + 1))))
                 tmpl = dedent("""\
                     subroutine $F_PREFIX$_$CLASSNAME$_elements_{0}_{1}( &
                             self, &
@@ -368,18 +420,28 @@ class Elements(MultiMemFun):
                         end if
                     end subroutine $F_PREFIX$_$CLASSNAME$_elements_{0}_{1}
 
-                    """)    # noqa: E501 Line too long
+                    """)  # noqa: E501 Line too long
                 f_override = tmpl.format(
-                        ndims, typ.tname(), typ.f_ret_type()[1][0][0],
-                        dims_list, typ.fi_ret_type()[0][0], rev_dims)
+                    ndims,
+                    typ.tname(),
+                    typ.f_ret_type()[1][0][0],
+                    dims_list,
+                    typ.fi_ret_type()[0][0],
+                    rev_dims,
+                )
 
                 self.instances.append(
-                        MemFun(
-                            Array(ndims, copy(typ), 'elements'),
-                            func_name, [], True,
-                            f_override=f_override, fc_override=''))
+                    MemFun(
+                        Array(ndims, copy(typ), "elements"),
+                        func_name,
+                        [],
+                        True,
+                        f_override=f_override,
+                        fc_override="",
+                    )
+                )
 
-    def __copy__(self) -> 'Elements':
+    def __copy__(self) -> "Elements":
         result = Elements()
         result.c_prefix = self.c_prefix
         result.f_prefix = self.f_prefix
@@ -393,56 +455,116 @@ class Elements(MultiMemFun):
 
 
 create_grid_overloads = [
-        f'create_grid_{ndims}_{typ}_{with_names_tag}'
-        for ndims in range(1, 8)
-        for typ in ['logical', 'int4', 'int8', 'real4', 'real8']
-        for with_names_tag in ['n', 'a']]
+    f"create_grid_{ndims}_{typ}_{with_names_tag}"
+    for ndims in range(1, 8)
+    for typ in ["logical", "int4", "int8", "real4", "real8"]
+    for with_names_tag in ["n", "a"]
+]
 
 
-dataconstref_desc = Class('DataConstRef', None, [
-    Constructor([], 'create_nil'),
-    Constructor([Bool('value')], 'create_logical'),
-    Constructor([String('value')], 'create_character'),
-    Constructor([Char('value')], 'create_int1'),
-    Constructor([Int16t('value')], 'create_int2'),
-    Constructor([Int32t('value')], 'create_int4'),
-    Constructor([Int64t('value')], 'create_int8'),
-    Constructor([Float('value')], 'create_real4'),
-    Constructor([Double('value')], 'create_real8'),
-    Constructor([Obj('Settings', 'value')], 'create_settings'),
-    Constructor([Obj('DataConstRef', 'value')], 'create_copy'),
-    OverloadSet('create', [
-        'create_nil', 'create_logical', 'create_character', 'create_int1',
-        'create_int2', 'create_int4', 'create_int8', 'create_real4',
-        'create_real8', 'create_settings', 'create_copy'], True),
-    GridConstructor(False),
-    GridConstructor(True),
-    OverloadSet('create_grid', create_grid_overloads, True),
-    Destructor(),
-    MemFun(String(), 'describe'),
-    MemFunTmpl(
-        [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
-            Float(), Double()],
-        Bool(), 'is_a', [], False),
-    MemFun(Bool(), 'is_a_dict'),
-    MemFun(Bool(), 'is_a_list'),
-    MemFunTmpl(
-        [Bool(), Float(), Double(), Int32t(), Int64t()],
-        Bool(), 'is_a_grid_of', [], False),
-    MemFun(Bool(), 'is_a_byte_array'),
-    MemFun(Bool(), 'is_nil'),
-    MemFun(Bool(), 'is_a_settings', [], False,
-           cpp_chain_call=lambda **kwargs: 'self_p->is_a<Settings>()'),
-    MemFun(Sizet(), 'size'),
-    MemFunTmpl(
-        [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
-            Float(), Double()],
-        T(), 'as', [], True),
-    MemFun(Obj('Settings', 'value'), 'as_settings', [], True,
-           cpp_chain_call=lambda **kwargs: 'self_p->as<Settings>()'),
-    MemFun(
-        Bytes('data'), 'as_byte_array', [], True,
-        fc_override=dedent("""\
+dataconstref_desc = Class(
+    "DataConstRef",
+    None,
+    [
+        Constructor([], "create_nil"),
+        Constructor([Bool("value")], "create_logical"),
+        Constructor([String("value")], "create_character"),
+        Constructor([Char("value")], "create_int1"),
+        Constructor([Int16t("value")], "create_int2"),
+        Constructor([Int32t("value")], "create_int4"),
+        Constructor([Int64t("value")], "create_int8"),
+        Constructor([Float("value")], "create_real4"),
+        Constructor([Double("value")], "create_real8"),
+        Constructor([Obj("Settings", "value")], "create_settings"),
+        Constructor([Obj("DataConstRef", "value")], "create_copy"),
+        OverloadSet(
+            "create",
+            [
+                "create_nil",
+                "create_logical",
+                "create_character",
+                "create_int1",
+                "create_int2",
+                "create_int4",
+                "create_int8",
+                "create_real4",
+                "create_real8",
+                "create_settings",
+                "create_copy",
+            ],
+            True,
+        ),
+        GridConstructor(False),
+        GridConstructor(True),
+        OverloadSet("create_grid", create_grid_overloads, True),
+        Destructor(),
+        MemFun(String(), "describe"),
+        MemFunTmpl(
+            [
+                Bool(),
+                String(),
+                Int(),
+                Char(),
+                Int16t(),
+                Int32t(),
+                Int64t(),
+                Float(),
+                Double(),
+            ],
+            Bool(),
+            "is_a",
+            [],
+            False,
+        ),
+        MemFun(Bool(), "is_a_dict"),
+        MemFun(Bool(), "is_a_list"),
+        MemFunTmpl(
+            [Bool(), Float(), Double(), Int32t(), Int64t()],
+            Bool(),
+            "is_a_grid_of",
+            [],
+            False,
+        ),
+        MemFun(Bool(), "is_a_byte_array"),
+        MemFun(Bool(), "is_nil"),
+        MemFun(
+            Bool(),
+            "is_a_settings",
+            [],
+            False,
+            cpp_chain_call=lambda **kwargs: "self_p->is_a<Settings>()",
+        ),
+        MemFun(Sizet(), "size"),
+        MemFunTmpl(
+            [
+                Bool(),
+                String(),
+                Int(),
+                Char(),
+                Int16t(),
+                Int32t(),
+                Int64t(),
+                Float(),
+                Double(),
+            ],
+            T(),
+            "as",
+            [],
+            True,
+        ),
+        MemFun(
+            Obj("Settings", "value"),
+            "as_settings",
+            [],
+            True,
+            cpp_chain_call=lambda **kwargs: "self_p->as<Settings>()",
+        ),
+        MemFun(
+            Bytes("data"),
+            "as_byte_array",
+            [],
+            True,
+            fc_override=dedent("""\
             void $C_PREFIX$_DataConstRef_as_byte_array_(
                     std::intptr_t self,
                     char ** data, std::size_t * data_size,
@@ -462,10 +584,14 @@ dataconstref_desc = Class('DataConstRef', None, [
                     *err_msg_len = msg.size();
                 }
             }
-            """)),
-    MemFun(
-        Obj('DataConstRef', 'value'), 'get_item_by_key', [String('key')], True,
-        fc_override=dedent("""\
+            """),
+        ),
+        MemFun(
+            Obj("DataConstRef", "value"),
+            "get_item_by_key",
+            [String("key")],
+            True,
+            fc_override=dedent("""\
             std::intptr_t $C_PREFIX$_$CLASSNAME$_get_item_by_key_(
                     std::intptr_t self,
                     char * key, std::size_t key_size,
@@ -495,10 +621,14 @@ dataconstref_desc = Class('DataConstRef', None, [
                 return 0;
             }
 
-            """)),
-    MemFun(
-        Obj('DataConstRef', 'value'), 'get_item_by_index', [Sizet('i')], True,
-        fc_override=dedent("""\
+            """),
+        ),
+        MemFun(
+            Obj("DataConstRef", "value"),
+            "get_item_by_index",
+            [Sizet("i")],
+            True,
+            fc_override=dedent("""\
             std::intptr_t $C_PREFIX$_$CLASSNAME$_get_item_by_index_(
                     std::intptr_t self,
                     std::size_t i,
@@ -527,11 +657,15 @@ dataconstref_desc = Class('DataConstRef', None, [
                 return 0;
             }
 
-            """)),
-    OverloadSet('get_item', ['get_item_by_key', 'get_item_by_index'], False),
-    MemFun(
-        Sizet(), 'num_dims', [], True,
-        fc_override=dedent("""\
+            """),
+        ),
+        OverloadSet("get_item", ["get_item_by_key", "get_item_by_index"], False),
+        MemFun(
+            Sizet(),
+            "num_dims",
+            [],
+            True,
+            fc_override=dedent("""\
             std::size_t $C_PREFIX$_$CLASSNAME$_num_dims_(
                     std::intptr_t self,
                     int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -551,40 +685,79 @@ dataconstref_desc = Class('DataConstRef', None, [
                 return 0;
             }
 
-            """)),
-    MemFun(VecSizet('shp'), 'shape', [], True),
-    Elements(),
-    OverloadSet('elements', [
-        'elements_1_logical', 'elements_1_real4', 'elements_1_real8',
-        'elements_1_int4', 'elements_1_int8',
-        'elements_2_logical', 'elements_2_real4', 'elements_2_real8',
-        'elements_2_int4', 'elements_2_int8',
-        'elements_3_logical', 'elements_3_real4', 'elements_3_real8',
-        'elements_3_int4', 'elements_3_int8',
-        'elements_4_logical', 'elements_4_real4', 'elements_4_real8',
-        'elements_4_int4', 'elements_4_int8',
-        'elements_5_logical', 'elements_5_real4', 'elements_5_real8',
-        'elements_5_int4', 'elements_5_int8',
-        'elements_6_logical', 'elements_6_real4', 'elements_6_real8',
-        'elements_6_int4', 'elements_6_int8',
-        'elements_7_logical', 'elements_7_real4', 'elements_7_real8',
-        'elements_7_int4', 'elements_7_int8',
-        ], False),
-    MemFun(Bool(), 'has_indexes', [], True),
-    MemFun(String(), 'index', [Sizet('i')], True,
-           cpp_chain_call=lambda **kwargs: 'self_p->indexes().at(i - 1)'),
-    ])
+            """),
+        ),
+        MemFun(VecSizet("shp"), "shape", [], True),
+        Elements(),
+        OverloadSet(
+            "elements",
+            [
+                "elements_1_logical",
+                "elements_1_real4",
+                "elements_1_real8",
+                "elements_1_int4",
+                "elements_1_int8",
+                "elements_2_logical",
+                "elements_2_real4",
+                "elements_2_real8",
+                "elements_2_int4",
+                "elements_2_int8",
+                "elements_3_logical",
+                "elements_3_real4",
+                "elements_3_real8",
+                "elements_3_int4",
+                "elements_3_int8",
+                "elements_4_logical",
+                "elements_4_real4",
+                "elements_4_real8",
+                "elements_4_int4",
+                "elements_4_int8",
+                "elements_5_logical",
+                "elements_5_real4",
+                "elements_5_real8",
+                "elements_5_int4",
+                "elements_5_int8",
+                "elements_6_logical",
+                "elements_6_real4",
+                "elements_6_real8",
+                "elements_6_int4",
+                "elements_6_int8",
+                "elements_7_logical",
+                "elements_7_real4",
+                "elements_7_real8",
+                "elements_7_int4",
+                "elements_7_int8",
+            ],
+            False,
+        ),
+        MemFun(Bool(), "has_indexes", [], True),
+        MemFun(
+            String(),
+            "index",
+            [Sizet("i")],
+            True,
+            cpp_chain_call=lambda **kwargs: "self_p->indexes().at(i - 1)",
+        ),
+    ],
+)
 
 
-data_desc = Class('Data', dataconstref_desc, [
-    Constructor([Obj('Data', 'value')], 'create_copy'),
-    NamedConstructor([], 'dict'),
-    NamedConstructor([], 'list'),
-    NamedConstructor([Sizet('size')], 'nils'),
-    NamedConstructor([Sizet('size')], 'byte_array_empty', cpp_func_name='byte_array'),
-    NamedConstructor(
-        [Bytes('buf')], 'byte_array_from_buf', cpp_func_name='byte_array',
-        fc_override=dedent("""\
+data_desc = Class(
+    "Data",
+    dataconstref_desc,
+    [
+        Constructor([Obj("Data", "value")], "create_copy"),
+        NamedConstructor([], "dict"),
+        NamedConstructor([], "list"),
+        NamedConstructor([Sizet("size")], "nils"),
+        NamedConstructor(
+            [Sizet("size")], "byte_array_empty", cpp_func_name="byte_array"
+        ),
+        NamedConstructor(
+            [Bytes("buf")],
+            "byte_array_from_buf",
+            cpp_func_name="byte_array",
+            fc_override=dedent("""\
             std::intptr_t $C_PREFIX$_Data_create_byte_array_from_buf_(
                    char * buf, std::size_t buf_size
             ) {
@@ -592,13 +765,19 @@ data_desc = Class('Data', dataconstref_desc, [
                return reinterpret_cast<std::intptr_t>(result);
             }
 
-            """)),
-    OverloadSet('create_byte_array', [
-        'create_byte_array_empty', 'create_byte_array_from_buf'], True),
-
-    MemFun(
-        Bytes('data'), 'as_byte_array', [], True,
-        fc_override=dedent("""\
+            """),
+        ),
+        OverloadSet(
+            "create_byte_array",
+            ["create_byte_array_empty", "create_byte_array_from_buf"],
+            True,
+        ),
+        MemFun(
+            Bytes("data"),
+            "as_byte_array",
+            [],
+            True,
+            fc_override=dedent("""\
             void $C_PREFIX$_Data_as_byte_array_(
                     std::intptr_t self,
                     char ** data, std::size_t * data_size,
@@ -618,33 +797,51 @@ data_desc = Class('Data', dataconstref_desc, [
                     *err_msg_len = msg.size();
                 }
             }
-            """)),
-
-    AssignmentOperator('set_logical', Bool('value')),
-    AssignmentOperator('set_character', String('value')),
-    AssignmentOperator('set_int1', Char('value')),
-    AssignmentOperator('set_int2', Int16t('value')),
-    AssignmentOperator('set_int4', Int32t('value')),
-    AssignmentOperator('set_int8', Int64t('value')),
-    AssignmentOperator('set_real4', Float('value')),
-    AssignmentOperator('set_real8', Double('value')),
-    AssignmentOperator('set_data', Obj('Data', 'value')),
-    OverloadSet('set', [
-        'set_logical', 'set_character', 'set_int1', 'set_int2', 'set_int4',
-        'set_int8', 'set_real4', 'set_real8', 'set_data'], False),
-    MemFun(
-        Void(), 'set_nil', [], False,
-        fc_override=dedent("""\
+            """),
+        ),
+        AssignmentOperator("set_logical", Bool("value")),
+        AssignmentOperator("set_character", String("value")),
+        AssignmentOperator("set_int1", Char("value")),
+        AssignmentOperator("set_int2", Int16t("value")),
+        AssignmentOperator("set_int4", Int32t("value")),
+        AssignmentOperator("set_int8", Int64t("value")),
+        AssignmentOperator("set_real4", Float("value")),
+        AssignmentOperator("set_real8", Double("value")),
+        AssignmentOperator("set_data", Obj("Data", "value")),
+        OverloadSet(
+            "set",
+            [
+                "set_logical",
+                "set_character",
+                "set_int1",
+                "set_int2",
+                "set_int4",
+                "set_int8",
+                "set_real4",
+                "set_real8",
+                "set_data",
+            ],
+            False,
+        ),
+        MemFun(
+            Void(),
+            "set_nil",
+            [],
+            False,
+            fc_override=dedent("""\
             void $C_PREFIX$_Data_set_nil_(std::intptr_t self) {
                 Data * self_p = reinterpret_cast<Data *>(self);
                 *self_p = Data();
             }
 
-            """)),
-
-    MemFun(
-        Obj('Data', 'value'), 'get_item_by_key', [String('key')], True,
-        fc_override=dedent("""\
+            """),
+        ),
+        MemFun(
+            Obj("Data", "value"),
+            "get_item_by_key",
+            [String("key")],
+            True,
+            fc_override=dedent("""\
             std::intptr_t $C_PREFIX$_Data_get_item_by_key_(
                     std::intptr_t self,
                     char * key, std::size_t key_size,
@@ -674,10 +871,14 @@ data_desc = Class('Data', dataconstref_desc, [
                 return 0;
             }
 
-            """)),
-    MemFun(
-        Obj('Data', 'value'), 'get_item_by_index', [Sizet('i')], True,
-        fc_override=dedent("""\
+            """),
+        ),
+        MemFun(
+            Obj("Data", "value"),
+            "get_item_by_index",
+            [Sizet("i")],
+            True,
+            fc_override=dedent("""\
             std::intptr_t $C_PREFIX$_Data_get_item_by_index_(
                     std::intptr_t self,
                     std::size_t i,
@@ -706,37 +907,93 @@ data_desc = Class('Data', dataconstref_desc, [
                 return 0;
             }
 
-            """)),
-    OverloadSet('get_item', ['get_item_by_key', 'get_item_by_index'], False),
-    IndexAssignmentOperator('set_item_key_logical',     [String('key'), Bool('value')],         True),  # noqa: E501
-    IndexAssignmentOperator('set_item_key_character',   [String('key'), String('value')],       True),  # noqa: E501
-    IndexAssignmentOperator('set_item_key_int1',        [String('key'), Char('value')],         True),  # noqa: E501
-    IndexAssignmentOperator('set_item_key_int2',        [String('key'), Int16t('value')],       True),  # noqa: E501
-    IndexAssignmentOperator('set_item_key_int4',        [String('key'), Int('value')],          True),  # noqa: E501
-    IndexAssignmentOperator('set_item_key_int8',        [String('key'), Int64t('value')],       True),  # noqa: E501
-    IndexAssignmentOperator('set_item_key_real4',       [String('key'), Float('value')],        True),  # noqa: E501
-    IndexAssignmentOperator('set_item_key_real8',       [String('key'), Double('value')],       True),  # noqa: E501
-    IndexAssignmentOperator('set_item_key_data',        [String('key'), Obj('Data', 'value')],  True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_logical',    [Sizet('i'), Bool('value')],        True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_character',  [Sizet('i'), String('value')],      True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_int1',       [Sizet('i'), Char('value')],        True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_int2',       [Sizet('i'), Int16t('value')],      True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_int4',       [Sizet('i'), Int('value')],         True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_int8',       [Sizet('i'), Int64t('value')],      True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_real4',      [Sizet('i'), Float('value')],       True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_real8',      [Sizet('i'), Double('value')],      True),  # noqa: E501
-    ShiftedIndexAssignmentOperator('set_item_index_data',       [Sizet('i'), Obj('Data', 'value')], True),  # noqa: E501
-    OverloadSet('set_item', [
-        'set_item_key_logical', 'set_item_key_character', 'set_item_key_int1',
-        'set_item_key_int2', 'set_item_key_int4', 'set_item_key_int8',
-        'set_item_key_real4', 'set_item_key_real8', 'set_item_key_data',
-        'set_item_index_logical', 'set_item_index_character', 'set_item_index_int1',
-        'set_item_index_int2', 'set_item_index_int4', 'set_item_index_int8',
-        'set_item_index_real4', 'set_item_index_real8', 'set_item_index_data'
-        ], False),
-    MemFun(
-        String(), 'key', [Sizet('i')], True,
-        fc_override=dedent("""\
+            """),
+        ),
+        OverloadSet("get_item", ["get_item_by_key", "get_item_by_index"], False),
+        IndexAssignmentOperator(
+            "set_item_key_logical", [String("key"), Bool("value")], True
+        ),  # noqa: E501
+        IndexAssignmentOperator(
+            "set_item_key_character", [String("key"), String("value")], True
+        ),  # noqa: E501
+        IndexAssignmentOperator(
+            "set_item_key_int1", [String("key"), Char("value")], True
+        ),  # noqa: E501
+        IndexAssignmentOperator(
+            "set_item_key_int2", [String("key"), Int16t("value")], True
+        ),  # noqa: E501
+        IndexAssignmentOperator(
+            "set_item_key_int4", [String("key"), Int("value")], True
+        ),  # noqa: E501
+        IndexAssignmentOperator(
+            "set_item_key_int8", [String("key"), Int64t("value")], True
+        ),  # noqa: E501
+        IndexAssignmentOperator(
+            "set_item_key_real4", [String("key"), Float("value")], True
+        ),  # noqa: E501
+        IndexAssignmentOperator(
+            "set_item_key_real8", [String("key"), Double("value")], True
+        ),  # noqa: E501
+        IndexAssignmentOperator(
+            "set_item_key_data", [String("key"), Obj("Data", "value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_logical", [Sizet("i"), Bool("value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_character", [Sizet("i"), String("value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_int1", [Sizet("i"), Char("value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_int2", [Sizet("i"), Int16t("value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_int4", [Sizet("i"), Int("value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_int8", [Sizet("i"), Int64t("value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_real4", [Sizet("i"), Float("value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_real8", [Sizet("i"), Double("value")], True
+        ),  # noqa: E501
+        ShiftedIndexAssignmentOperator(
+            "set_item_index_data", [Sizet("i"), Obj("Data", "value")], True
+        ),  # noqa: E501
+        OverloadSet(
+            "set_item",
+            [
+                "set_item_key_logical",
+                "set_item_key_character",
+                "set_item_key_int1",
+                "set_item_key_int2",
+                "set_item_key_int4",
+                "set_item_key_int8",
+                "set_item_key_real4",
+                "set_item_key_real8",
+                "set_item_key_data",
+                "set_item_index_logical",
+                "set_item_index_character",
+                "set_item_index_int1",
+                "set_item_index_int2",
+                "set_item_index_int4",
+                "set_item_index_int8",
+                "set_item_index_real4",
+                "set_item_index_real8",
+                "set_item_index_data",
+            ],
+            False,
+        ),
+        MemFun(
+            String(),
+            "key",
+            [Sizet("i")],
+            True,
+            fc_override=dedent("""\
             void $C_PREFIX$_Data_key_(
                     std::intptr_t self, std::size_t i,
                     char ** ret_val, std::size_t * ret_val_size,
@@ -768,10 +1025,14 @@ data_desc = Class('Data', dataconstref_desc, [
                 }
             }
 
-            """)),
-    MemFun(
-        Obj('Data'), 'value', [Sizet('i')], True,
-        fc_override=dedent("""\
+            """),
+        ),
+        MemFun(
+            Obj("Data"),
+            "value",
+            [Sizet("i")],
+            True,
+            fc_override=dedent("""\
             std::intptr_t $C_PREFIX$_Data_value_(
                     std::intptr_t self, std::size_t i,
                     int * err_code,
@@ -800,60 +1061,94 @@ data_desc = Class('Data', dataconstref_desc, [
                 return 0;
             }
 
-            """)),
-    ])
+            """),
+        ),
+    ],
+)
 
 
-message_desc = Class('Message', None, [
-    Constructor([Double('timestamp')], 'create_t'),
-    Constructor([Double('timestamp'), Obj('Data', 'data')], 'create_td'),
-    Constructor(
-        [Double('timestamp'), Double('next_timestamp'), Obj('Data', 'data')],
-        'create_tnd'),
-    Constructor(
-        [Double('timestamp'), Obj('Data', 'data'), Obj('Settings', 'settings')],
-        'create_tds'),
-    Constructor(
-        [Double('timestamp'), Double('next_timestamp'), Obj('Data', 'data'),
-            Obj('Settings', 'settings')],
-        'create_tnds'),
-    OverloadSet('create', [
-        'create_t', 'create_td', 'create_tnd', 'create_tds', 'create_tnds'], True),
-    Destructor(),
-    MemFun(Double(), 'timestamp'),
-    MemFun(Void(), 'set_timestamp', [Double('timestamp')]),
-    MemFun(Bool(), 'has_next_timestamp'),
-    MemFun(Double(), 'next_timestamp'),
-    MemFun(Void(), 'set_next_timestamp', [Double('next_timestamp')]),
-    MemFun(Void(), 'unset_next_timestamp'),
-    MemFun(
-        Obj('DataConstRef', 'data'), 'get_data',
-        cpp_chain_call=lambda **kwargs: 'self_p->data()'),
-    MemFun(
-        Void(), 'set_data_d', [Obj('Data', 'data')],
-        cpp_chain_call=lambda **kwargs: f'self_p->set_data({kwargs["cpp_args"]})'),
-    MemFun(
-        Void(), 'set_data_dcr', [Obj('DataConstRef', 'data')],
-        cpp_chain_call=lambda **kwargs: f'self_p->set_data({kwargs["cpp_args"]})'),
-    OverloadSet('set_data', ['set_data_d', 'set_data_dcr'], False),
-    MemFun(Bool(), 'has_settings'),
-    MemFun(
-        Obj('Settings'), 'get_settings',
-        cpp_chain_call=lambda **kwargs: 'self_p->settings()'),
-    MemFun(Void(), 'set_settings', [Obj('Settings', 'settings')]),
-    MemFun(Void(), 'unset_settings'),
-    ])
+message_desc = Class(
+    "Message",
+    None,
+    [
+        Constructor([Double("timestamp")], "create_t"),
+        Constructor([Double("timestamp"), Obj("Data", "data")], "create_td"),
+        Constructor(
+            [Double("timestamp"), Double("next_timestamp"), Obj("Data", "data")],
+            "create_tnd",
+        ),
+        Constructor(
+            [Double("timestamp"), Obj("Data", "data"), Obj("Settings", "settings")],
+            "create_tds",
+        ),
+        Constructor(
+            [
+                Double("timestamp"),
+                Double("next_timestamp"),
+                Obj("Data", "data"),
+                Obj("Settings", "settings"),
+            ],
+            "create_tnds",
+        ),
+        OverloadSet(
+            "create",
+            ["create_t", "create_td", "create_tnd", "create_tds", "create_tnds"],
+            True,
+        ),
+        Destructor(),
+        MemFun(Double(), "timestamp"),
+        MemFun(Void(), "set_timestamp", [Double("timestamp")]),
+        MemFun(Bool(), "has_next_timestamp"),
+        MemFun(Double(), "next_timestamp"),
+        MemFun(Void(), "set_next_timestamp", [Double("next_timestamp")]),
+        MemFun(Void(), "unset_next_timestamp"),
+        MemFun(
+            Obj("DataConstRef", "data"),
+            "get_data",
+            cpp_chain_call=lambda **kwargs: "self_p->data()",
+        ),
+        MemFun(
+            Void(),
+            "set_data_d",
+            [Obj("Data", "data")],
+            cpp_chain_call=lambda **kwargs: f"self_p->set_data({kwargs['cpp_args']})",
+        ),
+        MemFun(
+            Void(),
+            "set_data_dcr",
+            [Obj("DataConstRef", "data")],
+            cpp_chain_call=lambda **kwargs: f"self_p->set_data({kwargs['cpp_args']})",
+        ),
+        OverloadSet("set_data", ["set_data_d", "set_data_dcr"], False),
+        MemFun(Bool(), "has_settings"),
+        MemFun(
+            Obj("Settings"),
+            "get_settings",
+            cpp_chain_call=lambda **kwargs: "self_p->settings()",
+        ),
+        MemFun(Void(), "set_settings", [Obj("Settings", "settings")]),
+        MemFun(Void(), "unset_settings"),
+    ],
+)
 
 
-portsdescription_desc = Class('PortsDescription', None, [
-    Constructor(),
-    Destructor(),
-    MemFun(
-        Void(), 'add', [EnumVal('Operator', 'op'), String('port')],
-        cpp_chain_call=lambda **kwargs: '(*self_p)[op_e].push_back(port_s)'),
-    MemFun(
-        Sizet(), 'num_ports', [EnumVal('Operator', 'op')],
-        fc_override=dedent("""\
+portsdescription_desc = Class(
+    "PortsDescription",
+    None,
+    [
+        Constructor(),
+        Destructor(),
+        MemFun(
+            Void(),
+            "add",
+            [EnumVal("Operator", "op"), String("port")],
+            cpp_chain_call=lambda **kwargs: "(*self_p)[op_e].push_back(port_s)",
+        ),
+        MemFun(
+            Sizet(),
+            "num_ports",
+            [EnumVal("Operator", "op")],
+            fc_override=dedent("""\
             std::size_t $C_PREFIX$_PortsDescription_num_ports_(std::intptr_t self, int op) {
                 PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
                 Operator op_e = static_cast<Operator>(op);
@@ -863,16 +1158,21 @@ portsdescription_desc = Class('PortsDescription', None, [
                 return result;
             }
 
-            """)),  # noqa: E501
-    MemFun(
-        String(), 'get', [EnumVal('Operator', 'op'), Sizet('i')], True,
-        cpp_chain_call=lambda **kwargs: '(*self_p)[op_e].at(i - 1)'),
-    ])
+            """),
+        ),  # noqa: E501
+        MemFun(
+            String(),
+            "get",
+            [EnumVal("Operator", "op"), Sizet("i")],
+            True,
+            cpp_chain_call=lambda **kwargs: "(*self_p)[op_e].at(i - 1)",
+        ),
+    ],
+)
 
 
 instance_constructor = Constructor(
-    [Obj('CmdLineArgs', 'cla'), Obj('PortsDescription', 'ports'),
-        Int('flags')],
+    [Obj("CmdLineArgs", "cla"), Obj("PortsDescription", "ports"), Int("flags")],
     fc_override=dedent("""\
         std::intptr_t $C_PREFIX$_Instance_create_(
                 std::intptr_t cla,
@@ -922,12 +1222,17 @@ instance_constructor = Constructor(
             call $C_PREFIX$_IMPL_BINDINGS_CmdLineArgs_free_(cla)
         end function LIBMUSCLE_Instance_create
 
-        """))
+        """),
+)
 
 instance_mpi_constructor = Constructor(
     [
-        Obj('CmdLineArgs', 'cla'), Obj('PortsDescription', 'ports'),
-        Int('flags'), Int('communicator'), Int('root')],
+        Obj("CmdLineArgs", "cla"),
+        Obj("PortsDescription", "ports"),
+        Int("flags"),
+        Int("communicator"),
+        Int("root"),
+    ],
     fc_override=dedent("""\
         std::intptr_t $C_PREFIX$_Instance_create_(
                 std::intptr_t cla,
@@ -988,179 +1293,308 @@ instance_mpi_constructor = Constructor(
             call $C_PREFIX$_IMPL_BINDINGS_CmdLineArgs_free_(cla)
         end function LIBMUSCLE_Instance_create
 
-        """)  # noqa: E501
-    )
+        """),  # noqa: E501
+)
 
 
 instance_members = [
     Destructor(),
-    MemFun(Bool(), 'reuse_instance'),
-    MemFun(Void(), 'error_shutdown', [String('message')]),
+    MemFun(Bool(), "reuse_instance"),
+    MemFun(Void(), "error_shutdown", [String("message")]),
     MemFunTmpl(
-        [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
-         Vec2Dbl('value')],
-        Bool(), 'is_setting_a', [String('name')], True,
-        cpp_chain_call=lambda **kwargs:\
-            f'self_p->get_setting({kwargs["cpp_args"]}).is_a<{kwargs["tpl_type"]}>()'),
+        [
+            String(),
+            Int64t(),
+            Double(),
+            Bool(),
+            VecInt64t("value"),
+            VecDbl("value"),
+            Vec2Dbl("value"),
+        ],
+        Bool(),
+        "is_setting_a",
+        [String("name")],
+        True,
+        cpp_chain_call=lambda **kwargs: (
+            f"self_p->get_setting({kwargs['cpp_args']}).is_a<{kwargs['tpl_type']}>()"
+        ),
+    ),
     MemFunTmpl(
-        [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
-         Vec2Dbl('value')],
-        T(), 'get_setting_as1', [String('name')], True,
-        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs:\
-            f'self_p->get_setting_as<{tpl_type}>({cpp_args})'),
+        [
+            String(),
+            Int64t(),
+            Double(),
+            Bool(),
+            VecInt64t("value"),
+            VecDbl("value"),
+            Vec2Dbl("value"),
+        ],
+        T(),
+        "get_setting_as1",
+        [String("name")],
+        True,
+        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: (
+            f"self_p->get_setting_as<{tpl_type}>({cpp_args})"
+        ),
+    ),
     MemFunTmpl(
-        [String(), Int64t(), Double(), Bool(), VecInt64t('value'),
-         VecDbl('value'), Vec2Dbl('value')],
-        T(), 'get_setting_as2',
-        [String('name'), T('default_value')], True,
-        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs:\
-            f'self_p->get_setting_as<{tpl_type}>({cpp_args})'),
+        [
+            String(),
+            Int64t(),
+            Double(),
+            Bool(),
+            VecInt64t("value"),
+            VecDbl("value"),
+            Vec2Dbl("value"),
+        ],
+        T(),
+        "get_setting_as2",
+        [String("name"), T("default_value")],
+        True,
+        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: (
+            f"self_p->get_setting_as<{tpl_type}>({cpp_args})"
+        ),
+    ),
     OverloadSetTmpl(
-        [String(), Int64t(), Double(), Bool(), VecInt64t('value'),
-         VecDbl('value'), Vec2Dbl('value')],
-        'get_setting_as', ['get_setting_as1', 'get_setting_as2'], False),
-    MemFun(VecString('value'), 'list_settings'),
-    MemFun(Obj('PortsDescription'), 'list_ports'),
-    MemFun(Bool(), 'is_connected', [String('port')]),
-    MemFun(Bool(), 'is_vector_port', [String('port')]),
-    MemFun(Bool(), 'is_resizable', [String('port')]),
-    MemFun(Int(), 'get_port_length', [String('port')]),
-    MemFun(Void(), 'set_port_length', [String('port'), Int('length')]),
-
-    MemFun(Void(), 'send_pm',
-           [String('port_name'), Obj('Message', 'message')],
-           cpp_chain_call=lambda **kwargs: f'self_p->send({kwargs["cpp_args"]})'),
-    MemFun(Void(), 'send_pms',
-           [String('port_name'), Obj('Message', 'message'), Int('slot')],
-           cpp_chain_call=lambda **kwargs: f'self_p->send({kwargs["cpp_args"]})'),
-    OverloadSet('send', ['send_pm', 'send_pms'], False),
-
-    MemFun(Obj('Message'), 'receive_p', [String('port_name')], True,
-           cpp_chain_call=lambda **kwargs: f'self_p->receive({kwargs["cpp_args"]})'),
-    MemFun(Obj('Message'), 'receive_pd',
-           [String('port_name'), Obj('Message', 'default_msg')], True,
-           cpp_chain_call=lambda **kwargs: f'self_p->receive({kwargs["cpp_args"]})'),
-    OverloadSet('receive', ['receive_p', 'receive_pd'], False),
-
-    MemFun(Obj('Message'), 'receive_ps', [String('port_name'), Int('slot')],
-           True,
-           cpp_chain_call=lambda **kwargs: f'self_p->receive({kwargs["cpp_args"]})'),
-    MemFun(Obj('Message'), 'receive_psd',
-           [String('port_name'), Int('slot'), Obj('Message', 'default_message')],
-           True,
-           cpp_chain_call=lambda **kwargs: f'self_p->receive({kwargs["cpp_args"]})'),
-    OverloadSet('receive_on_slot', ['receive_ps', 'receive_psd'], False),
-
-    MemFun(Obj('Message'), 'receive_with_settings_p',
-           [String('port_name')], True,
-           cpp_chain_call=lambda **kwargs:
-                f'self_p->receive_with_settings({kwargs["cpp_args"]})'),
-    MemFun(Obj('Message'), 'receive_with_settings_pd',
-           [String('port_name'), Obj('Message', 'default_msg')], True,
-           cpp_chain_call=lambda **kwargs:
-               f'self_p->receive_with_settings({kwargs["cpp_args"]})'),
-    OverloadSet('receive_with_settings',
-               ['receive_with_settings_p', 'receive_with_settings_pd'], False),
-
-    MemFun(Obj('Message'), 'receive_with_settings_ps',
-           [String('port_name'), Int('slot')], True,
-           cpp_chain_call=lambda **kwargs:
-               f'self_p->receive_with_settings({kwargs["cpp_args"]})'),
-    MemFun(Obj('Message'), 'receive_with_settings_psd',
-           [String('port_name'), Int('slot'), Obj('Message', 'default_msg')],
-           True,
-           cpp_chain_call=lambda **kwargs:
-               f'self_p->receive_with_settings({kwargs["cpp_args"]})'),
-    OverloadSet('receive_with_settings_on_slot',
-                ['receive_with_settings_ps', 'receive_with_settings_psd'], False),
-    MemFun(Bool(), 'resuming'),
-    MemFun(Bool(), 'should_init'),
-    MemFun(Obj('Message'), 'load_snapshot'),
-    MemFun(Bool(), 'should_save_snapshot', [Double('timestamp')]),
-    MemFun(Void(), 'save_snapshot', [Obj('Message', 'message')]),
-    MemFun(Bool(), 'should_save_final_snapshot'),
-    MemFun(Void(), 'save_final_snapshot', [Obj('Message', 'message')]),
-    ]
+        [
+            String(),
+            Int64t(),
+            Double(),
+            Bool(),
+            VecInt64t("value"),
+            VecDbl("value"),
+            Vec2Dbl("value"),
+        ],
+        "get_setting_as",
+        ["get_setting_as1", "get_setting_as2"],
+        False,
+    ),
+    MemFun(VecString("value"), "list_settings"),
+    MemFun(Obj("PortsDescription"), "list_ports"),
+    MemFun(Bool(), "is_connected", [String("port")]),
+    MemFun(Bool(), "is_vector_port", [String("port")]),
+    MemFun(Bool(), "is_resizable", [String("port")]),
+    MemFun(Int(), "get_port_length", [String("port")]),
+    MemFun(Void(), "set_port_length", [String("port"), Int("length")]),
+    MemFun(
+        Void(),
+        "send_pm",
+        [String("port_name"), Obj("Message", "message")],
+        cpp_chain_call=lambda **kwargs: f"self_p->send({kwargs['cpp_args']})",
+    ),
+    MemFun(
+        Void(),
+        "send_pms",
+        [String("port_name"), Obj("Message", "message"), Int("slot")],
+        cpp_chain_call=lambda **kwargs: f"self_p->send({kwargs['cpp_args']})",
+    ),
+    OverloadSet("send", ["send_pm", "send_pms"], False),
+    MemFun(
+        Obj("Message"),
+        "receive_p",
+        [String("port_name")],
+        True,
+        cpp_chain_call=lambda **kwargs: f"self_p->receive({kwargs['cpp_args']})",
+    ),
+    MemFun(
+        Obj("Message"),
+        "receive_pd",
+        [String("port_name"), Obj("Message", "default_msg")],
+        True,
+        cpp_chain_call=lambda **kwargs: f"self_p->receive({kwargs['cpp_args']})",
+    ),
+    OverloadSet("receive", ["receive_p", "receive_pd"], False),
+    MemFun(
+        Obj("Message"),
+        "receive_ps",
+        [String("port_name"), Int("slot")],
+        True,
+        cpp_chain_call=lambda **kwargs: f"self_p->receive({kwargs['cpp_args']})",
+    ),
+    MemFun(
+        Obj("Message"),
+        "receive_psd",
+        [String("port_name"), Int("slot"), Obj("Message", "default_message")],
+        True,
+        cpp_chain_call=lambda **kwargs: f"self_p->receive({kwargs['cpp_args']})",
+    ),
+    OverloadSet("receive_on_slot", ["receive_ps", "receive_psd"], False),
+    MemFun(
+        Obj("Message"),
+        "receive_with_settings_p",
+        [String("port_name")],
+        True,
+        cpp_chain_call=lambda **kwargs: (
+            f"self_p->receive_with_settings({kwargs['cpp_args']})"
+        ),
+    ),
+    MemFun(
+        Obj("Message"),
+        "receive_with_settings_pd",
+        [String("port_name"), Obj("Message", "default_msg")],
+        True,
+        cpp_chain_call=lambda **kwargs: (
+            f"self_p->receive_with_settings({kwargs['cpp_args']})"
+        ),
+    ),
+    OverloadSet(
+        "receive_with_settings",
+        ["receive_with_settings_p", "receive_with_settings_pd"],
+        False,
+    ),
+    MemFun(
+        Obj("Message"),
+        "receive_with_settings_ps",
+        [String("port_name"), Int("slot")],
+        True,
+        cpp_chain_call=lambda **kwargs: (
+            f"self_p->receive_with_settings({kwargs['cpp_args']})"
+        ),
+    ),
+    MemFun(
+        Obj("Message"),
+        "receive_with_settings_psd",
+        [String("port_name"), Int("slot"), Obj("Message", "default_msg")],
+        True,
+        cpp_chain_call=lambda **kwargs: (
+            f"self_p->receive_with_settings({kwargs['cpp_args']})"
+        ),
+    ),
+    OverloadSet(
+        "receive_with_settings_on_slot",
+        ["receive_with_settings_ps", "receive_with_settings_psd"],
+        False,
+    ),
+    MemFun(Bool(), "resuming"),
+    MemFun(Bool(), "should_init"),
+    MemFun(Obj("Message"), "load_snapshot"),
+    MemFun(Bool(), "should_save_snapshot", [Double("timestamp")]),
+    MemFun(Void(), "save_snapshot", [Obj("Message", "message")]),
+    MemFun(Bool(), "should_save_final_snapshot"),
+    MemFun(Void(), "save_final_snapshot", [Obj("Message", "message")]),
+]
 
 
 # These need to kept in sync with the values in the C++ implementation
-instanceflags_desc = Flags('InstanceFlags', [
-            "DONT_APPLY_OVERLAY",
-            "USES_CHECKPOINT_API",
-            "KEEPS_NO_STATE_FOR_NEXT_USE",
-            "STATE_NOT_REQUIRED_FOR_NEXT_USE"])
+instanceflags_desc = Flags(
+    "InstanceFlags",
+    [
+        "DONT_APPLY_OVERLAY",
+        "USES_CHECKPOINT_API",
+        "KEEPS_NO_STATE_FOR_NEXT_USE",
+        "STATE_NOT_REQUIRED_FOR_NEXT_USE",
+    ],
+)
 
 
 instance_desc = Class(
-        'Instance', None, [cast(Member, instance_constructor)] + [
-            copy(mem) for mem in instance_members])
+    "Instance",
+    None,
+    [cast(Member, instance_constructor)] + [copy(mem) for mem in instance_members],
+)
 
 
 instance_mpi_desc = Class(
-        'Instance', None, [cast(Member, instance_mpi_constructor)] + [
-            copy(mem) for mem in instance_members])
+    "Instance",
+    None,
+    [cast(Member, instance_mpi_constructor)] + [copy(mem) for mem in instance_members],
+)
 
 
-cmdlineargs_desc = Class('CmdLineArgs', None, [
-        Constructor([Int('count')]),
+cmdlineargs_desc = Class(
+    "CmdLineArgs",
+    None,
+    [
+        Constructor([Int("count")]),
         Destructor(),
-        MemFun(Void(), 'set_arg', [Int('i'), String('arg')]),
-        ])
+        MemFun(Void(), "set_arg", [Int("i"), String("arg")]),
+    ],
+)
 
 
-ymmsl_forward_members = [Enum('Operator', []), Class('Settings', None, [])]
+ymmsl_forward_members = [Enum("Operator", []), Class("Settings", None, [])]
 
 
 libmuscle_api_description = API(
-        'libmuscle',
-        [
-            'libmuscle/libmuscle.hpp',
-            'libmuscle/bindings/cmdlineargs.hpp',
-            'ymmsl/ymmsl.hpp',
-            'stdexcept',
-            'typeinfo'],
-        [
-            'ymmsl'],
-        [
-            Namespace('libmuscle', True, 'LIBMUSCLE', 'LIBMUSCLE', [
-                dataconstref_desc, data_desc, portsdescription_desc,
-                message_desc, instance_desc, instanceflags_desc]),
-            Namespace('libmuscle::impl::bindings', False, 'LIBMUSCLE_IMPL_BINDINGS',
-                      'LIBMUSCLE_IMPL_BINDINGS', [cmdlineargs_desc]),
-            Namespace('ymmsl', None, 'YMMSL', 'YMMSL',
-                      ymmsl_forward_members)
-        ])
+    "libmuscle",
+    [
+        "libmuscle/libmuscle.hpp",
+        "libmuscle/bindings/cmdlineargs.hpp",
+        "ymmsl/ymmsl.hpp",
+        "stdexcept",
+        "typeinfo",
+    ],
+    ["ymmsl"],
+    [
+        Namespace(
+            "libmuscle",
+            True,
+            "LIBMUSCLE",
+            "LIBMUSCLE",
+            [
+                dataconstref_desc,
+                data_desc,
+                portsdescription_desc,
+                message_desc,
+                instance_desc,
+                instanceflags_desc,
+            ],
+        ),
+        Namespace(
+            "libmuscle::impl::bindings",
+            False,
+            "LIBMUSCLE_IMPL_BINDINGS",
+            "LIBMUSCLE_IMPL_BINDINGS",
+            [cmdlineargs_desc],
+        ),
+        Namespace("ymmsl", None, "YMMSL", "YMMSL", ymmsl_forward_members),
+    ],
+)
 
 
 libmuscle_mpi_api_description = API(
-        'libmuscle_mpi',
-        [
-            'libmuscle/libmuscle.hpp',
-            'libmuscle/bindings/cmdlineargs.hpp',
-            'ymmsl/ymmsl.hpp',
-            'stdexcept',
-            'typeinfo'],
-        [
-            'mpi', 'ymmsl'],
-        [
-            Namespace('libmuscle', True, 'LIBMUSCLE_MPI', 'LIBMUSCLE', [
-                deepcopy(dataconstref_desc), deepcopy(data_desc),
-                deepcopy(portsdescription_desc), deepcopy(message_desc),
-                deepcopy(instance_mpi_desc), deepcopy(instanceflags_desc)]),
-            Namespace('libmuscle::mpi_impl::bindings', False,
-                      'LIBMUSCLE_MPI_IMPL_BINDINGS', 'LIBMUSCLE_IMPL_BINDINGS',
-                      [deepcopy(cmdlineargs_desc)]),
-            Namespace('ymmsl', None, 'YMMSL', 'YMMSL',
-                      ymmsl_forward_members)
-        ])
+    "libmuscle_mpi",
+    [
+        "libmuscle/libmuscle.hpp",
+        "libmuscle/bindings/cmdlineargs.hpp",
+        "ymmsl/ymmsl.hpp",
+        "stdexcept",
+        "typeinfo",
+    ],
+    ["mpi", "ymmsl"],
+    [
+        Namespace(
+            "libmuscle",
+            True,
+            "LIBMUSCLE_MPI",
+            "LIBMUSCLE",
+            [
+                deepcopy(dataconstref_desc),
+                deepcopy(data_desc),
+                deepcopy(portsdescription_desc),
+                deepcopy(message_desc),
+                deepcopy(instance_mpi_desc),
+                deepcopy(instanceflags_desc),
+            ],
+        ),
+        Namespace(
+            "libmuscle::mpi_impl::bindings",
+            False,
+            "LIBMUSCLE_MPI_IMPL_BINDINGS",
+            "LIBMUSCLE_IMPL_BINDINGS",
+            [deepcopy(cmdlineargs_desc)],
+        ),
+        Namespace("ymmsl", None, "YMMSL", "YMMSL", ymmsl_forward_members),
+    ],
+)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='MUSCLE API Generator')
-    parser.add_argument('--fortran-c-wrappers', action='store_true')
-    parser.add_argument('--fortran-module', action='store_true')
-    parser.add_argument('--fortran-mpi-c-wrappers', action='store_true')
-    parser.add_argument('--fortran-mpi-module', action='store_true')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="MUSCLE API Generator")
+    parser.add_argument("--fortran-c-wrappers", action="store_true")
+    parser.add_argument("--fortran-module", action="store_true")
+    parser.add_argument("--fortran-mpi-c-wrappers", action="store_true")
+    parser.add_argument("--fortran-mpi-module", action="store_true")
 
     args = parser.parse_args()
     if args.fortran_c_wrappers:

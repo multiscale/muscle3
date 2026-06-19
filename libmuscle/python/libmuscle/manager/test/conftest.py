@@ -21,19 +21,34 @@ def logger(tmp_path):
 @pytest.fixture
 def mmp_configuration():
     return Configuration(
-            'mmp_configuration', [], [Model(
-                'test_model', None, '', None,
+        "mmp_configuration",
+        [],
+        [
+            Model(
+                "test_model",
+                None,
+                "",
+                None,
                 [
                     Component(
-                        'macro', Ports(o_i=['out'], s=['in']), '',
-                        'macro_implementation'),
+                        "macro",
+                        Ports(o_i=["out"], s=["in"]),
+                        "",
+                        "macro_implementation",
+                    ),
                     Component(
-                        'micro', Ports(f_init=['in'], o_f=['out']), '',
-                        'micro_implementation', False, [10, 10])],
-                [
-                    Conduit('macro.out', 'micro.in'),
-                    Conduit('micro.out', 'macro.in')
-                ])])
+                        "micro",
+                        Ports(f_init=["in"], o_f=["out"]),
+                        "",
+                        "micro_implementation",
+                        False,
+                        [10, 10],
+                    ),
+                ],
+                [Conduit("macro.out", "micro.in"), Conduit("micro.out", "macro.in")],
+            )
+        ],
+    )
 
 
 @pytest.fixture
@@ -65,56 +80,103 @@ def deadlock_detector() -> DeadlockDetector:
 
 @pytest.fixture
 def mmp_request_handler(
-        logger, profile_store, mmp_configuration, instance_registry,
-        topology_store, snapshot_registry, deadlock_detector):
+    logger,
+    profile_store,
+    mmp_configuration,
+    instance_registry,
+    topology_store,
+    snapshot_registry,
+    deadlock_detector,
+):
     return MMPRequestHandler(
-            logger, profile_store, mmp_configuration, instance_registry,
-            topology_store, snapshot_registry, deadlock_detector, None)
+        logger,
+        profile_store,
+        mmp_configuration,
+        instance_registry,
+        topology_store,
+        snapshot_registry,
+        deadlock_detector,
+        None,
+    )
 
 
 @pytest.fixture
 def loaded_instance_registry(instance_registry):
-    instance_registry.add(Reference('macro'), ['direct:macro'], [])
+    instance_registry.add(Reference("macro"), ["direct:macro"], [])
     for j in range(10):
         for i in range(10):
-            name = Reference('micro') + j + i
-            location = f'direct:{name}'
+            name = Reference("micro") + j + i
+            location = f"direct:{name}"
             instance_registry.add(name, [location], [])
     return instance_registry
 
 
 @pytest.fixture
 def registered_mmp_request_handler(
-        logger, profile_store, mmp_configuration, loaded_instance_registry,
-        topology_store, snapshot_registry, deadlock_detector):
+    logger,
+    profile_store,
+    mmp_configuration,
+    loaded_instance_registry,
+    topology_store,
+    snapshot_registry,
+    deadlock_detector,
+):
     return MMPRequestHandler(
-            logger, profile_store, mmp_configuration, loaded_instance_registry,
-            topology_store, snapshot_registry, deadlock_detector, None)
+        logger,
+        profile_store,
+        mmp_configuration,
+        loaded_instance_registry,
+        topology_store,
+        snapshot_registry,
+        deadlock_detector,
+        None,
+    )
 
 
 @pytest.fixture
 def mmp_configuration2():
     return Configuration(
-            'mmp_configuration2', [], [Model(
-                'test_model', None, '', None,
+        "mmp_configuration2",
+        [],
+        [
+            Model(
+                "test_model",
+                None,
+                "",
+                None,
                 [
                     Component(
-                        'macro', Ports(o_i=['out'], s=['in']), '',
-                        'macro_implementation'),
+                        "macro",
+                        Ports(o_i=["out"], s=["in"]),
+                        "",
+                        "macro_implementation",
+                    ),
                     Component(
-                        'meso',
-                        Ports(f_init=['init'], o_i=['out'], s=['in'], o_f=['final']),
-                        '', 'meso_implementation', False, [5]),
+                        "meso",
+                        Ports(f_init=["init"], o_i=["out"], s=["in"], o_f=["final"]),
+                        "",
+                        "meso_implementation",
+                        False,
+                        [5],
+                    ),
                     Component(
-                        'micro', Ports(f_init=['init'], o_f=['final']), '',
-                        'micro_implementation', False, [5, 10])
+                        "micro",
+                        Ports(f_init=["init"], o_f=["final"]),
+                        "",
+                        "micro_implementation",
+                        False,
+                        [5, 10],
+                    ),
                 ],
                 [
-                    Conduit('macro.out', 'meso.init'),
-                    Conduit('meso.out', 'micro.init'),
-                    Conduit('micro.final', 'meso.in'),
-                    Conduit('meso.final', 'macro.in')
-                ])])
+                    Conduit("macro.out", "meso.init"),
+                    Conduit("meso.out", "micro.init"),
+                    Conduit("micro.final", "meso.in"),
+                    Conduit("meso.final", "macro.in"),
+                ],
+            )
+        ],
+    )
 
 
 @pytest.fixture
@@ -131,26 +193,39 @@ def snapshot_registry2(mmp_configuration2, topology_store) -> SnapshotRegistry:
 def loaded_instance_registry2():
     instance_registry = InstanceRegistry()
 
-    instance_registry.add(Reference('macro'), ['direct:macro'], [])
+    instance_registry.add(Reference("macro"), ["direct:macro"], [])
 
     for j in range(5):
-        name = Reference('meso') + j
-        location = f'direct:{name}'
+        name = Reference("meso") + j
+        location = f"direct:{name}"
         instance_registry.add(name, [location], [])
 
     for j in range(5):
         for i in range(10):
-            name = Reference('micro') + j + i
-            location = f'direct:{name}'
+            name = Reference("micro") + j + i
+            location = f"direct:{name}"
             instance_registry.add(name, [location], [])
     return instance_registry
 
 
 @pytest.fixture
 def registered_mmp_request_handler2(
-        logger, profile_store, mmp_configuration, loaded_instance_registry2,
-        topology_store2, snapshot_registry2, deadlock_detector, tmp_path):
+    logger,
+    profile_store,
+    mmp_configuration,
+    loaded_instance_registry2,
+    topology_store2,
+    snapshot_registry2,
+    deadlock_detector,
+    tmp_path,
+):
     return MMPRequestHandler(
-            logger, profile_store, mmp_configuration,
-            loaded_instance_registry2, topology_store2, snapshot_registry2,
-            deadlock_detector, RunDir(tmp_path))
+        logger,
+        profile_store,
+        mmp_configuration,
+        loaded_instance_registry2,
+        topology_store2,
+        snapshot_registry2,
+        deadlock_detector,
+        RunDir(tmp_path),
+    )

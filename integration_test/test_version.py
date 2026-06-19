@@ -2,4 +2,4 @@ import libmuscle
 
 
 def test_version() -> None:
-    assert libmuscle.__version__ != ''
+    assert libmuscle.__version__ != ""

@@ -15,6 +15,7 @@ class MPPClient:
     This client connects to a peer to retrieve messages. It uses an MCP
     Transport to connect.
     """
+
     def __init__(self, locations: list[str]) -> None:
         """Create an MPPClient for the given peer.
 
@@ -37,12 +38,13 @@ class MPPClient:
             if client:
                 break
         else:
-            raise RuntimeError('Failed to connect')
+            raise RuntimeError("Failed to connect")
 
         self._transport_client = client
 
-    def receive(self, receiver: Reference, timeout_handler: Optional[TimeoutHandler]
-                ) -> tuple[Buffer, ProfileData]:
+    def receive(
+        self, receiver: Reference, timeout_handler: Optional[TimeoutHandler]
+    ) -> tuple[Buffer, ProfileData]:
         """Receive a message from a port this client connects to.
 
         Args:

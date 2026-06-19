@@ -24,9 +24,12 @@ class TcpTransportServerImpl(ss.ThreadingMixIn, ss.TCPServer):
     daemon_threads = True
     allow_reuse_address = True
 
-    def __init__(self, host_port_tuple: tuple[str, int],
-                 streamhandler: type, transport_server: 'TcpTransportServer'
-                 ) -> None:
+    def __init__(
+        self,
+        host_port_tuple: tuple[str, int],
+        streamhandler: type,
+        transport_server: "TcpTransportServer",
+    ) -> None:
         super().__init__(host_port_tuple, streamhandler)
         self.transport_server = transport_server
         if hasattr(socket, "TCP_NODELAY"):
@@ -50,6 +53,7 @@ class TcpHandler(ss.BaseRequestHandler):
     doing Remote Procedure Call over that, and we call every RPC call we receive from
     the client a request also.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
@@ -65,7 +69,8 @@ class TcpHandler(ss.BaseRequestHandler):
                 request = recv_frame(self.request)
 
                 should_process, should_send = self._session_state.triage_request(
-                        request_nr)
+                    request_nr
+                )
 
                 if should_process:
                     response = server.transport_server._handler.handle_request(request)
@@ -109,16 +114,17 @@ class TcpHandler(ss.BaseRequestHandler):
 
         else:
             _logger.warning(
-                    f'The TCP network connection for session {req_session_id} was lost')
+                f"The TCP network connection for session {req_session_id} was lost"
+            )
 
             with server.session_lock:
                 if req_session_id not in server.session_store:
-                    raise RuntimeError(f'Unknown session {req_session_id} requested')
+                    raise RuntimeError(f"Unknown session {req_session_id} requested")
                 self._session_state = server.session_store[req_session_id]
 
             session_id = req_session_id
             send_int64(self.request, session_id)
-            _logger.warning(f'Resuming session {session_id}')
+            _logger.warning(f"Resuming session {session_id}")
 
         return session_id
 
@@ -136,6 +142,7 @@ class TcpHandler(ss.BaseRequestHandler):
 
 class TcpTransportServer(TransportServer):
     """A TransportServer that uses TCP to communicate."""
+
     def __init__(self, handler: RequestHandler, port: int = 0) -> None:
         """Create a TCPServer.
 
@@ -149,9 +156,10 @@ class TcpTransportServer(TransportServer):
         """
         super().__init__(handler)
 
-        self._server = TcpTransportServerImpl(('', port), TcpHandler, self)
+        self._server = TcpTransportServerImpl(("", port), TcpHandler, self)
         self._server_thread = threading.Thread(
-                target=self._server.serve_forever, args=(0.1,), daemon=True)
+            target=self._server.serve_forever, args=(0.1,), daemon=True
+        )
         self._server_thread.start()
 
     def get_location(self) -> str:
@@ -165,8 +173,8 @@ class TcpTransportServer(TransportServer):
 
         locs: list[str] = []
         for address in self._get_if_addresses():
-            locs.append(f'{address}:{port}')
-        return 'tcp:{}'.format(','.join(locs))
+            locs.append(f"{address}:{port}")
+        return "tcp:{}".format(",".join(locs))
 
     def close(self, graceful: bool = True) -> None:
         """Closes this server.
@@ -203,11 +211,11 @@ class TcpTransportServer(TransportServer):
         for _, addresses in ifs.items():
             for addr in addresses:
                 if addr.family == socket.AF_INET:
-                    if not addr.address.startswith('127.'):
+                    if not addr.address.startswith("127."):
                         all_addresses.append(addr.address)
                 if addr.family == socket.AF_INET6:
                     # filter out link-local addresses with a scope id
-                    if '%' not in addr.address and addr.address != '::1':
-                        all_addresses.append('[' + addr.address + ']')
+                    if "%" not in addr.address and addr.address != "::1":
+                        all_addresses.append("[" + addr.address + "]")
 
         return all_addresses

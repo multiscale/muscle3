@@ -14,6 +14,7 @@ class MPPRequestHandler(RequestHandler):
     This accepts peer protocol message requests and responds to them by
     getting messages from a PostOffice.
     """
+
     def __init__(self, post_office: PostOffice) -> None:
         """Create an MPPRequestHandler.
 
@@ -36,8 +37,7 @@ class MPPRequestHandler(RequestHandler):
         """
         req = msgpack.unpackb(request, raw=False)
         if len(req) != 2 or req[0] != RequestType.GET_NEXT_MESSAGE.value:
-            raise RuntimeError(
-                    'Invalid request type. Did the streams get crossed?')
+            raise RuntimeError("Invalid request type. Did the streams get crossed?")
         recv_port = Reference(req[1])
         return self._post_office.get_message(recv_port)
 
@@ -48,6 +48,7 @@ class MPPServer:
     This manages a collection of servers for different protocols and a
     PostOffice that stores outgoing messages.
     """
+
     def __init__(self) -> None:
         self._post_office = PostOffice()
         self._handler = MPPRequestHandler(self._post_office)

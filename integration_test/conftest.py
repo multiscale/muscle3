@@ -13,16 +13,16 @@ from libmuscle.manager.manager import Manager
 from libmuscle.pytest.muscle_tester import make_server_process
 
 skip_if_python_only = pytest.mark.skipif(
-        'MUSCLE_TEST_PYTHON_ONLY' in os.environ,
-        reason='Python-only tests requested')
+    "MUSCLE_TEST_PYTHON_ONLY" in os.environ, reason="Python-only tests requested"
+)
 
 skip_if_no_fortran = pytest.mark.skipif(
-        'MUSCLE_DISABLE_FORTRAN' in os.environ,
-        reason='No Fortran compiler available')
+    "MUSCLE_DISABLE_FORTRAN" in os.environ, reason="No Fortran compiler available"
+)
 
 skip_if_no_mpi_cpp = pytest.mark.skipif(
-        'MUSCLE_ENABLE_CPP_MPI' not in os.environ,
-        reason='MPI support was not detected')
+    "MUSCLE_ENABLE_CPP_MPI" not in os.environ, reason="MPI support was not detected"
+)
 
 
 @pytest.fixture
@@ -32,33 +32,38 @@ def yatiml_log_warning():
 
 @pytest.fixture
 def ymmsl_path() -> str:
-    return str(Path(__file__).parent / 'ymmsl')
+    return str(Path(__file__).parent / "ymmsl")
 
 
 @pytest.fixture
 def codes_path() -> str:
-    return str(Path(__file__).parent / 'codes')
+    return str(Path(__file__).parent / "codes")
 
 
 def ls_snapshots(run_dir, instance=None):
     """List all snapshots of the instance or workflow"""
-    return sorted(run_dir.snapshot_dir(instance).iterdir(),
-                  key=lambda path: tuple(map(int, path.stem.split("_")[1:])))
+    return sorted(
+        run_dir.snapshot_dir(instance).iterdir(),
+        key=lambda path: tuple(map(int, path.stem.split("_")[1:])),
+    )
 
 
 def _python_wrapper(tmpdir, instance_name, muscle_manager, callable):
-    sys.argv.append(f'--muscle-instance={instance_name}')
-    sys.argv.append(f'--muscle-manager={muscle_manager}')
+    sys.argv.append(f"--muscle-instance={instance_name}")
+    sys.argv.append(f"--muscle-manager={muscle_manager}")
 
-    with open(tmpdir / f'{instance_name}_stdout.txt', 'w') as f_out:
-        with open(tmpdir / f'{instance_name}_stderr.txt', 'w') as f_err:
+    with open(tmpdir / f"{instance_name}_stdout.txt", "w") as f_out:
+        with open(tmpdir / f"{instance_name}_stderr.txt", "w") as f_err:
             sys.stdout = f_out
             sys.stderr = f_err
 
             root_logger = logging.getLogger()
             handler = logging.StreamHandler()
-            handler.setFormatter(logging.Formatter(
-                '%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s'))
+            handler.setFormatter(
+                logging.Formatter(
+                    "%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s"
+                )
+            )
             root_logger.addHandler(handler)
             root_logger.setLevel(logging.DEBUG)
 
@@ -100,19 +105,19 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
     """
     env = os.environ.copy()
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    libmuscle_dir = Path(__file__).parents[1] / 'libmuscle'
-    cpp_build_dir = libmuscle_dir / 'cpp' / 'build' / 'libmuscle' / 'tests'
-    fortran_build_dir = libmuscle_dir / 'fortran' / 'build' / 'libmuscle' / 'tests'
+    libmuscle_dir = Path(__file__).parents[1] / "libmuscle"
+    cpp_build_dir = libmuscle_dir / "cpp" / "build" / "libmuscle" / "tests"
+    fortran_build_dir = libmuscle_dir / "fortran" / "build" / "libmuscle" / "tests"
 
     with ExitStack() as stack:
         ctx = make_server_process(ymmsl_doc, Path(tmpdir), False)
-        env['MUSCLE_MANAGER'] = stack.enter_context(ctx)
+        env["MUSCLE_MANAGER"] = stack.enter_context(ctx)
 
-        lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-        if 'LD_LIBRARY_PATH' in env:
-            env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+        lib_paths = [cpp_build_dir / "msgpack" / "msgpack" / "lib"]
+        if "LD_LIBRARY_PATH" in env:
+            env["LD_LIBRARY_PATH"] += ":" + ":".join(map(str, lib_paths))
         else:
-            env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+            env["LD_LIBRARY_PATH"] = ":".join(map(str, lib_paths))
 
         native_processes = []
         python_processes = []
@@ -121,9 +126,10 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
             if language == "python":
                 # start python actor
                 proc = mp.Process(
-                        target=_python_wrapper,
-                        args=(tmpdir, instance_name, env['MUSCLE_MANAGER'], actor),
-                        name=instance_name)
+                    target=_python_wrapper,
+                    args=(tmpdir, instance_name, env["MUSCLE_MANAGER"], actor),
+                    name=instance_name,
+                )
                 proc.start()
                 python_processes.append(proc)
                 continue
@@ -131,22 +137,35 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
                 executable = cpp_build_dir / actor
             elif language == "mpicpp":
                 assert len(args) > 0, "must provide at least number of mpi instances"
-                executable = 'mpirun'
-                out_file = tmpdir / f'mpi_{instance_name}.log'
-                args = ('-np', args[0], mpirun_outfile_arg(), str(out_file),
-                        str(cpp_build_dir / actor), *args[1:])
+                executable = "mpirun"
+                out_file = tmpdir / f"mpi_{instance_name}.log"
+                args = (
+                    "-np",
+                    args[0],
+                    mpirun_outfile_arg(),
+                    str(out_file),
+                    str(cpp_build_dir / actor),
+                    *args[1:],
+                )
             elif language == "fortran":
                 executable = fortran_build_dir / actor
             else:
                 raise ValueError(f"Unknown language: {language}")
             # start native code actor
             f_out = stack.enter_context(
-                    (tmpdir / f'{instance_name}_stdout.txt').open('w'))
+                (tmpdir / f"{instance_name}_stdout.txt").open("w")
+            )
             f_err = stack.enter_context(
-                    (tmpdir / f'{instance_name}_stderr.txt').open('w'))
-            native_processes.append(subprocess.Popen(
-                    [str(executable), *args, f'--muscle-instance={instance_name}'],
-                    env=env, stdout=f_out, stderr=f_err))
+                (tmpdir / f"{instance_name}_stderr.txt").open("w")
+            )
+            native_processes.append(
+                subprocess.Popen(
+                    [str(executable), *args, f"--muscle-instance={instance_name}"],
+                    env=env,
+                    stdout=f_out,
+                    stderr=f_err,
+                )
+            )
 
         # check results
         for proc in native_processes:
@@ -159,53 +178,53 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
                 assert proc.exitcode == 0
         if not expect_success:
             # Check that at least one process has failed
-            assert (
-                    any(proc.returncode != 0 for proc in native_processes) or
-                    any(proc.exitcode != 0 for proc in python_processes))
+            assert any(proc.returncode != 0 for proc in native_processes) or any(
+                proc.exitcode != 0 for proc in python_processes
+            )
 
 
 @pytest.fixture
 def mmp_server_config(yatiml_log_warning):
     return (
-            'ymmsl_version: v0.2\n'
-            'description: A less simple configuration for integration tests\n'
-            'models:\n'
-            '- name: test_model\n'
-            '  description: A model for testing\n'
-            '  components:\n'
-            '    macro:\n'
-            '      description: The macro model\n'
-            '      ports:\n'
-            '        o_i: out\n'
-            '        s: in\n'
-            '      implementation: macro_implementation\n'
-            '    micro:\n'
-            '      description: The micro model, many of them\n'
-            '      ports:\n'
-            '        f_init: in\n'
-            '        o_f: out\n'
-            '      implementation: micro_implementation\n'
-            '      multiplicity: [10]\n'
-            '  conduits:\n'
-            '    macro.out: micro.in\n'
-            '    micro.out: macro.in\n'
-            'settings:\n'
-            '  test1: 13\n'
-            '  test2: 13.3\n'
-            '  test3: testing\n'
-            '  test4: True\n'
-            '  test5: [2.3, 5.6]\n'
-            '  test6:\n'
-            '    - [1.0, 2.0]\n'
-            '    - [3.0, 1.0]\n'
-            'programs:\n'
-            '  macro_implementation:\n'
-            '    description: Program implementing macro\n'
-            '    executable: macro.py\n'
-            '  micro_implementation:\n'
-            '    description: Program implementing micro\n'
-            '    executable: micro.py\n'
-            )
+        "ymmsl_version: v0.2\n"
+        "description: A less simple configuration for integration tests\n"
+        "models:\n"
+        "- name: test_model\n"
+        "  description: A model for testing\n"
+        "  components:\n"
+        "    macro:\n"
+        "      description: The macro model\n"
+        "      ports:\n"
+        "        o_i: out\n"
+        "        s: in\n"
+        "      implementation: macro_implementation\n"
+        "    micro:\n"
+        "      description: The micro model, many of them\n"
+        "      ports:\n"
+        "        f_init: in\n"
+        "        o_f: out\n"
+        "      implementation: micro_implementation\n"
+        "      multiplicity: [10]\n"
+        "  conduits:\n"
+        "    macro.out: micro.in\n"
+        "    micro.out: macro.in\n"
+        "settings:\n"
+        "  test1: 13\n"
+        "  test2: 13.3\n"
+        "  test3: testing\n"
+        "  test4: True\n"
+        "  test5: [2.3, 5.6]\n"
+        "  test6:\n"
+        "    - [1.0, 2.0]\n"
+        "    - [3.0, 1.0]\n"
+        "programs:\n"
+        "  macro_implementation:\n"
+        "    description: Program implementing macro\n"
+        "    executable: macro.py\n"
+        "  micro_implementation:\n"
+        "    description: Program implementing micro\n"
+        "    executable: micro.py\n"
+    )
 
 
 @pytest.fixture
@@ -218,48 +237,48 @@ def mmp_server_process(mmp_server_config, tmpdir):
 @pytest.fixture
 def mmp_server_config_simple(yatiml_log_warning):
     return (
-            'ymmsl_version: v0.2\n'
-            'description: A simple configuration for integration tests\n'
-            'models:\n'
-            '- name: test_model\n'
-            '  description: A model for testing\n'
-            '  components:\n'
-            '    macro:\n'
-            '      description: The macro model\n'
-            '      ports:\n'
-            '        o_i: out\n'
-            '        s: in\n'
-            '      implementation: macro_implementation\n'
-            '    micro:\n'
-            '      description: The micro model\n'
-            '      ports:\n'
-            '        f_init: in\n'
-            '        o_f: out\n'
-            '      implementation: micro_implementation\n'
-            '  conduits:\n'
-            '    macro.out: micro.in\n'
-            '    micro.out: macro.in\n'
-            'settings:\n'
-            '  test1: 13\n'
-            '  test2: 13.3\n'
-            '  test3: testing\n'
-            '  test4: True\n'
-            '  test5: [2.3, 5.6]\n'
-            '  test6:\n'
-            '    - [1.0, 2.0]\n'
-            '    - [3.0, 1.0]\n'
-            '  test_with_a_longer_name: 1\n'
-            )
+        "ymmsl_version: v0.2\n"
+        "description: A simple configuration for integration tests\n"
+        "models:\n"
+        "- name: test_model\n"
+        "  description: A model for testing\n"
+        "  components:\n"
+        "    macro:\n"
+        "      description: The macro model\n"
+        "      ports:\n"
+        "        o_i: out\n"
+        "        s: in\n"
+        "      implementation: macro_implementation\n"
+        "    micro:\n"
+        "      description: The micro model\n"
+        "      ports:\n"
+        "        f_init: in\n"
+        "        o_f: out\n"
+        "      implementation: micro_implementation\n"
+        "  conduits:\n"
+        "    macro.out: micro.in\n"
+        "    micro.out: macro.in\n"
+        "settings:\n"
+        "  test1: 13\n"
+        "  test2: 13.3\n"
+        "  test3: testing\n"
+        "  test4: True\n"
+        "  test5: [2.3, 5.6]\n"
+        "  test6:\n"
+        "    - [1.0, 2.0]\n"
+        "    - [3.0, 1.0]\n"
+        "  test_with_a_longer_name: 1\n"
+    )
 
 
 @pytest.fixture
 def mmp_server_config_simple_nopython(mmp_server_config_simple):
-    return mmp_server_config_simple + '  python_compat: false\n'
+    return mmp_server_config_simple + "  python_compat: false\n"
 
 
 @pytest.fixture
 def mmp_server_config_simple_python(mmp_server_config_simple):
-    return mmp_server_config_simple + '  python_compat: true\n'
+    return mmp_server_config_simple + "  python_compat: true\n"
 
 
 @pytest.fixture
@@ -289,24 +308,23 @@ def log_file_in_tmpdir(tmpdir):
 
 
 def mpi_is_intel():
-    if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
+    if "MUSCLE_ENABLE_CPP_MPI" not in os.environ:
         return None
 
-    result = subprocess.run(
-            ['mpirun', '--version'], capture_output=True, check=True)
-    return 'Intel' in result.stdout.decode('utf-8')
+    result = subprocess.run(["mpirun", "--version"], capture_output=True, check=True)
+    return "Intel" in result.stdout.decode("utf-8")
 
 
 def mpirun_outfile_arg():
     if mpi_is_intel():
-        return '-outfile-pattern'
+        return "-outfile-pattern"
     else:
-        return '--output-filename'
+        return "--output-filename"
 
 
 @pytest.fixture
 def mpi_exec_model():
     if mpi_is_intel():
-        return 'intelmpi'
+        return "intelmpi"
     else:
-        return 'openmpi'
+        return "openmpi"

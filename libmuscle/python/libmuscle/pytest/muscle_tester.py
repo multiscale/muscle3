@@ -61,8 +61,8 @@ class MuscleTester:
         self.cleanup()
 
     def _add_tester_component(
-            self, config: Configuration, implementation_name: str
-            ) -> Configuration:
+        self, config: Configuration, implementation_name: str
+    ) -> Configuration:
         """
         Add a 'muscle3_implementation_tester' as a tester component.
         - Finds the implementation (model or program) by name.
@@ -93,8 +93,7 @@ class MuscleTester:
             tester_o_i_ports.append(f"{port_name}")
             tester_model.conduits.append(
                 Conduit(
-                    f"{tester_name}.{port_name}",
-                    f"{implementation_name}.{port_name}"
+                    f"{tester_name}.{port_name}", f"{implementation_name}.{port_name}"
                 )
             )
 
@@ -103,8 +102,7 @@ class MuscleTester:
             tester_s_ports.append(f"{port_name}")
             tester_model.conduits.append(
                 Conduit(
-                    f"{implementation_name}.{port_name}",
-                    f"{tester_name}.{port_name}"
+                    f"{implementation_name}.{port_name}", f"{tester_name}.{port_name}"
                 )
             )
 
@@ -132,16 +130,18 @@ class MuscleTester:
         )
 
         config.resources[Reference(tester_name)] = ThreadedResReq(
-                name=Reference(tester_name),
-                threads=1
-            )
+            name=Reference(tester_name), threads=1
+        )
 
         config.models[Reference(test_model_name)] = tester_model
         return config
 
     def start_implementation(
-        self, ymmsl_source: Union[str, Path], implementation: str,
-        *, default_timeout: float = 60
+        self,
+        ymmsl_source: Union[str, Path],
+        implementation: str,
+        *,
+        default_timeout: float = 60,
     ) -> ImplementationTester:
         """Start a MUSCLE3 manager and return an ImplementationTester.
 
@@ -175,24 +175,27 @@ class MuscleTester:
         test_ymmsl_path = self.run_dir / "test_config.ymmsl"
         ymmsl.save(test_ymmsl_config, test_ymmsl_path)
 
-        server_ctx = make_server_process(
-            test_ymmsl_config, self.run_dir, True)
+        server_ctx = make_server_process(test_ymmsl_config, self.run_dir, True)
         muscle_manager_address = self._exitstack.enter_context(server_ctx)
 
         # patch ReceiveTimeoutHandler so we can (ab)use it for our timeouts:
-        self._exitstack.enter_context(patch.object(ReceiveTimeoutHandler, 'on_timeout',
-                                                    raise_error))
-        self._exitstack.enter_context(patch(
-            'libmuscle.mcp.tcp_transport_client.RECONNECT_TIMEOUT',
-            min(RECONNECT_TIMEOUT, default_timeout)
-            ))
-        self._exitstack.enter_context(patch(
-            'libmuscle.mmp_client.PEER_TIMEOUT',
-            min(PEER_TIMEOUT, default_timeout)
-            ))
-        self.implementation_tester = ImplementationTester(default_timeout, 
-                                                          muscle_manager_address,
-                                                          test_ymmsl_config)
+        self._exitstack.enter_context(
+            patch.object(ReceiveTimeoutHandler, "on_timeout", raise_error)
+        )
+        self._exitstack.enter_context(
+            patch(
+                "libmuscle.mcp.tcp_transport_client.RECONNECT_TIMEOUT",
+                min(RECONNECT_TIMEOUT, default_timeout),
+            )
+        )
+        self._exitstack.enter_context(
+            patch(
+                "libmuscle.mmp_client.PEER_TIMEOUT", min(PEER_TIMEOUT, default_timeout)
+            )
+        )
+        self.implementation_tester = ImplementationTester(
+            default_timeout, muscle_manager_address, test_ymmsl_config
+        )
         self._exitstack.callback(self.implementation_tester.cleanup)
         return self.implementation_tester
 
@@ -207,36 +210,40 @@ class MuscleTester:
         self.implementation_tester = None
 
 
-def start_mmp_server(control_pipe: tuple[Connection, Connection],
-                     ymmsl_config: Configuration, run_dir: RunDir,
-                     env: dict[str, str], start_instances: bool) -> None:
+def start_mmp_server(
+    control_pipe: tuple[Connection, Connection],
+    ymmsl_config: Configuration,
+    run_dir: RunDir,
+    env: dict[str, str],
+    start_instances: bool,
+) -> None:
     if start_instances:
         os.environ.clear()
         os.environ.update(env)
 
     control_pipe[0].close()
-    manager = Manager(ymmsl_config, run_dir, 'DEBUG')
+    manager = Manager(ymmsl_config, run_dir, "DEBUG")
     control_pipe[1].send(manager.get_server_location())
 
     if start_instances:
         manager.start_instances()
-    
+
     control_pipe[1].recv()
     control_pipe[1].close()
     manager.stop()
 
 
 @contextmanager
-def make_server_process(ymmsl_config: Configuration, run_dir: Path,
-                        start_instances: bool
-                        ) -> Generator[str, None, None]:
+def make_server_process(
+    ymmsl_config: Configuration, run_dir: Path, start_instances: bool
+) -> Generator[str, None, None]:
     run_dir_obj = RunDir(run_dir)
     env = os.environ.copy()
     control_pipe = mp.Pipe()
     process = mp.Process(
         target=start_mmp_server,
         args=(control_pipe, ymmsl_config, run_dir_obj, env, start_instances),
-        name='Manager'
+        name="Manager",
     )
     process.start()
     control_pipe[1].close()

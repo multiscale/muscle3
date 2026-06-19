@@ -11,8 +11,14 @@ from libmuscle import runner  # isort: skip
 # that it's not present.
 
 __all__ = [
-        '__version__', 'Grid', 'Instance', 'InstanceFlags', 'Message',
-        'ProfileDatabase', 'runner']
+    "__version__",
+    "Grid",
+    "Instance",
+    "InstanceFlags",
+    "Message",
+    "ProfileDatabase",
+    "runner",
+]
 
 
 # export InstanceFlag members to the module namespace

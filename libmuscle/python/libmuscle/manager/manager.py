@@ -27,10 +27,13 @@ class Manager:
     This creates and manages instances and connects them together
     according to the simulation configuration.
     """
+
     def __init__(
-            self, configuration: Configuration,
-            run_dir: Optional[RunDir] = None, log_level: Optional[str] = None
-            ) -> None:
+        self,
+        configuration: Configuration,
+        run_dir: Optional[RunDir] = None,
+        log_level: Optional[str] = None,
+    ) -> None:
         """Create a Manager.
 
         This creates the manager and the associated server, but does
@@ -58,39 +61,49 @@ class Manager:
         else:
             snapshot_dir = Path.cwd()
             if self._configuration.checkpoints:
-                _logger.warning('Checkpoints are configured but no run'
-                                ' directory is provided. Snapshots will be'
-                                ' stored in the current working directory.')
+                _logger.warning(
+                    "Checkpoints are configured but no run"
+                    " directory is provided. Snapshots will be"
+                    " stored in the current working directory."
+                )
 
         if self._run_dir:
-            save_ymmsl(
-                    self._configuration,
-                    self._run_dir.path / 'configuration.ymmsl')
+            save_ymmsl(self._configuration, self._run_dir.path / "configuration.ymmsl")
 
-        self._profile_store.store_instances([
-            instance_name
-            for c in self._configuration.root_model().components.values()
-            for instance_name in c.instances()])
+        self._profile_store.store_instances(
+            [
+                instance_name
+                for c in self._configuration.root_model().components.values()
+                for instance_name in c.instances()
+            ]
+        )
 
         self._instance_manager: Optional[InstanceManager] = None
         if self._run_dir is not None:
             self._instance_manager = InstanceManager(
-                    configuration, self._run_dir, self._instance_registry)
+                configuration, self._run_dir, self._instance_registry
+            )
 
         # SnapshotRegistry creates a worker thread, must be created after
         # instance_manager which forks the process
         self._snapshot_registry = SnapshotRegistry(
-                configuration, snapshot_dir, self._topology_store)
+            configuration, snapshot_dir, self._topology_store
+        )
         self._snapshot_registry.start()
 
         self._server = MMPServer(
-                self._logger, self._profile_store, self._configuration,
-                self._instance_registry, self._topology_store,
-                self._snapshot_registry, self._deadlock_detector, run_dir)
+            self._logger,
+            self._profile_store,
+            self._configuration,
+            self._instance_registry,
+            self._topology_store,
+            self._snapshot_registry,
+            self._deadlock_detector,
+            run_dir,
+        )
 
         if self._instance_manager:
-            self._instance_manager.set_manager_location(
-                    self.get_server_location())
+            self._instance_manager.set_manager_location(self.get_server_location())
 
     def get_server_location(self) -> str:
         """Returns the network location of the server."""
@@ -99,22 +112,22 @@ class Manager:
     def start_instances(self) -> None:
         """Starts all required component instances."""
         if self._run_dir is None:
-            message = 'No run dir specified'
+            message = "No run dir specified"
             _logger.error(message)
             raise RuntimeError(message)
         if not self._instance_manager:
             message = (
-                    'For MUSCLE3 to be able to start instances, the'
-                    ' configuration must contain a model, implementations,'
-                    ' and resources. Please make sure they are all there.')
+                "For MUSCLE3 to be able to start instances, the"
+                " configuration must contain a model, implementations,"
+                " and resources. Please make sure they are all there."
+            )
             _logger.error(message)
             raise RuntimeError(message)
         try:
             self._instance_manager.start_all()
-            self._profile_store.store_resources(
-                    self._instance_manager.get_resources())
-        except:     # noqa
-            _logger.error('An error occurred while starting the components:')
+            self._profile_store.store_resources(self._instance_manager.get_resources())
+        except:  # noqa
+            _logger.error("An error occurred while starting the components:")
             for line in traceback.format_exception(*sys.exc_info()):
                 _logger.error(line)
             self._instance_manager.shutdown()

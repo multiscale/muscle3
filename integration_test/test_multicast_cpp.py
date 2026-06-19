@@ -6,12 +6,12 @@ from .conftest import run_manager_with_actors, skip_if_python_only
 
 
 def receiver():
-    instance = Instance({Operator.F_INIT: ['in']})
+    instance = Instance({Operator.F_INIT: ["in"]})
 
     i = 0
     while instance.reuse_instance():
         # f_init
-        msg = instance.receive('in')
+        msg = instance.receive("in")
         assert msg.data == i
         assert isinstance(msg.data, int)
         i += 1
@@ -47,6 +47,9 @@ models:
     - receiver1.in
     - receiver2.in""",
         tmp_path,
-        {'multicast': ('cpp', 'component_test'),
-         'receiver1': ('python', receiver),
-         'receiver2': ('python', receiver)})
+        {
+            "multicast": ("cpp", "component_test"),
+            "receiver1": ("python", receiver),
+            "receiver2": ("python", receiver),
+        },
+    )

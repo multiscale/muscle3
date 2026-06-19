@@ -35,8 +35,7 @@ PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0
 
-_CheckpointInfoType = tuple[
-        float, Checkpoints, Optional[Path], Optional[Path]]
+_CheckpointInfoType = tuple[float, Checkpoints, Optional[Path], Optional[Path]]
 
 
 def encode_operator(op: Operator) -> str:
@@ -60,32 +59,38 @@ def encode_profile_event(event: ProfileEvent) -> Any:
     """
     if event.start_time is None or event.stop_time is None:
         raise RuntimeError(
-                'Incomplete ProfileEvent sent. This is a bug, please'
-                ' report it.')
+            "Incomplete ProfileEvent sent. This is a bug, please report it."
+        )
 
     encoded_port = encode_port(event.port) if event.port else None
     return [
-            event.event_type.value,
-            event.start_time.nanoseconds, event.stop_time.nanoseconds,
-            encoded_port, event.port_length, event.slot,
-            event.message_number, event.message_size, event.message_timestamp]
+        event.event_type.value,
+        event.start_time.nanoseconds,
+        event.stop_time.nanoseconds,
+        encoded_port,
+        event.port_length,
+        event.slot,
+        event.message_number,
+        event.message_size,
+        event.message_timestamp,
+    ]
 
 
 def decode_checkpoint_rule(rule: dict[str, Any]) -> CheckpointRule:
     """Decode a checkpoint rule from a MsgPack-compatible value."""
-    if rule.keys() == {'at'}:
+    if rule.keys() == {"at"}:
         return CheckpointAtRule(**rule)
-    if rule.keys() == {'start', 'stop', 'every'}:
+    if rule.keys() == {"start", "stop", "every"}:
         return CheckpointRangeRule(**rule)
-    raise ValueError(f'Cannot convert {rule} to a checkpoint rule.')
+    raise ValueError(f"Cannot convert {rule} to a checkpoint rule.")
 
 
 def decode_checkpoint_info(
-        elapsed_time: float,
-        checkpoints_dict: dict[str, Any],
-        resume: Optional[str],
-        snapshot_dir: Optional[str]
-        ) -> _CheckpointInfoType:
+    elapsed_time: float,
+    checkpoints_dict: dict[str, Any],
+    resume: Optional[str],
+    snapshot_dir: Optional[str],
+) -> _CheckpointInfoType:
     """Decode checkpoint info from a MsgPack-compatible value.
 
     Args:
@@ -101,11 +106,14 @@ def decode_checkpoint_info(
         snapshot_dir: path to the directory to store new snapshots in
     """
     checkpoints = Checkpoints(
-            at_end=checkpoints_dict["at_end"],
-            wallclock_time=[decode_checkpoint_rule(rule)
-                            for rule in checkpoints_dict["wallclock_time"]],
-            simulation_time=[decode_checkpoint_rule(rule)
-                             for rule in checkpoints_dict["simulation_time"]])
+        at_end=checkpoints_dict["at_end"],
+        wallclock_time=[
+            decode_checkpoint_rule(rule) for rule in checkpoints_dict["wallclock_time"]
+        ],
+        simulation_time=[
+            decode_checkpoint_rule(rule) for rule in checkpoints_dict["simulation_time"]
+        ],
+    )
     resume_path = None if resume is None else Path(resume)
     snapshot_path = None if snapshot_dir is None else Path(snapshot_dir)
     return (elapsed_time, checkpoints, resume_path, snapshot_path)
@@ -127,6 +135,7 @@ class MMPClient:
     Communication is protected by an internal lock, so this class can
     be called simultaneously from different threads.
     """
+
     def __init__(self, instance_id: Reference, location: str) -> None:
         """Create an MMPClient
 
@@ -177,9 +186,12 @@ class MMPClient:
                 already.
         """
         request = [
-                RequestType.SUBMIT_LOG_MESSAGE.value,
-                message.instance_id, message.timestamp.seconds,
-                message.level.value, message.text]
+            RequestType.SUBMIT_LOG_MESSAGE.value,
+            message.instance_id,
+            message.timestamp.seconds,
+            message.level.value,
+            message.text,
+        ]
         self._call_manager(request, True)
 
     def submit_profile_events(self, events: Iterable[ProfileEvent]) -> None:
@@ -189,22 +201,23 @@ class MMPClient:
             events: The events to send.
         """
         request = [
-                RequestType.SUBMIT_PROFILE_EVENTS.value,
-                str(self._instance_id),
-                [encode_profile_event(e) for e in events]]
+            RequestType.SUBMIT_PROFILE_EVENTS.value,
+            str(self._instance_id),
+            [encode_profile_event(e) for e in events],
+        ]
         self._call_manager(request)
 
-    def submit_snapshot_metadata(
-            self, snapshot_metadata: SnapshotMetadata) -> None:
+    def submit_snapshot_metadata(self, snapshot_metadata: SnapshotMetadata) -> None:
         """Send snapshot metadata to the manager.
 
         Args:
             snapshot_metadata: Snapshot metadata to supply to the manager.
         """
         request = [
-                RequestType.SUBMIT_SNAPSHOT.value,
-                str(self._instance_id),
-                dataclasses.asdict(snapshot_metadata)]
+            RequestType.SUBMIT_SNAPSHOT.value,
+            str(self._instance_id),
+            dataclasses.asdict(snapshot_metadata),
+        ]
         self._call_manager(request)
 
     def get_settings(self) -> Settings:
@@ -230,8 +243,7 @@ class MMPClient:
         response = self._call_manager(request)
         return decode_checkpoint_info(*response[1:])
 
-    def register_instance(
-            self, locations: list[str], ports: list[Port]) -> None:
+    def register_instance(self, locations: list[str], ports: list[Port]) -> None:
         """Register a component instance with the manager.
 
         Args:
@@ -240,14 +252,15 @@ class MMPClient:
             ports: List of ports of this instance.
         """
         request = [
-                RequestType.REGISTER_INSTANCE.value,
-                str(self._instance_id), locations,
-                [encode_port(p) for p in ports],
-                libmuscle.__version__]
+            RequestType.REGISTER_INSTANCE.value,
+            str(self._instance_id),
+            locations,
+            [encode_port(p) for p in ports],
+            libmuscle.__version__,
+        ]
         response = self._call_manager(request)
         if response[0] == ResponseType.ERROR.value:
-            raise RuntimeError(
-                    f'Error registering instance: {response[1]}')
+            raise RuntimeError(f"Error registering instance: {response[1]}")
 
     def request_peers(self) -> PeerInfo:
         """Request connection information about peers.
@@ -266,75 +279,80 @@ class MMPClient:
         request = [RequestType.GET_PEERS.value, str(self._instance_id)]
         response = self._call_manager(request)
 
-        while (response[0] == ResponseType.PENDING.value and
-               perf_counter() < start_time + PEER_TIMEOUT and
-               sleep_time < PEER_INTERVAL_MIN):
+        while (
+            response[0] == ResponseType.PENDING.value
+            and perf_counter() < start_time + PEER_TIMEOUT
+            and sleep_time < PEER_INTERVAL_MIN
+        ):
             sleep(sleep_time)
             response = self._call_manager(request)
             sleep_time *= 1.5
 
-        while (response[0] == ResponseType.PENDING.value and
-               perf_counter() < start_time + PEER_TIMEOUT):
+        while (
+            response[0] == ResponseType.PENDING.value
+            and perf_counter() < start_time + PEER_TIMEOUT
+        ):
             sleep(uniform(PEER_INTERVAL_MIN, PEER_INTERVAL_MAX))
             response = self._call_manager(request)
 
         if response[0] == ResponseType.PENDING.value:
-            raise RuntimeError('Timeout waiting for peers to appear')
+            raise RuntimeError("Timeout waiting for peers to appear")
 
         if response[0] == ResponseType.ERROR.value:
-            raise RuntimeError(f'Error getting peers from manager: {response[1]}')
+            raise RuntimeError(f"Error getting peers from manager: {response[1]}")
 
         conduits = [Conduit(snd, recv) for snd, recv in response[1]]
 
         peer_dimensions = {
-                Reference(component): dims
-                for component, dims in response[2].items()}
+            Reference(component): dims for component, dims in response[2].items()
+        }
 
         peer_locations = {
-                Reference(instance): locs
-                for instance, locs in response[3].items()}
+            Reference(instance): locs for instance, locs in response[3].items()
+        }
 
-        ports = [
-            Port(Identifier(name), Operator[op]) for name, op in response[4]
-        ]
+        ports = [Port(Identifier(name), Operator[op]) for name, op in response[4]]
         name = instance_to_kernel(self._instance_id)
         index = instance_indices(self._instance_id)
         return PeerInfo(name, index, conduits, peer_dimensions, peer_locations, ports)
 
     def deregister_instance(self) -> None:
-        """Deregister a component instance with the manager.
-        """
-        request = [
-                RequestType.DEREGISTER_INSTANCE.value, str(self._instance_id)]
+        """Deregister a component instance with the manager."""
+        request = [RequestType.DEREGISTER_INSTANCE.value, str(self._instance_id)]
         response = self._call_manager(request)
 
         if response[0] == ResponseType.ERROR.value:
-            raise RuntimeError(f'Error deregistering instance: {response[1]}')
+            raise RuntimeError(f"Error deregistering instance: {response[1]}")
 
     def waiting_for_receive(
-            self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
-            ) -> None:
+        self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
+    ) -> None:
         """Notify the manager that we're waiting to receive a message."""
         request = [
-                RequestType.WAITING_FOR_RECEIVE.value,
-                str(self._instance_id),
-                str(peer_instance_id), port_name, slot]
+            RequestType.WAITING_FOR_RECEIVE.value,
+            str(self._instance_id),
+            str(peer_instance_id),
+            port_name,
+            slot,
+        ]
         self._call_manager(request)
 
     def waiting_for_receive_done(
-            self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
-            ) -> None:
+        self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
+    ) -> None:
         """Notify the manager that we're done waiting to receive a message."""
         request = [
-                RequestType.WAITING_FOR_RECEIVE_DONE.value,
-                str(self._instance_id),
-                str(peer_instance_id), port_name, slot]
+            RequestType.WAITING_FOR_RECEIVE_DONE.value,
+            str(self._instance_id),
+            str(peer_instance_id),
+            port_name,
+            slot,
+        ]
         self._call_manager(request)
 
     def is_deadlocked(self) -> bool:
         """Ask the manager if we're part of a deadlock."""
-        request = [
-                RequestType.IS_DEADLOCKED.value, str(self._instance_id)]
+        request = [RequestType.IS_DEADLOCKED.value, str(self._instance_id)]
         response = self._call_manager(request)
         return bool(response[1])
 

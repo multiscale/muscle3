@@ -46,7 +46,7 @@ def test_send_to_manager(profiler_comm_int_10ms, mocked_profiler) -> None:
     assert mock_mmp_client.sent_events == [e2]
 
     mock_mmp_client.sent_events = None
-    profiler.set_level('none')
+    profiler.set_level("none")
     e3 = ProfileEvent(ProfileEventType.RECEIVE, ProfileTimestamp())
     profiler.record_event(e3)
 

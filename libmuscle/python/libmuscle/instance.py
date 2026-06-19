@@ -94,9 +94,10 @@ class InstanceFlags(Flag):
 
 
 _CHECKPOINT_SUPPORT_MASK = (
-        InstanceFlags.USES_CHECKPOINT_API |
-        InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE |
-        InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE)
+    InstanceFlags.USES_CHECKPOINT_API
+    | InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE
+    | InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE
+)
 
 
 _NO_INSTANCE_FLAGS = InstanceFlags(0)
@@ -108,9 +109,12 @@ class Instance:
     This class provides a low-level send/receive API for the instance
     to use.
     """
+
     def __init__(
-            self, ports: Optional[dict[Operator, list[str]]] = None,
-            flags: InstanceFlags = _NO_INSTANCE_FLAGS) -> None:
+        self,
+        ports: Optional[dict[Operator, list[str]]] = None,
+        flags: InstanceFlags = _NO_INSTANCE_FLAGS,
+    ) -> None:
         """Create an Instance.
 
         Args:
@@ -137,8 +141,7 @@ class Instance:
 
         self.__set_up_logging()
 
-        self._api_guard = APIGuard(
-                InstanceFlags.USES_CHECKPOINT_API in self._flags)
+        self._api_guard = APIGuard(InstanceFlags.USES_CHECKPOINT_API in self._flags)
         """Checks that the user uses the API correctly."""
 
         self._profiler = Profiler(self.__manager)
@@ -148,8 +151,8 @@ class Instance:
         """PortManager for this instance."""
 
         self._communicator = Communicator(
-                self._name, self._index, self._port_manager, self._profiler,
-                self.__manager)
+            self._name, self._index, self._port_manager, self._profiler, self.__manager
+        )
         """Communicator for this instance."""
 
         self._declared_ports = ports
@@ -159,7 +162,8 @@ class Instance:
         """Settings for this instance."""
 
         self._snapshot_manager = SnapshotManager(
-                self._instance_id, self.__manager, self._port_manager)
+            self._instance_id, self.__manager, self._port_manager
+        )
         """Resumes, loads and saves snapshots."""
 
         self._trigger_manager = TriggerManager()
@@ -203,8 +207,10 @@ class Instance:
         self._setup_receive_timeout()
         # MMSFValidator needs a connected port manager, and does some logging
         self._mmsf_validator = (
-                None if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
-                else MMSFValidator(self._port_manager))
+            None
+            if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
+            else MMSFValidator(self._port_manager)
+        )
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
@@ -257,14 +263,18 @@ class Instance:
         # now _first_run, _do_resume and _do_init are also set correctly
 
         do_implicit_checkpoint = (
-                not self._first_run and
-                InstanceFlags.USES_CHECKPOINT_API not in self._flags and
-                (InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE in self._flags or
-                 InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE in self._flags))
+            not self._first_run
+            and InstanceFlags.USES_CHECKPOINT_API not in self._flags
+            and (
+                InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE in self._flags
+                or InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE in self._flags
+            )
+        )
 
         if do_implicit_checkpoint:
             if self._trigger_manager.should_save_final_snapshot(
-                    do_reuse, self.__f_init_max_timestamp):
+                do_reuse, self.__f_init_max_timestamp
+            ):
                 # store a None instead of a Message
                 self._save_snapshot(None, True, self.__f_init_max_timestamp)
 
@@ -306,51 +316,59 @@ class Instance:
 
     @overload
     def get_setting(
-            self, name: str, typ: Literal['str'], *,
-            default: Optional[str] = None) -> str:
-        ...
+        self, name: str, typ: Literal["str"], *, default: Optional[str] = None
+    ) -> str: ...
 
     @overload
     def get_setting(
-            self, name: str, typ: Literal['int'], *,
-            default: Optional[int] = None) -> int:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['float'], *,
-                    default: Optional[float] = None) -> float:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['bool'], *,
-                    default: Optional[bool] = None) -> bool:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['[int]'], *,
-                    default: Optional[list[int]] = None) -> list[int]:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['[float]'], *,
-                    default: Optional[list[float]] = None) -> list[float]:
-        ...
+        self, name: str, typ: Literal["int"], *, default: Optional[int] = None
+    ) -> int: ...
 
     @overload
     def get_setting(
-            self, name: str, typ: Literal['[[float]]'], *,
-            default: Optional[list[list[float]]] = None) -> list[list[float]]:
-        ...
+        self, name: str, typ: Literal["float"], *, default: Optional[float] = None
+    ) -> float: ...
 
     @overload
-    def get_setting(self, name: str, typ: None = None, *,
-                    default: Optional[SettingValue] = None) -> SettingValue:
-        ...
+    def get_setting(
+        self, name: str, typ: Literal["bool"], *, default: Optional[bool] = None
+    ) -> bool: ...
+
+    @overload
+    def get_setting(
+        self, name: str, typ: Literal["[int]"], *, default: Optional[list[int]] = None
+    ) -> list[int]: ...
+
+    @overload
+    def get_setting(
+        self,
+        name: str,
+        typ: Literal["[float]"],
+        *,
+        default: Optional[list[float]] = None,
+    ) -> list[float]: ...
+
+    @overload
+    def get_setting(
+        self,
+        name: str,
+        typ: Literal["[[float]]"],
+        *,
+        default: Optional[list[list[float]]] = None,
+    ) -> list[list[float]]: ...
+
+    @overload
+    def get_setting(
+        self, name: str, typ: None = None, *, default: Optional[SettingValue] = None
+    ) -> SettingValue: ...
 
     def get_setting(
-            self, name: str, typ: Optional[str] = None, *,
-            default: Optional[SettingValue] = None
-            ) -> SettingValue:
+        self,
+        name: str,
+        typ: Optional[str] = None,
+        *,
+        default: Optional[SettingValue] = None,
+    ) -> SettingValue:
         """Returns the value of a model setting.
 
         Args:
@@ -376,7 +394,8 @@ class Instance:
         """
         try:
             return self._settings_manager.get_setting(
-                self._instance_id, Reference(name), typ)
+                self._instance_id, Reference(name), typ
+            )
         except KeyError:
             if default is not None:
                 return default
@@ -467,8 +486,9 @@ class Instance:
         """
         self._port_manager.get_port(port).set_length(length)
 
-    def send(self, port_name: str, message: Message,
-             slot: Optional[int] = None) -> None:
+    def send(
+        self, port_name: str, message: Message, slot: Optional[int] = None
+    ) -> None:
         """Send a message to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -487,12 +507,18 @@ class Instance:
             message.settings = self._settings_manager.overlay
 
         self._communicator.send_message(
-                port_name, message, slot,
-                self._trigger_manager.checkpoints_considered_until())
+            port_name,
+            message,
+            slot,
+            self._trigger_manager.checkpoints_considered_until(),
+        )
 
-    def receive(self, port_name: str, slot: Optional[int] = None,
-                default: Optional[Message] = None
-                ) -> Message:
+    def receive(
+        self,
+        port_name: str,
+        slot: Optional[int] = None,
+        default: Optional[Message] = None,
+    ) -> Message:
         """Receive a message from the outside world.
 
         Receiving is a blocking operation. This function will contact
@@ -523,9 +549,11 @@ class Instance:
         return self.__receive_message(port_name, slot, default, False)
 
     def receive_with_settings(
-            self, port_name: str, slot: Optional[int] = None,
-            default: Optional[Message] = None
-            ) -> Message:
+        self,
+        port_name: str,
+        slot: Optional[int] = None,
+        default: Optional[Message] = None,
+    ) -> Message:
         """Receive a message with attached settings overlay.
 
         This function should not be used in submodels. It is intended
@@ -657,7 +685,7 @@ class Instance:
         """
         self._api_guard.verify_save_snapshot()
         if message is None:
-            raise RuntimeError('Please specify a Message to save as snapshot.')
+            raise RuntimeError("Please specify a Message to save as snapshot.")
         self._save_snapshot(message, False)
         self._api_guard.save_snapshot_done()
 
@@ -688,7 +716,8 @@ class Instance:
 
         self._do_reuse = self._decide_reuse_instance()
         result = self._trigger_manager.should_save_final_snapshot(
-                self._do_reuse, self.__f_init_max_timestamp)
+            self._do_reuse, self.__f_init_max_timestamp
+        )
 
         self._api_guard.should_save_final_snapshot_done(result)
         return result
@@ -710,34 +739,27 @@ class Instance:
         """
         self._api_guard.verify_save_final_snapshot()
         if message is None:
-            raise RuntimeError('Please specify a Message to save as snapshot.')
+            raise RuntimeError("Please specify a Message to save as snapshot.")
         self._save_snapshot(message, True, self.__f_init_max_timestamp)
         self._api_guard.save_final_snapshot_done()
 
     @property
     def __f_init_max_timestamp(self) -> Optional[float]:
-        """Return max timestamp of pre-received F_INIT messages
-        """
-        return max(
-                (msg.timestamp for msg in self._f_init_cache.values()),
-                default=None)
+        """Return max timestamp of pre-received F_INIT messages"""
+        return max((msg.timestamp for msg in self._f_init_cache.values()), default=None)
 
     def _register(self) -> None:
-        """Register this instance with the manager.
-        """
-        register_event = ProfileEvent(
-                ProfileEventType.REGISTER, ProfileTimestamp())
+        """Register this instance with the manager."""
+        register_event = ProfileEvent(ProfileEventType.REGISTER, ProfileTimestamp())
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
         self.__manager.register_instance(locations, port_list)
         self._profiler.record_event(register_event)
-        _logger.info('Registered with the manager')
+        _logger.info("Registered with the manager")
 
     def _connect(self) -> None:
-        """Connect this instance to the given peers / conduits.
-        """
-        connect_event = ProfileEvent(
-                ProfileEventType.CONNECT, ProfileTimestamp())
+        """Connect this instance to the given peers / conduits."""
+        connect_event = ProfileEvent(ProfileEventType.CONNECT, ProfileTimestamp())
 
         peer_info = self.__manager.request_peers()
         self._port_manager.connect_ports(peer_info)
@@ -746,18 +768,16 @@ class Instance:
         self._settings_manager.base = self.__manager.get_settings()
 
         self._profiler.record_event(connect_event)
-        _logger.info('Received peer locations and base settings')
+        _logger.info("Received peer locations and base settings")
 
     def _deregister(self) -> None:
-        """Deregister this instance from the manager.
-        """
+        """Deregister this instance from the manager."""
         # Make sure we record this even if profiling is disabled, so
         # that we always have register, connect and deregister at
         # least.
-        self._profiler.set_level('all')
+        self._profiler.set_level("all")
 
-        deregister_event = ProfileEvent(
-                ProfileEventType.DEREGISTER, ProfileTimestamp())
+        deregister_event = ProfileEvent(ProfileEventType.DEREGISTER, ProfileTimestamp())
         # We need to finish the event right away, because we need to
         # submit it before deregistering, which is the last interaction
         # with the manager we'll have.
@@ -770,11 +790,10 @@ class Instance:
         # Remove handler, the manager may be gone at this point so we
         # cannot send it any more log messages.
         logging.getLogger().removeHandler(self._mmp_handler)
-        _logger.info('Deregistered from the manager')
+        _logger.info("Deregistered from the manager")
 
     def _setup_checkpointing(self) -> None:
-        """Setup checkpointing.
-        """
+        """Setup checkpointing."""
         checkpoint_info = self.__manager.get_checkpoint_info()
 
         elapsed_time, checkpoints = checkpoint_info[0:2]
@@ -782,16 +801,16 @@ class Instance:
 
         if checkpoints and not (self._flags & _CHECKPOINT_SUPPORT_MASK):
             err_msg = (
-                    'The workflow has requested checkpoints, but this instance'
-                    ' does not support checkpointing. Please consult the'
-                    ' MUSCLE3 checkpointing documentation how to add'
-                    ' checkpointing support.')
+                "The workflow has requested checkpoints, but this instance"
+                " does not support checkpointing. Please consult the"
+                " MUSCLE3 checkpointing documentation how to add"
+                " checkpointing support."
+            )
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
         resume_snapshot, snapshot_dir = checkpoint_info[2:4]
-        saved_at = self._snapshot_manager.prepare_resume(
-                resume_snapshot, snapshot_dir)
+        saved_at = self._snapshot_manager.prepare_resume(resume_snapshot, snapshot_dir)
         # Resume settings overlay
         overlay = self._snapshot_manager.resume_overlay
         if overlay is not None:
@@ -817,65 +836,68 @@ class Instance:
         # Neither getopt, optparse, or argparse will let me pick out
         # just one option from the command line and ignore the rest.
         # So we do it by hand.
-        prefix = '--muscle-manager='
+        prefix = "--muscle-manager="
         for arg in sys.argv[1:]:
             if arg.startswith(prefix):
-                return arg[len(prefix):]
+                return arg[len(prefix) :]
 
-        return os.environ.get('MUSCLE_MANAGER', 'tcp:localhost:9000')
+        return os.environ.get("MUSCLE_MANAGER", "tcp:localhost:9000")
 
     def __set_up_logging(self) -> None:
-        """Adds logging handlers for one or more instances.
-        """
+        """Adds logging handlers for one or more instances."""
         id_str = str(self._instance_id)
 
-        logfile = extract_log_file_location(f'muscle3.{id_str}.log')
+        logfile = extract_log_file_location(f"muscle3.{id_str}.log")
         if logfile is not None:
-            local_handler = logging.FileHandler(str(logfile), mode='w')
+            local_handler = logging.FileHandler(str(logfile), mode="w")
             formatter = logging.Formatter(
-                    '%(asctime)-15s: %(levelname)-7s %(name)s: %(message)s')
+                "%(asctime)-15s: %(levelname)-7s %(name)s: %(message)s"
+            )
             local_handler.setFormatter(formatter)
-            logging.getLogger('libmuscle').addHandler(local_handler)
-            logging.getLogger('ymmsl').addHandler(local_handler)
+            logging.getLogger("libmuscle").addHandler(local_handler)
+            logging.getLogger("ymmsl").addHandler(local_handler)
 
         if self.__manager is not None:
-            self._mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
-                                                     self.__manager)
+            self._mmp_handler = MuscleManagerHandler(
+                id_str, logging.WARNING, self.__manager
+            )
             logging.getLogger().addHandler(self._mmp_handler)
 
     def _setup_profiling(self) -> None:
-        """Configures profiler with settings from settings.
-        """
+        """Configures profiler with settings from settings."""
         try:
-            profile_level_str = self.get_setting('muscle_profile_level', 'str')
+            profile_level_str = self.get_setting("muscle_profile_level", "str")
         except KeyError:
-            profile_level_str = 'all'
+            profile_level_str = "all"
 
-        if profile_level_str not in ('none', 'all'):
+        if profile_level_str not in ("none", "all"):
             _logger.warning(
-                    'Invalid value for muscle_profile_level:'
-                    f' {profile_level_str}. Please specify "none" or "all".'
-                    ' Using default value "all".')
-            profile_level_str = 'all'
+                "Invalid value for muscle_profile_level:"
+                f' {profile_level_str}. Please specify "none" or "all".'
+                ' Using default value "all".'
+            )
+            profile_level_str = "all"
 
         self._profiler.set_level(profile_level_str)
 
     def _setup_receive_timeout(self) -> None:
-        """Configures receive timeout with settings from settings.
-        """
+        """Configures receive timeout with settings from settings."""
         try:
-            timeout = self.get_setting('muscle_deadlock_receive_timeout', 'float')
+            timeout = self.get_setting("muscle_deadlock_receive_timeout", "float")
             if 0 <= timeout < 0.1:
                 _logger.info(
-                        "Provided muscle_deadlock_receive_timeout (%f) was less than "
-                        "the minimum of 0.1 seconds, setting it to 0.1.", timeout)
+                    "Provided muscle_deadlock_receive_timeout (%f) was less than "
+                    "the minimum of 0.1 seconds, setting it to 0.1.",
+                    timeout,
+                )
                 timeout = 0.1
             self._communicator.set_receive_timeout(timeout)
         except KeyError:
             pass  # do nothing and keep the default
         _logger.debug(
-                "Timeout on receiving messages set to %f",
-                self._communicator._receive_timeout)
+            "Timeout on receiving messages set to %f",
+            self._communicator._receive_timeout,
+        )
 
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
@@ -906,8 +928,8 @@ class Instance:
                 self._do_init = True
                 return got_f_init_messages
             else:
-                self._do_resume = False     # unused
-                self._do_init = False       # unused
+                self._do_resume = False  # unused
+                self._do_init = False  # unused
                 return False
 
         # fresh start or resuming from implicit snapshot
@@ -924,8 +946,11 @@ class Instance:
         return got_f_init_messages
 
     def _save_snapshot(
-            self, message: Optional[Message], final: bool,
-            f_init_max_timestamp: Optional[float] = None) -> None:
+        self,
+        message: Optional[Message],
+        final: bool,
+        f_init_max_timestamp: Optional[float] = None,
+    ) -> None:
         """Save a snapshot to disk and notify manager.
 
         Args:
@@ -937,14 +962,22 @@ class Instance:
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
         timestamp = self._snapshot_manager.save_snapshot(
-                message, final, triggers, walltime,
-                f_init_max_timestamp, self._settings_manager.overlay)
+            message,
+            final,
+            triggers,
+            walltime,
+            f_init_max_timestamp,
+            self._settings_manager.overlay,
+        )
         self._trigger_manager.update_checkpoints(timestamp)
 
     def __receive_message(
-            self, port_name: str, slot: Optional[int],
-            default: Optional[Message], with_settings: bool
-            ) -> Message:
+        self,
+        port_name: str,
+        slot: Optional[int],
+        default: Optional[Message],
+        with_settings: bool,
+    ) -> Message:
         """Receives a message on the given port.
 
         This implements receive and receive_with_settings, see the
@@ -960,53 +993,62 @@ class Instance:
                 msg = self._f_init_cache[(port_name, slot)]
                 del self._f_init_cache[(port_name, slot)]
                 if with_settings and msg.settings is None:
-                    err_msg = ('If you use receive_with_settings()'
-                               ' on an F_INIT port, then you have to'
-                               ' set the flag'
-                               ' :attr:`InstanceFlag.DONT_APPLY_OVERLAY` when'
-                               ' creating the :class:`Instance`, otherwise the'
-                               ' settings will already have been applied by'
-                               ' MUSCLE.')
+                    err_msg = (
+                        "If you use receive_with_settings()"
+                        " on an F_INIT port, then you have to"
+                        " set the flag"
+                        " :attr:`InstanceFlag.DONT_APPLY_OVERLAY` when"
+                        " creating the :class:`Instance`, otherwise the"
+                        " settings will already have been applied by"
+                        " MUSCLE."
+                    )
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
             else:
                 if port.is_connected():
-                    err_msg = ('Tried to receive twice on the same'
-                               f' port "{port_name}", that\'s not possible.'
-                               ' Did you forget to call'
-                               ' reuse_instance() in your reuse loop?'
-                               )
+                    err_msg = (
+                        "Tried to receive twice on the same"
+                        f' port "{port_name}", that\'s not possible.'
+                        " Did you forget to call"
+                        " reuse_instance() in your reuse loop?"
+                    )
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
                 else:
                     if default is not None:
                         return default
-                    err_msg = (f'Tried to receive on port "{port_name}",'
-                               ' which is not connected, and no'
-                               ' default value was given. Please'
-                               ' connect this port!')
+                    err_msg = (
+                        f'Tried to receive on port "{port_name}",'
+                        " which is not connected, and no"
+                        " default value was given. Please"
+                        " connect this port!"
+                    )
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
 
         else:
             if not port.is_connected():
                 if default is None:
-                    raise RuntimeError(f'Tried to receive on port "{port_name}", which'
-                                        ' is disconnected, and no default value was'
-                                        ' given. Either specify a default, or'
-                                        ' connect a sending component to this'
-                                        ' port.')
+                    raise RuntimeError(
+                        f'Tried to receive on port "{port_name}", which'
+                        " is disconnected, and no default value was"
+                        " given. Either specify a default, or"
+                        " connect a sending component to this"
+                        " port."
+                    )
                 else:
                     _logger.debug(
-                            f'No message received on {port_name} as it is not'
-                            ' connected')
+                        f"No message received on {port_name} as it is not connected"
+                    )
                     return default
 
             else:
                 msg, saved_until = self._communicator.receive_message(port_name, slot)
                 if not port.is_open(slot):
-                    err_msg = (f'Port {port_name} was closed while trying to'
-                                ' receive on it, did the peer crash?')
+                    err_msg = (
+                        f"Port {port_name} was closed while trying to"
+                        " receive on it, did the peer crash?"
+                    )
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
                 if not with_settings:
@@ -1015,13 +1057,13 @@ class Instance:
                 self._trigger_manager.harmonise_wall_time(saved_until)
         return msg
 
-    def __make_full_name(self
-                         ) -> tuple[Reference, list[int]]:
+    def __make_full_name(self) -> tuple[Reference, list[int]]:
         """Returns instance name and index.
 
         This takes the argument to the --muscle-instance= command-line
         option and splits it into a component name and an index.
         """
+
         def split_reference(ref: Reference) -> tuple[Reference, list[int]]:
             index: list[int] = []
             i = 0
@@ -1038,22 +1080,23 @@ class Instance:
         # Neither getopt, optparse, or argparse will let me pick out
         # just one option from the command line and ignore the rest.
         # So we do it by hand.
-        prefix_tag = '--muscle-instance='
+        prefix_tag = "--muscle-instance="
         for arg in sys.argv[1:]:
             if arg.startswith(prefix_tag):
-                prefix_str = arg[len(prefix_tag):]
+                prefix_str = arg[len(prefix_tag) :]
                 prefix_ref = Reference(prefix_str)
                 name, index = split_reference(prefix_ref)
                 break
         else:
-            if 'MUSCLE_INSTANCE' in os.environ:
-                prefix_ref = Reference(os.environ['MUSCLE_INSTANCE'])
+            if "MUSCLE_INSTANCE" in os.environ:
+                prefix_ref = Reference(os.environ["MUSCLE_INSTANCE"])
                 name, index = split_reference(prefix_ref)
             else:
                 raise RuntimeError(
-                    'A --muscle-instance command line argument or'
-                    ' MUSCLE_INSTANCE environment variable is required to'
-                    ' identify this instance. Please add one.')
+                    "A --muscle-instance command line argument or"
+                    " MUSCLE_INSTANCE environment variable is required to"
+                    " identify this instance. Please add one."
+                )
         return name, index
 
     def __list_declared_ports(self) -> list[Port]:
@@ -1066,39 +1109,46 @@ class Instance:
         if self._declared_ports is not None:
             for operator, port_names in self._declared_ports.items():
                 for name in port_names:
-                    if name.endswith('[]'):
+                    if name.endswith("[]"):
                         name = name[:-2]
                     result.append(Port(Identifier(name), operator))
         return result
 
     def __check_port(
-            self, port_name: str, slot: Optional[int], is_send: bool,
-            allow_slot_out_of_range: bool = False) -> None:
+        self,
+        port_name: str,
+        slot: Optional[int],
+        is_send: bool,
+        allow_slot_out_of_range: bool = False,
+    ) -> None:
         if not self._port_manager.port_exists(port_name):
-            err_msg = (f'Port "{port_name}" does not exist on "{self._name}". Please'
-                        ' check the name and the list of ports you gave for'
-                        ' this component.')
+            err_msg = (
+                f'Port "{port_name}" does not exist on "{self._name}". Please'
+                " check the name and the list of ports you gave for"
+                " this component."
+            )
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
         port = self._port_manager.get_port(port_name)
         if is_send:
             if not port.operator.allows_sending():
-                err_msg = (f'Port "{port_name}" does not allow sending messages.')
+                err_msg = f'Port "{port_name}" does not allow sending messages.'
                 self.__shutdown(err_msg)
                 raise RuntimeError(err_msg)
         else:
             if not port.operator.allows_receiving():
-                err_msg = (f'Port "{port_name}" does not allow receiving messages.')
+                err_msg = f'Port "{port_name}" does not allow receiving messages.'
                 self.__shutdown(err_msg)
                 raise RuntimeError(err_msg)
 
         if slot is not None:
             if not port.is_vector():
                 err_msg = (
-                        f'Port "{port_name}" is not a vector port, but a slot was'
-                        ' given. Please check your send call and your port'
-                        ' declarations')
+                    f'Port "{port_name}" is not a vector port, but a slot was'
+                    " given. Please check your send call and your port"
+                    " declarations"
+                )
                 self.__shutdown(err_msg)
                 raise RuntimeError(err_msg)
 
@@ -1107,10 +1157,11 @@ class Instance:
                 if not (port.is_resizable() and allow_slot_out_of_range):
                     if port.get_length() <= slot:
                         err_msg = (
-                                f'Tried to send or receive on slot {slot} of port'
-                                f' "{port_name}", which has length {port.get_length()}.'
-                                f' Please check your code and/or the multiplicities in'
-                                f' the model description.')
+                            f"Tried to send or receive on slot {slot} of port"
+                            f' "{port_name}", which has length {port.get_length()}.'
+                            f" Please check your code and/or the multiplicities in"
+                            f" the model description."
+                        )
                         self.__shutdown(err_msg)
                         raise RuntimeError(err_msg)
 
@@ -1121,8 +1172,8 @@ class Instance:
         """
         ports = self._port_manager.list_ports()
         f_init_connected = any(
-                [self.is_connected(port)
-                 for port in ports.get(Operator.F_INIT, [])])
+            [self.is_connected(port) for port in ports.get(Operator.F_INIT, [])]
+        )
         return f_init_connected or self._port_manager.settings_in_connected()
 
     def _pre_receive(self) -> bool:
@@ -1157,14 +1208,16 @@ class Instance:
         Returns:
             False iff the port is connnected and ClosePort was received.
         """
-        message, saved_until = self._communicator.receive_message('muscle_settings_in')
+        message, saved_until = self._communicator.receive_message("muscle_settings_in")
 
         if isinstance(message.data, ClosePort):
             return False
         if not isinstance(message.data, Settings):
-            err_msg = (f'"{self._instance_id}" received a message on'
-                       ' muscle_settings_in that is not a Settings. It seems that your'
-                       ' simulation is miswired or the sending instance is broken.')
+            err_msg = (
+                f'"{self._instance_id}" received a message on'
+                " muscle_settings_in that is not a Settings. It seems that your"
+                " simulation is miswired or the sending instance is broken."
+            )
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
@@ -1196,7 +1249,7 @@ class Instance:
         self._f_init_cache = dict()
         ports = self._port_manager.list_ports()
         for port_name in ports.get(Operator.F_INIT, []):
-            _logger.debug(f'Pre-receiving on port {port_name}')
+            _logger.debug(f"Pre-receiving on port {port_name}")
             port = self._port_manager.get_port(port_name)
             if not port.is_connected():
                 continue
@@ -1220,7 +1273,7 @@ class Instance:
         if it is currently higher, otherwise we still get no output.
         """
         try:
-            log_level_str = self.get_setting('muscle_remote_log_level', 'str')
+            log_level_str = self.get_setting("muscle_remote_log_level", "str")
         except KeyError:
             # muscle_remote_log_level not set, do nothing and keep the default
             return
@@ -1237,9 +1290,10 @@ class Instance:
 
         except KeyError:
             _logger.warning(
-                f'muscle_remote_log_level is set to {log_level_str}, which is not a'
-                ' valid remote log level. Please use one of DEBUG, INFO, WARNING,'
-                ' ERROR, CRITICAL, or DISABLED')
+                f"muscle_remote_log_level is set to {log_level_str}, which is not a"
+                " valid remote log level. Please use one of DEBUG, INFO, WARNING,"
+                " ERROR, CRITICAL, or DISABLED"
+            )
             return
 
     def _set_local_log_level(self) -> None:
@@ -1253,7 +1307,7 @@ class Instance:
         --muscle-log-file command line option.
         """
         try:
-            log_level_str = self.get_setting('muscle_local_log_level', 'str')
+            log_level_str = self.get_setting("muscle_local_log_level", "str")
         except KeyError:
             # muscle_remote_log_level not set, do nothing and keep the default
             return
@@ -1262,14 +1316,15 @@ class Instance:
             log_level = LogLevel[log_level_str.upper()]
         except KeyError:
             _logger.warning(
-                f'muscle_local_log_level is set to {log_level_str}, which is not a'
-                ' valid log level. Please use one of DEBUG, INFO, WARNING, ERROR,'
-                ' CRITICAL, or DISABLED')
+                f"muscle_local_log_level is set to {log_level_str}, which is not a"
+                " valid log level. Please use one of DEBUG, INFO, WARNING, ERROR,"
+                " CRITICAL, or DISABLED"
+            )
             return
 
         py_level = log_level.as_python_level()
-        logging.getLogger('libmuscle').setLevel(py_level)
-        logging.getLogger('ymmsl').setLevel(py_level)
+        logging.getLogger("libmuscle").setLevel(py_level)
+        logging.getLogger("ymmsl").setLevel(py_level)
 
     def __apply_overlay(self, message: Message) -> None:
         """Sets local overlay if we don't already have one.
@@ -1281,8 +1336,9 @@ class Instance:
             if message.settings is not None:
                 self._settings_manager.overlay = message.settings
 
-    def __check_compatibility(self, port_name: str,
-                              overlay: Optional[Settings]) -> None:
+    def __check_compatibility(
+        self, port_name: str, overlay: Optional[Settings]
+    ) -> None:
         """Checks whether a received overlay matches the current one.
 
         Args:
@@ -1294,10 +1350,11 @@ class Instance:
             return
         if self._settings_manager.overlay != overlay:
             err_msg = (
-                    'Unexpectedly received data from a parallel universe on port'
-                    f' "{port_name}". My settings are'
-                    f' "{self._settings_manager.overlay}" and I received from a'
-                    f' universe with "{overlay}".')
+                "Unexpectedly received data from a parallel universe on port"
+                f' "{port_name}". My settings are'
+                f' "{self._settings_manager.overlay}" and I received from a'
+                f' universe with "{overlay}".'
+            )
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 

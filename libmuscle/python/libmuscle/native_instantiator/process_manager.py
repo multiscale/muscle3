@@ -7,13 +7,20 @@ _logger = logging.getLogger(__name__)
 
 class ProcessManager:
     """Manages a set of running processes."""
+
     def __init__(self) -> None:
         """Create a ProcessManager."""
         self._processes: dict[str, Popen] = dict()
 
     def start(
-            self, name: str, work_dir: Path, args: list[str], env: dict[str, str],
-            stdout: Path, stderr: Path) -> None:
+        self,
+        name: str,
+        work_dir: Path,
+        args: list[str],
+        env: dict[str, str],
+        stdout: Path,
+        stderr: Path,
+    ) -> None:
         """Start a process.
 
         The files that the output is directed to will be overwritten if they already
@@ -32,11 +39,12 @@ class ProcessManager:
             OSError: If the process could not be started.
         """
         if name in self._processes:
-            raise RuntimeError(f'Process {name} already exists')
-        _logger.debug(f'Starting process {args} with env {env} in {work_dir}')
-        with stdout.open('w') as out, stderr.open('w') as err:
+            raise RuntimeError(f"Process {name} already exists")
+        _logger.debug(f"Starting process {args} with env {env} in {work_dir}")
+        with stdout.open("w") as out, stderr.open("w") as err:
             self._processes[name] = Popen(
-                    args, cwd=work_dir, env=env, stdout=out, stderr=err)
+                args, cwd=work_dir, env=env, stdout=out, stderr=err
+            )
 
     def cancel_all(self) -> None:
         """Stops all running processes.

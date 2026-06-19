@@ -13,6 +13,7 @@ class ProfileDatabase:
     This class accesses a MUSCLE3 profiling database and provides basic
     analysis functionality.
     """
+
     def __init__(self, db_file: Union[str, Path]) -> None:
         """Open a ProfileDatabase.
 
@@ -53,11 +54,10 @@ class ProfileDatabase:
         """
         # If the thread never served a request, then we don't have a
         # connection.
-        if hasattr(self._local, 'conn'):
+        if hasattr(self._local, "conn"):
             self._local.conn.close()
 
-    def instance_stats(
-            self) -> tuple[list[str], list[float], list[float], list[float]]:
+    def instance_stats(self) -> tuple[list[str], list[float], list[float], list[float]]:
         """Calculate per-instance statistics.
 
         This calculates the total time spent computing, the total time
@@ -98,23 +98,21 @@ class ProfileDatabase:
         cur.execute("SELECT name FROM instances")
         instances = [row[0] for row in cur.fetchall()]
 
-        cur.execute(
-                "SELECT instance, stop_time"
-                " FROM all_events"
-                " WHERE type = 'CONNECT'")
+        cur.execute("SELECT instance, stop_time FROM all_events WHERE type = 'CONNECT'")
         start_run = dict(cur.fetchall())
 
         for name in instances:
             if name not in start_run:
                 warn(
-                        f'Instance {name} seems to have never registered with the'
-                        ' manager, and will be omitted from the results. Did it crash'
-                        ' on startup?', stacklevel=2)
+                    f"Instance {name} seems to have never registered with the"
+                    " manager, and will be omitted from the results. Did it crash"
+                    " on startup?",
+                    stacklevel=2,
+                )
 
         cur.execute(
-                "SELECT instance, start_time"
-                " FROM all_events"
-                " WHERE type = 'SHUTDOWN_WAIT'")
+            "SELECT instance, start_time FROM all_events WHERE type = 'SHUTDOWN_WAIT'"
+        )
         stop_run = dict(cur.fetchall())
 
         for name in instances:
@@ -122,39 +120,47 @@ class ProfileDatabase:
                 # instances with no connected f_init ports don't have SHUTDOWN_WAIT
                 # try to use the start of DISCONNECT_WAIT instead as the stop time
                 cur.execute(
-                        "SELECT start_time"
-                        " FROM all_events"
-                        " WHERE type = 'DISCONNECT_WAIT' and instance = ?", [name])
+                    "SELECT start_time"
+                    " FROM all_events"
+                    " WHERE type = 'DISCONNECT_WAIT' and instance = ?",
+                    [name],
+                )
                 result = cur.fetchall()
                 if result:
                     stop_run[name] = result[0][0]
                 else:
                     # as a last resort, just take the last registered event
                     warn(
-                            f'Instance {name} did not shut down cleanly, data may be'
-                            ' inaccurate or missing', stacklevel=2)
+                        f"Instance {name} did not shut down cleanly, data may be"
+                        " inaccurate or missing",
+                        stacklevel=2,
+                    )
 
                     cur.execute(
-                            "SELECT stop_time"
-                            " FROM all_events"
-                            " WHERE instance = ?"
-                            " ORDER BY stop_time DESC LIMIT 1", [name])
+                        "SELECT stop_time"
+                        " FROM all_events"
+                        " WHERE instance = ?"
+                        " ORDER BY stop_time DESC LIMIT 1",
+                        [name],
+                    )
                     result = cur.fetchall()
                     if result:
                         stop_run[name] = result[0][0]
 
         cur.execute(
-                "SELECT instance, SUM(stop_time - start_time)"
-                " FROM all_events"
-                " WHERE type = 'SEND' OR type = 'RECEIVE'"
-                " GROUP BY instance")
+            "SELECT instance, SUM(stop_time - start_time)"
+            " FROM all_events"
+            " WHERE type = 'SEND' OR type = 'RECEIVE'"
+            " GROUP BY instance"
+        )
         comm = dict(cur.fetchall())
 
         cur.execute(
-                "SELECT instance, SUM(stop_time - start_time)"
-                " FROM all_events"
-                " WHERE type = 'RECEIVE_WAIT'"
-                " GROUP BY instance")
+            "SELECT instance, SUM(stop_time - start_time)"
+            " FROM all_events"
+            " WHERE type = 'RECEIVE_WAIT'"
+            " GROUP BY instance"
+        )
         wait = dict(cur.fetchall())
 
         cur.execute("COMMIT")
@@ -164,15 +170,11 @@ class ProfileDatabase:
 
         total_times = [(stop_run[i] - start_run[i]) * 1e-9 for i in complete_instances]
         comm_times = [
-                (
-                    (comm[i] if i in comm else 0) -
-                    (wait[i] if i in wait else 0)
-                ) * 1e-9
-                for i in complete_instances]
+            ((comm[i] if i in comm else 0) - (wait[i] if i in wait else 0)) * 1e-9
+            for i in complete_instances
+        ]
         wait_times = [(wait[i] if i in wait else 0) * 1e-9 for i in complete_instances]
-        run_times = [
-                t - c - w
-                for t, c, w in zip(total_times, comm_times, wait_times)]
+        run_times = [t - c - w for t, c, w in zip(total_times, comm_times, wait_times)]
 
         return complete_instances, run_times, comm_times, wait_times
 
@@ -194,19 +196,18 @@ class ProfileDatabase:
         """
         instances, run_times, comm_times, _ = self.instance_stats()
 
-        active_times = {
-                i: r + c
-                for i, r, c in zip(instances, run_times, comm_times)}
+        active_times = {i: r + c for i, r, c in zip(instances, run_times, comm_times)}
 
         cur = self._get_cursor()
         cur.execute("BEGIN TRANSACTION")
         cur.execute(
-                "SELECT i.name, ac.node, ac.core"
-                " FROM instances AS i"
-                " JOIN assigned_cores AS ac ON (i.oid = ac.instance_oid)")
+            "SELECT i.name, ac.node, ac.core"
+            " FROM instances AS i"
+            " JOIN assigned_cores AS ac ON (i.oid = ac.instance_oid)"
+        )
         instances_by_core = defaultdict(list)
         for name, node, core in cur.fetchall():
-            instances_by_core[':'.join([node, str(core)])].append(name)
+            instances_by_core[":".join([node, str(core)])].append(name)
 
         cur.execute("COMMIT")
         cur.close()
@@ -219,11 +220,19 @@ class ProfileDatabase:
         return result
 
     def time_taken(
-            self, *, etype: str, instance: Optional[str] = None,
-            port: Optional[str] = None, slot: Optional[int] = None,
-            time: Optional[str] = 'start', etype2: Optional[str] = None,
-            port2: Optional[str] = None, slot2: Optional[int] = None,
-            time2: Optional[str] = 'stop', aggregate: str = 'mean') -> float:
+        self,
+        *,
+        etype: str,
+        instance: Optional[str] = None,
+        port: Optional[str] = None,
+        slot: Optional[int] = None,
+        time: Optional[str] = "start",
+        etype2: Optional[str] = None,
+        port2: Optional[str] = None,
+        slot2: Optional[int] = None,
+        time2: Optional[str] = "stop",
+        aggregate: str = "mean",
+    ) -> float:
         """Calculate time of and between events.
 
         This function returns the mean or total time spent on or
@@ -350,7 +359,7 @@ class ProfileDatabase:
             The mean or total time taken in nanoseconds.
         """
         if time is None:
-            time = 'start'
+            time = "start"
 
         if etype2 is None:
             etype2 = etype
@@ -362,21 +371,21 @@ class ProfileDatabase:
             slot2 = slot
 
         if time2 is None:
-            time2 = 'stop'
+            time2 = "stop"
 
-        if time in ('start', 'stop'):
-            timestamp = time + '_time'
+        if time in ("start", "stop"):
+            timestamp = time + "_time"
         else:
             raise ValueError(
-                    'Invalid time value, please specify either "start"'
-                    ' or "stop".')
+                'Invalid time value, please specify either "start" or "stop".'
+            )
 
-        if time2 in ('start', 'stop'):
-            timestamp2 = time2 + '_time'
+        if time2 in ("start", "stop"):
+            timestamp2 = time2 + "_time"
         else:
             raise ValueError(
-                    'Invalid time2 value, please specify either "start"'
-                    ' or "stop".')
+                'Invalid time2 value, please specify either "start" or "stop".'
+            )
 
         # To do sum(stop - start) across different events, we'd have
         # to do an expensive and tricky self-join on the events table
@@ -395,16 +404,21 @@ class ProfileDatabase:
         # have to time-travel to before 1970 to notice any problem.
 
         def get_sum_count(
-                cur: sqlite3.Cursor, etype: Optional[str], timestamp: str,
-                instance: Optional[str], port: Optional[str],
-                slot: Optional[int]) -> tuple[int, int, int]:
+            cur: sqlite3.Cursor,
+            etype: Optional[str],
+            timestamp: str,
+            instance: Optional[str],
+            port: Optional[str],
+            slot: Optional[int],
+        ) -> tuple[int, int, int]:
             """Get sums and count for one time point."""
             cur.execute("BEGIN TRANSACTION")
             query = (
-                    f"SELECT SUM({timestamp} >> 32), SUM({timestamp} & 0xffffffff),"
-                    " COUNT(*)"
-                    " FROM all_events"
-                    " WHERE type = ?")
+                f"SELECT SUM({timestamp} >> 32), SUM({timestamp} & 0xffffffff),"
+                " COUNT(*)"
+                " FROM all_events"
+                " WHERE type = ?"
+            )
             qargs: list[Any] = [etype]
 
             if instance is not None:
@@ -426,39 +440,44 @@ class ProfileDatabase:
 
         cur = self._get_cursor()
         sum1_high, sum1_low, count1 = get_sum_count(
-                cur, etype, timestamp, instance, port, slot)
+            cur, etype, timestamp, instance, port, slot
+        )
         sum2_high, sum2_low, count2 = get_sum_count(
-                cur, etype2, timestamp2, instance, port2, slot2)
+            cur, etype2, timestamp2, instance, port2, slot2
+        )
         cur.close()
 
         if count1 != count2:
             raise RuntimeError(
-                    'The number of start and stop events is not the same:'
-                    f' {count1} != {count2}')
+                "The number of start and stop events is not the same:"
+                f" {count1} != {count2}"
+            )
 
         if count1 == 0:
-            if aggregate == 'sum':
+            if aggregate == "sum":
                 return 0.0
-            raise RuntimeError('No matching events were found')
+            raise RuntimeError("No matching events were found")
 
         diff_high = (sum2_high - sum1_high) << 32
         diff_low = sum2_low - sum1_low
-        if aggregate == 'mean':
+        if aggregate == "mean":
             return (diff_high + diff_low) / count1
-        elif aggregate == 'sum':
+        elif aggregate == "sum":
             return diff_high + diff_low
         else:
             raise ValueError(
-                    f'Unknown aggregate {aggregate}, please specify either'
-                    ' "mean" or "sum"')
+                f'Unknown aggregate {aggregate}, please specify either "mean" or "sum"'
+            )
 
-    def __enter__(self) -> 'ProfileDatabase':
+    def __enter__(self) -> "ProfileDatabase":
         return self
 
     def __exit__(
-            self, exc_type: Optional[type[BaseException]],
-            exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]
-            ) -> None:
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         self.close()
 
     def _get_cursor(self) -> sqlite3.Cursor:
@@ -479,7 +498,6 @@ class ProfileDatabase:
         so we use thread-local storage to get a connection in each
         thread.
         """
-        if not hasattr(self._local, 'conn'):
-            self._local.conn = sqlite3.connect(
-                    self._db_file, isolation_level=None)
+        if not hasattr(self._local, "conn"):
+            self._local.conn = sqlite3.connect(self._db_file, isolation_level=None)
         return cast(sqlite3.Cursor, self._local.conn.cursor())

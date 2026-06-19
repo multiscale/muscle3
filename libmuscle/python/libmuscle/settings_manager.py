@@ -17,41 +17,36 @@ def has_setting_type(value: SettingValue, typ: str) -> bool:
     Raises:
         ValueError: If the type specified is not valid.
     """
-    par_type_to_type = {
-            'str': str,
-            'int': int,
-            'float': float,
-            'bool': bool
-            }
+    par_type_to_type = {"str": str, "int": int, "float": float, "bool": bool}
 
     if typ in par_type_to_type:
         return isinstance(value, par_type_to_type[typ])
-    elif typ == '[int]':
+    elif typ == "[int]":
         if isinstance(value, list):
             if len(value) == 0 or isinstance(value[0], int):
                 # We don't check everything here, the yMMSL loader does
                 # a full type check, so we just need to discriminate.
                 return True
-    elif typ == '[float]':
+    elif typ == "[float]":
         if isinstance(value, list):
             if len(value) == 0 or isinstance(value[0], float):
                 # We don't check everything here, the yMMSL loader does
                 # a full type check, so we just need to discriminate.
                 return True
         return False
-    elif typ == '[[float]]':
+    elif typ == "[[float]]":
         if isinstance(value, list):
             if len(value) == 0 or isinstance(value[0], list):
                 # We don't check everything here, the yMMSL loader does
                 # a full type check, so we just need to discriminate.
                 return True
         return False
-    raise ValueError(f'Invalid setting type specified: {typ}')
+    raise ValueError(f"Invalid setting type specified: {typ}")
 
 
 class SettingsManager:
-    """Manages the current settings for a component instance.
-    """
+    """Manages the current settings for a component instance."""
+
     def __init__(self) -> None:
         """Create a SettingsManager.
 
@@ -95,6 +90,7 @@ class SettingsManager:
         Return:
             A list of setting names.
         """
+
         def extract_names(settings: Settings) -> set[str]:
             result: set[str] = set()
             for name in settings:
@@ -112,8 +108,8 @@ class SettingsManager:
         return sorted(names)
 
     def get_setting(
-            self, instance: Reference, setting_name: Reference,
-            typ: Optional[str] = None) -> SettingValue:
+        self, instance: Reference, setting_name: Reference, typ: Optional[str] = None
+    ) -> SettingValue:
         """Returns the value of a setting.
 
         Args:
@@ -148,6 +144,7 @@ class SettingsManager:
         if typ is not None:
             if not has_setting_type(value, typ):
                 raise TypeError(
-                        f'Value for setting "{name}" is of type {type(value)}, where'
-                        f' {typ} was expected.')
+                    f'Value for setting "{name}" is of type {type(value)}, where'
+                    f" {typ} was expected."
+                )
         return value

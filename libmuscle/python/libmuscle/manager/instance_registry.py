@@ -13,16 +13,16 @@ class InstanceRegistry:
     The InstanceRegistry is a simple in-memory database that stores
     information about running instances of simulation components.
     """
+
     def __init__(self) -> None:
         """Construct an empty InstanceRegistry"""
-        self._deregistered_one = Condition()    # doubles as lock
+        self._deregistered_one = Condition()  # doubles as lock
         self._locations: dict[Reference, list[str]] = {}
         self._ports: dict[Reference, list[Port]] = {}
         self._seen: set[Reference] = set()
         self._startup = True
 
-    def add(self, name: Reference, locations: list[str], ports: list[Port]
-            ) -> None:
+    def add(self, name: Reference, locations: list[str], ports: list[Port]) -> None:
         """Add an instance to the registry.
 
         Args:
@@ -36,7 +36,7 @@ class InstanceRegistry:
         """
         with self._deregistered_one:
             if name in self._locations:
-                raise AlreadyRegistered(f'Instance {name} tried to register twice')
+                raise AlreadyRegistered(f"Instance {name} tried to register twice")
 
             self._locations[name] = locations
             self._ports[name] = ports

@@ -42,8 +42,9 @@ def model_config() -> Configuration:
     return Configuration(models=[sub_model])
 
 
-def test_add_tester_model_to_config(tmp_run_dir: Path, program_config: Configuration,
-                                    model_config: Configuration) -> None:
+def test_add_tester_model_to_config(
+    tmp_run_dir: Path, program_config: Configuration, model_config: Configuration
+) -> None:
     tester = MuscleTester(tmp_run_dir)
     result_program = tester._add_tester_component(program_config, "micro_model_program")
     result_model = tester._add_tester_component(model_config, "macro_model")
@@ -54,8 +55,9 @@ def test_add_tester_model_to_config(tmp_run_dir: Path, program_config: Configura
     assert Reference("muscle3_implementation_tester") in tester_model.components
 
 
-def test_add_tester_program_to_config(tmp_run_dir: Path, program_config: Configuration
-                                      ) -> None:
+def test_add_tester_program_to_config(
+    tmp_run_dir: Path, program_config: Configuration
+) -> None:
     tester = MuscleTester(tmp_run_dir)
     result = tester._add_tester_component(program_config, "micro_model_program")
     assert Reference("muscle3_implementation_tester") in result.programs
@@ -64,8 +66,9 @@ def test_add_tester_program_to_config(tmp_run_dir: Path, program_config: Configu
     assert tester_prog.execution_model == ExecutionModel.MANUAL
 
 
-def test_add_test_ports_to_config(tmp_run_dir: Path, program_config: Configuration
-                                  ) -> None:
+def test_add_test_ports_to_config(
+    tmp_run_dir: Path, program_config: Configuration
+) -> None:
     tester = MuscleTester(tmp_run_dir)
     result = tester._add_tester_component(program_config, "micro_model_program")
     tester_model = result.models[Reference("muscle3_test_model")]
@@ -77,26 +80,34 @@ def test_add_test_ports_to_config(tmp_run_dir: Path, program_config: Configurati
     assert Identifier("final_out") in tester_comp.ports.receiving_port_names()
 
 
-def test_add_test_conduits_to_config(tmp_run_dir: Path, program_config: Configuration
-                                     ) -> None:
+def test_add_test_conduits_to_config(
+    tmp_run_dir: Path, program_config: Configuration
+) -> None:
     tester = MuscleTester(tmp_run_dir)
     result = tester._add_tester_component(program_config, "micro_model_program")
     tester_model = result.models[Reference("muscle3_test_model")]
 
     # Tester sends init_in -> implementation receives init_in
-    assert Conduit(
-        "muscle3_implementation_tester.init_in",
-        "micro_model_program.init_in",
-    ) in tester_model.conduits
+    assert (
+        Conduit(
+            "muscle3_implementation_tester.init_in",
+            "micro_model_program.init_in",
+        )
+        in tester_model.conduits
+    )
     # Implementation sends final_out -> tester receives final_out
-    assert Conduit(
-        "micro_model_program.final_out",
-        "muscle3_implementation_tester.final_out",
-    ) in tester_model.conduits
+    assert (
+        Conduit(
+            "micro_model_program.final_out",
+            "muscle3_implementation_tester.final_out",
+        )
+        in tester_model.conduits
+    )
 
 
-def test_original_config_unchanged(tmp_run_dir: Path, program_config: Configuration
-                                   ) -> None:
+def test_original_config_unchanged(
+    tmp_run_dir: Path, program_config: Configuration
+) -> None:
     """add_tester_component should not remove the original model/program."""
     tester = MuscleTester(tmp_run_dir)
     result = tester._add_tester_component(program_config, "micro_model_program")

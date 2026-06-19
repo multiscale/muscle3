@@ -24,10 +24,13 @@ class ReceiveTimeoutHandler(TimeoutHandler):
     """
 
     def __init__(
-            self, manager: MMPClient,
-            peer_instance: Reference, port_name: str, slot: Optional[int],
-            timeout: float
-            ) -> None:
+        self,
+        manager: MMPClient,
+        peer_instance: Reference,
+        port_name: str,
+        slot: Optional[int],
+        timeout: float,
+    ) -> None:
         """Initialize a new timeout handler.
 
         Args:
@@ -48,23 +51,26 @@ class ReceiveTimeoutHandler(TimeoutHandler):
     @property
     def timeout(self) -> float:
         # Increase timeout by a factor 1.5 with every timeout we hit:
-        factor = 1.5 ** self._num_timeouts
+        factor = 1.5**self._num_timeouts
         return self._timeout * factor
 
     def on_timeout(self) -> None:
         if self._num_timeouts == 0:
             # Notify the manager that we're waiting for a receive
             self._manager.waiting_for_receive(
-                    self._peer_instance, self._port_name, self._slot)
+                self._peer_instance, self._port_name, self._slot
+            )
         else:
             # Ask the manager if we're part of a detected deadlock
             if self._manager.is_deadlocked():
                 _logger.error(
-                        'Deadlock detected, shutting down! Please see the manager log'
-                        ' for a description of the problem.')
+                    "Deadlock detected, shutting down! Please see the manager log"
+                    " for a description of the problem."
+                )
                 raise Deadlock()
         self._num_timeouts += 1
 
     def on_receive(self) -> None:
         self._manager.waiting_for_receive_done(
-                self._peer_instance, self._port_name, self._slot)
+            self._peer_instance, self._port_name, self._slot
+        )

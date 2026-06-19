@@ -20,8 +20,8 @@ from libmuscle.util import Retrier
 _logger = logging.getLogger(__name__)
 
 
-_CONNECT_TIMEOUT = 3.0                      # seconds
-RECONNECT_TIMEOUT = 60.0                   # seconds
+_CONNECT_TIMEOUT = 3.0  # seconds
+RECONNECT_TIMEOUT = 60.0  # seconds
 
 
 class NoPendingResponse(RuntimeError):
@@ -30,6 +30,7 @@ class NoPendingResponse(RuntimeError):
 
 class TcpTransportClient(TransportClient):
     """A client that connects to a TCPTransport server."""
+
     @staticmethod
     def can_connect_to(location: str) -> bool:
         """Whether this client class can connect to the given location.
@@ -40,7 +41,7 @@ class TcpTransportClient(TransportClient):
         Returns:
             True iff this class can connect to this location.
         """
-        return location.startswith('tcp:')
+        return location.startswith("tcp:")
 
     def __init__(self, location: str) -> None:
         """Create a TcpClient for a given location.
@@ -51,15 +52,16 @@ class TcpTransportClient(TransportClient):
         Args:
             location: A location string for the peer.
         """
-        self._addresses = location[4:].split(',')
+        self._addresses = location[4:].split(",")
         self._socket: Optional[socket.SocketType] = None
         self._session = 0
         self._cur_request = 0
 
         self._reconnect(False)
 
-    def call(self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
-             ) -> tuple[Buffer, ProfileData]:
+    def call(
+        self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
+    ) -> tuple[Buffer, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call.
@@ -81,8 +83,8 @@ class TcpTransportClient(TransportClient):
             nonlocal deadline
             nonlocal did_timeout
 
-            assert timeout_handler is not None      # mypy
-            assert deadline is not None             # mypy
+            assert timeout_handler is not None  # mypy
+            assert deadline is not None  # mypy
 
             timeout_handler.on_timeout()
             deadline += timeout_handler.timeout
@@ -94,7 +96,7 @@ class TcpTransportClient(TransportClient):
                     handle_timeout()
 
                 if self._socket is None:
-                    raise ConnectionError('No connection could be established')
+                    raise ConnectionError("No connection could be established")
 
                 start_wait = ProfileTimestamp()
                 send_int64(self._socket, self._cur_request)
@@ -158,8 +160,8 @@ class TcpTransportClient(TransportClient):
             retrier: A Retrier that keeps track of timing any retries
         """
         _logger.warning(
-                f'The TCP network connection with {self._addresses} was lost'
-                ' unexpectedly.')
+            f"The TCP network connection with {self._addresses} was lost unexpectedly."
+        )
 
         try:
             self._close_connection()
@@ -169,13 +171,14 @@ class TcpTransportClient(TransportClient):
 
         if retrier.should_give_up():
             _logger.warning(
-                    f'I am unable to reconnect to {self._addresses} despite repeated'
-                    ' attempts, and I am giving up. Please check your network.')
+                f"I am unable to reconnect to {self._addresses} despite repeated"
+                " attempts, and I am giving up. Please check your network."
+            )
             raise
 
         retrier.sleep()
 
-        _logger.warning(f'Trying to reconnect to {self._addresses}')
+        _logger.warning(f"Trying to reconnect to {self._addresses}")
 
         self._reconnect()
 
@@ -193,15 +196,15 @@ class TcpTransportClient(TransportClient):
 
             if re:
                 _logger.warning(
-                        f'Reconnected to {self._addresses}, continuing the'
-                        ' simulation')
+                    f"Reconnected to {self._addresses}, continuing the simulation"
+                )
 
         except Exception as e:
             if is_disconnect(e):
                 self._close_connection()
                 _logger.warning(
-                        f'Failed to reconnect to {self._addresses}, will retry'
-                        ' later')
+                    f"Failed to reconnect to {self._addresses}, will retry later"
+                )
             else:
                 raise
 
@@ -219,32 +222,33 @@ class TcpTransportClient(TransportClient):
                 pass
 
         if sock is None:
-            raise ConnectionRefusedError('Failed to connect')
+            raise ConnectionRefusedError("Failed to connect")
 
-        if hasattr(socket, 'TCP_NODELAY'):
+        if hasattr(socket, "TCP_NODELAY"):
             sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        if hasattr(socket, 'TCP_QUICKACK'):
+        if hasattr(socket, "TCP_QUICKACK"):
             sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
         self._socket = sock
 
-        if hasattr(select, 'poll'):
+        if hasattr(select, "poll"):
             self._poll_obj: Optional[select.poll] = select.poll()
             self._poll_obj.register(self._socket, select.POLLIN)
         else:
             self._poll_obj = None  # On platforms that don't support select.poll
 
     def _connect(self, address: str) -> socket.SocketType:
-        loc_parts = address.rsplit(':', 1)
+        loc_parts = address.rsplit(":", 1)
         host = loc_parts[0]
-        if host.startswith('['):
-            if host.endswith(']'):
+        if host.startswith("["):
+            if host.endswith("]"):
                 host = host[1:-1]
             else:
-                raise RuntimeError('Invalid address')
+                raise RuntimeError("Invalid address")
         port = int(loc_parts[1])
 
         addrinfo = socket.getaddrinfo(
-                host, port, 0, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+            host, port, 0, socket.SOCK_STREAM, socket.IPPROTO_TCP
+        )
 
         for family, socktype, proto, _, sockaddr in addrinfo:
             try:
@@ -254,16 +258,16 @@ class TcpTransportClient(TransportClient):
                 sock.settimeout(None)
                 return sock
             except (ConnectionRefusedError, ConnectionAbortedError):
-                _logger.info(f'Failed to connect to {sockaddr}')
+                _logger.info(f"Failed to connect to {sockaddr}")
                 sock.close()
                 break
 
             except Exception as e:
-                _logger.debug(f'Failed to connect socket: {e}')
+                _logger.debug(f"Failed to connect socket: {e}")
                 sock.close()
                 break
 
-        raise RuntimeError('Could not connect')
+        raise RuntimeError("Could not connect")
 
     def _end_session(self) -> None:
         try:
@@ -276,8 +280,9 @@ class TcpTransportClient(TransportClient):
                 raise
 
             _logger.warning(
-                    'Disconnected while trying to end session, shutdown will take'
-                    ' longer than usual because of this.')
+                "Disconnected while trying to end session, shutdown will take"
+                " longer than usual because of this."
+            )
 
     def _close_connection(self) -> None:
         if self._socket is not None:

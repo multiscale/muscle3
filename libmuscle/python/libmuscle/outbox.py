@@ -9,14 +9,13 @@ class Outbox:
     An Outbox is a queue of messages, which may be deposited and
     then retrieved in the same order.
     """
+
     def __init__(self) -> None:
-        """Create an empty Outbox.
-        """
+        """Create an empty Outbox."""
         self.__queue: Queue[Buffer] = Queue()
 
     def is_empty(self) -> bool:
-        """Returns True iff the outbox is empty.
-        """
+        """Returns True iff the outbox is empty."""
         return self.__queue.empty()
 
     def deposit(self, message: Buffer) -> None:

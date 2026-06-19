@@ -24,6 +24,7 @@ _logger = logging.getLogger(__name__)
 
 class MAPRequestHandler(RequestHandler):
     """Handles Agent requests."""
+
     def __init__(self, agent_manager: IAgentManager, post_office: PostOffice) -> None:
         """Create a MAPRequestHandler.
 
@@ -55,8 +56,7 @@ class MAPRequestHandler(RequestHandler):
 
         return cast(Buffer, msgpack.packb(response, use_bin_type=True))
 
-    def _report_resources(
-            self, node_name: str, data: dict[str, Any]) -> Any:
+    def _report_resources(self, node_name: str, data: dict[str, Any]) -> Any:
         """Handle a report resources request.
 
         This is used by the agent to report available resources on its node when
@@ -69,7 +69,7 @@ class MAPRequestHandler(RequestHandler):
                 id at index [0] followed by the hwthread ids of all hwthreads in this
                 core.
         """
-        cores = CoreSet(Core(ids[0], set(ids[1:])) for ids in data['cpu'])
+        cores = CoreSet(Core(ids[0], set(ids[1:])) for ids in data["cpu"])
         node_resources = OnNodeResources(node_name, cores)
         self._agent_manager.report_resources(node_resources)
         return [ResponseType.SUCCESS.value]
@@ -87,7 +87,7 @@ class MAPRequestHandler(RequestHandler):
         Args:
             node_name: Hostname (name) of the agent's node
         """
-        node_ref = Reference('_' + node_name.replace('-', '_'))
+        node_ref = Reference("_" + node_name.replace("-", "_"))
         next_request: Optional[Buffer] = None
         if self._post_office.have_message(node_ref):
             next_request = self._post_office.get_message(node_ref)
@@ -117,6 +117,7 @@ class MAPServer:
     This class accepts connections from the agents and services them using a
     MAPRequestHandler.
     """
+
     def __init__(self, agent_manager: IAgentManager) -> None:
         """Create a MAPServer.
 
@@ -162,13 +163,18 @@ class MAPServer:
             node_name: Name of the node whose agent should execute the command
             command: The command to send
         """
-        agent = Reference('_' + node_name.replace('-', '_'))
+        agent = Reference("_" + node_name.replace("-", "_"))
 
         if isinstance(command, StartCommand):
             command_obj = [
-                    AgentCommandType.START.value, command.name, str(command.work_dir),
-                    command.args, command.env, str(command.stdout), str(command.stderr)
-                    ]
+                AgentCommandType.START.value,
+                command.name,
+                str(command.work_dir),
+                command.args,
+                command.env,
+                str(command.stdout),
+                str(command.stderr),
+            ]
         elif isinstance(command, CancelAllCommand):
             command_obj = [AgentCommandType.CANCEL_ALL.value]
         elif isinstance(command, ShutdownCommand):

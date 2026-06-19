@@ -148,17 +148,14 @@ def _start_nodes(local_term, slurm_version, net_name, shared_dir):
 
         image_name = _image_name(slurm_version)
 
-        run_cmd(
-            local_term,
-            60,
-            (
-                f"docker run -d --name={node_name}-{slurm_version} --hostname={hostname}"
-                f" --network={net_name} --cap-add=CAP_SYS_NICE"
-                f" --env SLURM_VERSION={slurm_version}"
-                f" --mount type=bind,source={shared_dir},target={REMOTE_SHARED}"
-                f" {image_name}"
-            ),
+        command = (
+            f"docker run -d --name={node_name}-{slurm_version} --hostname={hostname}"
+            f" --network={net_name} --cap-add=CAP_SYS_NICE"
+            f" --env SLURM_VERSION={slurm_version}"
+            f" --mount type=bind,source={shared_dir},target={REMOTE_SHARED}"
+            f" {image_name}"
         )
+        run_cmd(local_term, 60, command)
 
 
 def _start_headnode(local_term, slurm_version, net_name, shared_dir, headnode_port):

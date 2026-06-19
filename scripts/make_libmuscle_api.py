@@ -1158,8 +1158,8 @@ portsdescription_desc = Class(
                 return result;
             }
 
-            """),
-        ),  # noqa: E501
+            """),  # noqa: E501
+        ),
         MemFun(
             String(),
             "get",

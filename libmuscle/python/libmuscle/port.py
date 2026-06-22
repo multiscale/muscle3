@@ -1,7 +1,7 @@
 from typing import Optional, TypeVar
 
 import ymmsl
-from ymmsl.v0_2 import Identifier, Operator
+from ymmsl.v0_2 import Identifier, Operator, Timeline
 
 _T = TypeVar("_T")
 
@@ -31,7 +31,8 @@ class Port(ymmsl.v0_2.Port):
     """
 
     def __init__(self, name: str, operator: Operator, is_vector: bool,
-                 is_connected: bool, our_ndims: int, peer_dims: list[int]
+                 is_connected: bool, our_ndims: int, peer_dims: list[int],
+                 timeline: Optional[Timeline] = None
                  ) -> None:
         """Create a Port.
 
@@ -42,8 +43,9 @@ class Port(ymmsl.v0_2.Port):
             is_connected: Whether this port is connected to a peer.
             our_ndims: Number of dimensions of our instance set.
             peer_dims: Dimensions of the peer instance set of this port.
+            timeline: The timeline this port is on.
         """
-        super().__init__(Identifier(name), operator)
+        super().__init__(Identifier(name), operator, timeline)
 
         self._is_connected = is_connected
 
@@ -80,6 +82,7 @@ class Port(ymmsl.v0_2.Port):
         self._is_resizable = is_vector and (our_ndims == len(peer_dims))
         self._num_messages = [0] * (self._length or 1)
         self._is_resuming = [False] * (self._length or 1)
+        self._iteration: Optional[list[int]] = None
 
     # Note: I'm not sure how this will develop exactly, so this class has some
     # accessors even if those are un-Pythonic; in the future a simple variable
@@ -202,3 +205,11 @@ class Port(ymmsl.v0_2.Port):
             slot: The slot that is sent/received on
         """
         self._is_resuming[slot or 0] = False
+
+    def get_iteration(self) -> Optional[list[int]]:
+        """Return the current iteration this port is in, or None if not yet set."""
+        return self._iteration
+
+    def set_iteration(self, iteration: Optional[list[int]]) -> None:
+        """Set the current iteration this port is in."""
+        self._iteration = iteration

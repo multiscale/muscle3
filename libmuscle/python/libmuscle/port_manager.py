@@ -149,6 +149,9 @@ class PortManager:
         """
         assert self._declared_ports is not None
 
+        # TODO: should declared ports also support a timeline? If so, the list[str] per
+        # operator could be changed to list[str | PortDeclaration] where PortDeclaration
+        # is a small class holding the port name and an optional Timeline.
         ports = dict()
         for operator, port_list in self._declared_ports.items():
             for port_desc in port_list:
@@ -180,7 +183,7 @@ class PortManager:
             is_vector = (ndims == 1)
             ports[port_name] = Port(
                 port_name, port.operator, is_vector, is_connected,
-                len(self._index), peer_dims)
+                len(self._index), peer_dims, port.timeline)
         return ports
 
     def _split_port_desc(self, port_desc: str) -> tuple[str, bool]:

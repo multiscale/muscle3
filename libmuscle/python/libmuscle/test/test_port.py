@@ -1,5 +1,5 @@
 import pytest
-from ymmsl.v0_2 import Identifier
+from ymmsl.v0_2 import Identifier, Timeline
 
 from libmuscle.port import Operator, Port
 
@@ -11,6 +11,13 @@ def test_create_port():
     assert port._length is None
     assert port._is_resizable is False
     assert port._is_connected is True
+    assert port.timeline == Timeline('')
+
+
+def test_create_port_with_timeline():
+    timeline = Timeline(':t')
+    port = Port('out', Operator.O_I, False, True, 0, [], timeline)
+    assert port.timeline == timeline
 
 
 def test_create_invalid_port():

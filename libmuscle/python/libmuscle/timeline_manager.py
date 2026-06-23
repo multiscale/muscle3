@@ -1,3 +1,5 @@
+from typing import Optional
+
 from libmuscle.port_manager import PortManager
 
 class TimelineManager:
@@ -9,4 +11,4 @@ class TimelineManager:
     """
 
     def __init__(self, port_manager: PortManager):
-        self._iteration: list[int] = None
+        self._iteration: Optional[list[int]] = None

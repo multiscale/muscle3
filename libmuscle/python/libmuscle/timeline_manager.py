@@ -2,6 +2,7 @@ from typing import Optional
 
 from libmuscle.port_manager import PortManager
 
+
 class TimelineManager:
     """Tracks the current iteration position for each timeline in a multiscale
     simulation.

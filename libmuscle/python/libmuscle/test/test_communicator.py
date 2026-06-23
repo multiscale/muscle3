@@ -47,13 +47,14 @@ def mpp_client(MPPClient):
 
 @pytest.fixture
 def timeline_manager():
-    return MagicMock()
+    with patch('libmuscle.communicator.TimelineManager') as MockTimelineManager:
+        yield MockTimelineManager.return_value
 
 
 @pytest.fixture
 def communicator(connected_port_manager, profiler, timeline_manager):
     comm = Communicator(Ref('component'), [], connected_port_manager, profiler, Mock())
-    comm.set_timeline_manager(timeline_manager)
+    comm.setup_timeline_manager('component')
     return comm
 
 

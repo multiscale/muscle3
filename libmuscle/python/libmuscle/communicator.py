@@ -95,15 +95,13 @@ class Communicator:
         # Notify manager, by default, after 10 seconds waiting in receive_message()
         self._receive_timeout = 10.0
 
-        self._timeline_manager: Optional[TimelineManager] = None
-
         self._server = MPPServer()
 
         # indexed by remote instance id
         self._clients: dict[Reference, MPPClient] = {}
 
-    def set_timeline_manager(self, timeline_manager: TimelineManager) -> None:
-        self._timeline_manager = timeline_manager
+    def setup_timeline_manager(self, instance_name: str) -> None:
+        self._timeline_manager = TimelineManager(instance_name, self._port_manager)
 
     def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.

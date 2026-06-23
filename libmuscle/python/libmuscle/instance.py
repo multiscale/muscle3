@@ -20,7 +20,6 @@ from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.snapshot_manager import SnapshotManager
-from libmuscle.timeline_manager import TimelineManager
 from libmuscle.util import extract_log_file_location
 
 _logger = logging.getLogger(__name__)
@@ -209,9 +208,7 @@ class Instance:
 
         # TimelineManager reads port.timeline from the connected ports, so it
         # must be created after _connect() populates those via connect_ports().
-        self._timeline_manager = TimelineManager(
-                str(self._name), self._port_manager)
-        self._communicator.set_timeline_manager(self._timeline_manager)
+        self._communicator.setup_timeline_manager(str(self._name))
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.

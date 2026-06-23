@@ -46,8 +46,15 @@ def mpp_client(MPPClient):
 
 
 @pytest.fixture
-def communicator(connected_port_manager, profiler):
-    return Communicator(Ref('component'), [], connected_port_manager, profiler, Mock())
+def timeline_manager():
+    return MagicMock()
+
+
+@pytest.fixture
+def communicator(connected_port_manager, profiler, timeline_manager):
+    comm = Communicator(Ref('component'), [], connected_port_manager, profiler, Mock())
+    comm.set_timeline_manager(timeline_manager)
+    return comm
 
 
 @pytest.fixture

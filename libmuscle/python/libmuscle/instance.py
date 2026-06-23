@@ -206,10 +206,12 @@ class Instance:
         self._mmsf_validator = (
                 None if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
                 else MMSFValidator(self._port_manager))
+
         # TimelineManager reads port.timeline from the connected ports, so it
         # must be created after _connect() populates those via connect_ports().
         self._timeline_manager = TimelineManager(
                 str(self._name), self._port_manager)
+        self._communicator.set_timeline_manager(self._timeline_manager)
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.

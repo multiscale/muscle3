@@ -14,6 +14,7 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
+from libmuscle.timeline_manager import TimelineManager
 
 _logger = logging.getLogger(__name__)
 
@@ -94,10 +95,15 @@ class Communicator:
         # Notify manager, by default, after 10 seconds waiting in receive_message()
         self._receive_timeout = 10.0
 
+        self._timeline_manager: Optional[TimelineManager] = None
+
         self._server = MPPServer()
 
         # indexed by remote instance id
         self._clients: dict[Reference, MPPClient] = {}
+
+    def set_timeline_manager(self, timeline_manager: TimelineManager) -> None:
+        self._timeline_manager = timeline_manager
 
     def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.

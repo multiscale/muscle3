@@ -9,6 +9,7 @@ from ymmsl.v0_2 import Reference as Ref
 from libmuscle.instance import Instance, InstanceFlags
 from libmuscle.mpp_message import ClosePort
 from libmuscle.peer_info import PeerInfo
+from libmuscle.timeline_manager import TimelineManager
 
 
 @pytest.fixture
@@ -208,6 +209,14 @@ def test_create_instance_profiling(
 
     assert len(profiler.record_event.mock_calls) == 2
     instance.error_shutdown("Ensure all threads and resources are cleaned up")
+
+
+def test_create_instance_timeline_manager(
+        manager_location_argv, instance_argv, declared_ports):
+
+    instance = Instance(declared_ports)
+    instance.error_shutdown("Ensure all threads and resources are cleaned up")
+    assert isinstance(instance._timeline_manager, TimelineManager)
 
 
 def test_create_instance_connecting(

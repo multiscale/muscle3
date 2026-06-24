@@ -159,6 +159,8 @@ class Communicator:
             _logger.debug(f'Sending message on {port_name}[{slot}]')
             slot_list = [slot]
 
+        self._timeline_manager.check_send_message(port_name)
+
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
         if not self._port_manager.get_port(str(snd_endpoint.port)).is_connected():
             # log sending on disconnected port

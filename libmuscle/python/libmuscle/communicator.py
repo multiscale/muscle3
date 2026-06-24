@@ -185,7 +185,8 @@ class Communicator:
                                      cast(Settings, message.settings),
                                      port.get_num_messages(slot),
                                      checkpoints_considered_until,
-                                     message.data)
+                                     message.data,
+                                     port.get_iteration())
             encoded_message = mpp_message.encoded()
             self._server.deposit(recv_endpoint.ref(), encoded_message)
 

@@ -151,7 +151,8 @@ class MPPMessage:
                  port_length: Optional[int],
                  timestamp: float, next_timestamp: Optional[float],
                  settings_overlay: Settings, message_number: int,
-                 saved_until: float, data: Any
+                 saved_until: float, data: Any,
+                 iteration: Optional[list] = None
                  ) -> None:
         """Create an MPPMessage.
 
@@ -173,6 +174,7 @@ class MPPMessage:
             saved_until: Elapsed time until which the sender has
                 processed checkpoints.
             data: The serialised contents of the message.
+            iteration: The iteration of the sending port, or None if not yet set.
         """
         # make sure timestamp and next_timestamp are floats
         timestamp = float(timestamp)
@@ -187,6 +189,7 @@ class MPPMessage:
         self.settings_overlay = settings_overlay
         self.message_number = message_number
         self.saved_until = saved_until
+        self.iteration = iteration
         if isinstance(data, np.ndarray):
             self.data = Grid(data)
         else:
@@ -211,9 +214,11 @@ class MPPMessage:
         saved_until = message_dict["saved_until"]
 
         data = message_dict["data"]
+        iteration = message_dict.get("iteration")
         return MPPMessage(
                 sender, receiver, port_length, timestamp, next_timestamp,
-                settings_overlay, message_number, saved_until, data)
+                settings_overlay, message_number, saved_until, data,
+                iteration)
 
     def encoded(self) -> Buffer:
         """Encode the message and return as a bytes buffer.
@@ -227,7 +232,8 @@ class MPPMessage:
                 'settings_overlay': self.settings_overlay,
                 'message_number': self.message_number,
                 'saved_until': self.saved_until,
-                'data': self.data
+                'data': self.data,
+                'iteration': self.iteration
                 }
 
         return cast(Buffer, msgpack.packb(

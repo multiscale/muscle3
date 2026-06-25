@@ -21,7 +21,7 @@ def _port_has_not_yet_participated(port: Port, iteration: list[int]) -> bool:
     Returns:
         True if the port has not yet participated in the current iteration.
     """
-    pass
+    return True
 
 
 def _port_is_at_iteration(port: Port, iteration: list[int]) -> bool:
@@ -37,7 +37,7 @@ def _port_is_at_iteration(port: Port, iteration: list[int]) -> bool:
     Returns:
         True if the port has already participated in the current iteration.
     """
-    pass
+    return True
 
 
 def _all_ports_participated(
@@ -53,7 +53,7 @@ def _all_ports_participated(
     Returns:
         True if every sibling port is at the given iteration.
     """
-    pass
+    return True
 
 
 def _advance_iteration(iteration: list[int]) -> None:

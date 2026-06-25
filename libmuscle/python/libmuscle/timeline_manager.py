@@ -83,7 +83,7 @@ class TimelineManager:
         pass
 
     def check_received_message(
-            self, port_name: str, iteration: list[int]) -> None:
+            self, port_name: str, iteration: Optional[list[int]]) -> None:
         """Check and update iteration state after receiving on the given port.
 
         The caller (Instance.__check_port) already guarantees the operator

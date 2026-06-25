@@ -335,6 +335,8 @@ class Communicator:
         if isinstance(mpp_message.data, ClosePort):
             _logger.debug(f'Port {port_and_slot} is now closed')
 
+        self._timeline_manager.check_received_message(port_name, mpp_message.iteration)
+
         return message, mpp_message.saved_until
 
     def shutdown(self) -> None:

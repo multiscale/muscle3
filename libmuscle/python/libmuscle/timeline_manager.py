@@ -82,6 +82,51 @@ class TimelineManager:
         """
         pass
 
+    def check_received_message(
+            self, port_name: str, iteration: list[int]) -> None:
+        """Check and update iteration state after receiving on the given port.
+
+        The caller (Instance.__check_port) already guarantees the operator
+        allows receiving, so the port is either F_INIT or S.
+
+        F_INIT (needs: self._port_manager, self._iteration, self._sibling_ports):
+            1. Not yet started (self._iteration is None):
+                self._iteration = list(iteration)
+                port._iteration = self._iteration
+                NOTE: self._iteration is copied from the sender's iteration, which
+                can be a nested list e.g. [1, 2, 3] if the sender is itself nested.
+            2. Yet started (self._iteration is not None):
+                a. Port has not yet received this iteration (port._iteration is None, or
+                   port._iteration[-1] == self._iteration[-1] - 1), and the iteration of
+                   the message equals self._iteration:
+                    port._iteration = self._iteration
+                b. Port already received this iteration
+                   (port._iteration == self._iteration) and a new iteration has
+                   arrived:
+                    i. Check the parent-iteration: Verify 
+                    iteration[:-1] >= self._iteration[:-1] (prefix is non-decreasing; 
+                    parent iteration never goes backward).
+                    ii. Start a new iteration as all siblings have received at
+                    self._iteration:
+                        self._iteration = list(iteration)
+                        port._iteration = self._iteration
+                    NOTE: The iteration list can change in value across multiple indices
+                    simultaneously, e.g. [0,0]->[0,1]->[0,2]->[1,3]->[1,4]->...,
+                    because muscle3 may enter or leave sub-loops between successive
+                    F_INIT receives, advancing outer and inner counters at once.
+
+            Otherwise → Error.
+
+        S (needs: self._sub_timelines, self._instance_name):
+            - Delegate to check_received_message of the sub-timeline manager for
+              this port:
+                self._sub_timelines[port.timeline].check_received_message()
+            NOTE: self._iteration is always set before an S receive is reached.
+            SEL order guarantees that an O_I send (which sets self._iteration for
+            root components) or an F_INIT receive (which sets it for non-root
+            components) has already occurred before any sub-loop S receive.
+        """
+        pass
 
 class SubTimelineManager:
     """Tracks iteration state for a single sub-timeline."""
@@ -136,7 +181,31 @@ class SubTimelineManager:
                     self._iteration:
                         self._iteration[-1] += 1
                         port._iteration = self._iteration
+                        
+            Otherwise → Error.
+        """
+        pass
 
+    def check_received_message(self, port_name: str, iteration: list[int]) -> None:
+        """Check and update iteration state after receiving on the given S port.
+
+        S (needs: port, iteration, self._iteration, self._sibling_ports):
+            NOTE: self._iteration is always set before an S receive is reached.
+            Within a sub-loop, O_I is always sent before S is received; the first
+            O_I send goes through check_send_message which sets self._iteration.
+            Case 1 (self._iteration is None) therefore cannot occur here.
+
+            1. Yet started (self._iteration is not None):
+                b. Port has not yet received this sub-iteration (port._iteration is 
+                None, or port._iteration[-1] == iteration[-1] - 1):
+                    self._iteration = list(iteration)
+                    port._iteration = self._iteration
+                c. Port already received this iteration 
+                (port.iteration = self._iteration):
+                NOTE: There is no case c. O_I's check_send_message always runs
+                before the next S receive (SEL order), so self._iteration is
+                already at the new sub-iteration by the time S receives it.
+         
             Otherwise → Error.
         """
         pass

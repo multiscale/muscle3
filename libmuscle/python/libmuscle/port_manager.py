@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ymmsl.v0_2 import Identifier, Operator
+from ymmsl.v0_2 import Identifier, Operator, Timeline
 
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port import Port
@@ -53,16 +53,26 @@ class PortManager:
         """Returns whether muscle_settings_in is connected."""
         return self._muscle_settings_in.is_connected()
 
-    def list_ports(self) -> dict[Operator, list[str]]:
+    def list_ports(
+            self,
+            timeline: Optional[Timeline] = None,
+            ) -> dict[Operator, list[str]]:
         """Returns a description of the ports this PortManager has.
 
+        Args:
+            timeline: Omit (or pass None) to return all ports regardless of
+                timeline. Pass Timeline() to return only ports with no explicit
+                timeline. Pass a specific Timeline to return only ports on that
+                timeline.
+
         Returns:
-            A dictionary, indexed by Operator, containing lists of
-            port names. Operators with no associated ports are not
-            included.
+            A dictionary, indexed by Operator, containing lists of port names.
+            Operators with no associated ports are not included.
         """
         result: dict[Operator, list[str]] = {}
         for port_name, port in self._ports.items():
+            if timeline is not None and port.timeline != timeline:
+                continue
             if port.operator not in result:
                 result[port.operator] = list()
             result[port.operator].append(port_name)

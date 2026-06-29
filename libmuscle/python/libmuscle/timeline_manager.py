@@ -87,26 +87,16 @@ class TimelineManager:
         self._port_manager = port_manager
         self._iteration: Optional[list[int]] = None
 
-        # Group all ports by their timeline attribute. 
-        #      F_INIT and O_F ports share the same timeline
-        #      O_I and S ports belong to sub-timelines.
-        self._timelines: dict[Optional[Timeline], list[Port]] = {}
-        for port in port_manager._ports.values():
-            tl = port.timeline
-            if tl not in self._timelines:
-                self._timelines[tl] = []
-            self._timelines[tl].append(port)
-
-        self._timeline: Optional[Timeline] = next(
-            (p.timeline for p in port_manager._ports.values()
-             if p.operator in (Operator.F_INIT, Operator.O_F)),
-            None
-        )
-
-        self._sub_timelines: dict[Optional[Timeline], SubTimelineManager] = {
-            tl: SubTimelineManager(tl, ports)
-            for tl, ports in self._timelines.items()
-            if tl != self._timeline
+        all_ports = self._port_manager.list_ports()
+        sub_timelines = {
+            self._port_manager.get_port(name).timeline
+            for op in (Operator.O_I, Operator.S)
+            for name in all_ports.get(op, [])
+        }
+        self._sub_timelines: dict[Timeline, SubTimelineManager] = {
+            (tl if tl else Timeline(self._instance_name)):
+            SubTimelineManager(tl, port_manager)
+            for tl in sub_timelines
         }
 
     def check_send_message(self, port_name: str) -> None:
@@ -185,17 +175,22 @@ class SubTimelineManager:
 
     def __init__(
             self, sub_timeline: Optional[Timeline],
-            sibling_ports: list[Port]) -> None:
+            port_manager: PortManager) -> None:
         """Create a SubTimelineManager.
 
         Args:
             sub_timeline: The timeline this manager tracks.
-            sibling_ports: All O_I and S ports belonging to this sub-timeline,
-                pre-selected from TimelineManager._timelines.
+            port_manager: The port manager; used to look up the O_I and S ports
+                belonging to this sub-timeline.
         """
         self._sub_timeline = sub_timeline
         self._iteration: Optional[list[int]] = None
-        self._sibling_ports = sibling_ports
+
+        self._ports = [
+            port_manager.get_port(name)
+            for op in (Operator.O_I, Operator.S)
+            for name in port_manager.list_ports(sub_timeline).get(op, [])
+        ]
 
     def check_send_message(
             self, port: Port, parent_iteration: list[int]) -> None:

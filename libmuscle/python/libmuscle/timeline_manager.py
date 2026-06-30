@@ -94,8 +94,19 @@ class TimelineManager:
             for name in all_ports.get(op, [])
         }
 
+        # TODO: Ports declared Python-side (without a yMMSL config) always
+        # arrive with Timeline(''). Proper support requires extending the declared-port
+        # API to accept a timeline.
+
+        # NOTE: The timeline strings received from the manager are the local relative
+        # names declared in yMMSL (e.g. "tl1"), not full absolute paths. For nested
+        # topologies (e.g. a micro component under meso and macro) the correct
+        # absolute timeline would be ":macro:meso", but only the local name is sent.
+        # For ports with no explicit timeline (Timeline('')), we use ':instance_name'
+        # as a proxy key. The SubTimelineManager is still initialized with Timeline('')
+        # so that port lookup via list_ports() still works correctly.
         self._sub_timelines: dict[Timeline, SubTimelineManager] = {
-            (tl if tl else Timeline(self._instance_name)):
+            (Timeline(':' + self._instance_name) if not tl else tl):
             SubTimelineManager(tl, port_manager)
             for tl in sub_timelines
         }

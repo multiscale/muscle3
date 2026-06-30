@@ -36,11 +36,11 @@ def test_init(port_manager: PortManager) -> None:
     tm = TimelineManager(INSTANCE_NAME, port_manager)
     assert tm._iteration is None
     assert set(tm._sub_timelines.keys()) == {
-            Timeline(":macro"), Timeline(":micro"), Timeline(INSTANCE_NAME)}
+            Timeline(":macro"), Timeline(":micro"), Timeline(":" + INSTANCE_NAME)}
 
 
 def test_sub_timeline_manager_init(port_manager: PortManager) -> None:
     tm = TimelineManager(INSTANCE_NAME, port_manager)
-    assert tm._sub_timelines[Timeline(INSTANCE_NAME)]._iteration is None
+    assert tm._sub_timelines[Timeline(":" + INSTANCE_NAME)]._iteration is None
     assert tm._sub_timelines[Timeline(":macro")]._iteration is None
     assert tm._sub_timelines[Timeline(":micro")]._iteration is None

@@ -103,7 +103,7 @@ def test_request_peers(mocked_mmp_client, profile_data) -> None:
             [['component.out', 'other.in']],
             {'other': [20]},
             {'other': ['direct:test', 'tcp:test']},
-            [["out", "O_F"]]]
+            [["out", "O_F", ""]]]
     stub.call.return_value = (
             msgpack.packb(result_msg, use_bin_type=True), profile_data)
 
@@ -132,6 +132,7 @@ def test_request_peers(mocked_mmp_client, profile_data) -> None:
     assert len(peer_info._ymmsl_ports) == 1
     assert peer_info._ymmsl_ports[0].name == "out"
     assert peer_info._ymmsl_ports[0].operator == Operator.O_F
+    assert peer_info._ymmsl_ports[0].timeline == ""
 
 
 def test_request_peers_error(mocked_mmp_client, profile_data) -> None:

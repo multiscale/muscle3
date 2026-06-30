@@ -93,6 +93,7 @@ class TimelineManager:
             for op in (Operator.O_I, Operator.S)
             for name in all_ports.get(op, [])
         }
+
         self._sub_timelines: dict[Timeline, SubTimelineManager] = {
             (tl if tl else Timeline(self._instance_name)):
             SubTimelineManager(tl, port_manager)

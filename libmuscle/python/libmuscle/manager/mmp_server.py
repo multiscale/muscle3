@@ -56,7 +56,8 @@ def encode_conduit(conduit: Conduit) -> list[str]:
 def encode_ports(ports: Ports) -> list[list[str]]:
     """Convert a Ports to a MsgPack-compatible value."""
     return [
-        [str(port_name), ports[port_name].operator.name]
+        [str(port_name), ports[port_name].operator.name,
+         str(ports[port_name].timeline)]
         for port_name in ports
     ]
 

@@ -118,13 +118,15 @@ class TimelineManager:
 
             2. Yet started (self._iteration is not None):
                 a. _port_has_not_yet_participated(port, self._iteration):
+                       port._iteration = self._iteration
                 b. _port_is_at_iteration(port, self._iteration):
                    i. _all_ports_participated(self._timelines[self._timeline],
                       self._iteration):
                           _advance_iteration(self._iteration)
-                      NOTE: SEL order guarantees the sub-timelines are already
-                      finished when O_F is reached.
-                port._iteration = self._iteration
+                          port._iteration = self._iteration
+                          self.reset()
+                          NOTE: SEL order guarantees the sub-timelines are already
+                          finished when O_F is reached.
 
             Otherwise → Error.
 
@@ -151,14 +153,11 @@ class TimelineManager:
             2. Yet started (self._iteration is not None):
                 a. _port_has_not_yet_participated(port, self._iteration) and
                    iteration == self._iteration (correct message)
-                b. _port_is_at_iteration(port, self._iteration) and a new
-                   iteration has arrived (iteration != self._iteration):
-                       self._iteration = iteration
-                       NOTE: The iteration list can change across multiple
-                       indices simultaneously, e.g. [0,0]→[0,1]→[1,3]→...,
-                       because muscle3 may enter or leave sub-loops between
-                       successive F_INIT receives, advancing outer and inner
-                       counters at once.
+                NOTE: Only reachable with multiple F_INIT ports. The first
+                port always hits case 1 (self._iteration is None after reset).
+                Subsequent ports in the same cycle arrive here with the same
+                iteration. A new iteration never arrives here, after reset()
+                self._iteration is None, so any new iteration lands in case 1.
             port._iteration = self._iteration
 
             Otherwise → Error.
@@ -167,6 +166,20 @@ class TimelineManager:
         NOTE: self._iteration is always set before an S receive is reached. SEL order
         guarantees that an O_I send or an F_INIT receive has already occurred before any
         sub-loop S receive.
+        """
+        pass
+
+    def reset(self) -> None:
+        """Reset iteration state after all O_F ports have sent.
+
+        Called from check_send_message O_F case 2b.i, if all sibling O_F
+        ports have sent: Resets self._iteration to None, resets port._iteration to None
+        for every F_INIT and O_F port on the main timeline, and calls reset() on
+        every SubTimelineManager so their sub-iteration counters and port
+        iterations are also reset to None.
+
+        After this call the next F_INIT receive re-initialises self._iteration
+        via case 1.
         """
         pass
 
@@ -199,15 +212,10 @@ class SubTimelineManager:
             1. Not yet started (self._iteration is None):
                    self._iteration = parent_iteration + [0]
             2. Yet started (self._iteration is not None):
-                a. Check if parent iteration advanced: 
-                   self._iteration[:-1] != parent_iteration
-                   self._iteration = parent_iteration + [self._iteration[-1]]
-                NOTE: The sub-iteration counter keeps running across outer iterations.
-                This must be checked first.
-                    i. _port_has_not_yet_participated(port, self._iteration):
-                    ii. _port_is_at_iteration(port, self._iteration):
-                        _all_ports_participated(self._sibling_ports, self._iteration):
-                            _advance_iteration(self._iteration)
+                a. _port_has_not_yet_participated(port, self._iteration):
+                b. _port_is_at_iteration(port, self._iteration):
+                       _all_ports_participated(self._sibling_ports, self._iteration):
+                           _advance_iteration(self._iteration)
             port._iteration = self._iteration
 
             Otherwise → Error.
@@ -227,5 +235,14 @@ class SubTimelineManager:
         so self._iteration is already at the new sub-iteration by the time S receives it
 
         Otherwise → Error.
+        """
+        pass
+
+    def reset(self) -> None:
+        """Reset iteration state when the sub-timeline's cycle is complete.
+
+        Called by TimelineManager.reset(). Resets self._iteration to None and
+        resets port._iteration to None for every O_I and S port in this
+        sub-timeline.
         """
         pass

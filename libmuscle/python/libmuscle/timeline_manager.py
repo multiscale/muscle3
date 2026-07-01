@@ -119,33 +119,43 @@ class TimelineManager:
 
         O_F:
             1. Not yet started (self._iteration is None):
-                   self._iteration = []
-                   port._iteration = self._iteration
-                   NOTE: Works only for root components (no F_INIT ports). For
-                   all other components self._iteration is already set by
-                   check_received_message on F_INIT before O_F is reached (SEL
-                   order: F_INIT → O_I/S loop → O_F). A non-root component
-                   calling O_F before F_INIT violates SEL order; the MMSF
-                   validator raises a RuntimeError before this method is reached.
+                a. Root component (no connected F_INIT ports):
+                       self._iteration = []
+                       port._iteration = self._iteration
+                       if _all_ports_participated(main_ports, self._iteration):
+                           for stm in self._sub_timelines.values():
+                               if stm._iteration is not None:
+                                   _all_ports_participated(stm._ports,
+                                       stm._iteration)
+                               Otherwise → Error.
+                           self.reset()
+                b. Otherwise → Error.
 
             2. Yet started (self._iteration is not None):
+                Check _all_ports_participated(f_init_ports, self._iteration),
+                otherwise → Error.
                 a. _port_has_not_yet_participated(port, self._iteration):
                        port._iteration = self._iteration
-                b. _port_is_at_iteration(port, self._iteration):
-                   i. _all_ports_participated(self._timelines[self._timeline],
-                      self._iteration):
-                          _advance_iteration(self._iteration)
-                          port._iteration = self._iteration
-                          self.reset()
-                          NOTE: SEL order guarantees the sub-timelines are already
-                          finished when O_F is reached.
+                       if _all_ports_participated(main_ports, self._iteration):
+                           for stm in self._sub_timelines.values():
+                               if stm._iteration is not None:
+                                   _all_ports_participated(stm._ports,
+                                       stm._iteration)
+                               Otherwise → Error.
+                           self.reset()
+                b. _port_is_at_iteration(port, self._iteration): → Error
 
             Otherwise → Error.
 
         O_I:
-            1. Not yet started (self._iteration is None): 
-                   self._iteration = []
-                NOTE: This can happen for a root component that has no F_INIT ports.
+            1. Not yet started (self._iteration is None):
+                a. Is it a root component? If it has no connected F_INIT ports:
+                       self._iteration = []
+                b. Otherwise → Error.
+            2. Yet started (self._iteration is not None):
+                Check _all_ports_participated(f_init_ports, self._iteration),
+                otherwise → Error.
+
             self._sub_timelines[port.timeline].check_send_message(port, self._iteration)
         """
         pass
@@ -174,10 +184,11 @@ class TimelineManager:
 
             Otherwise → Error.
 
-        S: self._sub_timelines[port.timeline].check_received_message(port, iteration).
-        NOTE: self._iteration is always set before an S receive is reached. SEL order
-        guarantees that an O_I send or an F_INIT receive has already occurred before any
-        sub-loop S receive.
+        S:
+            1. self._iteration is not None (O_I was sent or F_INIT was received first):
+                   self._sub_timelines[port.timeline].check_received_message(
+                       port, iteration)
+            Otherwise → Error.
         """
         pass
 
@@ -237,15 +248,13 @@ class SubTimelineManager:
     def check_received_message(self, port_name: str, iteration: list[int]) -> None:
         """Check and update iteration state after receiving on the given S port.
 
-        NOTE: self._iteration is always set before an S receive is reached.
-        Within a sub-loop, O_I is always sent before S is received.
-
-        1. _port_has_not_yet_participated(port, iteration):
-                self._iteration = iteration
-                port._iteration = self._iteration
-        NOTE: O_I's check_send_message always runs before the next S receive (SEL order)
-        so self._iteration is already at the new sub-iteration by the time S receives it
-
+        1. self._iteration is not None (O_I was sent before this S receive):
+            a. _port_has_not_yet_participated(port, self._iteration):
+                    Check _all_ports_participated(o_i_ports, self._iteration),
+                    otherwise → Error.
+                    self._iteration = iteration
+                    port._iteration = self._iteration
+            Otherwise → Error.
         Otherwise → Error.
         """
         pass

@@ -1,3 +1,30 @@
+"""
+This class can be removed once TimelineManager is fully implemented. The TimelineManager
+will cover all SEL order checks listed above:
+    - O_F or O_I sent before F_INIT (non-root component):
+        check_send_message O_F/O_I case 1b.
+    - S received before any O_I send:
+        SubTimelineManager.check_received_message case 1.
+    - O_F sent twice without a new F_INIT in between:
+        check_send_message O_F case 2b.
+    - Not all F_INIT ports received before O_I or O_F:
+        check_send_message O_F/O_I case 2 pre-check.
+    - Not all O_I ports sent before the first S receive:
+        SubTimelineManager.check_received_message case 1a pre-check.
+    - Not all S ports received before the next O_I iteration:
+        SubTimelineManager.check_send_message case 2b + _all_ports_participated.
+    - Sub-timelines incomplete when O_F fires:
+        check_send_message O_F sub-timeline check before reset().
+    - Not all O_F ports sent (no reset until all participate):
+        check_send_message O_F _all_ports_participated gate on reset().
+
+    TODO: Before deleting this class, two pieces must be relocated:
+    - skip_f_init(): snapshot resume support; move to TimelineManager as a method
+        that marks all F_INIT ports as already participated at self._iteration.
+    - The Operator.NONE ports warning (in __init__): move to Instance.__init__ or
+        PortManager, as it is unrelated to SEL order checking.
+"""
+
 import logging
 import sys
 import types

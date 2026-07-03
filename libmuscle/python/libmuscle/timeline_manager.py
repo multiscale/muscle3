@@ -74,6 +74,19 @@ class TimelineManager:
     O_F and F_INIT ports live in the main timeline tracked by this manager.
     O_I and S ports live in sub-timelines, each managed by a SubTimelineManager.
     All ports are grouped by their timeline attribute in _timelines.
+
+    BRIDGE: A component exchanging data through O_I/S ports between two or more
+    timelines. Normally all O_I ports must send before any S port may receive; for a
+    bridge, that ordering is not required, either operator may go first on a given
+    sub-timeline, and sends/receives may interleave in any order. Completeness is not
+    relaxed: every O_I and S port on a leg must still participate before the iteration
+    advances. See SubTimelineManager for where this is implemented.
+
+    TODO (bridge): Require knowledge whether this instance/timeline is a bridge, and
+    pass this on to the SubTimelineManagers. 
+
+    TODO: Add a skip_checks, the instance-wide InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS
+    (for cases like ImplementationTester). 
     """
 
     def __init__(self, instance_name: str, port_manager: PortManager) -> None:
@@ -185,9 +198,14 @@ class TimelineManager:
             Otherwise → Error.
 
         S:
-            1. self._iteration is not None (O_I was sent or F_INIT was received first):
+            1. self._iteration is None, the sub-timeline is a bridge, and this
+               is a root component (no connected F_INIT ports):
+                   self._iteration = []
+            2. self._iteration is not None (O_I was sent, F_INIT was received,
+               or case 1 just fired):
                    self._sub_timelines[port.timeline].check_received_message(
                        port, iteration)
+
             Otherwise → Error.
         """
         pass
@@ -237,8 +255,10 @@ class SubTimelineManager:
             2. Yet started (self._iteration is not None):
                 a. _port_has_not_yet_participated(port, self._iteration):
                 b. _port_is_at_iteration(port, self._iteration):
-                       _all_ports_participated(self._sibling_ports, self._iteration):
-                           _advance_iteration(self._iteration)
+                       _all_ports_participated(
+                           self._ports if the sub-timeline is a bridge
+                           else o_i_ports, self._iteration):
+                               _advance_iteration(self._iteration)
             port._iteration = self._iteration
 
             Otherwise → Error.
@@ -248,14 +268,24 @@ class SubTimelineManager:
     def check_received_message(self, port_name: str, iteration: list[int]) -> None:
         """Check and update iteration state after receiving on the given S port.
 
-        1. self._iteration is not None (O_I was sent before this S receive):
-            a. _port_has_not_yet_participated(port, self._iteration):
-                    Check _all_ports_participated(o_i_ports, self._iteration),
-                    otherwise → Error.
-                    self._iteration = iteration
-                    port._iteration = self._iteration
+            1. self._iteration is None (received on S before sent on O_I) and
+            sub_timeline is a bridge:
+                self._iteration = iteration
+                port._iteration = self._iteration
+            2. self._iteration is not None (O_I was sent before this S receive):
+                a. _port_has_not_yet_participated(port, self._iteration):
+                        Unless the sub-timeline is a bridge: check
+                        _all_ports_participated(o_i_ports, self._iteration),
+                        otherwise → Error.
+                        self._iteration = iteration
+                        port._iteration = self._iteration
+                b. if _port_is_at_iteration(port, self._iteration) and the sub-timeline
+                is a bridge:
+                     _all_ports_participated(self._ports, self._iteration):
+                           _advance_iteration(self._iteration)
+                port._iteration = self._iteration
+
             Otherwise → Error.
-        Otherwise → Error.
         """
         pass
 

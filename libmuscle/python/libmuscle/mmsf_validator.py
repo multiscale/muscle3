@@ -18,11 +18,17 @@ will cover all SEL order checks listed above:
     - Not all O_F ports sent (no reset until all participate):
         check_send_message O_F _all_ports_participated gate on reset().
 
-    TODO: Before deleting this class, two pieces must be relocated:
+    TODO: Before deleting this class, three pieces must be relocated:
     - skip_f_init(): snapshot resume support; move to TimelineManager as a method
         that marks all F_INIT ports as already participated at self._iteration.
     - The Operator.NONE ports warning (in __init__): move to Instance.__init__ or
         PortManager, as it is unrelated to SEL order checking.
+    - InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS: this class is disabled entirely
+        (self._mmsf_validator = None) when the flag is set, see Instance.__init__.
+        TimelineManager has no equivalent yet, it is constructed unconditionally
+        regardless of the flag. Instance.__init__ should pass a skip_checks bool
+        (InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags) down to
+        TimelineManager.
 """
 
 import logging

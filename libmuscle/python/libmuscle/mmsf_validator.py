@@ -1,20 +1,26 @@
 """
-This class can be removed once TimelineManager is fully implemented. The TimelineManager
-will cover all SEL order checks listed above:
-    - O_F or O_I sent before F_INIT (non-root component):
-        check_send_message O_F/O_I case 1b.
-    - S received before any O_I send:
-        SubTimelineManager.check_received_message case 1.
-    - Not all F_INIT ports received before O_I or O_F:
-        check_send_message O_F/O_I case 2 pre-check.
-    - Not all O_I ports sent before the first S receive:
-        SubTimelineManager.check_received_message case 1a pre-check.
-    - Not all S ports received before the next O_I iteration:
-        SubTimelineManager.check_send_message case 2b + _all_ports_participated.
-    - Sub-timelines incomplete when O_F fires:
+This class can be removed once TimelineManager is fully implemented.
+
+Covered by TimelineManager, per its docstrings (not yet implemented, bodies are stubs):
+    - O_I or O_F may only send once all F_INIT ports have received (non-root component):
+        check_send_message O_F/O_I case 1b (none received yet) + case 2 pre-check
+        (some but not all received).
+    - S may only receive once all O_I ports have sent, unless this is a bridge, in
+      which case S may receive before any O_I has sent:
+        SubTimelineManager.check_received_message case 1 (bridge exception) /
+        case 2a pre-check (requires all O_I sent, for non-bridge).
+    - reset() (ending the O_F/F_INIT cycle) may only run once every sub-timeline
+      that was started has fully completed its current iteration (all O_I sent and
+      all S received):
         check_send_message O_F sub-timeline check before reset().
-    - Not all O_F ports sent (no reset until all participate):
+    - reset() may only run once all O_F ports on the main timeline have sent:
         check_send_message O_F _all_ports_participated gate on reset().
+    - The next O_I send may only advance the sub-iteration once every O_I port has
+      sent AND every S port has received for the current iteration (same completeness
+      requirement for bridge and non-bridge, only the allowed order of O_I vs. S
+      differs):
+        SubTimelineManager.check_send_message case 2b, _all_ports_participated(
+        self._ports, ...).
 
     TODO: Before deleting this class, three pieces must be relocated:
     - skip_f_init(): snapshot resume support; move to TimelineManager as a method

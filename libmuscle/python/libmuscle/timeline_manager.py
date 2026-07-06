@@ -255,9 +255,7 @@ class SubTimelineManager:
             2. Yet started (self._iteration is not None):
                 a. _port_has_not_yet_participated(port, self._iteration):
                 b. _port_is_at_iteration(port, self._iteration):
-                       _all_ports_participated(
-                           self._ports if the sub-timeline is a bridge
-                           else o_i_ports, self._iteration):
+                       _all_ports_participated(self._ports, self._iteration):
                                _advance_iteration(self._iteration)
             port._iteration = self._iteration
 

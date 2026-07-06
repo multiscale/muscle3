@@ -5,8 +5,6 @@ will cover all SEL order checks listed above:
         check_send_message O_F/O_I case 1b.
     - S received before any O_I send:
         SubTimelineManager.check_received_message case 1.
-    - O_F sent twice without a new F_INIT in between:
-        check_send_message O_F case 2b.
     - Not all F_INIT ports received before O_I or O_F:
         check_send_message O_F/O_I case 2 pre-check.
     - Not all O_I ports sent before the first S receive:

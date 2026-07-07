@@ -134,13 +134,9 @@ class TimelineManager:
             1. Not yet started (self._iteration is None):
                 a. Root component (no connected F_INIT ports):
                        self._iteration = []
+                       If self._sub_timelines: → Error.
                        port._iteration = self._iteration
-                       if _all_ports_participated(main_ports, self._iteration):
-                           for stm in self._sub_timelines.values():
-                               if stm._iteration is not None:
-                                   _all_ports_participated(stm._ports,
-                                       stm._iteration)
-                               Otherwise → Error.
+                       if _all_ports_participated(o_f_ports, self._iteration):
                            self.reset()
                 b. Otherwise → Error.
 
@@ -148,13 +144,13 @@ class TimelineManager:
                 Check _all_ports_participated(f_init_ports, self._iteration),
                 otherwise → Error.
                 a. _port_has_not_yet_participated(port, self._iteration):
+                       for stm in self._sub_timelines.values():
+                           if stm._iteration is not None:
+                               _all_ports_participated(stm._ports,
+                                   stm._iteration)
+                           Otherwise → Error.
                        port._iteration = self._iteration
                        if _all_ports_participated(main_ports, self._iteration):
-                           for stm in self._sub_timelines.values():
-                               if stm._iteration is not None:
-                                   _all_ports_participated(stm._ports,
-                                       stm._iteration)
-                               Otherwise → Error.
                            self.reset()
                 b. _port_is_at_iteration(port, self._iteration): → Error
 

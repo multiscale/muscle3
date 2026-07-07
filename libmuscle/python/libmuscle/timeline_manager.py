@@ -169,40 +169,62 @@ class TimelineManager:
         """
         pass
 
-    def check_received_message(
-            self, port_name: str, iteration: Optional[list[int]]) -> None:
-        """Check and update iteration state after receiving on the given port.
+    def check_receive(self, port_name: str) -> None:
+        """Check that receiving on the given port is currently allowed.
 
         NOTE: The caller (Instance.__check_port) already guarantees the operator
         allows receiving, so the port is either F_INIT or S.
+
+        F_INIT:
+            1. Not yet started (self._iteration is None): Allowed.
+            2. Yet started (self._iteration is not None):
+                   _port_has_not_yet_participated(port, self._iteration): Allowed.  
+            NOTE: Only reachable with multiple F_INIT ports. The first port always hits
+            case 1 (self._iteration is None after reset). Subsequent ports in the same
+            cycle arrive here with the same iteration. A new iteration never arrives
+            here, after reset() self._iteration is None, so any new iteration lands in
+            case 1.
+
+            Otherwise --> error.
+
+        S:
+            1. self._iteration is None, the sub-timeline is a bridge, and this
+               is a root component (no connected F_INIT ports): Allowed.
+            2. self._iteration is not None (O_I was sent, F_INIT was received,
+               or case 1a just allowed it):
+                   self._sub_timelines[port.timeline].check_receive(
+                       port, self._iteration)
+        """
+        pass
+
+    def check_received_message(
+            self, port_name: str, iteration: Optional[list[int]]) -> None:
+        """Record the iteration carried by the message just received on the
+        given port.
+
+        NOTE: check_receive already established that this receive is legal; this
+        only records the iteration value, which is only known once the message
+        has actually arrived.
 
         F_INIT:
             1. Not yet started (self._iteration is None):
                 self._iteration = iteration
                 NOTE: self._iteration is copied from the sender's iteration, which can
                 be a nested list e.g. [1, 2, 3] if the sender is itself nested.
-            2. Yet started (self._iteration is not None):
-                a. _port_has_not_yet_participated(port, self._iteration) and
-                   iteration == self._iteration (correct message)
-                NOTE: Only reachable with multiple F_INIT ports. The first
-                port always hits case 1 (self._iteration is None after reset).
-                Subsequent ports in the same cycle arrive here with the same
-                iteration. A new iteration never arrives here, after reset()
-                self._iteration is None, so any new iteration lands in case 1.
+            2. Yet started (self._iteration is not None)
+                iteration == self._iteration, otherwise → Error (wrong message;
+                check_receive only confirmed this port was allowed to receive, not
+                which iteration the message would carry).
             port._iteration = self._iteration
 
-            Otherwise → Error.
-
         S:
-            1. self._iteration is None, the sub-timeline is a bridge, and this
-               is a root component (no connected F_INIT ports):
+            1. self._iteration is None (check_receive case S.1a already confirmed
+               the sub-timeline is a bridge and this is a root component):
                    self._iteration = []
             2. self._iteration is not None (O_I was sent, F_INIT was received,
                or case 1 just fired):
                    self._sub_timelines[port.timeline].check_received_message(
                        port, iteration)
-
-            Otherwise → Error.
         """
         pass
 
@@ -259,27 +281,46 @@ class SubTimelineManager:
         """
         pass
 
-    def check_received_message(self, port_name: str, iteration: list[int]) -> None:
-        """Check and update iteration state after receiving on the given S port.
+    def check_receive(self, port: Port, parent_iteration: list[int]) -> None:
+        """Check that receiving on the given S port is currently allowed.
 
-            1. self._iteration is None (received on S before sent on O_I) and
-            sub_timeline is a bridge:
-                self._iteration = iteration
-                port._iteration = self._iteration
-            2. self._iteration is not None (O_I was sent before this S receive):
-                a. _port_has_not_yet_participated(port, self._iteration):
-                        Unless the sub-timeline is a bridge: check
-                        _all_ports_participated(o_i_ports, self._iteration),
-                        otherwise → Error.
+            1. Not yet started (self._iteration is None):
+                   a. sub_timeline is a bridge:
+                          Allowed.
+                   b. Otherwise → Error (no O_I port has sent yet on this
+                      sub-timeline).
+            2. Yet started (self._iteration is not None):
+                   a. _port_has_not_yet_participated(port, self._iteration):
+                          Allowed, unless the sub-timeline is not a bridge and
+                          not _all_ports_participated(o_i_ports, self._iteration)
+                          → Error (not every O_I port has sent yet).
+                   b. _port_is_at_iteration(port, self._iteration):
+                          Allowed only if the sub-timeline is a bridge (bridges
+                          permit interleaved sends/receives within the same
+                          iteration).
+
+                   Otherwise → Error.
+        """
+        pass
+
+    def check_received_message(self, port_name: str, iteration: list[int]) -> None:
+        """Record the iteration carried by the message just received on the
+        given S port.
+
+            1. self._iteration is None (check_receive case 1a already confirmed
+               the sub-timeline is a bridge):
+                   self._iteration = iteration
+                   port._iteration = self._iteration
+            2. self._iteration is not None:
+                a. _port_has_not_yet_participated(port, self._iteration)
+                   (check_receive case 2a already confirmed this is allowed):
                         self._iteration = iteration
                         port._iteration = self._iteration
-                b. if _port_is_at_iteration(port, self._iteration) and the sub-timeline
-                is a bridge:
+                b. _port_is_at_iteration(port, self._iteration) (check_receive
+                   case 2b already confirmed the sub-timeline is a bridge):
                      _all_ports_participated(self._ports, self._iteration):
                            _advance_iteration(self._iteration)
                 port._iteration = self._iteration
-
-            Otherwise → Error.
         """
         pass
 

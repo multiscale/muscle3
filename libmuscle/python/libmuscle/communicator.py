@@ -239,6 +239,8 @@ class Communicator:
             slot_list = [slot]
         _logger.debug(f'Waiting for message on {port_and_slot}')
 
+        self._timeline_manager.check_receive(port_name)
+
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
         receive_event = ProfileEvent(

@@ -34,12 +34,12 @@ def direct_prep_resources(resources: ResourceAssignment) -> tuple[str, dict[str,
     env: dict[str, str] = dict()
     only_node_hwthreads_list = list(resources.by_rank[0].hwthreads())
 
-    env['MUSCLE_BIND_LIST'] = ','.join(map(str, only_node_hwthreads_list))
+    env["MUSCLE_BIND_LIST"] = ",".join(map(str, only_node_hwthreads_list))
 
     mask_int = sum(1 << c for c in only_node_hwthreads_list)
-    env['MUSCLE_BIND_MASK'] = format(mask_int, 'X')
+    env["MUSCLE_BIND_MASK"] = format(mask_int, "X")
 
-    return '', env
+    return "", env
 
 
 def openmpi_prep_resources(resources: ResourceAssignment) -> tuple[str, dict[str, str]]:
@@ -53,13 +53,14 @@ def openmpi_prep_resources(resources: ResourceAssignment) -> tuple[str, dict[str
     """
     ranklines: list[str] = list()
     all_cores = (
-            (node_res, ','.join(map(str, sorted(node_res.hwthreads()))))
-            for node_res in resources.by_rank)
+        (node_res, ",".join(map(str, sorted(node_res.hwthreads()))))
+        for node_res in resources.by_rank
+    )
 
     for i, (node_res, hwthreads) in enumerate(all_cores):
-        ranklines.append(f'rank {i}={node_res.node_name} slot={hwthreads}')
+        ranklines.append(f"rank {i}={node_res.node_name} slot={hwthreads}")
 
-    rankfile = '\n'.join(ranklines) + '\n'
+    rankfile = "\n".join(ranklines) + "\n"
 
     return rankfile, dict()
 
@@ -85,23 +86,24 @@ def impi_prep_resources(resources: ResourceAssignment) -> tuple[str, dict[str, s
     proc_counts = [1] * len(machine_nodes)
     i = 1
     while i < len(machine_nodes):
-        if machine_nodes[i-1] == machine_nodes[i]:
+        if machine_nodes[i - 1] == machine_nodes[i]:
             del machine_nodes[i]
-            proc_counts[i-1] += proc_counts[i]
+            proc_counts[i - 1] += proc_counts[i]
             del proc_counts[i]
         else:
             i += 1
 
-    machinefile = '\n'.join(
-            (f'{m}:{c}' for m, c in zip(machine_nodes, proc_counts))) + '\n'
+    machinefile = (
+        "\n".join((f"{m}:{c}" for m, c in zip(machine_nodes, proc_counts))) + "\n"
+    )
 
     # disable pinning to SLURM-specified resources
     # env['I_MPI_PIN_RESPECT_CPUSET'] = '0'
-    env['I_MPI_JOB_RESPECT_PROCESS_PLACEMENT'] = 'off'
+    env["I_MPI_JOB_RESPECT_PROCESS_PLACEMENT"] = "off"
 
     # which cores to bind each rank to
-    pin_masks_str = ','.join(format(mask, '#x') for mask in pin_masks)
-    env['I_MPI_PIN_DOMAIN'] = f'[{pin_masks_str}]'
+    pin_masks_str = ",".join(format(mask, "#x") for mask in pin_masks)
+    env["I_MPI_PIN_DOMAIN"] = f"[{pin_masks_str}]"
 
     # I_MPI_PIN_DOMAIN=[55,aa]
     # pins the first rank to 0,2,16,18 and the second to 1,3,17,19
@@ -128,8 +130,8 @@ def mpich_prep_resources(resources: ResourceAssignment) -> tuple[str, dict[str, 
 
 
 def srun_prep_resources(
-        resources: ResourceAssignment, rankfile_location: Path
-        ) -> tuple[str, dict[str, str]]:
+    resources: ResourceAssignment, rankfile_location: Path
+) -> tuple[str, dict[str, str]]:
     """Create resource description for srun
 
     Args:
@@ -139,27 +141,30 @@ def srun_prep_resources(
     Return:
         The contents of the hostfile, and a set of environment variables
     """
-    hostfile = '\n'.join(
-        node_res.node_name for node_res in resources.by_rank
-        for _ in node_res.hwthreads())
+    hostfile = "\n".join(
+        node_res.node_name
+        for node_res in resources.by_rank
+        for _ in node_res.hwthreads()
+    )
 
-    env = {'SLURM_HOSTFILE': str(rankfile_location)}
+    env = {"SLURM_HOSTFILE": str(rankfile_location)}
 
     def core_mask(hwthreads: Iterable[int]) -> str:
         mask = sum((1 << hwthread) for hwthread in hwthreads)
-        return format(mask, '#x')
+        return format(mask, "#x")
 
-    bind_str = ','.join([
-        core_mask(node_res.hwthreads()) for node_res in resources.by_rank])
+    bind_str = ",".join(
+        [core_mask(node_res.hwthreads()) for node_res in resources.by_rank]
+    )
 
-    env['SLURM_CPU_BIND'] = f'verbose,mask_cpu:{bind_str}'
+    env["SLURM_CPU_BIND"] = f"verbose,mask_cpu:{bind_str}"
 
     return hostfile, env
 
 
 def prep_resources(
-        model: ExecutionModel, resources: ResourceAssignment, rankfile_location: Path
-        ) -> tuple[str, dict[str, str]]:
+    model: ExecutionModel, resources: ResourceAssignment, rankfile_location: Path
+) -> tuple[str, dict[str, str]]:
     """Create resource description for the given execution model.
 
     Args:
@@ -181,7 +186,8 @@ def prep_resources(
     # elif model == ExecutionModel.MPICH:
     #     return mpich_prep_resources(resources)
     raise RuntimeError(
-            f'Impossible execution model {model}, please create an issue on GitHub')
+        f"Impossible execution model {model}, please create an issue on GitHub"
+    )
 
 
 def num_mpi_tasks(res_req: ResourceRequirements) -> int:
@@ -198,7 +204,7 @@ def num_mpi_tasks(res_req: ResourceRequirements) -> int:
         return res_req.mpi_processes
     elif isinstance(res_req, MPINodesResReq):
         return res_req.nodes * res_req.mpi_processes_per_node
-    raise RuntimeError('Invalid ResourceRequirements')
+    raise RuntimeError("Invalid ResourceRequirements")
 
 
 def local_command(program: Program, enable_debug: bool) -> str:
@@ -216,46 +222,41 @@ def local_command(program: Program, enable_debug: bool) -> str:
         A format string with embedded {ntasks} and {rankfile}.
     """
     if program.execution_model == ExecutionModel.DIRECT:
-        fstr = 'exec {command} {args}'
+        fstr = "exec {command} {args}"
     elif program.execution_model == ExecutionModel.OPENMPI:
         # Native name is orterun for older and prterun for newer OpenMPI.
         # So we go with mpirun, which works for either.
-        fargs = [
-                'exec mpirun -np $MUSCLE_MPI_PROCESSES',
-                '--oversubscribe'
-                ]
+        fargs = ["exec mpirun -np $MUSCLE_MPI_PROCESSES", "--oversubscribe"]
 
         if enable_debug:
-            fargs.append('-v --debug-daemons --display-map --display-allocation')
+            fargs.append("-v --debug-daemons --display-map --display-allocation")
 
-        fargs.append('{command} {args}')
+        fargs.append("{command} {args}")
 
-        fstr = ' '.join(fargs)
+        fstr = " ".join(fargs)
 
     elif program.execution_model == ExecutionModel.INTELMPI:
-        fstr = 'exec mpirun -n $MUSCLE_MPI_PROCESSES {command} {args}'
+        fstr = "exec mpirun -n $MUSCLE_MPI_PROCESSES {command} {args}"
     elif program.execution_model == ExecutionModel.SRUNMPI:
         raise ConfigurationError(
-                f'Could not start {program.name} because the SRUNMPI execution'
-                ' method only works in a SLURM allocation, and we are running locally.'
-                ' Please switch this program to a different execution method'
-                ' in the configuration file. You will probably want OPENMPI or'
-                ' INTELMPI depending on which MPI program this code was'
-                ' compiled with.')
+            f"Could not start {program.name} because the SRUNMPI execution"
+            " method only works in a SLURM allocation, and we are running locally."
+            " Please switch this program to a different execution method"
+            " in the configuration file. You will probably want OPENMPI or"
+            " INTELMPI depending on which MPI program this code was"
+            " compiled with."
+        )
     # elif program.execution_model == ExecutionModel.MPICH
     #    fstr = 'mpiexec -n {{ntasks}} {command} {args}'
 
     if program.args is None:
-        args = ''
+        args = ""
     elif isinstance(program.args, str):
         args = program.args
     elif isinstance(program.args, list):
-        args = ' '.join(program.args)
+        args = " ".join(program.args)
 
-    return fstr.format(
-            command=program.executable,
-            args=args
-            )
+    return fstr.format(command=program.executable, args=args)
 
 
 def cluster_command(program: Program, enable_debug: bool) -> str:
@@ -274,25 +275,25 @@ def cluster_command(program: Program, enable_debug: bool) -> str:
     """
     if program.execution_model == ExecutionModel.DIRECT:
         fargs = [
-                'if ! taskset -V >/dev/null 2>&1 ; then',
-                '    exec {command} {args}',
-                'else',
-                '    exec taskset $MUSCLE_BIND_MASK {command} {args}',
-                'fi'
-                ]
-        fstr = '\n'.join(fargs)
+            "if ! taskset -V >/dev/null 2>&1 ; then",
+            "    exec {command} {args}",
+            "else",
+            "    exec taskset $MUSCLE_BIND_MASK {command} {args}",
+            "fi",
+        ]
+        fstr = "\n".join(fargs)
 
     elif program.execution_model == ExecutionModel.OPENMPI:
         fargs = [
-                # Native name is orterun for older and prterun for newer OpenMPI.
-                # So we go with mpirun, which works for either.
-                'exec mpirun -np $MUSCLE_MPI_PROCESSES',
-                '--rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --bind-to hwthread',
-                '--oversubscribe'
-                ]
+            # Native name is orterun for older and prterun for newer OpenMPI.
+            # So we go with mpirun, which works for either.
+            "exec mpirun -np $MUSCLE_MPI_PROCESSES",
+            "--rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --bind-to hwthread",
+            "--oversubscribe",
+        ]
 
         if enable_debug:
-            fargs.append('-v --display-allocation --display-map --report-bindings')
+            fargs.append("-v --display-allocation --display-map --report-bindings")
 
         if slurm().quirks.overlap:
             # This adds the given option to the srun command used by mpirun to launch
@@ -302,54 +303,56 @@ def cluster_command(program: Program, enable_debug: bool) -> str:
             # overrides the --exclusive and it works.
             fargs.append('-mca plm_slurm_args "--overlap"')
 
-        fargs.append('{command} {args}')
+        fargs.append("{command} {args}")
 
-        fstr = ' '.join(fargs)
+        fstr = " ".join(fargs)
 
     elif program.execution_model == ExecutionModel.INTELMPI:
         fargs = [
-                'exec mpirun -n $MUSCLE_MPI_PROCESSES',
-                '-machinefile $MUSCLE_RANKFILE']
+            "exec mpirun -n $MUSCLE_MPI_PROCESSES",
+            "-machinefile $MUSCLE_RANKFILE",
+        ]
 
         if enable_debug:
-            fargs.append('-genv I_MPI_DEBUG=4')
+            fargs.append("-genv I_MPI_DEBUG=4")
 
-        fargs.append('{command} {args}')
+        fargs.append("{command} {args}")
 
-        fstr = ' '.join(fargs)
+        fstr = " ".join(fargs)
 
     elif program.execution_model == ExecutionModel.SRUNMPI:
-        fargs = ['exec srun -n $MUSCLE_MPI_PROCESSES -m arbitrary']
+        fargs = ["exec srun -n $MUSCLE_MPI_PROCESSES -m arbitrary"]
 
         if slurm().quirks.overlap:
-            fargs.append('--overlap')
+            fargs.append("--overlap")
 
-        verbose = 'verbose,' if enable_debug else ''
+        verbose = "verbose," if enable_debug else ""
 
-        fargs.append(f'{slurm().quirks.cpu_bind}={verbose}$SLURM_CPU_BIND')
-        fargs.append('{command} {args}')
+        fargs.append(f"{slurm().quirks.cpu_bind}={verbose}$SLURM_CPU_BIND")
+        fargs.append("{command} {args}")
 
-        fstr = ' '.join(fargs)
+        fstr = " ".join(fargs)
 
     # elif program.execution_model == ExecutionModel.MPICH
     #    fstr = 'mpiexec -n $MUSCLE_MPI_PROCESSES -f $MUSCLE_RANKFILE {command} {args}'
 
     if program.args is None:
-        args = ''
+        args = ""
     elif isinstance(program.args, str):
         args = program.args
     elif isinstance(program.args, list):
-        args = ' '.join(program.args)
+        args = " ".join(program.args)
 
-    return fstr.format(
-            command=program.executable,
-            args=args
-            )
+    return fstr.format(command=program.executable, args=args)
 
 
 def make_script(
-        program: Program, res_req: ResourceRequirements,
-        work_dir: Path, local: bool, rankfile: Optional[Path] = None) -> str:
+    program: Program,
+    res_req: ResourceRequirements,
+    work_dir: Path,
+    local: bool,
+    rankfile: Optional[Path] = None,
+) -> str:
     """Make a run script for a given program.
 
     Args:
@@ -362,7 +365,7 @@ def make_script(
     Return:
         A string with embedded newlines containing the shell script.
     """
-    enable_debug = logging.getLogger('libmuscle').getEffectiveLevel() <= logging.DEBUG
+    enable_debug = logging.getLogger("libmuscle").getEffectiveLevel() <= logging.DEBUG
 
     lines: list[str] = list()
 
@@ -371,57 +374,57 @@ def make_script(
         # non-interactive login shell and manually loading the configuration files that
         # an interactive one would load. This avoids a confusing warning on stderr that
         # we get from /bin/bash -il because it can't find a controlling terminal.
-        lines.append('#!/bin/bash --norc')
-        lines.append('')
-        lines.append('if [ -f /etc/environment ] ; then')
-        lines.append('    . /etc/environment')
-        lines.append('fi')
-        lines.append('')
-        lines.append('if [ -f /etc/profile ] ; then')
-        lines.append('    . /etc/profile')
-        lines.append('fi')
-        lines.append('')
-        lines.append('if [ -f ~/.bash_profile ] ; then')
-        lines.append('    . ~/.bash_profile')
-        lines.append('elif [ -f ~/.bash_login ] ; then')
-        lines.append('    . ~/.bash_login')
-        lines.append('elif [ -f ~/.profile ] ; then')
-        lines.append('    . ~/.profile')
-        lines.append('fi')
+        lines.append("#!/bin/bash --norc")
+        lines.append("")
+        lines.append("if [ -f /etc/environment ] ; then")
+        lines.append("    . /etc/environment")
+        lines.append("fi")
+        lines.append("")
+        lines.append("if [ -f /etc/profile ] ; then")
+        lines.append("    . /etc/profile")
+        lines.append("fi")
+        lines.append("")
+        lines.append("if [ -f ~/.bash_profile ] ; then")
+        lines.append("    . ~/.bash_profile")
+        lines.append("elif [ -f ~/.bash_login ] ; then")
+        lines.append("    . ~/.bash_login")
+        lines.append("elif [ -f ~/.profile ] ; then")
+        lines.append("    . ~/.profile")
+        lines.append("fi")
     else:
-        lines.append('#!/bin/bash')
+        lines.append("#!/bin/bash")
 
-    lines.append('')
+    lines.append("")
 
     # The environment is passed when starting the script, rather than as a set of
     # export statements here.
 
     if program.base_env == BaseEnv.CLEAN:
-        lines.append('module purge')
-        lines.append('')
+        lines.append("module purge")
+        lines.append("")
 
     if program.modules:
         if isinstance(program.modules, str):
-            lines.append(f'module load {program.modules}')
+            lines.append(f"module load {program.modules}")
         else:
             for module in program.modules:
-                lines.append(f'module load {module}')
-        lines.append('')
+                lines.append(f"module load {module}")
+        lines.append("")
 
     if program.virtual_env:
-        lines.append(f'. {program.virtual_env}/bin/activate')
-        lines.append('')
+        lines.append(f". {program.virtual_env}/bin/activate")
+        lines.append("")
 
     if program.base_env == BaseEnv.LOGIN:
         # config files may change the work directory from what we set, so we add this to
         # ensure it's correct.
-        lines.append(f'cd {work_dir}')
+        lines.append(f"cd {work_dir}")
 
     if local:
         lines.append(local_command(program, enable_debug))
     else:
         lines.append(cluster_command(program, enable_debug))
 
-    lines.append('')
+    lines.append("")
 
-    return '\n'.join(lines)
+    return "\n".join(lines)

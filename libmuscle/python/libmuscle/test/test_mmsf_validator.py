@@ -11,6 +11,7 @@ from libmuscle.port_manager import PortManager
 
 class Contains:
     """Helper class to simplify tests using caplog.record_tuples"""
+
     def __init__(self, value: Any) -> None:
         self.value = value
 
@@ -34,11 +35,15 @@ def mock_peer_info() -> Mock:
 
 @pytest.fixture
 def validator_simple(mock_peer_info) -> MMSFValidator:
-    port_manager = PortManager([], {
+    port_manager = PortManager(
+        [],
+        {
             Operator.F_INIT: ["f_i"],
             Operator.O_I: ["o_i"],
             Operator.S: ["s"],
-            Operator.O_F: ["o_f"]})
+            Operator.O_F: ["o_f"],
+        },
+    )
     port_manager.connect_ports(mock_peer_info)
     return MMSFValidator(port_manager)
 
@@ -62,7 +67,8 @@ def test_simple_skip_f_init(validator_simple, caplog):
     validator_simple.reuse_instance()
     validator_simple.check_send("o_i", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_i'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_i'"))
+    ]
 
 
 def test_simple_skip_o_i(validator_simple, caplog):
@@ -71,17 +77,20 @@ def test_simple_skip_o_i(validator_simple, caplog):
 
     validator_simple.check_receive("f_i", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 'f_i'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 'f_i'"))
+    ]
 
     caplog.clear()
     validator_simple.check_receive("s", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 's'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 's'"))
+    ]
 
     caplog.clear()
     validator_simple.reuse_instance()
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("reuse_instance()"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("reuse_instance()"))
+    ]
 
 
 def test_simple_skip_s(validator_simple, caplog):
@@ -91,12 +100,14 @@ def test_simple_skip_s(validator_simple, caplog):
 
     validator_simple.check_send("o_i", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_i'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_i'"))
+    ]
 
     caplog.clear()
     validator_simple.check_send("o_f", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_f'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_f'"))
+    ]
 
 
 def test_simple_skip_o_f(validator_simple, caplog):
@@ -107,7 +118,8 @@ def test_simple_skip_o_f(validator_simple, caplog):
 
     validator_simple.reuse_instance()
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("reuse_instance()"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("reuse_instance()"))
+    ]
 
 
 def test_simple_skip_reuse_instance(validator_simple, caplog):
@@ -117,7 +129,8 @@ def test_simple_skip_reuse_instance(validator_simple, caplog):
 
     validator_simple.check_receive("f_i", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 'f_i'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 'f_i'"))
+    ]
 
 
 def test_only_o_f(mock_peer_info, caplog):
@@ -131,7 +144,8 @@ def test_only_o_f(mock_peer_info, caplog):
 
     validator.check_send("o_f", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_f'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_f'"))
+    ]
 
 
 def test_only_f_i(mock_peer_info, caplog):
@@ -145,7 +159,8 @@ def test_only_f_i(mock_peer_info, caplog):
 
     validator.check_receive("f_i", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 'f_i'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 'f_i'"))
+    ]
 
 
 def test_micro(mock_peer_info, caplog):
@@ -162,17 +177,20 @@ def test_micro(mock_peer_info, caplog):
 
     validator.check_receive("f_i", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 'f_i'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Receive on port 'f_i'"))
+    ]
 
     caplog.clear()
     validator.reuse_instance()
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("reuse_instance()"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("reuse_instance()"))
+    ]
 
 
 def test_not_all_ports_used(mock_peer_info, caplog):
-    port_manager = PortManager([], {
-            Operator.F_INIT: ["f_i1", "f_i2"], Operator.O_F: ["o_f"]})
+    port_manager = PortManager(
+        [], {Operator.F_INIT: ["f_i1", "f_i2"], Operator.O_F: ["o_f"]}
+    )
     port_manager.connect_ports(mock_peer_info)
     validator = MMSFValidator(port_manager)
 
@@ -181,4 +199,5 @@ def test_not_all_ports_used(mock_peer_info, caplog):
 
     validator.check_send("o_f", None)
     assert caplog.record_tuples == [
-        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_f'"))]
+        ("libmuscle.mmsf_validator", WARNING, Contains("Send on port 'o_f'"))
+    ]

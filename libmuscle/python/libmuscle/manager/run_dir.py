@@ -27,6 +27,7 @@ class RunDir:
             snapshots/
 
     """
+
     def __init__(self, run_dir: Path) -> None:
         """Create a RunDir managing the given directory.
 
@@ -37,7 +38,7 @@ class RunDir:
         if not self.path.exists():
             self.path.mkdir()
 
-        instances_dir = self.path / 'instances'
+        instances_dir = self.path / "instances"
         if not instances_dir.exists():
             instances_dir.mkdir()
 
@@ -50,9 +51,9 @@ class RunDir:
         Returns:
             The path to the new, empty directory
         """
-        idir = self.path / 'instances' / str(name)
+        idir = self.path / "instances" / str(name)
         if idir.exists():
-            raise ValueError('Instance already has a directory')
+            raise ValueError("Instance already has a directory")
         idir.mkdir()
         return idir
 
@@ -62,7 +63,7 @@ class RunDir:
         The directory may or may not exist, call add_instance_dir() to
         make it.
         """
-        return self.path / 'instances' / str(name)
+        return self.path / "instances" / str(name)
 
     def snapshot_dir(self, name: Optional[Reference] = None) -> Path:
         """Return the snapshot directory for the workflow or for an instance.
@@ -75,8 +76,8 @@ class RunDir:
             The path to the snapshot directory
         """
         if name is None:
-            path = self.path / 'snapshots'
+            path = self.path / "snapshots"
         else:
-            path = self.instance_dir(name) / 'snapshots'
+            path = self.instance_dir(name) / "snapshots"
         path.mkdir(parents=True, exist_ok=True)
         return path

@@ -186,6 +186,7 @@ psutil      physical        counted by psutil.cpu_count(logical=False)
 ```
 
 """
+
 from collections.abc import Iterable, Iterator
 from copy import copy, deepcopy
 from typing import Optional
@@ -225,6 +226,7 @@ class Core:
         cid: ID of this core, to be used to refer to it
         hwthreads: Ids of hwthreads (logical CPUs) belonging to this core
     """
+
     def __init__(self, cid: int, hwthreads: set[int]) -> None:
         """Create a Core"""
         self.cid = cid
@@ -239,50 +241,50 @@ class Core:
     def __len__(self) -> int:
         return len(self.hwthreads)
 
-    def __copy__(self) -> 'Core':
+    def __copy__(self) -> "Core":
         return Core(self.cid, self.hwthreads)
 
-    def __or__(self, other: object) -> 'Core':
+    def __or__(self, other: object) -> "Core":
         if not isinstance(other, Core):
             return NotImplemented
 
         if other.cid != self.cid:
-            raise ValueError('Cannot merge hwthreads on different cores')
+            raise ValueError("Cannot merge hwthreads on different cores")
 
         return Core(self.cid, self.hwthreads | other.hwthreads)
 
-    def __ior__(self, other: object) -> 'Core':
+    def __ior__(self, other: object) -> "Core":
         if not isinstance(other, Core):
             return NotImplemented
 
         if other.cid != self.cid:
-            raise ValueError('Cannot merge hwthreads on different cores')
+            raise ValueError("Cannot merge hwthreads on different cores")
 
         self.hwthreads |= other.hwthreads
         return self
 
-    def __isub__(self, other: object) -> 'Core':
+    def __isub__(self, other: object) -> "Core":
         if not isinstance(other, Core):
             return NotImplemented
 
         if other.cid != self.cid:
-            raise ValueError('Cannot merge hwthreads on different cores')
+            raise ValueError("Cannot merge hwthreads on different cores")
 
         self.hwthreads -= other.hwthreads
         return self
 
     def __str__(self) -> str:
-        hwthreads = ','.join(map(str, sorted(self.hwthreads)))
-        return f'{self.cid}({hwthreads})'
+        hwthreads = ",".join(map(str, sorted(self.hwthreads)))
+        return f"{self.cid}({hwthreads})"
 
     def __repr__(self) -> str:
-        hwthreads = ','.join(map(str, sorted(self.hwthreads)))
-        return f'Core({self.cid}, {{{hwthreads}}})'
+        hwthreads = ",".join(map(str, sorted(self.hwthreads)))
+        return f"Core({self.cid}, {{{hwthreads}}})"
 
-    def isdisjoint(self, other: 'Core') -> bool:
+    def isdisjoint(self, other: "Core") -> bool:
         """Returns whether we share resources with other."""
         if self.cid != other.cid:
-            raise ValueError('Cannot compare hwthreads on different cores')
+            raise ValueError("Cannot compare hwthreads on different cores")
 
         return self.hwthreads.isdisjoint(other.hwthreads)
 
@@ -297,6 +299,7 @@ class CoreSet:
     make a copy using copy.copy() and modify that copy anywhere without changing the
     original.
     """
+
     def __init__(self, cores: Iterable[Core]) -> None:
         """Create a CoreSet
 
@@ -326,10 +329,10 @@ class CoreSet:
     def __iter__(self) -> Iterator[Core]:
         return iter(self._cores.values())
 
-    def __copy__(self) -> 'CoreSet':
+    def __copy__(self) -> "CoreSet":
         return CoreSet(deepcopy(list(self._cores.values())))
 
-    def __ior__(self, other: object) -> 'CoreSet':
+    def __ior__(self, other: object) -> "CoreSet":
         if not isinstance(other, CoreSet):
             return NotImplemented
 
@@ -341,7 +344,7 @@ class CoreSet:
 
         return self
 
-    def __isub__(self, other: object) -> 'CoreSet':
+    def __isub__(self, other: object) -> "CoreSet":
         if not isinstance(other, CoreSet):
             return NotImplemented
 
@@ -356,33 +359,33 @@ class CoreSet:
     def __str__(self) -> str:
         def collapse_ranges(ids: list[int]) -> str:
             if len(ids) == 0:
-                return ''
+                return ""
 
             result = list()
             start = 0
             i = 1
             while i <= len(ids):
-                if (i == len(ids)) or (ids[i-1] != ids[i] - 1):
+                if (i == len(ids)) or (ids[i - 1] != ids[i] - 1):
                     if start == i - 1:
                         # run of one
-                        result.append(str(ids[i-1]))
+                        result.append(str(ids[i - 1]))
                     else:
                         # run of at least two
-                        result.append(f'{ids[start]}-{ids[i-1]}')
+                        result.append(f"{ids[start]}-{ids[i - 1]}")
                     start = i
                 i += 1
-            return ','.join(result)
+            return ",".join(result)
 
         cores = sorted(c.cid for c in self._cores.values())
         hwthreads = sorted(t for c in self._cores.values() for t in c.hwthreads)
 
-        return f'{collapse_ranges(cores)}({collapse_ranges(hwthreads)})'
+        return f"{collapse_ranges(cores)}({collapse_ranges(hwthreads)})"
 
     def __repr__(self) -> str:
-        cores = ', '.join(map(repr, sorted(self._cores.values(), key=lambda c: c.cid)))
-        return f'CoreSet({{{cores}}})'
+        cores = ", ".join(map(repr, sorted(self._cores.values(), key=lambda c: c.cid)))
+        return f"CoreSet({{{cores}}})"
 
-    def isdisjoint(self, other: 'CoreSet') -> bool:
+    def isdisjoint(self, other: "CoreSet") -> bool:
         """Returns whether we share resources with other."""
         for cid, core in self._cores.items():
             if cid in other._cores:
@@ -390,7 +393,7 @@ class CoreSet:
                     return False
         return True
 
-    def get_first_cores(self, num_cores: int) -> 'CoreSet':
+    def get_first_cores(self, num_cores: int) -> "CoreSet":
         """Returns the first num_cores cores in this set.
 
         Args:
@@ -400,7 +403,7 @@ class CoreSet:
         cids = list(self._cores.keys())
         selected = cids[:num_cores]
         if len(selected) < num_cores:
-            raise RuntimeError('Tried to get more cores than available')
+            raise RuntimeError("Tried to get more cores than available")
 
         result._cores = {c.cid: c for c in result._cores.values() if c.cid in selected}
         return result
@@ -416,6 +419,7 @@ class OnNodeResources:
     make a copy using copy.copy() and modify that copy anywhere without changing the
     original.
     """
+
     def __init__(self, node_name: str, cpu_cores: CoreSet) -> None:
         """Create an OnNodeResources.
 
@@ -431,35 +435,36 @@ class OnNodeResources:
             return NotImplemented
 
         return (
-                isinstance(other, OnNodeResources) and
-                self.node_name == other.node_name and
-                self.cpu_cores == other.cpu_cores)
+            isinstance(other, OnNodeResources)
+            and self.node_name == other.node_name
+            and self.cpu_cores == other.cpu_cores
+        )
 
-    def __copy__(self) -> 'OnNodeResources':
+    def __copy__(self) -> "OnNodeResources":
         return OnNodeResources(self.node_name, copy(self.cpu_cores))
 
-    def __ior__(self, other: object) -> 'OnNodeResources':
+    def __ior__(self, other: object) -> "OnNodeResources":
         if not isinstance(other, OnNodeResources):
             return NotImplemented
 
         if self.node_name != other.node_name:
-            raise ValueError('Cannot merge resources on different nodes')
+            raise ValueError("Cannot merge resources on different nodes")
 
         self.cpu_cores |= other.cpu_cores
         return self
 
-    def __isub__(self, other: object) -> 'OnNodeResources':
+    def __isub__(self, other: object) -> "OnNodeResources":
         if not isinstance(other, OnNodeResources):
             return NotImplemented
 
         if self.node_name != other.node_name:
-            raise ValueError('Cannot remove resources on different nodes')
+            raise ValueError("Cannot remove resources on different nodes")
 
         self.cpu_cores -= other.cpu_cores
         return self
 
     def __str__(self) -> str:
-        return f'OnNodeResources({self.node_name}, c: {str(self.cpu_cores)})'
+        return f"OnNodeResources({self.node_name}, c: {str(self.cpu_cores)})"
 
     def __repr__(self) -> str:
         return f'OnNodeResources("{self.node_name}", {repr(self.cpu_cores)})'
@@ -472,11 +477,11 @@ class OnNodeResources:
         """Return the number of CPU cores in this node."""
         return len(self.cpu_cores)
 
-    def isdisjoint(self, other: 'OnNodeResources') -> bool:
+    def isdisjoint(self, other: "OnNodeResources") -> bool:
         """Returns whether we share resources with other."""
-        return (
-                self.node_name != other.node_name or
-                self.cpu_cores.isdisjoint(other.cpu_cores))
+        return self.node_name != other.node_name or self.cpu_cores.isdisjoint(
+            other.cpu_cores
+        )
 
 
 class Resources:
@@ -492,6 +497,7 @@ class Resources:
     Attributes:
         nodes: A collection of nodes to include in this resource set
     """
+
     def __init__(self, nodes: Optional[Iterable[OnNodeResources]] = None) -> None:
         """Create a Resources object with the given nodes.
 
@@ -528,11 +534,11 @@ class Resources:
 
         return True
 
-    def __copy__(self) -> 'Resources':
+    def __copy__(self) -> "Resources":
         """Copy the object."""
         return Resources(copy(n) for n in self._nodes.values())
 
-    def __ior__(self, other: object) -> 'Resources':
+    def __ior__(self, other: object) -> "Resources":
         """Add the resources in the argument to this object."""
         if not isinstance(other, Resources):
             return NotImplemented
@@ -545,7 +551,7 @@ class Resources:
 
         return self
 
-    def __isub__(self, other: object) -> 'Resources':
+    def __isub__(self, other: object) -> "Resources":
         """Remove the resources in the argument from this object."""
         if not isinstance(other, Resources):
             return NotImplemented
@@ -560,14 +566,15 @@ class Resources:
 
     def __str__(self) -> str:
         """Return a human-readable string representation."""
-        nodes = ','.join(
-                map(str, sorted(self._nodes.values(), key=lambda n: n.node_name)))
-        return f'Resources({nodes})'
+        nodes = ",".join(
+            map(str, sorted(self._nodes.values(), key=lambda n: n.node_name))
+        )
+        return f"Resources({nodes})"
 
     def __repr__(self) -> str:
         """Return a string representation."""
         nodes = sorted(self._nodes.values(), key=lambda n: n.node_name)
-        return f'Resources({nodes})'
+        return f"Resources({nodes})"
 
     def nodes(self) -> Iterable[str]:
         """Return the names of the nodes on which we designate resources."""
@@ -580,16 +587,20 @@ class Resources:
     def cores(self) -> Iterable[tuple[str, int]]:
         """Return this resources as a list of node, core."""
         return (
-                (node.node_name, core.cid)
-                for node in self._nodes.values() for core in node.cpu_cores)
+            (node.node_name, core.cid)
+            for node in self._nodes.values()
+            for core in node.cpu_cores
+        )
 
     def hwthreads(self) -> Iterable[tuple[str, int]]:
         """Return this resources as a list of node, hwthread."""
         return (
-                (node.node_name, hwthread)
-                for node in self._nodes.values() for hwthread in node.hwthreads())
+            (node.node_name, hwthread)
+            for node in self._nodes.values()
+            for hwthread in node.hwthreads()
+        )
 
-    def isdisjoint(self, other: 'Resources') -> bool:
+    def isdisjoint(self, other: "Resources") -> bool:
         """Return whether we share resources with other."""
         for node_name, node in self._nodes.items():
             if node_name in other._nodes:
@@ -611,9 +622,10 @@ class Resources:
         """
         if node_res.node_name in self._nodes:
             raise RuntimeError(
-                    'Tried to add a OnNodeResources to a Resources for a node that is'
-                    ' already present. This is a bug in MUSCLE3, please report it on'
-                    ' GitHub.')
+                "Tried to add a OnNodeResources to a Resources for a node that is"
+                " already present. This is a bug in MUSCLE3, please report it on"
+                " GitHub."
+            )
 
         self._nodes[node_res.node_name] = node_res
 
@@ -632,7 +644,7 @@ class Resources:
             self._nodes[node_res.node_name] = copy(node_res)
 
     @staticmethod
-    def union(resources: Iterable['Resources']) -> 'Resources':
+    def union(resources: Iterable["Resources"]) -> "Resources":
         """Combines the resources into one.
 
         Args:

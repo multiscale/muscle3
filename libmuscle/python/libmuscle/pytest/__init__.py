@@ -19,7 +19,8 @@ def _collect_log_report(run_dir: Path) -> str:
     log_file = run_dir / "muscle3_manager.log"
 
     error_lines = [
-        line for line in log_file.read_text().splitlines()
+        line
+        for line in log_file.read_text().splitlines()
         if " ERROR " in line or " CRITICAL " in line
     ]
     lines = [
@@ -34,8 +35,9 @@ def _collect_log_report(run_dir: Path) -> str:
 
 
 @pytest.fixture
-def muscle3_tester(request: pytest.FixtureRequest, tmp_path: Path
-                   ) -> Iterator[MuscleTester]:
+def muscle3_tester(
+    request: pytest.FixtureRequest, tmp_path: Path
+) -> Iterator[MuscleTester]:
     """Pytest fixture providing a MuscleTester instance."""
     run_dir = tmp_path / "run_dir"
 

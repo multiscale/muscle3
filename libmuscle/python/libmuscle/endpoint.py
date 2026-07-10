@@ -36,8 +36,10 @@ class Endpoint:
     Conduit instances are never actually created in the code, but
     Endpoints are.
     """
-    def __init__(self, kernel: Reference, index: list[int], port: Identifier,
-                 slot: list[int]) -> None:
+
+    def __init__(
+        self, kernel: Reference, index: list[int], port: Identifier, slot: list[int]
+    ) -> None:
         """Create an Endpoint
 
         Note: kernel is a Reference, not an Identifier, because it may
@@ -84,8 +86,7 @@ class Endpoint:
         return str(self.ref())
 
     def instance(self) -> Reference:
-        """Get a Reference to the instance this endpoint is on.
-        """
+        """Get a Reference to the instance this endpoint is on."""
         ret = self.kernel
         if self.index:
             ret += self.index

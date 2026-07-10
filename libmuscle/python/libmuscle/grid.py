@@ -18,9 +18,8 @@ class Grid:
         array (np.ndarray): An array of data
         indexes (Optional[list[str]]): The names of the array's indexes.
     """
-    def __init__(
-            self, array: np.ndarray, indexes: Optional[list[str]] = None
-            ) -> None:
+
+    def __init__(self, array: np.ndarray, indexes: Optional[list[str]] = None) -> None:
         """Creates a Grid object.
 
         A Grid object represents an multi-dimensional array of data. It
@@ -46,8 +45,8 @@ class Grid:
         if indexes is not None:
             if len(indexes) != array.ndim:
                 raise ValueError(
-                        'Number of indexes must match number of array'
-                        ' dimensions')
+                    "Number of indexes must match number of array dimensions"
+                )
 
         self.array = array
         self.indexes = indexes

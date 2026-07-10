@@ -13,6 +13,7 @@ from libmuscle.planner.planner import ResourceAssignment
 
 class ProcessStatus(enum.Enum):
     """Status of a process (instance)."""
+
     STARTED = 0
     RUNNING = 1
     SUCCESS = 2
@@ -26,8 +27,10 @@ class ProcessStatus(enum.Enum):
         run.
         """
         return self in (
-                ProcessStatus.SUCCESS, ProcessStatus.ERROR,
-                ProcessStatus.CANCELED)
+            ProcessStatus.SUCCESS,
+            ProcessStatus.ERROR,
+            ProcessStatus.CANCELED,
+        )
 
 
 class Process:
@@ -40,6 +43,7 @@ class Process:
         exit_code: Exit code, if status is ERROR
         error_msg: Error message, if status is ERROR
     """
+
     def __init__(self, instance: Reference, resources: ResourceAssignment) -> None:
         """Create a Process object.
 
@@ -55,6 +59,7 @@ class Process:
 
 class InstantiatorRequest:
     """Base class for requests to an instantiator."""
+
     pass
 
 
@@ -63,6 +68,7 @@ class ShutdownRequest(InstantiatorRequest):
 
     The process will stop once all running processes are done.
     """
+
     pass
 
 
@@ -79,11 +85,18 @@ class InstantiationRequest(InstantiatorRequest):
         stdout_path: Path of file to redirect stdout to
         stderr_path: Path of file to redirect stderr to
     """
+
     def __init__(
-            self, instance: Reference, program: Program,
-            res_req: ResourceRequirements, resources: ResourceAssignment,
-            instance_dir: Path, work_dir: Path, stdout_path: Path, stderr_path: Path
-            ) -> None:
+        self,
+        instance: Reference,
+        program: Program,
+        res_req: ResourceRequirements,
+        resources: ResourceAssignment,
+        instance_dir: Path,
+        work_dir: Path,
+        stdout_path: Path,
+        stderr_path: Path,
+    ) -> None:
         """Create an InstantiationRequest.
 
         Args:
@@ -108,17 +121,20 @@ class InstantiationRequest(InstantiatorRequest):
 
 class CancelAllRequest(InstantiatorRequest):
     """Requests stopping all running processes."""
+
     pass
 
 
 class CrashedResult:
     """Signals that the instantiator process crashed."""
+
     def __init__(self, exception: Optional[BaseException] = None) -> None:
         self.exception = exception
 
 
 class QueueingLogHandler(logging.Handler):
     """A logging Handler that enqueues records."""
+
     def __init__(self, queue: mp.Queue) -> None:
         """Create a QueueingLogHandler.
 
@@ -135,8 +151,7 @@ class QueueingLogHandler(logging.Handler):
             record: A log record to enqueue.
         """
         if record.exc_info:
-            record.msg += '\n' + ''.join(
-                    traceback.format_exception(*record.exc_info))
+            record.msg += "\n" + "".join(traceback.format_exception(*record.exc_info))
             record.exc_info = None
 
         self._queue.put(record)
@@ -158,8 +173,8 @@ def reconfigure_logging(queue: mp.Queue) -> None:
 
 
 def create_instance_env(
-        instance: Reference, base_env: BaseEnv, overlay: dict[str, str]
-        ) -> dict[str, str]:
+    instance: Reference, base_env: BaseEnv, overlay: dict[str, str]
+) -> dict[str, str]:
     """Creates an environment for an instance.
 
     This takes the current (manager) environment variables and makes
@@ -171,7 +186,7 @@ def create_instance_env(
     """
     if base_env == BaseEnv.LOGIN:
         env = dict()
-        for var in ('HOME', 'LOGNAME', 'SHELL', 'TERM', 'USER'):
+        for var in ("HOME", "LOGNAME", "SHELL", "TERM", "USER"):
             if var in os.environ:
                 env[var] = os.environ[var]
     else:
@@ -188,31 +203,31 @@ def create_instance_env(
             # of the programs needs a clean shell, then the user will have to export
             # it manually between activating the virtualenv and starting the manager
             # and things will work.
-            vep = env.get('VIRTUAL_ENV_PROMPT')
+            vep = env.get("VIRTUAL_ENV_PROMPT")
             if vep is not None:
-                if 'PS1' in env:
-                    if env['PS1'].startswith(vep):
-                        env['PS1'] = env['PS1'][len(vep):]
-                del env['VIRTUAL_ENV_PROMPT']
+                if "PS1" in env:
+                    if env["PS1"].startswith(vep):
+                        env["PS1"] = env["PS1"][len(vep) :]
+                del env["VIRTUAL_ENV_PROMPT"]
 
-            ovp = env.get('_OLD_VIRTUAL_PYTHONHOME')
+            ovp = env.get("_OLD_VIRTUAL_PYTHONHOME")
             if ovp is not None:
-                env['PYTHONHOME'] = ovp
-                del env['_OLD_VIRTUAL_PYTHONHOME']
+                env["PYTHONHOME"] = ovp
+                del env["_OLD_VIRTUAL_PYTHONHOME"]
 
-            venv = env.get('VIRTUAL_ENV')
+            venv = env.get("VIRTUAL_ENV")
             if venv is not None:
-                path = env.get('PATH')
+                path = env.get("PATH")
                 if path is not None:
-                    paths = [p for p in path.split(':') if p != venv + '/bin']
-                    env['PATH'] = ':'.join(paths)
+                    paths = [p for p in path.split(":") if p != venv + "/bin"]
+                    env["PATH"] = ":".join(paths)
 
-                del env['VIRTUAL_ENV']
+                del env["VIRTUAL_ENV"]
 
-    env['MUSCLE_INSTANCE'] = str(instance)
+    env["MUSCLE_INSTANCE"] = str(instance)
 
     for key, value in overlay.items():
-        if key.startswith('+'):
+        if key.startswith("+"):
             if key[1:] in env:
                 env[key[1:]] += value
             else:

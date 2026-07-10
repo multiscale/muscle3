@@ -28,9 +28,12 @@ class DeadlockDetector:
         """list of deadlocked instance cycles. Set by _handle_potential_deadlock."""
 
     def waiting_for_receive(
-            self, instance_id: str, peer_instance_id: str,
-            port_name: str, slot: Optional[int]
-            ) -> None:
+        self,
+        instance_id: str,
+        peer_instance_id: str,
+        port_name: str,
+        slot: Optional[int],
+    ) -> None:
         """Process a WAITING_FOR_RECEIVE message from an instance.
 
         This method can be called from any thread.
@@ -51,9 +54,12 @@ class DeadlockDetector:
             self._check_for_deadlock(instance_id)
 
     def waiting_for_receive_done(
-            self, instance_id: str, peer_instance_id: str,
-            port_name: str, slot: Optional[int]
-            ) -> None:
+        self,
+        instance_id: str,
+        peer_instance_id: str,
+        port_name: str,
+        slot: Optional[int],
+    ) -> None:
         """Process a WAITING_FOR_RECEIVE_DONE message from an instance.
 
         This method can be called from any thread.
@@ -89,8 +95,9 @@ class DeadlockDetector:
             for deadlock_instances in self._detected_deadlocks:
                 if instance_id in deadlock_instances:
                     _logger.fatal(
-                            "Deadlock detected, simulation is aborting!\n%s",
-                            self._format_deadlock(deadlock_instances))
+                        "Deadlock detected, simulation is aborting!\n%s",
+                        self._format_deadlock(deadlock_instances),
+                    )
                     return True
         return False
 
@@ -128,7 +135,7 @@ class DeadlockDetector:
         num_instances = str(len(deadlock_instances))
         lines = [f"The following {num_instances} instances are deadlocked:"]
         for i, instance in enumerate(deadlock_instances):
-            num = str(i+1).rjust(len(num_instances))
+            num = str(i + 1).rjust(len(num_instances))
             peer_instance = self._waiting_instances[instance]
             port, slot = self._waiting_instance_ports[instance]
             slot_txt = "" if slot is None else f"[{slot}]"

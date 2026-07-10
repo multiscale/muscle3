@@ -75,11 +75,11 @@ def extract_log_file_location(filename: str) -> Optional[Path]:
     # Neither getopt, optparse, or argparse will let me pick out
     # just one option from the command line and ignore the rest.
     # So we do it by hand.
-    prefix = '--muscle-log-file='
+    prefix = "--muscle-log-file="
     given_path_str = None
     for arg in sys.argv[1:]:
         if arg.startswith(prefix):
-            given_path_str = arg[len(prefix):]
+            given_path_str = arg[len(prefix) :]
 
     if not given_path_str:
         return None
@@ -102,10 +102,10 @@ class Retrier:
     This backs off exponentially, immediately retrying on the first attempt, then
     waiting 2**tries * base_delay seconds between tries.
     """
+
     def __init__(
-            self, timeout: float = _DEFAULT_TIMEOUT,
-            base_delay: float = _DEFAULT_BASE_DELAY
-            ) -> None:
+        self, timeout: float = _DEFAULT_TIMEOUT, base_delay: float = _DEFAULT_BASE_DELAY
+    ) -> None:
         """Create a Retrier.
 
         Args:

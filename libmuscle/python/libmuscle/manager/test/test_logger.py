@@ -17,9 +17,12 @@ def test_create_logger(tmpdir):
 
 def test_log_message(logger, caplog):
     logger.log_message(
-            'test_instance', Timestamp(123.0),
-            LogLevel.CRITICAL, 'Testing the logging system')
+        "test_instance",
+        Timestamp(123.0),
+        LogLevel.CRITICAL,
+        "Testing the logging system",
+    )
 
-    assert caplog.records[0].name == 'test_instance'
-    assert caplog.records[0].levelname == 'CRITICAL'
-    assert caplog.records[0].message == 'Testing the logging system'
+    assert caplog.records[0].name == "test_instance"
+    assert caplog.records[0].levelname == "CRITICAL"
+    assert caplog.records[0].message == "Testing the logging system"

@@ -5,11 +5,11 @@ from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 
 
 def test_tcp_transport():
-    request = b'request'
-    response = b'response'
+    request = b"request"
+    response = b"response"
 
     def handle_request(request: bytes) -> bytes:
-        assert request == b'request'
+        assert request == b"request"
         return response
 
     handler = MagicMock()

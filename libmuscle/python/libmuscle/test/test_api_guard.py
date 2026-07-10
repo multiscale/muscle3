@@ -100,7 +100,7 @@ _api_guard_funs = (
     (APIGuard.save_snapshot_done, ()),
     (APIGuard.verify_should_save_final_snapshot, ()),
     (APIGuard.should_save_final_snapshot_done, (True,)),
-    (APIGuard.verify_save_final_snapshot, ())
+    (APIGuard.verify_save_final_snapshot, ()),
 )
 
 
@@ -113,7 +113,7 @@ def run_until_before(guard: APIGuard, excluded: Callable) -> None:
 
 def check_all_raise_except(guard: APIGuard, excluded: set[Callable]) -> None:
     for fun, args in _api_guard_funs:
-        if fun.__name__.startswith('verify_'):
+        if fun.__name__.startswith("verify_"):
             if fun not in excluded:
                 with pytest.raises(RuntimeError):
                     fun(guard, *args)
@@ -121,10 +121,15 @@ def check_all_raise_except(guard: APIGuard, excluded: set[Callable]) -> None:
                 fun(guard, *args)
 
 
-@pytest.mark.parametrize('fun', [
+@pytest.mark.parametrize(
+    "fun",
+    [
         APIGuard.verify_load_snapshot,
-        APIGuard.verify_should_init, APIGuard.verify_save_snapshot,
-        APIGuard.verify_save_final_snapshot])
+        APIGuard.verify_should_init,
+        APIGuard.verify_save_snapshot,
+        APIGuard.verify_save_final_snapshot,
+    ],
+)
 def test_missing_step(guard, fun):
     run_until_before(guard, fun)
     check_all_raise_except(guard, {fun})
@@ -137,9 +142,13 @@ def test_missing_resuming(guard: APIGuard):
 
 def test_missing_should_save_final(guard: APIGuard):
     run_until_before(guard, APIGuard.verify_should_save_final_snapshot)
-    check_all_raise_except(guard, {
-        APIGuard.verify_should_save_snapshot,
-        APIGuard.verify_should_save_final_snapshot})
+    check_all_raise_except(
+        guard,
+        {
+            APIGuard.verify_should_save_snapshot,
+            APIGuard.verify_should_save_final_snapshot,
+        },
+    )
 
 
 def test_double_should_save(guard: APIGuard):

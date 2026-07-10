@@ -6,67 +6,71 @@ from ymmsl.v0_2 import Conduit, Operator, Port, Reference
 
 
 def test_registration(log_file_in_tmpdir, mmp_server):
-    instance_name = Reference('test_instance')
+    instance_name = Reference("test_instance")
     client = MMPClient(instance_name, mmp_server.get_location())
-    port = Port(Reference('test_in'), Operator.S)
+    port = Port(Reference("test_in"), Operator.S)
 
-    client.register_instance(['tcp:localhost:10000'], [port])
+    client.register_instance(["tcp:localhost:10000"], [port])
 
     registry = mmp_server._handler._instance_registry
 
-    assert registry.get_locations(instance_name) == ['tcp:localhost:10000']
-    assert registry.get_ports(instance_name)[0].name == 'test_in'
+    assert registry.get_locations(instance_name) == ["tcp:localhost:10000"]
+    assert registry.get_ports(instance_name)[0].name == "test_in"
     assert registry.get_ports(instance_name)[0].operator == Operator.S
     client.close()
 
 
 def test_wiring(log_file_in_tmpdir, mmp_server_process):
     # mmp_server_process starts a server and returns its location
-    client = MMPClient(Reference('macro'), mmp_server_process)
+    client = MMPClient(Reference("macro"), mmp_server_process)
 
-    client.register_instance(['direct:macro'], [])
+    client.register_instance(["direct:macro"], [])
 
-    client2 = MMPClient(Reference('micro[0]'), mmp_server_process)
+    client2 = MMPClient(Reference("micro[0]"), mmp_server_process)
     peer_info = client2.request_peers()
     client2.close()
 
-    assert Conduit('macro.out', 'micro.in') in peer_info._conduits
-    assert Conduit('micro.out', 'macro.in') in peer_info._conduits
+    assert Conduit("macro.out", "micro.in") in peer_info._conduits
+    assert Conduit("micro.out", "macro.in") in peer_info._conduits
 
-    assert peer_info._peer_dims[Reference('macro')] == []
-    assert peer_info._peer_locations['macro'] == ['direct:macro']
+    assert peer_info._peer_dims[Reference("macro")] == []
+    assert peer_info._peer_locations["macro"] == ["direct:macro"]
 
-    with patch('libmuscle.mmp_client.PEER_TIMEOUT', 0.1), \
-            patch('libmuscle.mmp_client.PEER_INTERVAL_MIN', 0.01), \
-            patch('libmuscle.mmp_client.PEER_INTERVAL_MAX', 0.1):
+    with (
+        patch("libmuscle.mmp_client.PEER_TIMEOUT", 0.1),
+        patch("libmuscle.mmp_client.PEER_INTERVAL_MIN", 0.01),
+        patch("libmuscle.mmp_client.PEER_INTERVAL_MAX", 0.1),
+    ):
         with pytest.raises(RuntimeError):
             client.request_peers()
 
     for i in range(5):
-        instance = Reference(f'micro[{i}]')
+        instance = Reference(f"micro[{i}]")
         client2 = MMPClient(instance, mmp_server_process)
-        location = f'direct:{instance}'
+        location = f"direct:{instance}"
         client2.register_instance([location], [])
         client2.close()
 
-    with patch('libmuscle.mmp_client.PEER_TIMEOUT', 0.1), \
-            patch('libmuscle.mmp_client.PEER_INTERVAL_MIN', 0.01), \
-            patch('libmuscle.mmp_client.PEER_INTERVAL_MAX', 0.1):
+    with (
+        patch("libmuscle.mmp_client.PEER_TIMEOUT", 0.1),
+        patch("libmuscle.mmp_client.PEER_INTERVAL_MIN", 0.01),
+        patch("libmuscle.mmp_client.PEER_INTERVAL_MAX", 0.1),
+    ):
         with pytest.raises(RuntimeError):
             client.request_peers()
 
     for i in range(5, 10):
-        instance = Reference(f'micro[{i}]')
+        instance = Reference(f"micro[{i}]")
         client2 = MMPClient(instance, mmp_server_process)
-        location = f'direct:{instance}'
+        location = f"direct:{instance}"
         client2.register_instance([location], [])
         client2.close()
 
     peer_info = client.request_peers()
 
-    assert Conduit('macro.out', 'micro.in') in peer_info._conduits
-    assert Conduit('micro.out', 'macro.in') in peer_info._conduits
+    assert Conduit("macro.out", "micro.in") in peer_info._conduits
+    assert Conduit("micro.out", "macro.in") in peer_info._conduits
 
-    assert peer_info._peer_dims[Reference('micro')] == [10]
-    assert peer_info._peer_locations['micro[7]'] == ['direct:micro[7]']
+    assert peer_info._peer_dims[Reference("micro")] == [10]
+    assert peer_info._peer_locations["micro[7]"] == ["direct:micro[7]"]
     client.close()

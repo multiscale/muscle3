@@ -8,9 +8,10 @@ from libmuscle.port import Port
 
 class PortManager:
     """Manages sending and receiving ports of the current instance."""
+
     def __init__(
-            self, index: list[int], declared_ports: Optional[dict[Operator, list[str]]]
-            ) -> None:
+        self, index: list[int], declared_ports: Optional[dict[Operator, list[str]]]
+    ) -> None:
         """Create a PortManager.
 
         Args:
@@ -90,8 +91,7 @@ class PortManager:
         """
         return self._ports[port_name]
 
-    def restore_message_counts(
-            self, port_message_counts: dict[str, list[int]]) -> None:
+    def restore_message_counts(self, port_message_counts: dict[str, list[int]]) -> None:
         """Restore message counts on all ports.
 
         Args:
@@ -104,9 +104,11 @@ class PortManager:
             elif port_name in self._ports:
                 self._ports[port_name].restore_message_counts(num_messages)
             else:
-                raise RuntimeError(f'Unknown port {port_name} in snapshot.'
-                                   ' Have your port definitions changed since'
-                                   ' the snapshot was taken?')
+                raise RuntimeError(
+                    f"Unknown port {port_name} in snapshot."
+                    " Have your port definitions changed since"
+                    " the snapshot was taken?"
+                )
 
     def get_message_counts(self) -> dict[str, list[int]]:
         """Get message counts for all ports on the communicator.
@@ -115,10 +117,13 @@ class PortManager:
             A dictionary indexed by port name containing a list of counts, one
             for each slot of the corresponding port.
         """
-        port_message_counts = {port_name: port.get_message_counts()
-                               for port_name, port in self._ports.items()}
-        port_message_counts["muscle_settings_in"] = \
+        port_message_counts = {
+            port_name: port.get_message_counts()
+            for port_name, port in self._ports.items()
+        }
+        port_message_counts["muscle_settings_in"] = (
             self._muscle_settings_in.get_message_counts()
+        )
         return port_message_counts
 
     def _settings_in_port(self, peer_info: PeerInfo) -> Port:
@@ -127,15 +132,19 @@ class PortManager:
         Args:
             peer_info: Information about our peers from the manager.
         """
-        msi = Identifier('muscle_settings_in')
+        msi = Identifier("muscle_settings_in")
         if peer_info.is_connected(msi):
             sender_component = peer_info.get_peer_ports(msi)[0][:-1]
             return Port(
-                    str(msi), Operator.F_INIT, False, True, len(self._index),
-                    peer_info.get_peer_dims(sender_component))
+                str(msi),
+                Operator.F_INIT,
+                False,
+                True,
+                len(self._index),
+                peer_info.get_peer_dims(sender_component),
+            )
 
-        return Port(
-                str(msi), Operator.F_INIT, False, False, len(self._index), [])
+        return Port(str(msi), Operator.F_INIT, False, False, len(self._index), [])
 
     def _ports_from_declared(self, peer_info: PeerInfo) -> dict[str, Port]:
         """Derives port definitions from supplied declaration.
@@ -153,16 +162,22 @@ class PortManager:
         for operator, port_list in self._declared_ports.items():
             for port_desc in port_list:
                 port_name, is_vector = self._split_port_desc(port_desc)
-                if port_name.startswith('muscle_'):
+                if port_name.startswith("muscle_"):
                     raise RuntimeError(
-                            'Port names starting with "muscle_" are reserved for'
-                            f' MUSCLE, please rename port "{port_name}"')
+                        'Port names starting with "muscle_" are reserved for'
+                        f' MUSCLE, please rename port "{port_name}"'
+                    )
                 port_id = Identifier(port_name)
                 is_connected = peer_info.is_connected(port_id)
                 peer_dims = peer_info.check_peer_dimensions(port_id)
                 ports[port_name] = Port(
-                        port_name, operator, is_vector, is_connected,
-                        len(self._index), peer_dims)
+                    port_name,
+                    operator,
+                    is_vector,
+                    is_connected,
+                    len(self._index),
+                    peer_dims,
+                )
         return ports
 
     def _ports_from_conduits(self, peer_info: PeerInfo) -> dict[str, Port]:
@@ -177,10 +192,15 @@ class PortManager:
             is_connected = peer_info.is_connected(port.name)
             peer_dims = peer_info.check_peer_dimensions(port.name)
             ndims = max(0, len(peer_dims) - len(self._index))
-            is_vector = (ndims == 1)
+            is_vector = ndims == 1
             ports[port_name] = Port(
-                port_name, port.operator, is_vector, is_connected,
-                len(self._index), peer_dims)
+                port_name,
+                port.operator,
+                is_vector,
+                is_connected,
+                len(self._index),
+                peer_dims,
+            )
         return ports
 
     def _split_port_desc(self, port_desc: str) -> tuple[str, bool]:
@@ -194,13 +214,14 @@ class PortManager:
             port_desc: A port description string, as above.
         """
         is_vector = False
-        if port_desc.endswith('[]'):
+        if port_desc.endswith("[]"):
             is_vector = True
             port_desc = port_desc[:-2]
 
-        if port_desc.endswith('[]'):
+        if port_desc.endswith("[]"):
             raise ValueError(
-                    f'Port description "{port_desc}" is invalid: ports can have at most'
-                    ' one dimension.')
+                f'Port description "{port_desc}" is invalid: ports can have at most'
+                " one dimension."
+            )
 
         return port_desc, is_vector

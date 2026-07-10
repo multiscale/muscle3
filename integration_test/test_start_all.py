@@ -12,12 +12,12 @@ def test_start_all(tmpdir):
     tmppath = Path(str(tmpdir))
 
     # find our test component and its requirements
-    cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
-    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    ld_lib_path = ':'.join(map(str, lib_paths))
+    cpp_build_dir = Path(__file__).parents[1] / "libmuscle" / "cpp" / "build"
+    lib_paths = [cpp_build_dir / "msgpack" / "msgpack" / "lib"]
+    ld_lib_path = ":".join(map(str, lib_paths))
 
-    cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
-    test_component = cpp_test_dir / 'component_test'
+    cpp_test_dir = cpp_build_dir / "libmuscle" / "tests"
+    test_component = cpp_test_dir / "component_test"
 
     # make config
     ymmsl_text = f"""
@@ -56,10 +56,10 @@ resources:
     config = ymmsl.load(ymmsl_text)
 
     # set up
-    run_dir = RunDir(tmppath / 'run')
+    run_dir = RunDir(tmppath / "run")
 
     # launch MUSCLE Manager with simulation
-    manager = Manager(config, run_dir, 'DEBUG')
+    manager = Manager(config, run_dir, "DEBUG")
     manager.start_instances()
     success = manager.wait()
 

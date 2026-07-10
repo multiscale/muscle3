@@ -9,8 +9,8 @@ _COMMUNICATION_INTERVAL = 10.0  # seconds
 
 
 class Profiler:
-    """Collects profiling events and sends them to the manager.
-    """
+    """Collects profiling events and sends them to the manager."""
+
     def __init__(self, manager: MMPClient) -> None:
         """Create a Profiler.
 
@@ -51,7 +51,7 @@ class Profiler:
                     events to the manager.
         """
         with self._mutex:
-            self._enabled = level == 'all'
+            self._enabled = level == "all"
 
     def record_event(self, event: ProfileEvent) -> None:
         """Record a profiling event.

@@ -35,12 +35,16 @@ class Message:
         settings (Settings): Overlay settings to send or that was
                 received.
     """
+
     # Note: This is for communication with the user, it's not what
     # actually goes out on the wire, see libmuscle.mcp.Message for that.
-    def __init__(self, timestamp: float, next_timestamp: Optional[float] = None,
-                 data: MessageObject = None,
-                 settings: Optional[Settings] = None
-                 ) -> None:
+    def __init__(
+        self,
+        timestamp: float,
+        next_timestamp: Optional[float] = None,
+        data: MessageObject = None,
+        settings: Optional[Settings] = None,
+    ) -> None:
         """Create a Message.
 
         Args:
@@ -69,10 +73,15 @@ class Communicator:
     leaves the actual data transmission to various protocol-specific
     servers and clients.
     """
+
     def __init__(
-            self, kernel: Reference, index: list[int],
-            port_manager: PortManager, profiler: Profiler,
-            manager: MMPClient) -> None:
+        self,
+        kernel: Reference,
+        index: list[int],
+        port_manager: PortManager,
+        profiler: Profiler,
+        manager: MMPClient,
+    ) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -133,9 +142,12 @@ class Communicator:
         self._receive_timeout = receive_timeout
 
     def send_message(
-            self, port_name: str, message: Message,
-            slot: Optional[int] = None,
-            checkpoints_considered_until: float = float('-inf')) -> None:
+        self,
+        port_name: str,
+        message: Message,
+        slot: Optional[int] = None,
+        checkpoints_considered_until: float = float("-inf"),
+    ) -> None:
         """Send a message and settings to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -149,10 +161,10 @@ class Communicator:
                 should save a snapshot (wallclock time).
         """
         if slot is None:
-            _logger.debug(f'Sending message on {port_name}')
+            _logger.debug(f"Sending message on {port_name}")
             slot_list: list[int] = []
         else:
-            _logger.debug(f'Sending message on {port_name}[{slot}]')
+            _logger.debug(f"Sending message on {port_name}[{slot}]")
             slot_list = [slot]
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
@@ -162,24 +174,37 @@ class Communicator:
 
         port = self._port_manager.get_port(port_name)
         profile_event = ProfileEvent(
-                ProfileEventType.SEND, ProfileTimestamp(), None, port, None,
-                slot, port.get_num_messages(slot), None, message.timestamp)
+            ProfileEventType.SEND,
+            ProfileTimestamp(),
+            None,
+            port,
+            None,
+            slot,
+            port.get_num_messages(slot),
+            None,
+            message.timestamp,
+        )
 
         recv_endpoints = self._peer_info.get_peer_endpoints(
-                snd_endpoint.port, slot_list)
+            snd_endpoint.port, slot_list
+        )
 
         port_length = None
         if port.is_resizable():
             port_length = port.get_length()
 
         for recv_endpoint in recv_endpoints:
-            mpp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
-                                     port_length,
-                                     message.timestamp, message.next_timestamp,
-                                     cast(Settings, message.settings),
-                                     port.get_num_messages(slot),
-                                     checkpoints_considered_until,
-                                     message.data)
+            mpp_message = MPPMessage(
+                snd_endpoint.ref(),
+                recv_endpoint.ref(),
+                port_length,
+                message.timestamp,
+                message.next_timestamp,
+                cast(Settings, message.settings),
+                port.get_num_messages(slot),
+                checkpoints_considered_until,
+                message.data,
+            )
             encoded_message = mpp_message.encoded()
             self._server.deposit(recv_endpoint.ref(), encoded_message)
 
@@ -193,7 +218,8 @@ class Communicator:
             self._profiler.record_event(profile_event)
 
     def receive_message(
-            self, port_name: str, slot: Optional[int] = None) -> tuple[Message, float]:
+        self, port_name: str, slot: Optional[int] = None
+    ) -> tuple[Message, float]:
         """Receive a message and attached settings overlay.
 
         Receiving is a blocking operation. This function will contact
@@ -219,7 +245,7 @@ class Communicator:
             RuntimeError: If the network connection had an error, or the
                     message number was incorrect.
         """
-        if port_name == 'muscle_settings_in':
+        if port_name == "muscle_settings_in":
             port = self._port_manager._muscle_settings_in
         else:
             port = self._port_manager.get_port(port_name)
@@ -230,27 +256,39 @@ class Communicator:
         else:
             port_and_slot = f"{port_name}[{slot}]"
             slot_list = [slot]
-        _logger.debug(f'Waiting for message on {port_and_slot}')
+        _logger.debug(f"Waiting for message on {port_and_slot}")
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
         receive_event = ProfileEvent(
-                ProfileEventType.RECEIVE, ProfileTimestamp(), None, port, None,
-                slot, port.get_num_messages())
+            ProfileEventType.RECEIVE,
+            ProfileTimestamp(),
+            None,
+            port,
+            None,
+            slot,
+            port.get_num_messages(),
+        )
 
         # peer_info already checks that there is at most one snd_endpoint
         # connected to the port we receive on
         snd_endpoint = self._peer_info.get_peer_endpoints(
-                recv_endpoint.port, slot_list)[0]
+            recv_endpoint.port, slot_list
+        )[0]
         client = self.__get_client(snd_endpoint.instance())
         timeout_handler = None
         if self._receive_timeout >= 0:
             timeout_handler = ReceiveTimeoutHandler(
-                    self._manager, snd_endpoint.instance(),
-                    port_name, slot, self._receive_timeout)
+                self._manager,
+                snd_endpoint.instance(),
+                port_name,
+                slot,
+                self._receive_timeout,
+            )
         try:
             mpp_message_bytes, profile = client.receive(
-                    recv_endpoint.ref(), timeout_handler)
+                recv_endpoint.ref(), timeout_handler
+            )
         except (ConnectionError, SocketClosed) as exc:
             raise RuntimeError(
                 "Error while receiving a message: connection with peer"
@@ -265,9 +303,15 @@ class Communicator:
             ) from None
 
         recv_decode_event = ProfileEvent(
-                ProfileEventType.RECEIVE_DECODE, ProfileTimestamp(), None,
-                port, None, slot, port.get_num_messages(),
-                len(memoryview(mpp_message_bytes)))
+            ProfileEventType.RECEIVE_DECODE,
+            ProfileTimestamp(),
+            None,
+            port,
+            None,
+            slot,
+            port.get_num_messages(),
+            len(memoryview(mpp_message_bytes)),
+        )
         mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
         recv_decode_event.stop()
 
@@ -279,18 +323,35 @@ class Communicator:
             port.set_closed(slot)
 
         message = Message(
-                mpp_message.timestamp, mpp_message.next_timestamp,
-                mpp_message.data, mpp_message.settings_overlay)
+            mpp_message.timestamp,
+            mpp_message.next_timestamp,
+            mpp_message.data,
+            mpp_message.settings_overlay,
+        )
 
         recv_wait_event = ProfileEvent(
-                ProfileEventType.RECEIVE_WAIT, profile[0], profile[1], port,
-                mpp_message.port_length, slot, port.get_num_messages(),
-                len(memoryview(mpp_message_bytes)), message.timestamp)
+            ProfileEventType.RECEIVE_WAIT,
+            profile[0],
+            profile[1],
+            port,
+            mpp_message.port_length,
+            slot,
+            port.get_num_messages(),
+            len(memoryview(mpp_message_bytes)),
+            message.timestamp,
+        )
 
         recv_xfer_event = ProfileEvent(
-                ProfileEventType.RECEIVE_TRANSFER, profile[1], profile[2],
-                port, mpp_message.port_length, slot, port.get_num_messages(),
-                len(memoryview(mpp_message_bytes)), message.timestamp)
+            ProfileEventType.RECEIVE_TRANSFER,
+            profile[1],
+            profile[2],
+            port,
+            mpp_message.port_length,
+            slot,
+            port.get_num_messages(),
+            len(memoryview(mpp_message_bytes)),
+            message.timestamp,
+        )
 
         recv_decode_event.message_timestamp = message.timestamp
         receive_event.message_timestamp = message.timestamp
@@ -311,28 +372,33 @@ class Communicator:
 
         expected_message_number = port.get_num_messages(slot)
         if expected_message_number != mpp_message.message_number:
-            if (expected_message_number - 1 == mpp_message.message_number and
-                    port.is_resuming(slot)):
-                _logger.debug(f'Discarding received message on {port_and_slot}'
-                              ': resuming from weakly consistent snapshot')
+            if (
+                expected_message_number - 1 == mpp_message.message_number
+                and port.is_resuming(slot)
+            ):
+                _logger.debug(
+                    f"Discarding received message on {port_and_slot}"
+                    ": resuming from weakly consistent snapshot"
+                )
                 port.set_resumed(slot)
                 return self.receive_message(port_name, slot)
-            raise RuntimeError(f'Received message on {port_and_slot} with'
-                               ' unexpected message number'
-                               f' {mpp_message.message_number}. Was expecting'
-                               f' {expected_message_number}. Are you resuming'
-                               ' from an inconsistent snapshot?')
+            raise RuntimeError(
+                f"Received message on {port_and_slot} with"
+                " unexpected message number"
+                f" {mpp_message.message_number}. Was expecting"
+                f" {expected_message_number}. Are you resuming"
+                " from an inconsistent snapshot?"
+            )
         port.increment_num_messages(slot)
 
-        _logger.debug(f'Received message on {port_and_slot}')
+        _logger.debug(f"Received message on {port_and_slot}")
         if isinstance(mpp_message.data, ClosePort):
-            _logger.debug(f'Port {port_and_slot} is now closed')
+            _logger.debug(f"Port {port_and_slot} is now closed")
 
         return message, mpp_message.saved_until
 
     def shutdown(self) -> None:
-        """Shuts down the Communicator, closing connections.
-        """
+        """Shuts down the Communicator, closing connections."""
         self._close_ports()
 
         for client in self._clients.values():
@@ -347,8 +413,7 @@ class Communicator:
         self._profiler.record_event(shutdown_event)
 
     def __instance_id(self) -> Reference:
-        """Returns our complete instance id.
-        """
+        """Returns our complete instance id."""
         return self._kernel + self._index
 
     def __get_client(self, instance: Reference) -> MPPClient:
@@ -362,7 +427,7 @@ class Communicator:
         """
         if instance not in self._clients:
             locations = self._peer_info.get_peer_locations(instance)
-            _logger.info(f'Connecting to peer {instance} at {locations}')
+            _logger.info(f"Connecting to peer {instance} at {locations}")
             self._clients[instance] = MPPClient(locations)
 
         return self._clients[instance]
@@ -391,11 +456,11 @@ class Communicator:
         Args:
             port_name: The name of the port to close.
         """
-        message = Message(float('inf'), None, ClosePort(), Settings())
+        message = Message(float("inf"), None, ClosePort(), Settings())
         if slot is None:
-            _logger.debug(f'Closing port {port_name}')
+            _logger.debug(f"Closing port {port_name}")
         else:
-            _logger.debug(f'Closing port {port_name}[{slot}]')
+            _logger.debug(f"Closing port {port_name}[{slot}]")
         self.send_message(port_name, message, slot)
 
     def _close_outgoing_ports(self) -> None:
@@ -436,8 +501,7 @@ class Communicator:
             port_name: Port to drain.
         """
         port = self._port_manager.get_port(port_name)
-        while not all([not port.is_open(slot)
-                       for slot in range(port.get_length())]):
+        while not all([not port.is_open(slot) for slot in range(port.get_length())]):
             for slot in range(port.get_length()):
                 if port.is_open(slot):
                     self.receive_message(port_name, slot)
@@ -463,11 +527,13 @@ class Communicator:
                             self._drain_incoming_vector_port(port_name)
                     except RuntimeError:
                         peer_endpoints = self._peer_info.get_peer_endpoints(
-                                Identifier(port_name), [])
+                            Identifier(port_name), []
+                        )
                         peer_name = str(peer_endpoints[0].kernel)
                         _logger.warning(
                             "Connection with peer '%s' was lost at the end of the "
-                            "simulation, probably because it crashed.", peer_name
+                            "simulation, probably because it crashed.",
+                            peer_name,
                         )
 
     def _close_ports(self) -> None:

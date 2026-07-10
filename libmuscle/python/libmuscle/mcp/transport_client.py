@@ -13,20 +13,20 @@ class TimeoutHandler:
     @property
     def timeout(self) -> float:
         """Timeout (in seconds) after which :meth:`on_timeout` is called."""
-        raise NotImplementedError()     # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def on_timeout(self) -> None:
         """Callback when :attr:`timeout` seconds have passed without a response from the
         peer.
         """
-        raise NotImplementedError()     # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def on_receive(self) -> None:
         """Callback when receiving a response from the peer.
 
         Note: this method is only called when the request has timed out.
         """
-        raise NotImplementedError()     # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
 
 class TransportClient:
@@ -36,6 +36,7 @@ class TransportClient:
     Client connects to an MCP Transport Server over some communication
     protocol, requests messages from it, and returns responses.
     """
+
     @staticmethod
     def can_connect_to(location: str) -> bool:
         """Whether this client class can connect to the given location.
@@ -46,10 +47,11 @@ class TransportClient:
         Returns:
             True iff this class can connect to this location.
         """
-        raise NotImplementedError()     # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
-    def call(self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
-             ) -> tuple[Buffer, ProfileData]:
+    def call(
+        self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
+    ) -> tuple[Buffer, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call. Besides the result, this function
@@ -66,7 +68,7 @@ class TransportClient:
         Returns:
             The received response, and the timestamps
         """
-        raise NotImplementedError()     # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def close(self) -> None:
         """Closes this client.
@@ -74,4 +76,4 @@ class TransportClient:
         This closes any connections this client has and/or performs
         other shutdown activities as needed.
         """
-        raise NotImplementedError()     # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover

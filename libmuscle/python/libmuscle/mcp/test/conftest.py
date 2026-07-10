@@ -11,7 +11,7 @@ from libmuscle.post_office import PostOffice
 
 @pytest.fixture
 def receiver():
-    return Reference('test_receiver.test_port')
+    return Reference("test_receiver.test_port")
 
 
 @pytest.fixture

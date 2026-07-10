@@ -28,6 +28,7 @@ class GlobalResources:
         logical_cpus_per_node: Number of cores available on each node.
                 List alongside nodes.
     """
+
     def __init__(self) -> None:
         """Create a GlobalResources.
 
@@ -35,20 +36,22 @@ class GlobalResources:
         queried.
         """
         if slurm().in_slurm_allocation():
-            _logger.info('Detected a SLURM allocation')
+            _logger.info("Detected a SLURM allocation")
             self.scheduler = Scheduler.SLURM
             self.nodes = slurm().get_nodes()
             self.logical_cpus_per_node = slurm().get_logical_cpus_per_node()
             _logger.info(
-                    f'We have {len(self.nodes)} nodes and a total of'
-                    f' {sum(self.logical_cpus_per_node)} logical CPUs available')
+                f"We have {len(self.nodes)} nodes and a total of"
+                f" {sum(self.logical_cpus_per_node)} logical CPUs available"
+            )
         else:
-            _logger.info('Running locally without a cluster scheduler')
+            _logger.info("Running locally without a cluster scheduler")
             self.scheduler = Scheduler.NONE
             self.nodes = [gethostname()]
             self.logical_cpus_per_node = [psutil.cpu_count(logical=True) or 0]
             _logger.info(
-                    f'We have {self.logical_cpus_per_node[0]} logical CPUS available')
+                f"We have {self.logical_cpus_per_node[0]} logical CPUS available"
+            )
 
     def on_cluster(self) -> bool:
         """Return whether we're running on a cluster."""

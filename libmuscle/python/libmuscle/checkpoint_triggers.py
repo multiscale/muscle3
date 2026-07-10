@@ -118,8 +118,7 @@ class RangeCheckpointTrigger(CheckpointTrigger):
 
 
 class CombinedCheckpointTriggers(CheckpointTrigger):
-    """Checkpoint trigger based on a combination of "at" and "ranges"
-    """
+    """Checkpoint trigger based on a combination of "at" and "ranges" """
 
     def __init__(self, checkpoint_rules: list[CheckpointRule]) -> None:
         """Create a new combined checkpoint trigger from the given rules
@@ -136,42 +135,39 @@ class CombinedCheckpointTriggers(CheckpointTrigger):
             elif isinstance(rule, CheckpointRangeRule):
                 self._triggers.append(RangeCheckpointTrigger(rule))
             else:
-                raise RuntimeError('Unknown checkpoint rule')
+                raise RuntimeError("Unknown checkpoint rule")
         if at_rules:
             self._triggers.append(AtCheckpointTrigger(at_rules))
 
     def next_checkpoint(self, cur_time: float) -> Optional[float]:
-        checkpoints = (trigger.next_checkpoint(cur_time)
-                       for trigger in self._triggers)
+        checkpoints = (trigger.next_checkpoint(cur_time) for trigger in self._triggers)
         # return earliest of all not-None next-checkpoints
-        return min((checkpoint
-                    for checkpoint in checkpoints
-                    if checkpoint is not None),
-                   default=None)  # return None if all triggers return None
+        return min(
+            (checkpoint for checkpoint in checkpoints if checkpoint is not None),
+            default=None,
+        )  # return None if all triggers return None
 
     def previous_checkpoint(self, cur_time: float) -> Optional[float]:
-        checkpoints = (trigger.previous_checkpoint(cur_time)
-                       for trigger in self._triggers)
+        checkpoints = (
+            trigger.previous_checkpoint(cur_time) for trigger in self._triggers
+        )
         # return latest of all not-None previous-checkpoints
-        return max((checkpoint
-                    for checkpoint in checkpoints
-                    if checkpoint is not None),
-                   default=None)  # return None if all triggers return None
+        return max(
+            (checkpoint for checkpoint in checkpoints if checkpoint is not None),
+            default=None,
+        )  # return None if all triggers return None
 
 
 class TriggerManager:
-    """Manages all checkpoint triggers and checks if a snapshot must be saved.
-    """
+    """Manages all checkpoint triggers and checks if a snapshot must be saved."""
 
     def __init__(self) -> None:
         self._has_checkpoints = False
         self._last_triggers: list[str] = []
-        self._cpts_considered_until = float('-inf')
+        self._cpts_considered_until = float("-inf")
 
-    def set_checkpoint_info(
-            self, elapsed: float, checkpoints: Checkpoints) -> None:
-        """Register checkpoint info received from the muscle manager.
-        """
+    def set_checkpoint_info(self, elapsed: float, checkpoints: Checkpoints) -> None:
+        """Register checkpoint info received from the muscle manager."""
         self._mono_to_elapsed = elapsed - time.monotonic()
 
         if not checkpoints:
@@ -191,38 +187,33 @@ class TriggerManager:
         self._nextsim: Optional[float] = None
 
     def elapsed_walltime(self) -> float:
-        """Returns elapsed wallclock_time in seconds.
-        """
+        """Returns elapsed wallclock_time in seconds."""
         return time.monotonic() + self._mono_to_elapsed
 
     def checkpoints_considered_until(self) -> float:
-        """Return elapsed time of last should_save*
-        """
+        """Return elapsed time of last should_save*"""
         return self._cpts_considered_until
 
     def harmonise_wall_time(self, at_least: float) -> None:
-        """Ensure our elapsed time is at least the given value
-        """
+        """Ensure our elapsed time is at least the given value"""
         cur = self.elapsed_walltime()
         if cur < at_least:
             _logger.debug(
-                    'Harmonise wall time: advancing clock by %f seconds',
-                    at_least - cur)
+                "Harmonise wall time: advancing clock by %f seconds", at_least - cur
+            )
             self._mono_to_elapsed += at_least - cur
 
     def should_save_snapshot(self, timestamp: float) -> bool:
-        """Handles instance.should_save_snapshot
-        """
+        """Handles instance.should_save_snapshot"""
         if not self._has_checkpoints:
             return False
 
         return self.__should_save(timestamp)
 
     def should_save_final_snapshot(
-            self, do_reuse: bool, f_init_max_timestamp: Optional[float]
-            ) -> bool:
-        """Handles instance.should_save_final_snapshot
-        """
+        self, do_reuse: bool, f_init_max_timestamp: Optional[float]
+    ) -> bool:
+        """Handles instance.should_save_final_snapshot"""
         if not self._has_checkpoints:
             return False
 
@@ -230,12 +221,13 @@ class TriggerManager:
         if not do_reuse:
             if self._checkpoint_at_end:
                 value = True
-                self._last_triggers.append('at_end')
+                self._last_triggers.append("at_end")
         elif f_init_max_timestamp is None:
             # No F_INIT messages received: reuse triggered on muscle_settings_in
             # message.
-            _logger.debug('Reuse triggered by muscle_settings_in.'
-                          ' Not creating a snapshot.')
+            _logger.debug(
+                "Reuse triggered by muscle_settings_in. Not creating a snapshot."
+            )
         else:
             value = self.__should_save(f_init_max_timestamp)
 
@@ -255,8 +247,7 @@ class TriggerManager:
         self._nextsim = self._sim.next_checkpoint(timestamp)
 
     def get_triggers(self) -> list[str]:
-        """Get trigger description(s) for the current reason for checkpointing.
-        """
+        """Get trigger description(s) for the current reason for checkpointing."""
         triggers = self._last_triggers
         self._last_triggers = []
         return triggers

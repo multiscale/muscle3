@@ -31,6 +31,7 @@ class SessionState:
     Objects of this class therefore store n, the most recently received request, and, if
     and only if we're in state 2), response n.
     """
+
     def __init__(self) -> None:
         """Create a SessionState object.
 
@@ -42,11 +43,11 @@ class SessionState:
         self._response_ready = threading.Condition()
 
         self._cur_request = 0
-        self._response: Optional[Buffer] = b''
+        self._response: Optional[Buffer] = b""
 
     def __str__(self) -> str:
         with self._response_ready:
-            return f'SessionState({self._cur_request}, {self._response is not None})'
+            return f"SessionState({self._cur_request}, {self._response is not None})"
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -103,7 +104,8 @@ class SessionState:
         """
         with self._response_ready:
             should_process = (
-                    self._response is not None and self._cur_request < request_nr)
+                self._response is not None and self._cur_request < request_nr
+            )
             if should_process:
                 self._cur_request = request_nr
                 self._response = None

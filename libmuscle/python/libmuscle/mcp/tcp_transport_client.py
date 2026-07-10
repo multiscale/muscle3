@@ -139,12 +139,15 @@ class TcpTransportClient(TransportClient):
         This method blocks until the socket is ready for receiving, or :param:`timeout`
         seconds have passed (whichever is earlier).
 
+        Do not use if self._socket is None.
+
         Args:
             timeout: timeout in seconds
 
         Returns:
             True if the socket is ready for receiving data, False otherwise.
         """
+        assert self._socket is not None
         if self._poll_obj is not None:
             ready_events = self._poll_obj.poll(timeout * 1000)  # poll timeout is in ms
             return bool(ready_events)

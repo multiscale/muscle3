@@ -9,6 +9,7 @@ class RequestHandler:
     handle the request, and return a chunk of bytes containing an
     encoded response.
     """
+
     def handle_request(self, request: Buffer) -> Buffer:
         """Handle a request.
 
@@ -18,7 +19,7 @@ class RequestHandler:
         Returns:
             An encoded response
         """
-        raise NotImplementedError()     # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def close(self) -> None:
         """Free per-thread resources.
@@ -40,6 +41,7 @@ class TransportServer:
     connections over some lower-level communication protocol, receives
     requests and returns responses from a RequestHandler.
     """
+
     def __init__(self, handler: RequestHandler) -> None:
         """Create a TransportServer.
 

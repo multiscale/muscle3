@@ -19,6 +19,7 @@ class MAPClient:
 
     This class connects to the AgentManager and communicates with it.
     """
+
     def __init__(self, node_name: str, location: str) -> None:
         """Create a MAPClient
 
@@ -44,8 +45,10 @@ class MAPClient:
         """
         enc_cpu_resources = [[c.cid] + list(c.hwthreads) for c in resources.cpu_cores]
         request = [
-                RequestType.REPORT_RESOURCES.value,
-                resources.node_name, {'cpu': enc_cpu_resources}]
+            RequestType.REPORT_RESOURCES.value,
+            resources.node_name,
+            {"cpu": enc_cpu_resources},
+        ]
         self._call_agent_manager(request)
 
     def get_command(self) -> Optional[AgentCommand]:
@@ -78,7 +81,7 @@ class MAPClient:
         elif command[0] == AgentCommandType.SHUTDOWN.value:
             return ShutdownCommand()
 
-        raise Exception('Unknown AgentCommand')
+        raise Exception("Unknown AgentCommand")
 
     def report_result(self, names_exit_codes: list[tuple[str, int]]) -> None:
         """Report results of finished processes.

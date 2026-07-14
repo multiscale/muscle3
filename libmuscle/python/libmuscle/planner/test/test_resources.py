@@ -93,11 +93,11 @@ def test_core_isdisjoint(c1):
 
 
 def test_core_str(c1):
-    assert str(c1) == '0(0,1)'
+    assert str(c1) == "0(0,1)"
 
 
 def test_core_repr(c1):
-    assert repr(c1) == 'Core(0, {0,1})'
+    assert repr(c1) == "Core(0, {0,1})"
 
 
 @pytest.fixture
@@ -209,32 +209,30 @@ def test_core_set_subtract_threads(cs1):
 
 
 def test_core_set_str(cs1):
-    assert str(cs1) == '0-1(0-3)'
+    assert str(cs1) == "0-1(0-3)"
 
 
 def test_core_set_repr(cs1):
-    assert repr(cs1) == 'CoreSet({Core(0, {0,1}), Core(1, {2,3})})'
+    assert repr(cs1) == "CoreSet({Core(0, {0,1}), Core(1, {2,3})})"
 
 
 def test_core_set_get_first_cores(cs1):
     assert cs1.get_first_cores(0)._cores == {}
     assert cs1.get_first_cores(1)._cores == {0: Core(0, {0, 1})}
-    assert cs1.get_first_cores(2)._cores == {
-            0: Core(0, {0, 1}),
-            1: Core(1, {2, 3})}
+    assert cs1.get_first_cores(2)._cores == {0: Core(0, {0, 1}), 1: Core(1, {2, 3})}
     with pytest.raises(RuntimeError):
         cs1.get_first_cores(3)
 
 
 @pytest.fixture
 def n1(cs1):
-    return OnNodeResources('node001', cs1)
+    return OnNodeResources("node001", cs1)
 
 
 def test_node_resources_equals(n1):
-    n2 = OnNodeResources('node001', CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))
-    n3 = OnNodeResources('node002', CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))
-    n4 = OnNodeResources('node001', CoreSet([Core(0, {0, 1}), Core(1, {4, 3})]))
+    n2 = OnNodeResources("node001", CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))
+    n3 = OnNodeResources("node002", CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))
+    n4 = OnNodeResources("node001", CoreSet([Core(0, {0, 1}), Core(1, {4, 3})]))
 
     assert n1 == n2
     assert n1 != n3
@@ -251,9 +249,9 @@ def test_node_resources_copy(n1):
 
 
 def test_node_resources_union_onto(n1):
-    n2 = OnNodeResources('node001', CoreSet([Core(0, {0, 1}), Core(4, {8, 9, 10, 11})]))
-    n3 = OnNodeResources('node001', CoreSet([Core(0, {3})]))
-    n4 = OnNodeResources('node002', CoreSet([Core(3, {3})]))
+    n2 = OnNodeResources("node001", CoreSet([Core(0, {0, 1}), Core(4, {8, 9, 10, 11})]))
+    n3 = OnNodeResources("node001", CoreSet([Core(0, {3})]))
+    n4 = OnNodeResources("node002", CoreSet([Core(3, {3})]))
 
     n1 |= n2
 
@@ -274,9 +272,9 @@ def test_node_resources_hwthreads(n1):
 
 
 def test_node_resources_subtract(n1):
-    n2 = OnNodeResources('node001', CoreSet([Core(0, {0, 1}), Core(4, {8, 9, 10, 11})]))
-    n3 = OnNodeResources('node001', CoreSet([Core(1, {3})]))
-    n4 = OnNodeResources('node002', CoreSet([Core(3, {3})]))
+    n2 = OnNodeResources("node001", CoreSet([Core(0, {0, 1}), Core(4, {8, 9, 10, 11})]))
+    n3 = OnNodeResources("node001", CoreSet([Core(1, {3})]))
+    n4 = OnNodeResources("node002", CoreSet([Core(3, {3})]))
 
     n1 -= n2
 
@@ -298,15 +296,15 @@ def r1(n1):
 
 
 def test_resources_length(r1, n1):
-    r2 = Resources([n1, OnNodeResources('node002', CoreSet([Core(0, {0, 1})]))])
+    r2 = Resources([n1, OnNodeResources("node002", CoreSet([Core(0, {0, 1})]))])
 
     assert len(r1) == 1
     assert len(r2) == 2
 
 
 def test_resources_iter(cs1, n1):
-    n2 = OnNodeResources('node004', cs1)
-    n3 = OnNodeResources('node002', CoreSet([Core(3, {3})]))
+    n2 = OnNodeResources("node004", cs1)
+    n3 = OnNodeResources("node002", CoreSet([Core(3, {3})]))
     nodes = [n1, n2, n3]
     res = Resources(nodes)
 
@@ -316,31 +314,35 @@ def test_resources_iter(cs1, n1):
 
 def test_resources_equals(r1):
     assert r1 == Resources(
-            [OnNodeResources('node001', CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))])
+        [OnNodeResources("node001", CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))]
+    )
 
     r2 = Resources(
-            [OnNodeResources('node002', CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))])
+        [OnNodeResources("node002", CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))]
+    )
     assert r1 != r2
 
     r3 = Resources(
-            [OnNodeResources(
-                'node001', CoreSet([Core(0, {0, 1}), Core(1, {1, 2, 3})]))])
+        [OnNodeResources("node001", CoreSet([Core(0, {0, 1}), Core(1, {1, 2, 3})]))]
+    )
     assert r1 != r3
 
-    r4 = Resources([OnNodeResources('node001', CoreSet([Core(1, {1, 2})]))])
+    r4 = Resources([OnNodeResources("node001", CoreSet([Core(1, {1, 2})]))])
     assert r1 != r4
 
-    r5 = Resources([
-            OnNodeResources('node001', CoreSet([Core(0, {0, 1}), Core(1, {2, 3})])),
-            OnNodeResources('node002', CoreSet([Core(0, {0, 1}), Core(1, {2, 3})]))
-            ])
+    r5 = Resources(
+        [
+            OnNodeResources("node001", CoreSet([Core(0, {0, 1}), Core(1, {2, 3})])),
+            OnNodeResources("node002", CoreSet([Core(0, {0, 1}), Core(1, {2, 3})])),
+        ]
+    )
     assert r1 != r5
 
 
 def test_resources_copy(r1):
     r2 = copy(r1)
-    assert id(r2._nodes['node001']) != id(r1._nodes['node001'])
-    assert id(r2._nodes['node001'].cpu_cores) != id(r1._nodes['node001'].cpu_cores)
+    assert id(r2._nodes["node001"]) != id(r1._nodes["node001"])
+    assert id(r2._nodes["node001"].cpu_cores) != id(r1._nodes["node001"].cpu_cores)
 
 
 def test_resources_union_onto(r1):
@@ -348,11 +350,11 @@ def test_resources_union_onto(r1):
     r2 |= r1
     assert r2 == r1
 
-    r3 = Resources([OnNodeResources('node002', CoreSet([Core(0, {0})]))])
+    r3 = Resources([OnNodeResources("node002", CoreSet([Core(0, {0})]))])
     r3 |= r1
     assert len(r3._nodes) == 2
-    assert id(r3._nodes['node001']) != id(r1._nodes['node001'])
-    assert sorted(r3._nodes.keys()) == ['node001', 'node002']
+    assert id(r3._nodes["node001"]) != id(r1._nodes["node001"])
+    assert sorted(r3._nodes.keys()) == ["node001", "node002"]
 
 
 def test_resources_subtract(r1):
@@ -363,72 +365,90 @@ def test_resources_subtract(r1):
     r1 -= r2
     assert len(r1._nodes) == 1
 
-    r3 = Resources([OnNodeResources('node001', CoreSet([Core(0, {0})]))])
+    r3 = Resources([OnNodeResources("node001", CoreSet([Core(0, {0})]))])
     r1 -= r3
     assert len(r1._nodes) == 1
-    assert r1._nodes['node001'].cpu_cores._cores[0].hwthreads == {1}
+    assert r1._nodes["node001"].cpu_cores._cores[0].hwthreads == {1}
 
 
 def test_resources_nodes():
-    r1 = Resources([
-        OnNodeResources('node001', CoreSet([Core(0, {0})])),
-        OnNodeResources('node003', CoreSet([Core(1, {1})])),
-        OnNodeResources('node004', CoreSet([Core(2, {2})]))])
+    r1 = Resources(
+        [
+            OnNodeResources("node001", CoreSet([Core(0, {0})])),
+            OnNodeResources("node003", CoreSet([Core(1, {1})])),
+            OnNodeResources("node004", CoreSet([Core(2, {2})])),
+        ]
+    )
 
-    assert sorted(r1.nodes()) == ['node001', 'node003', 'node004']
+    assert sorted(r1.nodes()) == ["node001", "node003", "node004"]
 
 
 def test_resources_total_cores():
-    r1 = Resources([
-        OnNodeResources('node001', CoreSet([Core(0, {0, 1})])),
-        OnNodeResources('node003', CoreSet([Core(1, {1}), Core(5, {5})])),
-        OnNodeResources('node004', CoreSet([Core(2, {2})]))])
+    r1 = Resources(
+        [
+            OnNodeResources("node001", CoreSet([Core(0, {0, 1})])),
+            OnNodeResources("node003", CoreSet([Core(1, {1}), Core(5, {5})])),
+            OnNodeResources("node004", CoreSet([Core(2, {2})])),
+        ]
+    )
 
     assert r1.total_cores() == 4
 
 
 def test_resource_hwthreads(n1, r1):
     hwthreads = list(r1.hwthreads())
-    assert hwthreads == [('node001', 0), ('node001', 1), ('node001', 2), ('node001', 3)]
+    assert hwthreads == [("node001", 0), ("node001", 1), ("node001", 2), ("node001", 3)]
 
-    n2 = OnNodeResources('node007', CoreSet([Core(7, {7}), Core(3, {3})]))
+    n2 = OnNodeResources("node007", CoreSet([Core(7, {7}), Core(3, {3})]))
     res = Resources([n1, n2])
 
     hwthreads = list(res.hwthreads())
     assert hwthreads == [
-            ('node001', 0), ('node001', 1), ('node001', 2), ('node001', 3),
-            ('node007', 7), ('node007', 3)]
+        ("node001", 0),
+        ("node001", 1),
+        ("node001", 2),
+        ("node001", 3),
+        ("node007", 7),
+        ("node007", 3),
+    ]
 
 
 def test_resources_isdisjoint(r1):
     r2 = Resources([])
     assert r1.isdisjoint(r2)
 
-    r3 = Resources([OnNodeResources('node001', CoreSet([Core(0, {0})]))])
+    r3 = Resources([OnNodeResources("node001", CoreSet([Core(0, {0})]))])
     assert not r1.isdisjoint(r3)
 
-    r4 = Resources([OnNodeResources('node001', CoreSet([Core(0, {2})]))])
+    r4 = Resources([OnNodeResources("node001", CoreSet([Core(0, {2})]))])
     assert r1.isdisjoint(r4)
 
-    r5 = Resources([OnNodeResources('node002', CoreSet([Core(0, {0})]))])
+    r5 = Resources([OnNodeResources("node002", CoreSet([Core(0, {0})]))])
     assert r1.isdisjoint(r5)
 
 
 def test_resources_union(r1):
     r2 = Resources([])
-    r3 = Resources([OnNodeResources('node001', CoreSet([Core(0, {0})]))])
-    r4 = Resources([OnNodeResources('node001', CoreSet([Core(0, {2})]))])
-    r5 = Resources([OnNodeResources('node002', CoreSet([Core(0, {0})]))])
+    r3 = Resources([OnNodeResources("node001", CoreSet([Core(0, {0})]))])
+    r4 = Resources([OnNodeResources("node001", CoreSet([Core(0, {2})]))])
+    r5 = Resources([OnNodeResources("node002", CoreSet([Core(0, {0})]))])
 
     assert Resources.union([r1, r2]) == r1
     assert Resources.union([r1, r3]) == r1
-    assert Resources.union([r1, r4]) == Resources([
-        OnNodeResources('node001', CoreSet([Core(0, {0, 1, 2}), Core(1, {2, 3})]))])
+    assert Resources.union([r1, r4]) == Resources(
+        [OnNodeResources("node001", CoreSet([Core(0, {0, 1, 2}), Core(1, {2, 3})]))]
+    )
 
-    assert Resources.union([r1, r5]) == Resources([
-        OnNodeResources('node001', CoreSet([Core(0, {0, 1}), Core(1, {2, 3})])),
-        OnNodeResources('node002', CoreSet([Core(0, {0})]))])
+    assert Resources.union([r1, r5]) == Resources(
+        [
+            OnNodeResources("node001", CoreSet([Core(0, {0, 1}), Core(1, {2, 3})])),
+            OnNodeResources("node002", CoreSet([Core(0, {0})])),
+        ]
+    )
 
-    assert Resources.union([r1, r2, r3, r4, r5]) == Resources([
-        OnNodeResources('node001', CoreSet([Core(0, {0, 1, 2}), Core(1, {2, 3})])),
-        OnNodeResources('node002', CoreSet([Core(0, {0})]))])
+    assert Resources.union([r1, r2, r3, r4, r5]) == Resources(
+        [
+            OnNodeResources("node001", CoreSet([Core(0, {0, 1, 2}), Core(1, {2, 3})])),
+            OnNodeResources("node002", CoreSet([Core(0, {0})])),
+        ]
+    )

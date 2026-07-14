@@ -15,8 +15,12 @@ class ImplementationTester:
     "tester" component, which is connected to the implementation under test.
     """
 
-    def __init__(self, default_timeout: float, muscle_manager_address: str,
-                 test_ymmsl_config: Configuration) -> None:
+    def __init__(
+        self,
+        default_timeout: float,
+        muscle_manager_address: str,
+        test_ymmsl_config: Configuration,
+    ) -> None:
         """
         Initialize the implementation tester.
 
@@ -30,14 +34,14 @@ class ImplementationTester:
         os.environ["MUSCLE_INSTANCE"] = "muscle3_implementation_tester"
         test_model = test_ymmsl_config.programs[
             Reference("muscle3_implementation_tester")
-            ]
+        ]
         instance_ports = {
             Operator.O_I: [str(p) for p in test_model.ports.sending_port_names()],
-            Operator.S: [str(p) for p in test_model.ports.receiving_port_names()]
+            Operator.S: [str(p) for p in test_model.ports.receiving_port_names()],
         }
         self._instance = Instance(
-                ports=instance_ports,
-                flags=InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS)
+            ports=instance_ports, flags=InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS
+        )
         # Configure the deadlock-detection timeout to match the default receive
         # timeout: after `default_timeout` seconds of waiting the manager is
         # notified, and if a deadlock is detected the simulation is aborted.
@@ -88,7 +92,8 @@ class ImplementationTester:
             # it crashed)
             _logger.error(
                 "ImplementationTester: error while waiting for a message on"
-                " port '%s'. Shutting down.", port_name
+                " port '%s'. Shutting down.",
+                port_name,
             )
 
             self._is_shut_down = True

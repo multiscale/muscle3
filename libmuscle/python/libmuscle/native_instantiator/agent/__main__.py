@@ -20,6 +20,7 @@ _logger = logging.getLogger(__name__)
 
 class Agent:
     """Runs on a compute node and starts processes there."""
+
     def __init__(self, node_name: str, server_location: str) -> None:
         """Create an Agent.
 
@@ -27,45 +28,50 @@ class Agent:
             node_name: Name (hostname) of this node
             server_location: MAP server of the manager to connect to
         """
-        _logger.info(f'Agent at {node_name} starting')
+        _logger.info(f"Agent at {node_name} starting")
 
         self._process_manager = ProcessManager()
 
         self._node_name = node_name
 
-        _logger.info(f'Connecting to manager at {server_location}')
+        _logger.info(f"Connecting to manager at {server_location}")
         self._server = MAPClient(self._node_name, server_location)
-        _logger.info('Connected to manager')
+        _logger.info("Connected to manager")
 
     def run(self) -> None:
         """Execute commands and monitor processes."""
-        _logger.info('Reporting resources')
+        _logger.info("Reporting resources")
         self._server.report_resources(self._inspect_resources())
 
         shutting_down = False
         while not shutting_down:
             command = self._server.get_command()
             if isinstance(command, StartCommand):
-                _logger.info(f'Starting process {command.name}')
-                _logger.debug(f'Args: {command.args}')
-                _logger.debug(f'Env: {command.env}')
+                _logger.info(f"Starting process {command.name}")
+                _logger.debug(f"Args: {command.args}")
+                _logger.debug(f"Env: {command.env}")
 
                 self._process_manager.start(
-                        command.name, command.work_dir, command.args, command.env,
-                        command.stdout, command.stderr)
+                    command.name,
+                    command.work_dir,
+                    command.args,
+                    command.env,
+                    command.stdout,
+                    command.stderr,
+                )
             elif isinstance(command, CancelAllCommand):
-                _logger.info('Cancelling all instances')
+                _logger.info("Cancelling all instances")
                 self._process_manager.cancel_all()
 
             elif isinstance(command, ShutdownCommand):
                 # check that nothing is running
                 shutting_down = True
-                _logger.info('Agent shutting down')
+                _logger.info("Agent shutting down")
 
             finished = self._process_manager.get_finished()
             if finished:
                 for name, exit_code in finished:
-                    _logger.info(f'Process {name} finished with exit code {exit_code}')
+                    _logger.info(f"Process {name} finished with exit code {exit_code}")
                 self._server.report_result(finished)
 
             sleep(0.1)
@@ -83,18 +89,18 @@ class Agent:
         Returns:
             A dict mapping resource types to resource descriptions.
         """
-        if hasattr(os, 'sched_getaffinity'):
+        if hasattr(os, "sched_getaffinity"):
             hwthreads_by_core_tuple: dict[tuple[int, int], set[int]] = dict()
 
             # these are the logical hwthread ids that we can use
             hwthread_ids = list(os.sched_getaffinity(0))
 
             for hwthread_id in hwthread_ids:
-                topdir = f'/sys/devices/system/cpu/cpu{hwthread_id}/topology'
-                with open(f'{topdir}/core_id') as f:
+                topdir = f"/sys/devices/system/cpu/cpu{hwthread_id}/topology"
+                with open(f"{topdir}/core_id") as f:
                     # this gets the logical core id for the hwthread
                     core_id = int(f.read())
-                with open(f'{topdir}/physical_package_id') as f:
+                with open(f"{topdir}/physical_package_id") as f:
                     # this gets the die/socket id for the hwthread
                     package_id = int(f.read())
 
@@ -102,13 +108,16 @@ class Agent:
                 hwthreads_by_core_tuple.setdefault(core_tuple, set()).add(hwthread_id)
 
             core_lgid_hwthreads = [
-                    (i, hwthreads_by_core_tuple[core_tuple])
-                    for i, core_tuple in enumerate(
-                        sorted(hwthreads_by_core_tuple.keys()))]
+                (i, hwthreads_by_core_tuple[core_tuple])
+                for i, core_tuple in enumerate(sorted(hwthreads_by_core_tuple.keys()))
+            ]
 
-            cores = CoreSet((
+            cores = CoreSet(
+                (
                     Core(core_lgid, hwthreads)
-                    for core_lgid, hwthreads in core_lgid_hwthreads))
+                    for core_lgid, hwthreads in core_lgid_hwthreads
+                )
+            )
 
         else:
             # MacOS doesn't support thread affinity, but older Macs with Intel
@@ -123,17 +132,17 @@ class Agent:
             if nhwthreads is None:
                 if ncores is not None:
                     _logger.warning(
-                            'Could not determine number of hwthreads, assuming no SMT')
+                        "Could not determine number of hwthreads, assuming no SMT"
+                    )
                     nhwthreads = ncores
                 else:
                     _logger.warning(
-                            'Could not determine CPU configuration, assuming a single'
-                            ' core')
+                        "Could not determine CPU configuration, assuming a single core"
+                    )
                     ncores = 1
                     nhwthreads = 1
             elif ncores is None:
-                _logger.warning(
-                        'Could not determine number of cores, assuming no SMT')
+                _logger.warning("Could not determine number of cores, assuming no SMT")
                 ncores = nhwthreads
 
             hwthreads_per_core = nhwthreads // ncores
@@ -142,34 +151,35 @@ class Agent:
                 # As far as I know, there are no Macs with heterogeneous SMT, like in
                 # the latest Intel CPUs.
                 _logger.warning(
-                        'Only some cores seem to have SMT, core ids are probably'
-                        ' wrong. If this is a cluster then this will cause problems,'
-                        ' please report an issue on GitHub and report the machine and'
-                        ' what kind of OS and hardware it has. If we\'re running on a'
-                        ' local machine, then this won\'t affect the run, but I\'d'
-                        ' still appreciate an issue, because it is unexpected for sure.'
-                        )
+                    "Only some cores seem to have SMT, core ids are probably"
+                    " wrong. If this is a cluster then this will cause problems,"
+                    " please report an issue on GitHub and report the machine and"
+                    " what kind of OS and hardware it has. If we're running on a"
+                    " local machine, then this won't affect the run, but I'd"
+                    " still appreciate an issue, because it is unexpected for sure."
+                )
 
             cores = CoreSet(
-                    Core(
-                        cid,
-                        set(range(
-                            cid * hwthreads_per_core, (cid + 1) * hwthreads_per_core))
-                        )
-                    for cid in range(ncores)
-                    )
+                Core(
+                    cid,
+                    set(
+                        range(cid * hwthreads_per_core, (cid + 1) * hwthreads_per_core)
+                    ),
+                )
+                for cid in range(ncores)
+            )
 
         resources = OnNodeResources(self._node_name, cores)
-        _logger.info(f'Found resources: {resources}')
+        _logger.info(f"Found resources: {resources}")
         return resources
 
 
 def configure_logging(node_name: str, log_level: int) -> None:
     """Make us output logs to a custom log file."""
-    fmt = '%(asctime)s %(levelname)s %(message)s'
+    fmt = "%(asctime)s %(levelname)s %(message)s"
     formatter = logging.Formatter(fmt)
 
-    handler = logging.FileHandler(f'muscle3_agent_{node_name}.log', mode='w')
+    handler = logging.FileHandler(f"muscle3_agent_{node_name}.log", mode="w")
     handler.setFormatter(formatter)
 
     # Find and remove default handler to disable automatic console output
@@ -177,15 +187,15 @@ def configure_logging(node_name: str, log_level: int) -> None:
     # seems reliable, and doesn't mess up pytest's caplog mechanism while
     # it also doesn't introduce a runtime dependency on pytest.
     logging.getLogger().handlers = [
-            h for h in logging.getLogger().handlers
-            if 'stderr' not in str(h)]
+        h for h in logging.getLogger().handlers if "stderr" not in str(h)
+    ]
 
     logging.getLogger().addHandler(handler)
 
     logging.getLogger().setLevel(log_level)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     node_name = gethostname()
     server_location = sys.argv[1]
     log_level = int(sys.argv[2])

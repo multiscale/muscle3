@@ -51,6 +51,7 @@ class ModelGraph:
     - Micros are components that are both a subsuccessor and a subpredecessor of the
       current component.
     """
+
     def __init__(self, model: Model) -> None:
         """Create a ModelGraph.
 
@@ -163,9 +164,11 @@ class ModelGraph:
         return self._subsuccs[component] & self._subpreds[component]
 
     def _propagate(
-            self, from_set: set[tuple[Component, int]],
-            to_set: set[tuple[Component, int]], shared_dims: int
-            ) -> None:
+        self,
+        from_set: set[tuple[Component, int]],
+        to_set: set[tuple[Component, int]],
+        shared_dims: int,
+    ) -> None:
         """Propagates from_set into to_set.
 
         Note: Modifies to_set.
@@ -175,9 +178,7 @@ class ModelGraph:
             to_set: Set to propagate them into
             shared_dims: Maximum shared dimensions to carry
         """
-        to_set.update({
-            (cmp, min(sd, shared_dims))
-            for cmp, sd in from_set})
+        to_set.update({(cmp, min(sd, shared_dims)) for cmp, sd in from_set})
 
     def _calc_predecessors(self) -> None:
         """Calculates predecessors of each component in the model.
@@ -199,13 +200,12 @@ class ModelGraph:
         self._subpreds = {c: set() for c in self._model.components.values()}
 
         num_remaining_preds = {
-                c: (
-                    len(self._direct_predecessors[c]) +
-                    len(self._direct_superpreds[c]))
-                for c in self._model.components.values()}
+            c: (len(self._direct_predecessors[c]) + len(self._direct_superpreds[c]))
+            for c in self._model.components.values()
+        }
         num_remaining_subpreds = {
-                c: len(self._direct_subpreds[c])
-                for c in self._model.components.values()}
+            c: len(self._direct_subpreds[c]) for c in self._model.components.values()
+        }
 
         todo = set(self._model.components.values())
         started: set[Component] = set()
@@ -219,12 +219,16 @@ class ModelGraph:
                     for subsucc, shared_dims in self._direct_subsuccs[component]:
                         self._superpreds[subsucc].add((component, shared_dims))
                         self._propagate(
-                                self._predecessors[component],
-                                self._predecessors[subsucc], shared_dims)
+                            self._predecessors[component],
+                            self._predecessors[subsucc],
+                            shared_dims,
+                        )
 
                         self._propagate(
-                                self._superpreds[component],
-                                self._superpreds[subsucc], shared_dims)
+                            self._superpreds[component],
+                            self._superpreds[subsucc],
+                            shared_dims,
+                        )
 
                         num_remaining_preds[subsucc] -= 1
                     started.add(component)
@@ -238,16 +242,22 @@ class ModelGraph:
                     for succ, shared_dims in self._direct_successors[component]:
                         self._predecessors[succ].add((component, shared_dims))
                         self._propagate(
-                                self._subpreds[component],
-                                self._predecessors[succ], shared_dims)
+                            self._subpreds[component],
+                            self._predecessors[succ],
+                            shared_dims,
+                        )
 
                         self._propagate(
-                                self._predecessors[component],
-                                self._predecessors[succ], shared_dims)
+                            self._predecessors[component],
+                            self._predecessors[succ],
+                            shared_dims,
+                        )
 
                         self._propagate(
-                                self._superpreds[component],
-                                self._superpreds[succ], shared_dims)
+                            self._superpreds[component],
+                            self._superpreds[succ],
+                            shared_dims,
+                        )
 
                         num_remaining_preds[succ] -= 1
 
@@ -255,12 +265,16 @@ class ModelGraph:
                         self._subpreds[supersucc].add((component, shared_dims))
 
                         self._propagate(
-                                self._subpreds[component],
-                                self._subpreds[supersucc], shared_dims)
+                            self._subpreds[component],
+                            self._subpreds[supersucc],
+                            shared_dims,
+                        )
 
                         self._propagate(
-                                self._predecessors[component],
-                                self._subpreds[supersucc], shared_dims)
+                            self._predecessors[component],
+                            self._subpreds[supersucc],
+                            shared_dims,
+                        )
 
                         num_remaining_subpreds[supersucc] -= 1
 
@@ -271,10 +285,11 @@ class ModelGraph:
 
             if not started and not finished:
                 raise RuntimeError(
-                        'Could not plan resource allocation for this model.'
-                        ' Do you have a cycle of O_F -> F_INIT conduits?'
-                        ' That does not work, because the models will all be'
-                        ' waiting for each other to start.')
+                    "Could not plan resource allocation for this model."
+                    " Do you have a cycle of O_F -> F_INIT conduits?"
+                    " That does not work, because the models will all be"
+                    " waiting for each other to start."
+                )
 
     def _calc_successors(self) -> None:
         """Calculates successors of each component in the model.
@@ -296,14 +311,13 @@ class ModelGraph:
         self._subsuccs = {c: set() for c in self._model.components.values()}
 
         num_remaining_succs = {
-                c: (
-                    len(self._direct_successors[c]) +
-                    len(self._direct_supersuccs[c]))
-                for c in self._model.components.values()}
+            c: (len(self._direct_successors[c]) + len(self._direct_supersuccs[c]))
+            for c in self._model.components.values()
+        }
 
         num_remaining_subsuccs = {
-                c: len(self._direct_subsuccs[c])
-                for c in self._model.components.values()}
+            c: len(self._direct_subsuccs[c]) for c in self._model.components.values()
+        }
 
         todo = set(self._model.components.values())
         started: set[Component] = set()
@@ -317,12 +331,16 @@ class ModelGraph:
                     for subpred, shared_dims in self._direct_subpreds[component]:
                         self._supersuccs[subpred].add((component, shared_dims))
                         self._propagate(
-                                self._successors[component],
-                                self._successors[subpred], shared_dims)
+                            self._successors[component],
+                            self._successors[subpred],
+                            shared_dims,
+                        )
 
                         self._propagate(
-                                self._supersuccs[component],
-                                self._supersuccs[subpred], shared_dims)
+                            self._supersuccs[component],
+                            self._supersuccs[subpred],
+                            shared_dims,
+                        )
                         num_remaining_succs[subpred] -= 1
 
                     started.add(component)
@@ -336,27 +354,37 @@ class ModelGraph:
                     for pred, shared_dims in self._direct_predecessors[component]:
                         self._successors[pred].add((component, shared_dims))
                         self._propagate(
-                                self._successors[component],
-                                self._successors[pred], shared_dims)
+                            self._successors[component],
+                            self._successors[pred],
+                            shared_dims,
+                        )
 
                         self._propagate(
-                                self._supersuccs[component],
-                                self._supersuccs[pred], shared_dims)
+                            self._supersuccs[component],
+                            self._supersuccs[pred],
+                            shared_dims,
+                        )
 
                         self._propagate(
-                                self._subsuccs[component],
-                                self._successors[pred], shared_dims)
+                            self._subsuccs[component],
+                            self._successors[pred],
+                            shared_dims,
+                        )
                         num_remaining_succs[pred] -= 1
 
                     for superpred, shared_dims in self._direct_superpreds[component]:
                         self._subsuccs[superpred].add((component, shared_dims))
                         self._propagate(
-                                self._successors[component],
-                                self._subsuccs[superpred], shared_dims)
+                            self._successors[component],
+                            self._subsuccs[superpred],
+                            shared_dims,
+                        )
 
                         self._propagate(
-                                self._subsuccs[component],
-                                self._subsuccs[superpred], shared_dims)
+                            self._subsuccs[component],
+                            self._subsuccs[superpred],
+                            shared_dims,
+                        )
                         num_remaining_subsuccs[superpred] -= 1
                     finished.add(component)
 
@@ -404,7 +432,7 @@ class ModelGraph:
             receiver = self._model.components[conduit.receiving_component()]
             recv_port = conduit.receiving_port()
             recv_op = None
-            if recv_port == 'muscle_settings_in':
+            if recv_port == "muscle_settings_in":
                 recv_op = Operator.F_INIT
             elif receiver.ports:
                 if recv_port in receiver.ports:
@@ -439,6 +467,7 @@ class ResourceAssignment:
         by_rank: List of OnNodeResources objects containing assigned resources,
         indexed by rank.
     """
+
     def __init__(self, by_rank: list[OnNodeResources]) -> None:
         """Create a ResourceAssignment.
 
@@ -452,19 +481,17 @@ class ResourceAssignment:
         if not isinstance(other, ResourceAssignment):
             return NotImplemented
 
-        return (
-                len(self.by_rank) == len(other.by_rank) and
-                all([
-                    snr == onr
-                    for snr, onr in zip(self.by_rank, other.by_rank)]))
+        return len(self.by_rank) == len(other.by_rank) and all(
+            [snr == onr for snr, onr in zip(self.by_rank, other.by_rank)]
+        )
 
     def __str__(self) -> str:
         # str(list()) uses repr() on the elements, we want str()
-        str_rbr = ', '.join([str(nr) for nr in self.by_rank])
-        return f'[{str_rbr}]'
+        str_rbr = ", ".join([str(nr) for nr in self.by_rank])
+        return f"[{str_rbr}]"
 
     def __repr__(self) -> str:
-        return f'ResourceAssignment({repr(self.by_rank)})'
+        return f"ResourceAssignment({repr(self.by_rank)})"
 
     def as_resources(self) -> Resources:
         """Return a Resources representing the combined assigned resources."""
@@ -480,6 +507,7 @@ class InsufficientResourcesAvailable(RuntimeError):
 
 class Planner:
     """Allocates resources and keeps track of allocations."""
+
     def __init__(self, all_resources: Resources) -> None:
         """Create a Planner.
 
@@ -493,8 +521,8 @@ class Planner:
         self._next_virtual_node = 1
 
     def allocate_all(
-            self, configuration: Configuration, virtual: bool = False
-            ) -> dict[Reference, ResourceAssignment]:
+        self, configuration: Configuration, virtual: bool = False
+    ) -> dict[Reference, ResourceAssignment]:
         """Allocates resources for the given components.
 
         Allocation can occur either on a fixed set of available
@@ -519,60 +547,68 @@ class Planner:
         """
         result: dict[Reference, ResourceAssignment] = {}
 
-        _logger.debug(f'Planning on resources {self._all_resources}')
+        _logger.debug(f"Planning on resources {self._all_resources}")
 
         # Analyse model
         root_model = configuration.root_model()
         model = ModelGraph(root_model)
         programs = configuration.programs
         exclusive = {
-                i for c in model.components() for i in c.instances()
-                if (c.implementation and
-                    not programs[c.implementation].can_share_resources)}
+            i
+            for c in model.components()
+            for i in c.instances()
+            if (c.implementation and not programs[c.implementation].can_share_resources)
+        }
 
         requirements: dict[Reference, ResourceRequirements] = {
-            root_model.name + component.name:
-                configuration.get_resources(root_model.name + component.name)
+            root_model.name + component.name: configuration.get_resources(
+                root_model.name + component.name
+            )
             for component in model.components()
         }
 
         # Allocate
-        unallocated_instances = [
-                i for c in model.components() for i in c.instances()]
+        unallocated_instances = [i for c in model.components() for i in c.instances()]
         leftover_instances: list[Reference] = []
         while unallocated_instances:
             leftover_instances.clear()
 
             to_allocate = self._sort_instances(
-                    root_model.name, unallocated_instances, requirements)
+                root_model.name, unallocated_instances, requirements
+            )
 
             for instance in to_allocate:
-                _logger.debug(f'Placing {instance}')
+                _logger.debug(f"Placing {instance}")
                 component = model.component(instance.without_trailing_ints())
                 conflicting_names = self._conflicting_names(
-                        model, exclusive, component, instance)
+                    model, exclusive, component, instance
+                )
 
                 done = False
                 while not done:
                     try:
                         result[instance] = self._assign_instance(
-                                instance, component,
-                                requirements[root_model.name + component.name],
-                                conflicting_names, virtual)
+                            instance,
+                            component,
+                            requirements[root_model.name + component.name],
+                            conflicting_names,
+                            virtual,
+                        )
                         done = True
                     except InsufficientResourcesAvailable:
                         if virtual:
                             self._expand_resources(
-                                    component.name,
-                                    requirements[root_model.name + component.name])
+                                component.name,
+                                requirements[root_model.name + component.name],
+                            )
                         else:
                             leftover_instances.append(instance)
                             done = True
 
             if leftover_instances:
                 _logger.warning(
-                    'Planner ran out of resources, oversubscribing remaining'
-                    ' instances.')
+                    "Planner ran out of resources, oversubscribing remaining instances."
+                )
                 self._oversubscribed.update(self._allocations)
                 self._allocations.clear()
 
@@ -582,9 +618,11 @@ class Planner:
         return result
 
     def _sort_instances(
-            self, model_name: Reference, instances: list[Reference],
-            requirements: Mapping[Reference, ResourceRequirements]
-            ) -> list[Reference]:
+        self,
+        model_name: Reference,
+        instances: list[Reference],
+        requirements: Mapping[Reference, ResourceRequirements],
+    ) -> list[Reference]:
         """Return to be allocated components in optimal order.
 
         This is a heuristic, it's not actually optimal but it should
@@ -600,22 +638,28 @@ class Planner:
         reqs = map(lambda n: requirements[model_name + n], cmp_names)
         instances_reqs = list(zip(instances, reqs))
         threaded = [
-                (i, r.threads) for i, r in instances_reqs
-                if isinstance(r, ThreadedResReq)]
+            (i, r.threads) for i, r in instances_reqs if isinstance(r, ThreadedResReq)
+        ]
         sorted_threaded = sorted(threaded, key=lambda x: x[1], reverse=True)
         sorted_threaded_instances = [x[0] for x in sorted_threaded]
 
         mpi = [
-                (i, r.mpi_processes) for i, r in instances_reqs
-                if isinstance(r, MPICoresResReq)]
+            (i, r.mpi_processes)
+            for i, r in instances_reqs
+            if isinstance(r, MPICoresResReq)
+        ]
         sorted_mpi = sorted(mpi, key=lambda x: x[1], reverse=True)
         sorted_mpi_instances = [x[0] for x in sorted_mpi]
 
         return sorted_threaded_instances + sorted_mpi_instances
 
     def _conflicting_names(
-            self, model: ModelGraph, exclusive: set[Reference],
-            component: Component, instance: Reference) -> set[Reference]:
+        self,
+        model: ModelGraph,
+        exclusive: set[Reference],
+        component: Component,
+        instance: Reference,
+    ) -> set[Reference]:
         """Find conflicting components.
 
         This returns the names of instances that cannot share resources
@@ -628,20 +672,23 @@ class Planner:
             component: Component to find conflicts for
             instance: Instance (of component) to find conflicts for
         """
+
         def indices_match(
-                instance1: Reference, instance2: Reference, dims: int) -> bool:
+            instance1: Reference, instance2: Reference, dims: int
+        ) -> bool:
             idx1 = instance_indices(instance1)
             idx2 = instance_indices(instance2)
             return idx1[:dims] == idx2[:dims]
 
-        def matching_instances(
-                others: set[tuple[Component, int]]) -> set[Reference]:
+        def matching_instances(others: set[tuple[Component, int]]) -> set[Reference]:
             return {
-                    i for c, d in others for i in c.instances()
-                    if indices_match(i, instance, d)}
+                i
+                for c, d in others
+                for i in c.instances()
+                if indices_match(i, instance, d)
+            }
 
-        conflicting_instances = {
-                i for c in model.components() for i in c.instances()}
+        conflicting_instances = {i for c in model.components() for i in c.instances()}
 
         if instance in exclusive:
             return conflicting_instances
@@ -657,12 +704,11 @@ class Planner:
 
         return conflicting_instances
 
-    def _expand_resources(
-            self, name: Reference, req: ResourceRequirements) -> None:
+    def _expand_resources(self, name: Reference, req: ResourceRequirements) -> None:
         """Adds an extra virtual node to the available resources."""
         taken = True
         while taken:
-            new_node_name = f'node{self._next_virtual_node:06d}'
+            new_node_name = f"node{self._next_virtual_node:06d}"
             taken = new_node_name in self._all_resources.nodes()
             self._next_virtual_node += 1
 
@@ -673,24 +719,29 @@ class Planner:
         if isinstance(req, ThreadedResReq):
             if req.threads > num_cores:
                 raise InsufficientResourcesAvailable(
-                        f'Instance {name} requires {req.threads} threads,'
-                        f' which is impossible with {num_cores} cores per'
-                        ' node.')
+                    f"Instance {name} requires {req.threads} threads,"
+                    f" which is impossible with {num_cores} cores per"
+                    " node."
+                )
         if isinstance(req, MPICoresResReq):
             if req.threads_per_mpi_process > num_cores:
                 raise InsufficientResourcesAvailable(
-                        f'Instance {name} requires'
-                        f' {req.threads_per_mpi_process} threads per process,'
-                        f' which is impossible with {num_cores} cores per'
-                        ' node.')
+                    f"Instance {name} requires"
+                    f" {req.threads_per_mpi_process} threads per process,"
+                    f" which is impossible with {num_cores} cores per"
+                    " node."
+                )
 
         self._all_resources.add_node(new_node)
 
     def _assign_instance(
-            self, instance: Reference, component: Component,
-            requirements: ResourceRequirements,
-            simultaneous_instances: set[Reference], virtual: bool
-            ) -> ResourceAssignment:
+        self,
+        instance: Reference,
+        component: Component,
+        requirements: ResourceRequirements,
+        simultaneous_instances: set[Reference],
+        virtual: bool,
+    ) -> ResourceAssignment:
         """Allocates resources for the given instance.
 
         If we are on real resources, and the instance requires more
@@ -717,27 +768,31 @@ class Planner:
             if other in simultaneous_instances:
                 free_resources -= self._allocations[other]
 
-        _logger.debug(f'Free resources: {free_resources}')
+        _logger.debug(f"Free resources: {free_resources}")
         try:
             if isinstance(requirements, ThreadedResReq):
-                assignment.by_rank.append(self._assign_thread_block(
-                        free_resources, requirements.threads))
+                assignment.by_rank.append(
+                    self._assign_thread_block(free_resources, requirements.threads)
+                )
 
             elif isinstance(requirements, MPICoresResReq):
                 if requirements.threads_per_mpi_process != 1:
                     raise RuntimeError(
-                            'Multiple threads per MPI process is not supported'
-                            ' yet. Please make an issue on GitHub.')
+                        "Multiple threads per MPI process is not supported"
+                        " yet. Please make an issue on GitHub."
+                    )
                 for _ in range(requirements.mpi_processes):
                     block = self._assign_thread_block(
-                                free_resources, requirements.threads_per_mpi_process)
+                        free_resources, requirements.threads_per_mpi_process
+                    )
                     assignment.by_rank.append(block)
                     free_resources -= Resources([block])
 
             elif isinstance(requirements, MPINodesResReq):
                 raise RuntimeError(
-                        'Node-based MPI resource requirements are not'
-                        ' supported yet. Please make an issue on GitHub.')
+                    "Node-based MPI resource requirements are not"
+                    " supported yet. Please make an issue on GitHub."
+                )
 
         except InsufficientResourcesAvailable:
             if not self._allocations and not virtual:
@@ -751,7 +806,8 @@ class Planner:
         return assignment
 
     def _assign_thread_block(
-            self, free_resources: Resources, num_threads: int) -> OnNodeResources:
+        self, free_resources: Resources, num_threads: int
+    ) -> OnNodeResources:
         """Assign resources for a group of threads.
 
         This chooses a set of <num_threads> cores on the same node. It returns the
@@ -767,15 +823,15 @@ class Planner:
         for node in free_resources:
             if len(node.cpu_cores) >= num_threads:
                 available_cores = node.cpu_cores
-                _logger.debug(f'available cores: {available_cores}')
+                _logger.debug(f"available cores: {available_cores}")
                 to_reserve = available_cores.get_first_cores(num_threads)
-                _logger.debug(f'assigned {to_reserve}')
+                _logger.debug(f"assigned {to_reserve}")
                 return OnNodeResources(node.node_name, to_reserve)
         raise InsufficientResourcesAvailable()
 
     def _oversubscribe_instance(
-            self, instance: Reference, requirements: ResourceRequirements
-            ) -> ResourceAssignment:
+        self, instance: Reference, requirements: ResourceRequirements
+    ) -> ResourceAssignment:
         """Oversubscribe an instance.
 
         This is called when all resources are available and we still cannot fit an
@@ -795,8 +851,9 @@ class Planner:
             An oversubscribed resource assignment
         """
         _logger.warning(
-                f'Instance {instance} requires more resources than are available in'
-                ' total. Oversubscribing this instance.')
+            f"Instance {instance} requires more resources than are available in"
+            " total. Oversubscribing this instance."
+        )
 
         res_by_rank: list[OnNodeResources] = list()
 
@@ -806,8 +863,9 @@ class Planner:
         elif isinstance(requirements, MPICoresResReq):
             if requirements.threads_per_mpi_process != 1:
                 raise RuntimeError(
-                        'Multiple threads per MPI process is not supported yet. Please'
-                        ' make an issue on GitHub.')
+                    "Multiple threads per MPI process is not supported yet. Please"
+                    " make an issue on GitHub."
+                )
 
             free_resources = copy(self._all_resources)
             for _ in range(requirements.mpi_processes):
@@ -815,7 +873,8 @@ class Planner:
                     free_resources = copy(self._all_resources)
 
                 block = self._assign_thread_block(
-                            free_resources, requirements.threads_per_mpi_process)
+                    free_resources, requirements.threads_per_mpi_process
+                )
 
                 res_by_rank.append(block)
                 free_resources -= Resources([block])

@@ -23,7 +23,7 @@ _QueueItemType = Optional[tuple[Reference, SnapshotMetadata]]
 _T = TypeVar("_T")
 
 # this snapshot is used as a placeholder for restarting from scratch
-_NULL_SNAPSHOT = SnapshotMetadata(["Instance start"], 0, 0, None, {}, True, '')
+_NULL_SNAPSHOT = SnapshotMetadata(["Instance start"], 0, 0, None, {}, True, "")
 
 
 def safe_get(lst: list[_T], index: int, default: _T) -> _T:
@@ -47,8 +47,8 @@ class _ConnectionInfo(Flag):
 
 
 def calc_consistency(
-        num1: int, num2: int, first_is_sent: bool, num2_is_restart: bool
-        ) -> bool:
+    num1: int, num2: int, first_is_sent: bool, num2_is_restart: bool
+) -> bool:
     """Calculate consistency of message counts.
 
     Args:
@@ -60,15 +60,21 @@ def calc_consistency(
     Returns:
         True iff the two message counts are consistent
     """
-    return (num1 == num2 or                             # strong
-            num1 + 1 == num2 and first_is_sent or       # weak (1 = sent)
-            # weak (2 = sent) - only allow if num2 is not a restart
-            num2 + 1 == num1 and not first_is_sent and not num2_is_restart)
+    return (
+        num1 == num2  # strong
+        or num1 + 1 == num2
+        and first_is_sent  # weak (1 = sent)
+        or
+        # weak (2 = sent) - only allow if num2 is not a restart
+        num2 + 1 == num1
+        and not first_is_sent
+        and not num2_is_restart
+    )
 
 
 def calc_consistency_list(
-        num1: list[int], num2: list[int], first_is_sent: bool,
-        num2_is_restart: bool) -> bool:
+    num1: list[int], num2: list[int], first_is_sent: bool, num2_is_restart: bool
+) -> bool:
     """Calculate consistency of message counts.
 
     Args:
@@ -86,9 +92,12 @@ def calc_consistency_list(
     else:
         allow_weak = not num2_is_restart
         slot_iter = zip_longest(num2, num1, fillvalue=0)
-    return all(slot_sent == slot_received or                    # strong
-               slot_sent + 1 == slot_received and allow_weak    # weak
-               for slot_sent, slot_received in slot_iter)
+    return all(
+        slot_sent == slot_received  # strong
+        or slot_sent + 1 == slot_received
+        and allow_weak  # weak
+        for slot_sent, slot_received in slot_iter
+    )
 
 
 @dataclass
@@ -104,26 +113,26 @@ class SnapshotNode:
         consistent_peers: Keeps track of snapshots per peer that are consistent
             with this one.
     """
+
     num: int
     instance: Reference
     snapshot: SnapshotMetadata
     peers: frozenset[Reference]
     consistent_peers: dict[Reference, list["SnapshotNode"]] = field(
-            default_factory=dict, repr=False)
+        default_factory=dict, repr=False
+    )
 
     def __hash__(self) -> int:
         return object.__hash__(self)
 
     @property
     def consistent(self) -> bool:
-        """Returns True iff there is a consistent checkpoint with all peers.
-        """
+        """Returns True iff there is a consistent checkpoint with all peers."""
         return self.consistent_peers.keys() == self.peers
 
     def do_consistency_check(
-            self,
-            peer_node: "SnapshotNode",
-            connections: list[_ConnectionType]) -> bool:
+        self, peer_node: "SnapshotNode", connections: list[_ConnectionType]
+    ) -> bool:
         """Check if the snapshot of the peer is consistent with us.
 
         When the peer snapshot is consistent, adds it to our list of consistent
@@ -147,24 +156,27 @@ class SnapshotNode:
             if conn & _ConnectionInfo.SELF_IS_VECTOR:
                 slot = int(peer_node.instance[-1])
                 consistent = calc_consistency(
-                        safe_get(i_msg_counts, slot, 0),
-                        safe_get(p_msg_counts, 0, 0),
-                        is_sending, peer_is_restart)
+                    safe_get(i_msg_counts, slot, 0),
+                    safe_get(p_msg_counts, 0, 0),
+                    is_sending,
+                    peer_is_restart,
+                )
             elif conn & _ConnectionInfo.PEER_IS_VECTOR:
                 slot = int(self.instance[-1])
                 consistent = calc_consistency(
-                        safe_get(i_msg_counts, 0, 0),
-                        safe_get(p_msg_counts, slot, 0),
-                        is_sending, peer_is_restart)
+                    safe_get(i_msg_counts, 0, 0),
+                    safe_get(p_msg_counts, slot, 0),
+                    is_sending,
+                    peer_is_restart,
+                )
             else:
                 consistent = calc_consistency_list(
-                        i_msg_counts, p_msg_counts, is_sending, peer_is_restart)
+                    i_msg_counts, p_msg_counts, is_sending, peer_is_restart
+                )
             if not consistent:
                 return False
-        self.consistent_peers.setdefault(
-                peer_node.instance, []).append(peer_node)
-        peer_node.consistent_peers.setdefault(
-                self.instance, []).append(self)
+        self.consistent_peers.setdefault(peer_node.instance, []).append(peer_node)
+        peer_node.consistent_peers.setdefault(self.instance, []).append(self)
         return True
 
 
@@ -180,14 +192,17 @@ class SnapshotRegistry(Thread):
     """
 
     def __init__(
-            self, config: Configuration, snapshot_folder: Path,
-            topology_store: TopologyStore) -> None:
+        self,
+        config: Configuration,
+        snapshot_folder: Path,
+        topology_store: TopologyStore,
+    ) -> None:
         """Create a snapshot graph using provided configuration.
 
         Args:
             config: ymmsl configuration describing the workflow, flattened.
         """
-        super().__init__(name='SnapshotRegistry')
+        super().__init__(name="SnapshotRegistry")
 
         self._configuration = config
         self._model = config.root_model()
@@ -206,7 +221,8 @@ class SnapshotRegistry(Thread):
             self.register_snapshot(instance, _NULL_SNAPSHOT)
 
     def register_snapshot(
-            self, instance: Reference, snapshot: SnapshotMetadata) -> None:
+        self, instance: Reference, snapshot: SnapshotMetadata
+    ) -> None:
         """Register a new snapshot.
 
         Args:
@@ -216,8 +232,7 @@ class SnapshotRegistry(Thread):
         self._queue.put((instance, snapshot))
 
     def run(self) -> None:
-        """Code executed in a separate thread
-        """
+        """Code executed in a separate thread"""
         while True:
             item = self._queue.get()
             if item is None:
@@ -225,12 +240,10 @@ class SnapshotRegistry(Thread):
             self._add_snapshot(*item)
 
     def shutdown(self) -> None:
-        """Stop the snapshot registry thread
-        """
+        """Stop the snapshot registry thread"""
         self._queue.put(None)
 
-    def _add_snapshot(
-            self, instance: Reference, snapshot: SnapshotMetadata) -> None:
+    def _add_snapshot(self, instance: Reference, snapshot: SnapshotMetadata) -> None:
         """Register a new snapshot.
 
         Args:
@@ -249,7 +262,8 @@ class SnapshotRegistry(Thread):
         for peer in stateful_peers:
             for peer_snapshot in self._snapshots.get(peer, []):
                 snapshotnode.do_consistency_check(
-                        peer_snapshot, self._get_connections(instance, peer))
+                    peer_snapshot, self._get_connections(instance, peer)
+                )
 
         # finally, check if this snapshotnode is now part of a workflow snapshot
         if snapshot is not _NULL_SNAPSHOT:
@@ -268,7 +282,8 @@ class SnapshotRegistry(Thread):
         self._cleanup_snapshots(workflow_snapshots)
 
     def _get_workflow_snapshots(
-            self, snapshot: SnapshotNode) -> list[list[SnapshotNode]]:
+        self, snapshot: SnapshotNode
+    ) -> list[list[SnapshotNode]]:
         """Return all workflow snapshots which contain the provided node.
 
         Args:
@@ -291,9 +306,10 @@ class SnapshotRegistry(Thread):
         allowed_snapshots: dict[Reference, frozenset[SnapshotNode]] = {}
         for instance in instances_to_cover:
             allowed_snapshots[instance] = frozenset(
-                    i_snapshot
-                    for i_snapshot in self._snapshots.get(instance, [])
-                    if i_snapshot.consistent)
+                i_snapshot
+                for i_snapshot in self._snapshots.get(instance, [])
+                if i_snapshot.consistent
+            )
             if not allowed_snapshots[instance]:
                 # there cannot be a workflow snapshot if this instance has no
                 # consistent snapshot nodes
@@ -341,7 +357,7 @@ class SnapshotRegistry(Thread):
             instance = instances_to_cover.pop()
 
             # 2. Select the oldest snapshot of this instance
-            snapshot = min(allowed_snapshots[instance], key=attrgetter('num'))
+            snapshot = min(allowed_snapshots[instance], key=attrgetter("num"))
             selected_snapshots.append(snapshot)
             # A shallow copy is ok: the values are immutable frozensets
             stack.append(allowed_snapshots.copy())
@@ -381,8 +397,7 @@ class SnapshotRegistry(Thread):
                 # Exhausted all roll back possibilities, so we are done now
                 return workflow_snapshots
 
-    def _write_snapshot_ymmsl(
-            self, selected_snapshots: list[SnapshotNode]) -> None:
+    def _write_snapshot_ymmsl(self, selected_snapshots: list[SnapshotNode]) -> None:
         """Write the snapshot ymmsl file to the snapshot folder.
 
         Args:
@@ -390,26 +405,27 @@ class SnapshotRegistry(Thread):
         """
         now = datetime.now()
         config = self._generate_snapshot_config(selected_snapshots, now)
-        time = now.strftime('%Y%m%d_%H%M%S')
+        time = now.strftime("%Y%m%d_%H%M%S")
         for i in range(_MAX_FILE_EXISTS_CHECK):
             if i:
-                snapshot_filename = f'snapshot_{time}_{i}.ymmsl'
+                snapshot_filename = f"snapshot_{time}_{i}.ymmsl"
             else:
-                snapshot_filename = f'snapshot_{time}.ymmsl'
+                snapshot_filename = f"snapshot_{time}.ymmsl"
             savepath = self._snapshot_folder / snapshot_filename
             if not savepath.exists():
                 save(config, savepath)
                 return
-        raise RuntimeError('Could not find an available filename for storing'
-                           f' the next workflow snapshot: {savepath} already'
-                           ' exists.')
+        raise RuntimeError(
+            "Could not find an available filename for storing"
+            f" the next workflow snapshot: {savepath} already"
+            " exists."
+        )
 
     def _generate_snapshot_config(
-                self, selected_snapshots: list[SnapshotNode], now: datetime
-                ) -> Configuration:
-        """Generate ymmsl configuration for snapshot file
-        """
-        selected_snapshots.sort(key=attrgetter('instance'))
+        self, selected_snapshots: list[SnapshotNode], now: datetime
+    ) -> Configuration:
+        """Generate ymmsl configuration for snapshot file"""
+        selected_snapshots.sort(key=attrgetter("instance"))
         resume = {}
         for node in selected_snapshots:
             if node.snapshot is not _NULL_SNAPSHOT:
@@ -421,39 +437,47 @@ class SnapshotRegistry(Thread):
         return Configuration(resume=resume, description=description)
 
     def _generate_description(
-            self, selected_snapshots: list[SnapshotNode], now: datetime) -> str:
-        """Generate a human-readable description of the workflow snapshot.
-        """
+        self, selected_snapshots: list[SnapshotNode], now: datetime
+    ) -> str:
+        """Generate a human-readable description of the workflow snapshot."""
         triggers: dict[str, list[str]] = {}
         component_info = []
-        max_instance_len = len('Instance ')
+        max_instance_len = len("Instance ")
         for node in selected_snapshots:
             for trigger in node.snapshot.triggers:
                 triggers.setdefault(trigger, []).append(str(node.instance))
-            component_info.append((
+            component_info.append(
+                (
                     str(node.instance),
-                    f'{node.snapshot.timestamp:<11.6g}',
-                    f'{node.snapshot.wallclock_time:<11.6g}',
-                    ("Intermediate", "Final")[node.snapshot.is_final_snapshot]))
+                    f"{node.snapshot.timestamp:<11.6g}",
+                    f"{node.snapshot.wallclock_time:<11.6g}",
+                    ("Intermediate", "Final")[node.snapshot.is_final_snapshot],
+                )
+            )
             max_instance_len = max(max_instance_len, len(str(node.instance)))
-        instance_with_padding = 'Instance'.ljust(max_instance_len)
+        instance_with_padding = "Instance".ljust(max_instance_len)
         component_table = [
-                f'{instance_with_padding} t           Wallclock time  Type',
-                f'{"-" * (max_instance_len + 41)}']
+            f"{instance_with_padding} t           Wallclock time  Type",
+            f"{'-' * (max_instance_len + 41)}",
+        ]
         component_table += [
-                f'{name.ljust(max_instance_len)} {timestamp} {walltime}'
-                f'     {typ}'
-                for name, timestamp, walltime, typ in component_info]
-        return (f'Workflow snapshot for {self._model.name}'
-                f' taken on {now.strftime("%Y-%m-%d %H:%M:%S")}.\n'
-                'Snapshot triggers:\n' +
-                '\n'.join(f'- {trigger} ({", ".join(triggers[trigger])})'
-                          for trigger in sorted(triggers)) +
-                '\n\n' +
-                '\n'.join(component_table) + '\n')
+            f"{name.ljust(max_instance_len)} {timestamp} {walltime}     {typ}"
+            for name, timestamp, walltime, typ in component_info
+        ]
+        return (
+            f"Workflow snapshot for {self._model.name}"
+            f" taken on {now.strftime('%Y-%m-%d %H:%M:%S')}.\n"
+            "Snapshot triggers:\n"
+            + "\n".join(
+                f"- {trigger} ({', '.join(triggers[trigger])})"
+                for trigger in sorted(triggers)
+            )
+            + "\n\n"
+            + "\n".join(component_table)
+            + "\n"
+        )
 
-    def _cleanup_snapshots(
-            self, workflow_snapshots: list[list[SnapshotNode]]) -> None:
+    def _cleanup_snapshots(self, workflow_snapshots: list[list[SnapshotNode]]) -> None:
         """Remove all snapshots that are older than the selected snapshots.
 
         Args:
@@ -463,8 +487,9 @@ class SnapshotRegistry(Thread):
             return
 
         # Find the newest snapshots per instance
-        newest_snapshots = {snapshot.instance: snapshot
-                            for snapshot in workflow_snapshots[0]}
+        newest_snapshots = {
+            snapshot.instance: snapshot for snapshot in workflow_snapshots[0]
+        }
         for workflow_snapshot in workflow_snapshots[1:]:
             for snapshot in workflow_snapshot:
                 if newest_snapshots[snapshot.instance].num < snapshot.num:
@@ -482,13 +507,13 @@ class SnapshotRegistry(Thread):
         # that are cleaned up
         for snapshot in removed_snapshots:
             for peer_snapshot in chain.from_iterable(
-                    snapshot.consistent_peers.values()):
+                snapshot.consistent_peers.values()
+            ):
                 if peer_snapshot in removed_snapshots:
                     # snapshot is removed anyway, no need to update references
                     continue
                 # peer_snapshot is still there, remove reference to us
-                peer_snapshot.consistent_peers[snapshot.instance].remove(
-                        snapshot)
+                peer_snapshot.consistent_peers[snapshot.instance].remove(snapshot)
 
     # The use of @cache on class methods can lead to a memory leak because the global
     # cache keeps a reference to the instance, keeping it from being garbage collected.
@@ -510,8 +535,9 @@ class SnapshotRegistry(Thread):
         return frozenset(self._topology_store.get_peer_instances(instance))
 
     @cache  # noqa: B019
-    def _get_connections(self, instance: Reference, peer: Reference
-                         ) -> list[_ConnectionType]:
+    def _get_connections(
+        self, instance: Reference, peer: Reference
+    ) -> list[_ConnectionType]:
         """Get the list of connections between instance and peer.
 
         Args:
@@ -538,16 +564,20 @@ class SnapshotRegistry(Thread):
 
         connected_ports: list[_ConnectionType] = []
         for conduit in self._model.conduits:
-            if (conduit.sending_component() == instance_kernel and
-                    conduit.receiving_component() == peer_kernel):
+            if (
+                conduit.sending_component() == instance_kernel
+                and conduit.receiving_component() == peer_kernel
+            ):
                 conn_type = _ConnectionInfo.SELF_IS_SENDING
-            elif (conduit.receiving_component() == instance_kernel and
-                    conduit.sending_component() == peer_kernel):
+            elif (
+                conduit.receiving_component() == instance_kernel
+                and conduit.sending_component() == peer_kernel
+            ):
                 conn_type = _ConnectionInfo(0)
             else:
                 continue
-            instance_ndim = (len(instance) - len(instance_kernel))
-            peer_ndim = (len(peer) - len(peer_kernel))
+            instance_ndim = len(instance) - len(instance_kernel)
+            peer_ndim = len(peer) - len(peer_kernel)
             if instance_ndim < peer_ndim:
                 conn_type |= _ConnectionInfo.SELF_IS_VECTOR
             if instance_ndim > peer_ndim:
@@ -555,15 +585,13 @@ class SnapshotRegistry(Thread):
             # we cannot distinguish scalar-scalar vs. vector-vector
             # but it does not matter for this logic :)
             if conn_type & _ConnectionInfo.SELF_IS_SENDING:
-                connected_ports.append((
-                        conduit.sending_port(),
-                        conduit.receiving_port(),
-                        conn_type))
+                connected_ports.append(
+                    (conduit.sending_port(), conduit.receiving_port(), conn_type)
+                )
             else:
-                connected_ports.append((
-                        conduit.receiving_port(),
-                        conduit.sending_port(),
-                        conn_type))
+                connected_ports.append(
+                    (conduit.receiving_port(), conduit.sending_port(), conn_type)
+                )
         return connected_ports
 
     @cache  # noqa: B019

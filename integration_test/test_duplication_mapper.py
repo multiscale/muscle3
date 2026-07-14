@@ -13,28 +13,26 @@ from libmuscle import Instance, Message
 
 
 def duplication_mapper():
-    """Duplication mapper implementation.
-    """
+    """Duplication mapper implementation."""
     instance = Instance()
 
     while instance.reuse_instance():
         # o_f
         out_ports = instance.list_ports()[Operator.O_F]
 
-        message = Message(0.0, data='testing')
+        message = Message(0.0, data="testing")
         for out_port in out_ports:
             instance.send(out_port, message)
 
 
 def receiver():
-    """Receiver for messages from dm.
-    """
-    instance = Instance({Operator.F_INIT: ['in']})
+    """Receiver for messages from dm."""
+    instance = Instance({Operator.F_INIT: ["in"]})
 
     while instance.reuse_instance():
         # f_init
-        msg = instance.receive('in')
-        assert msg.data == 'testing'
+        msg = instance.receive("in")
+        assert msg.data == "testing"
 
 
 def test_duplication_mapper(log_file_in_tmpdir):
@@ -43,23 +41,20 @@ def test_duplication_mapper(log_file_in_tmpdir):
     This is an acyclic workflow.
     """
     components = [
-            Component(
-                'dm', Ports(o_f='out out2'), '', 'muscle.duplication_mapper'),
-            Component(
-                'first', Ports('in'), '', 'receiver'),
-            Component(
-                'second', Ports('in'), '', 'receiver')]
+        Component("dm", Ports(o_f="out out2"), "", "muscle.duplication_mapper"),
+        Component("first", Ports("in"), "", "receiver"),
+        Component("second", Ports("in"), "", "receiver"),
+    ]
 
-    conduits = [
-                Conduit('dm.out', 'first.in'),
-                Conduit('dm.out2', 'second.in')]
+    conduits = [Conduit("dm.out", "first.in"), Conduit("dm.out2", "second.in")]
 
-    model = Model('test_model', None, '', None, components, conduits)
+    model = Model("test_model", None, "", None, components, conduits)
     settings = Settings()
 
-    configuration = Configuration('test_dm', None, [model], None, settings)
+    configuration = Configuration("test_dm", None, [model], None, settings)
 
     implementations = {
-            'muscle.duplication_mapper': duplication_mapper,
-            'receiver': receiver}
+        "muscle.duplication_mapper": duplication_mapper,
+        "receiver": receiver,
+    }
     run_simulation(configuration, implementations)

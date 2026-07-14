@@ -11,6 +11,7 @@ class LogLevel(Enum):
     be kept identical to those. They also match the Python logging log
     levels.
     """
+
     DISABLE = 100
     CRITICAL = 50
     ERROR = 40
@@ -20,7 +21,7 @@ class LogLevel(Enum):
     LOCAL = 0
 
     @staticmethod
-    def from_python_level(level: int) -> 'LogLevel':
+    def from_python_level(level: int) -> "LogLevel":
         """Creates a LogLevel from a Python log level.
 
         Args:
@@ -42,12 +43,13 @@ class LogLevel(Enum):
     def as_python_level(self) -> int:
         """Convert the LogLevel to the corresponding Python level."""
         to_python_level = {
-                LogLevel.CRITICAL: logging.CRITICAL,
-                LogLevel.ERROR: logging.ERROR,
-                LogLevel.WARNING: logging.WARNING,
-                LogLevel.INFO: logging.INFO,
-                LogLevel.DEBUG: logging.DEBUG,
-                LogLevel.LOCAL: logging.DEBUG}
+            LogLevel.CRITICAL: logging.CRITICAL,
+            LogLevel.ERROR: logging.ERROR,
+            LogLevel.WARNING: logging.WARNING,
+            LogLevel.INFO: logging.INFO,
+            LogLevel.DEBUG: logging.DEBUG,
+            LogLevel.LOCAL: logging.DEBUG,
+        }
         return to_python_level[self]
 
 
@@ -70,13 +72,10 @@ class LogMessage:
         level: Log level of the message.
         text: Content of the message.
     """
+
     def __init__(
-            self,
-            instance_id: str,
-            timestamp: Timestamp,
-            level: LogLevel,
-            text: str
-            ) -> None:
+        self, instance_id: str, timestamp: Timestamp, level: LogLevel, text: str
+    ) -> None:
 
         self.instance_id = instance_id
         self.timestamp = timestamp

@@ -15,8 +15,9 @@ _MAX_FILE_EXISTS_CHECK = 10000
 
 # error text for save_snapshot when msg = None
 _NO_MESSAGE_PROVIDED = (
-        'Invalid message provided to `{}`. Please create a Message object to'
-        ' store the state of the instance in a snapshot.')
+    "Invalid message provided to `{}`. Please create a Message object to"
+    " store the state of the instance in a snapshot."
+)
 
 
 class SnapshotManager:
@@ -26,8 +27,8 @@ class SnapshotManager:
     """
 
     def __init__(
-            self, instance_id: Reference, manager: MMPClient,
-            port_manager: PortManager) -> None:
+        self, instance_id: Reference, manager: MMPClient, port_manager: PortManager
+    ) -> None:
         """Create a new snapshot manager
 
         Args:
@@ -47,8 +48,8 @@ class SnapshotManager:
         self._next_snapshot_num = 1
 
     def prepare_resume(
-            self, resume_snapshot: Optional[Path],
-            snapshot_directory: Optional[Path]) -> Optional[float]:
+        self, resume_snapshot: Optional[Path], snapshot_directory: Optional[Path]
+    ) -> Optional[float]:
         """Apply checkpoint info received from the manager.
 
         If there is a snapshot to resume from, this loads it and does
@@ -90,8 +91,9 @@ class SnapshotManager:
         given an intermediate snapshot to resume from by the manager.
         """
         return (
-                self._resume_from_snapshot is not None and
-                not self._resume_from_snapshot.is_final_snapshot)
+            self._resume_from_snapshot is not None
+            and not self._resume_from_snapshot.is_final_snapshot
+        )
 
     def resuming_from_final(self) -> bool:
         """Check whether we have a final snapshot.
@@ -100,21 +102,24 @@ class SnapshotManager:
         given an intermediate snapshot to resume from by the manager.
         """
         return (
-                self._resume_from_snapshot is not None and
-                self._resume_from_snapshot.is_final_snapshot)
+            self._resume_from_snapshot is not None
+            and self._resume_from_snapshot.is_final_snapshot
+        )
 
     def load_snapshot(self) -> Message:
-        """Get the Message to resume from.
-        """
+        """Get the Message to resume from."""
         snapshot = cast(Snapshot, self._resume_from_snapshot)
         return cast(Message, snapshot.message)
 
     def save_snapshot(
-            self, msg: Optional[Message], final: bool,
-            triggers: list[str], wallclock_time: float,
-            f_init_max_timestamp: Optional[float],
-            settings_overlay: Settings
-            ) -> float:
+        self,
+        msg: Optional[Message],
+        final: bool,
+        triggers: list[str],
+        wallclock_time: float,
+        f_init_max_timestamp: Optional[float],
+        settings_overlay: Settings,
+    ) -> float:
         """Save a (final) snapshot.
 
         Args:
@@ -136,20 +141,20 @@ class SnapshotManager:
             all_ports = self._port_manager.list_ports()
             ports = all_ports.get(Operator.F_INIT, [])
             if self._port_manager.settings_in_connected():
-                ports.append('muscle_settings_in')
+                ports.append("muscle_settings_in")
             for port_name in ports:
                 new_counts = [i - 1 for i in port_message_counts[port_name]]
                 port_message_counts[port_name] = new_counts
 
         snapshot = MsgPackSnapshot(
-                triggers, wallclock_time, port_message_counts, final, msg,
-                settings_overlay)
+            triggers, wallclock_time, port_message_counts, final, msg, settings_overlay
+        )
 
         path = self.__store_snapshot(snapshot)
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
         self._manager.submit_snapshot_metadata(metadata)
 
-        timestamp = msg.timestamp if msg is not None else float('-inf')
+        timestamp = msg.timestamp if msg is not None else float("-inf")
         if final and f_init_max_timestamp is not None:
             # For final snapshots f_init_max_snapshot is the reference time (see
             # should_save_final_snapshot).
@@ -163,24 +168,28 @@ class SnapshotManager:
         Args:
             snapshot_location: path where the snapshot is stored.
         """
-        _logger.debug(f'Loading snapshot from {snapshot_location}')
+        _logger.debug(f"Loading snapshot from {snapshot_location}")
         if not snapshot_location.is_file():
-            raise RuntimeError(f'Unable to load snapshot: {snapshot_location}'
-                               ' is not a file. Please ensure this path exists'
-                               ' and can be read.')
+            raise RuntimeError(
+                f"Unable to load snapshot: {snapshot_location}"
+                " is not a file. Please ensure this path exists"
+                " and can be read."
+            )
 
         # TODO: encapsulate I/O errors?
-        with snapshot_location.open('rb') as snapshot_file:
+        with snapshot_location.open("rb") as snapshot_file:
             version = snapshot_file.read(1)
             data = snapshot_file.read()
 
             if version == MsgPackSnapshot.SNAPSHOT_VERSION_BYTE:
                 return MsgPackSnapshot.from_bytes(data)
-            raise RuntimeError('Unable to load snapshot from'
-                               f' {snapshot_location}: unknown version of'
-                               ' snapshot file. Was the file saved with a'
-                               ' different version of libmuscle or'
-                               ' edited?')
+            raise RuntimeError(
+                "Unable to load snapshot from"
+                f" {snapshot_location}: unknown version of"
+                " snapshot file. Was the file saved with a"
+                " different version of libmuscle or"
+                " edited?"
+            )
 
     def __store_snapshot(self, snapshot: Snapshot) -> Path:
         """Store a snapshot on the filesystem.
@@ -191,7 +200,7 @@ class SnapshotManager:
         Returns:
             Path where the snapshot is stored.
         """
-        _logger.debug(f'Saving snapshot to {self._snapshot_directory}')
+        _logger.debug(f"Saving snapshot to {self._snapshot_directory}")
         for _ in range(_MAX_FILE_EXISTS_CHECK):
             # Expectation is that muscle_snapshot_directory is empty initially
             # and we succeed in the first loop. Still wrapping in a for-loop
@@ -202,13 +211,15 @@ class SnapshotManager:
             if not fpath.exists():
                 break
         else:
-            raise RuntimeError('Could not find an available filename for'
-                               f' storing the next snapshot: {fpath} already'
-                               ' exists.')
+            raise RuntimeError(
+                "Could not find an available filename for"
+                f" storing the next snapshot: {fpath} already"
+                " exists."
+            )
         # Opening with mode 'x' since a file with the same name may be created
         # in the small window between checking above and opening here. It is
         # better to fail with an error than to overwrite an existing file.
-        with fpath.open('xb') as snapshot_file:
+        with fpath.open("xb") as snapshot_file:
             snapshot_file.write(snapshot.SNAPSHOT_VERSION_BYTE)
             snapshot_file.write(snapshot.to_bytes())
         return fpath

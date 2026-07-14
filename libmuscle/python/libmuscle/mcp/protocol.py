@@ -13,6 +13,7 @@ class RequestType(Enum):
     To distinguish different kinds of requests, a request type identifier is
     used, as represented by this class.
     """
+
     # MUSCLE Manager Protocol
     REGISTER_INSTANCE = 1
     GET_PEERS = 2
@@ -42,6 +43,7 @@ class ResponseType(Enum):
     MCP Responses may be of different kinds, as described by this class.
     These are currently only used by the MUSCLE Manager Protocol.
     """
+
     # MUSCLE Manager Protocol
     SUCCESS = 0
     ERROR = 1
@@ -54,6 +56,7 @@ class AgentCommandType(Enum):
     These are requested from the manager by the agent, and tell it what to do. Part
     of the MUSCLE Agent Protocol, used in the response to RequestType.GET_COMMAND.
     """
+
     START = 1
     CANCEL_ALL = 2
     SHUTDOWN = 3

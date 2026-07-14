@@ -6,13 +6,17 @@ from libmuscle.endpoint import Endpoint
 
 
 class PeerInfo:
-    """Interprets information about peers for a Communicator
-    """
-    def __init__(self, kernel: Reference, index: list[int],
-                 conduits: list[Conduit],
-                 peer_dims: dict[Reference, list[int]],
-                 peer_locations: dict[Reference, list[str]],
-                 ymmsl_ports: list[Port]) -> None:
+    """Interprets information about peers for a Communicator"""
+
+    def __init__(
+        self,
+        kernel: Reference,
+        index: list[int],
+        conduits: list[Conduit],
+        peer_dims: dict[Reference, list[int]],
+        peer_locations: dict[Reference, list[str]],
+        ymmsl_ports: list[Port],
+    ) -> None:
         """Create a PeerInfo.
 
         Peers here are instances, and peer_dims and peer_locations are
@@ -48,19 +52,19 @@ class PeerInfo:
                 # we send on the port this conduit attaches to
                 if conduit.sender not in self._outgoing_ports:
                     self._outgoing_ports.append(conduit.sender)
-                self._peers.setdefault(conduit.sender, []).append(
-                        conduit.receiver)
+                self._peers.setdefault(conduit.sender, []).append(conduit.receiver)
 
             if str(conduit.receiving_component()) == str(kernel):
                 # we receive on the port this conduit attaches to
                 if conduit.receiver in self._peers:
                     raise RuntimeError(
-                            f'Receiving port "{conduit.receiving_port()}" is connected'
-                            ' by multiple conduits, but at most one is allowed.')
+                        f'Receiving port "{conduit.receiving_port()}" is connected'
+                        " by multiple conduits, but at most one is allowed."
+                    )
                 self._incoming_ports.append(conduit.receiver)
                 self._peers[conduit.receiver] = [conduit.sender]
 
-        self._peer_dims = peer_dims    # indexed by kernel id
+        self._peer_dims = peer_dims  # indexed by kernel id
         self._peer_locations = peer_locations  # indexed by instance id
         self._ymmsl_ports = ymmsl_ports
 
@@ -76,8 +80,9 @@ class PeerInfo:
             peer endpoint.
         """
         return [
-                (cast(Identifier, port_ref[-1]), self._peers[port_ref][0])
-                for port_ref in self._incoming_ports]
+            (cast(Identifier, port_ref[-1]), self._peers[port_ref][0])
+            for port_ref in self._incoming_ports
+        ]
 
     def list_outgoing_ports(self) -> list[tuple[Identifier, list[Reference]]]:
         """list outgoing ports.
@@ -87,8 +92,9 @@ class PeerInfo:
             to the peer endpoint(s).
         """
         return [
-                (cast(Identifier, port_ref[-1]), self._peers[port_ref])
-                for port_ref in self._outgoing_ports]
+            (cast(Identifier, port_ref[-1]), self._peers[port_ref])
+            for port_ref in self._outgoing_ports
+        ]
 
     def is_connected(self, port: Identifier) -> bool:
         """Determine whether the given port is connected.
@@ -126,8 +132,7 @@ class PeerInfo:
         """
         return self._peer_locations[peer_instance]
 
-    def get_peer_endpoints(self, port: Identifier, slot: list[int]
-                           ) -> list[Endpoint]:
+    def get_peer_endpoints(self, port: Identifier, slot: list[int]) -> list[Endpoint]:
         """Determine the peer endpoints for the given port and slot.
 
         Args:
@@ -150,8 +155,7 @@ class PeerInfo:
             peer_dim = len(self._peer_dims[peer_kernel])
             peer_index = total_index[0:peer_dim]
             peer_slot = total_index[peer_dim:]
-            endpoints.append(
-                    Endpoint(peer_kernel, peer_index, peer_port, peer_slot))
+            endpoints.append(Endpoint(peer_kernel, peer_index, peer_port, peer_slot))
 
         return endpoints
 

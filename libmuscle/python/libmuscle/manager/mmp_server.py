@@ -65,12 +65,13 @@ def encode_ports(ports: Ports) -> list[list[str]]:
 def encode_checkpoint_rule(rule: CheckpointRule) -> dict[str, Any]:
     """Convert a CheckpointRule to a MsgPack-compatible value."""
     if isinstance(rule, CheckpointAtRule):
-        return {'at': list(map(float, rule.at))}
+        return {"at": list(map(float, rule.at))}
     if isinstance(rule, CheckpointRangeRule):
         return {
-            'start': None if rule.start is None else float(rule.start),
-            'stop': None if rule.stop is None else float(rule.stop),
-            'every': float(rule.every)}
+            "start": None if rule.start is None else float(rule.start),
+            "stop": None if rule.stop is None else float(rule.stop),
+            "every": float(rule.every),
+        }
     raise TypeError(f"Unknown checkpoint rule type: {type(rule)}.")
 
 
@@ -78,26 +79,27 @@ def encode_checkpoints(checkpoints: Checkpoints) -> dict[str, Any]:
     """Convert a Checkpoins to a MsgPack-compatible value."""
     return {
         "at_end": checkpoints.at_end,
-        "wallclock_time":
-            list(map(encode_checkpoint_rule, checkpoints.wallclock_time)),
-        "simulation_time":
-            list(map(encode_checkpoint_rule, checkpoints.simulation_time)),
+        "wallclock_time": list(map(encode_checkpoint_rule, checkpoints.wallclock_time)),
+        "simulation_time": list(
+            map(encode_checkpoint_rule, checkpoints.simulation_time)
+        ),
     }
 
 
 class MMPRequestHandler(RequestHandler):
     """Handles Manager requests."""
+
     def __init__(
-            self,
-            logger: Logger,
-            profile_store: ProfileStore,
-            configuration: Configuration,
-            instance_registry: InstanceRegistry,
-            topology_store: TopologyStore,
-            snapshot_registry: SnapshotRegistry,
-            deadlock_detector: DeadlockDetector,
-            run_dir: Optional[RunDir]
-            ) -> None:
+        self,
+        logger: Logger,
+        profile_store: ProfileStore,
+        configuration: Configuration,
+        instance_registry: InstanceRegistry,
+        topology_store: TopologyStore,
+        snapshot_registry: SnapshotRegistry,
+        deadlock_detector: DeadlockDetector,
+        run_dir: Optional[RunDir],
+    ) -> None:
         """Create an MMPRequestHandler.
 
         Args:
@@ -162,8 +164,12 @@ class MMPRequestHandler(RequestHandler):
         self._profile_store.close()
 
     def _register_instance(
-            self, instance_id: str, locations: list[str],
-            ports: list[list[str]], version: str = '') -> Any:
+        self,
+        instance_id: str,
+        locations: list[str],
+        ports: list[list[str]],
+        version: str = "",
+    ) -> Any:
         """Handle a register instance request.
 
         Args:
@@ -181,25 +187,27 @@ class MMPRequestHandler(RequestHandler):
         """
         if version != libmuscle.__version__:
             return [
-                    ResponseType.ERROR.value,
-                    f'Instance libmuscle version ({version}) does not match'
-                    f' manager libmuscle version ({libmuscle.__version__}).'
-                    ' Please ensure that the instance and the manager use the'
-                    ' same version of libmuscle.']
+                ResponseType.ERROR.value,
+                f"Instance libmuscle version ({version}) does not match"
+                f" manager libmuscle version ({libmuscle.__version__})."
+                " Please ensure that the instance and the manager use the"
+                " same version of libmuscle.",
+            ]
 
         port_objs = [decode_port(p) for p in ports]
         instance = Reference(instance_id)
         try:
             self._instance_registry.add(instance, locations, port_objs)
 
-            _logger.info(f'Registered instance {instance_id}')
+            _logger.info(f"Registered instance {instance_id}")
             return [ResponseType.SUCCESS.value]
         except AlreadyRegistered:
             return [
-                    ResponseType.ERROR.value,
-                    f'An instance with name {instance_id} was already'
-                    ' registered. Did you start a non-MPI component using'
-                    ' mpirun?']
+                ResponseType.ERROR.value,
+                f"An instance with name {instance_id} was already"
+                " registered. Did you start a non-MPI component using"
+                " mpirun?",
+            ]
 
     def _get_peers(self, instance_id: str) -> Any:
         """Handle a get peers request.
@@ -232,7 +240,7 @@ class MMPRequestHandler(RequestHandler):
         instance = Reference(instance_id)
         component = instance.without_trailing_ints()
         if not self._topology_store.has_component(component):
-            return [ResponseType.ERROR.value, f'Unknown component {component}']
+            return [ResponseType.ERROR.value, f"Unknown component {component}"]
 
         conduits = self._topology_store.get_conduits(component)
         mmp_conduits = [encode_conduit(c) for c in conduits]
@@ -246,17 +254,19 @@ class MMPRequestHandler(RequestHandler):
         try:
             peers = self._topology_store.get_peer_instances(instance)
             instance_locations = {
-                    str(peer): self._instance_registry.get_locations(peer)
-                    for peer in peers}
+                str(peer): self._instance_registry.get_locations(peer) for peer in peers
+            }
         except KeyError as e:
-            return [
-                    ResponseType.PENDING.value,
-                    f'Waiting for component {e.args[0]}']
+            return [ResponseType.PENDING.value, f"Waiting for component {e.args[0]}"]
 
-        _logger.debug(f'Sent peers to {instance_id}')
+        _logger.debug(f"Sent peers to {instance_id}")
         return [
-                ResponseType.SUCCESS.value,
-                mmp_conduits, mmp_dimensions, instance_locations, mmp_ports]
+            ResponseType.SUCCESS.value,
+            mmp_conduits,
+            mmp_dimensions,
+            instance_locations,
+            mmp_ports,
+        ]
 
     def _deregister_instance(self, instance_id: str) -> Any:
         """Handle a deregister instance request.
@@ -276,12 +286,13 @@ class MMPRequestHandler(RequestHandler):
         """
         try:
             self._instance_registry.remove(Reference(instance_id))
-            _logger.info(f'Deregistered instance {instance_id}')
+            _logger.info(f"Deregistered instance {instance_id}")
             return [ResponseType.SUCCESS.value]
         except ValueError:
             return [
-                    ResponseType.ERROR.value,
-                    f'No instance with name {instance_id} was registered']
+                ResponseType.ERROR.value,
+                f"No instance with name {instance_id} was registered",
+            ]
 
     def _get_settings(self) -> Any:
         """Handle a get settings request.
@@ -293,12 +304,13 @@ class MMPRequestHandler(RequestHandler):
             settings (dict[str, SettingValue]): The global settings
         """
         return [
-                ResponseType.SUCCESS.value,
-                self._configuration.settings.as_ordered_dict()]
+            ResponseType.SUCCESS.value,
+            self._configuration.settings.as_ordered_dict(),
+        ]
 
     def _submit_log_message(
-            self, instance_id: str, timestamp: float, level: int, text: str
-            ) -> Any:
+        self, instance_id: str, timestamp: float, level: int, text: str
+    ) -> Any:
         """Handle a submit log message request.
 
         Args:
@@ -313,11 +325,11 @@ class MMPRequestHandler(RequestHandler):
             status (ResponseType): SUCCESS
         """
         self._logger.log_message(
-                instance_id, Timestamp(timestamp), LogLevel(level), text)
+            instance_id, Timestamp(timestamp), LogLevel(level), text
+        )
         return [ResponseType.SUCCESS.value]
 
-    def _submit_profile_events(
-            self, instance_id: str, events: list[list[Any]]) -> Any:
+    def _submit_profile_events(self, instance_id: str, events: list[list[Any]]) -> Any:
         """Handle a submit profile events request.
 
         Args:
@@ -330,18 +342,24 @@ class MMPRequestHandler(RequestHandler):
             status (ResponseType): SUCCESS
         """
         ev = [
-                ProfileEvent(
-                    ProfileEventType(e[0]), ProfileTimestamp(e[1]),
-                    ProfileTimestamp(e[2]),
-                    Port(e[3][0], Operator[e[3][1]]) if e[3] else None,
-                    e[4], e[5], e[6], e[7], e[8])
-                for e in events]
+            ProfileEvent(
+                ProfileEventType(e[0]),
+                ProfileTimestamp(e[1]),
+                ProfileTimestamp(e[2]),
+                Port(e[3][0], Operator[e[3][1]]) if e[3] else None,
+                e[4],
+                e[5],
+                e[6],
+                e[7],
+                e[8],
+            )
+            for e in events
+        ]
 
         self._profile_store.add_events(Reference(instance_id), ev)
         return [ResponseType.SUCCESS.value]
 
-    def _submit_snapshot(
-            self, instance_id: str, snapshot: dict[str, Any]) -> Any:
+    def _submit_snapshot(self, instance_id: str, snapshot: dict[str, Any]) -> Any:
         """Handle a submit snapshot request.
 
         Returns:
@@ -380,15 +398,21 @@ class MMPRequestHandler(RequestHandler):
         if self._run_dir is not None:
             snapshot_directory = str(self._run_dir.snapshot_dir(instance))
 
-        return [ResponseType.SUCCESS.value,
-                time.monotonic() - self._reference_time,
-                encode_checkpoints(self._configuration.checkpoints),
-                resume,
-                snapshot_directory]
+        return [
+            ResponseType.SUCCESS.value,
+            time.monotonic() - self._reference_time,
+            encode_checkpoints(self._configuration.checkpoints),
+            resume,
+            snapshot_directory,
+        ]
 
     def _waiting_for_receive(
-            self, instance_id: str, peer_instance_id: str,
-            port_name: str, slot: Optional[int]) -> Any:
+        self,
+        instance_id: str,
+        peer_instance_id: str,
+        port_name: str,
+        slot: Optional[int],
+    ) -> Any:
         """Indicate that the instance is waiting to receive a message.
 
         Args:
@@ -397,12 +421,17 @@ class MMPRequestHandler(RequestHandler):
             slot: Slot that the instance is waiting for
         """
         self._deadlock_detector.waiting_for_receive(
-                instance_id, peer_instance_id, port_name, slot)
+            instance_id, peer_instance_id, port_name, slot
+        )
         return [ResponseType.SUCCESS.value]
 
     def _waiting_for_receive_done(
-            self, instance_id: str, peer_instance_id: str,
-            port_name: str, slot: Optional[int]) -> Any:
+        self,
+        instance_id: str,
+        peer_instance_id: str,
+        port_name: str,
+        slot: Optional[int],
+    ) -> Any:
         """Indicate that the instance is done waiting to receive a message.
 
         Args:
@@ -411,12 +440,12 @@ class MMPRequestHandler(RequestHandler):
             slot: Slot that the instance is waiting for
         """
         self._deadlock_detector.waiting_for_receive_done(
-                instance_id, peer_instance_id, port_name, slot)
+            instance_id, peer_instance_id, port_name, slot
+        )
         return [ResponseType.SUCCESS.value]
 
     def _is_deadlocked(self, instance_id: str) -> Any:
-        """Check if the provided instance is part of a detected deadlock.
-        """
+        """Check if the provided instance is part of a detected deadlock."""
         result = self._deadlock_detector.is_deadlocked(instance_id)
         return [ResponseType.SUCCESS.value, result]
 
@@ -428,17 +457,18 @@ class MMPServer:
     the multiscale model to be executed, and services them using an
     MMPRequestHandler.
     """
+
     def __init__(
-            self,
-            logger: Logger,
-            profile_store: ProfileStore,
-            configuration: Configuration,
-            instance_registry: InstanceRegistry,
-            topology_store: TopologyStore,
-            snapshot_registry: SnapshotRegistry,
-            deadlock_detector: DeadlockDetector,
-            run_dir: Optional[RunDir]
-            ) -> None:
+        self,
+        logger: Logger,
+        profile_store: ProfileStore,
+        configuration: Configuration,
+        instance_registry: InstanceRegistry,
+        topology_store: TopologyStore,
+        snapshot_registry: SnapshotRegistry,
+        deadlock_detector: DeadlockDetector,
+        run_dir: Optional[RunDir],
+    ) -> None:
         """Create an MMPServer.
 
         This starts a TCP Transport server and connects it to an
@@ -458,8 +488,15 @@ class MMPServer:
             run_dir: To save snapshots to
         """
         self._handler = MMPRequestHandler(
-                logger, profile_store, configuration, instance_registry,
-                topology_store, snapshot_registry, deadlock_detector, run_dir)
+            logger,
+            profile_store,
+            configuration,
+            instance_registry,
+            topology_store,
+            snapshot_registry,
+            deadlock_detector,
+            run_dir,
+        )
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

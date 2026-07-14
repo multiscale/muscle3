@@ -11,8 +11,8 @@ class MuscleManagerHandler(logging.Handler):
     be attached to a logger, and forwards log messages to the Muscle
     Manager for central logging.
     """
-    def __init__(self, instance_id: str, level: int, mmp_client: MMPClient
-                 ) -> None:
+
+    def __init__(self, instance_id: str, level: int, mmp_client: MMPClient) -> None:
         """Create a MuscleManagerHandler.
 
         Args:
@@ -32,17 +32,23 @@ class MuscleManagerHandler(logging.Handler):
         messages were dropped and try to get that into the manager log, referring the
         user to the instance log.
         """
-        message = LogMessage(self._instance_id, Timestamp(record.created),
-                             LogLevel.from_python_level(record.levelno),
-                             self.format(record))
+        message = LogMessage(
+            self._instance_id,
+            Timestamp(record.created),
+            LogLevel.from_python_level(record.levelno),
+            self.format(record),
+        )
 
         try:
             if self._num_dropped > 0:
                 dropped_msg = LogMessage(
-                        self._instance_id, Timestamp(), LogLevel.WARNING,
-                        f'{self._num_dropped} log messages were not sent to the manager'
-                        ' log due to manager overload or network connectivity problems.'
-                        ' Please see the instance log to read them.')
+                    self._instance_id,
+                    Timestamp(),
+                    LogLevel.WARNING,
+                    f"{self._num_dropped} log messages were not sent to the manager"
+                    " log due to manager overload or network connectivity problems."
+                    " Please see the instance log to read them.",
+                )
                 self._manager.submit_log_message(dropped_msg)
                 self._num_dropped = 0
 

@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 
 _node_range_expression_grammar = Grammar(
-        """
+    """
         nre = nre_parts ("," nre_parts)*
         nre_parts = nre_part+
         nre_part = identifier ("[" index_set "]")?
@@ -23,7 +23,7 @@ _node_range_expression_grammar = Grammar(
         int = ~"[0-9]+"
         padded_int = ~"0[0-9]+"
         """
-        )
+)
 
 
 class NREVisitor(NodeVisitor):
@@ -32,10 +32,12 @@ class NREVisitor(NodeVisitor):
     Node range expressions are used by SLURM to describe collections of nodes. See
     parse_slurm_nodelist() below.
     """
+
     def visit_nre(
-            self, node: Node,
-            visited_children: tuple[list[str], Sequence[tuple[Any, list[str]]]]
-            ) -> list[str]:
+        self,
+        node: Node,
+        visited_children: tuple[list[str], Sequence[tuple[Any, list[str]]]],
+    ) -> list[str]:
         """Return a list of nodes corresponding to the NRE."""
         nodes = visited_children[0].copy()
         for _, more_nodes in visited_children[1]:
@@ -43,29 +45,31 @@ class NREVisitor(NodeVisitor):
         return nodes
 
     def visit_nre_parts(
-            self, node: Node, visited_children: Sequence[tuple[str, list[str]]]
-            ) -> list[str]:
+        self, node: Node, visited_children: Sequence[tuple[str, list[str]]]
+    ) -> list[str]:
         """Return a list of node ids for the part."""
-        fmt = ''.join([c[0] + '{}' for c in visited_children])
+        fmt = "".join([c[0] + "{}" for c in visited_children])
         index_lists = [c[1] for c in visited_children]
         return [fmt.format(*idxs) for idxs in product(*index_lists)]
 
     def visit_nre_part(
-            self, node: Node, visited_children: tuple[
-                str, Sequence[tuple[Any, list[str], Any]]]
-            ) -> tuple[str, list[str]]:
+        self,
+        node: Node,
+        visited_children: tuple[str, Sequence[tuple[Any, list[str], Any]]],
+    ) -> tuple[str, list[str]]:
         """Return the identifier part and a list of indexes for the set."""
         identifier = visited_children[0]
         if not visited_children[1]:
-            index_set = ['']
+            index_set = [""]
         else:
             index_set = visited_children[1][0][1]
         return identifier, index_set
 
     def visit_index_set(
-            self, node: Node,
-            visited_children: tuple[list[str], Sequence[tuple[Any, list[str]]]]
-            ) -> list[str]:
+        self,
+        node: Node,
+        visited_children: tuple[list[str], Sequence[tuple[Any, list[str]]]],
+    ) -> list[str]:
         """Return a list of indexes corresponding to the set."""
         indexes = visited_children[0].copy()
         for _, more_indexes in visited_children[1]:
@@ -73,19 +77,16 @@ class NREVisitor(NodeVisitor):
         return indexes
 
     def visit_index_range(
-            self, node: Node,
-            visited_children: tuple[
-                tuple[int, int],
-                Sequence[
-                    tuple[Any, tuple[int, int]]
-                    ]]
-            ) -> list[str]:
+        self,
+        node: Node,
+        visited_children: tuple[tuple[int, int], Sequence[tuple[Any, tuple[int, int]]]],
+    ) -> list[str]:
         """Return a list of indexes corresponding to the range."""
 
         def format_str(width: int) -> str:
             if width == -1:
-                return '{}'
-            return f'{{:0{width}}}'
+                return "{}"
+            return f"{{:0{width}}}"
 
         start_value, width = visited_children[0]
         if visited_children[1]:
@@ -100,8 +101,8 @@ class NREVisitor(NodeVisitor):
         return node.text
 
     def visit_integer(
-            self, node: Node, visited_children: Sequence[tuple[int, int]]
-            ) -> tuple[int, int]:
+        self, node: Node, visited_children: Sequence[tuple[int, int]]
+    ) -> tuple[int, int]:
         """Returns the value of the int, and a field width or -1."""
         return visited_children[0]
 
@@ -114,7 +115,8 @@ class NREVisitor(NodeVisitor):
         return int(node.text), len(node.text)
 
     def generic_visit(
-            self, node: Node, visited_children: Sequence[Any]) -> Sequence[Any]:
+        self, node: Node, visited_children: Sequence[Any]
+    ) -> Sequence[Any]:
         return visited_children
 
 
@@ -152,13 +154,13 @@ def parse_slurm_nodelist(s: str) -> list[str]:
 
 
 _nodes_cores_expression_grammar = Grammar(
-        """
+    """
         nce = nce_run ("," nce_run)*
         nce_run = int ("(" run_length ")")?
         run_length = "x" int
         int = ~"[0-9]+"
         """
-        )
+)
 
 
 class NCEVisitor(NodeVisitor):
@@ -167,10 +169,12 @@ class NCEVisitor(NodeVisitor):
     Nodes cores expressions are used by SLURM to describe cores on a collection of
     nodes.  See parse_slurm_nodes_cores() below.
     """
+
     def visit_nce(
-            self, node: Node,
-            visited_children: tuple[list[int], Sequence[tuple[Any, list[int]]]]
-            ) -> list[int]:
+        self,
+        node: Node,
+        visited_children: tuple[list[int], Sequence[tuple[Any, list[int]]]],
+    ) -> list[int]:
         """Return a list of nodes corresponding to the NRE."""
         nodes_cores = visited_children[0].copy()
         for _, more_nodes_cores in visited_children[1]:
@@ -178,9 +182,8 @@ class NCEVisitor(NodeVisitor):
         return nodes_cores
 
     def visit_nce_run(
-            self, node: Node,
-            visited_children: tuple[int, Sequence[tuple[Any, int, Any]]]
-            ) -> list[int]:
+        self, node: Node, visited_children: tuple[int, Sequence[tuple[Any, int, Any]]]
+    ) -> list[int]:
         """Return a list of core counts produced by this run."""
         num_cores = visited_children[0]
         result = [num_cores]
@@ -190,8 +193,7 @@ class NCEVisitor(NodeVisitor):
 
         return result
 
-    def visit_run_length(
-            self, node: Node, visited_children: tuple[str, int]) -> int:
+    def visit_run_length(self, node: Node, visited_children: tuple[str, int]) -> int:
         """Return the number of repetitions."""
         return visited_children[1]
 
@@ -200,7 +202,8 @@ class NCEVisitor(NodeVisitor):
         return int(node.text)
 
     def generic_visit(
-            self, node: Node, visited_children: Sequence[Any]) -> Sequence[Any]:
+        self, node: Node, visited_children: Sequence[Any]
+    ) -> Sequence[Any]:
         return visited_children
 
 
@@ -226,6 +229,7 @@ def parse_slurm_nodes_cores(s: str) -> list[int]:
 
 class SlurmQuirks:
     """Collects features of the present SLURM."""
+
     overlap: bool
     """True iff --overlap must be specified for srun."""
     cpu_bind: str
@@ -234,6 +238,7 @@ class SlurmQuirks:
 
 class SlurmInfo:
     """Detects and holds information about the present SLURM scheduler."""
+
     def __init__(self) -> None:
         if self.in_slurm_allocation():
             self.version = self._slurm_version()
@@ -241,14 +246,15 @@ class SlurmInfo:
 
             self.quirks.overlap = self.version > (20, 2)
             self.quirks.cpu_bind = (
-                    '--cpu-bind' if self.version > (17, 2) else '--cpu_bind')
+                "--cpu-bind" if self.version > (17, 2) else "--cpu_bind"
+            )
 
     def in_slurm_allocation(self) -> bool:
         """Check whether we're in a SLURM allocation.
 
         Returns true iff SLURM was detected.
         """
-        return 'SLURM_JOB_ID' in os.environ
+        return "SLURM_JOB_ID" in os.environ
 
     def get_nodes(self) -> list[str]:
         """Get a list of node names from SLURM_JOB_NODELIST.
@@ -259,13 +265,13 @@ class SlurmInfo:
         If SLURM_JOB_NODELIST is "node[020-023]" then this returns
         ["node020", "node021", "node022", "node023"].
         """
-        nodelist = os.environ.get('SLURM_JOB_NODELIST')
+        nodelist = os.environ.get("SLURM_JOB_NODELIST")
         if not nodelist:
-            nodelist = os.environ.get('SLURM_NODELIST')
+            nodelist = os.environ.get("SLURM_NODELIST")
         if not nodelist:
-            raise RuntimeError('SLURM_(JOB_)NODELIST not set, are we running locally?')
+            raise RuntimeError("SLURM_(JOB_)NODELIST not set, are we running locally?")
 
-        _logger.debug(f'SLURM node list: {nodelist}')
+        _logger.debug(f"SLURM node list: {nodelist}")
 
         return parse_slurm_nodelist(nodelist)
 
@@ -275,28 +281,29 @@ class SlurmInfo:
         This returns a list with the number of cores of each node in the result of
         get_nodes(), which gets read from SLURM_JOB_CPUS_PER_NODE.
         """
-        sjcpn = os.environ.get('SLURM_JOB_CPUS_PER_NODE')
-        _logger.debug(f'SLURM_JOB_CPUS_PER_NODE: {sjcpn}')
+        sjcpn = os.environ.get("SLURM_JOB_CPUS_PER_NODE")
+        _logger.debug(f"SLURM_JOB_CPUS_PER_NODE: {sjcpn}")
 
         if sjcpn:
             return parse_slurm_nodes_cores(sjcpn)
         else:
-            scon = os.environ.get('SLURM_CPUS_ON_NODE')
-            _logger.debug(f'SLURM_CPUS_ON_NODE: {scon}')
+            scon = os.environ.get("SLURM_CPUS_ON_NODE")
+            _logger.debug(f"SLURM_CPUS_ON_NODE: {scon}")
 
-            snn = os.environ.get('SLURM_JOB_NUM_NODES')
+            snn = os.environ.get("SLURM_JOB_NUM_NODES")
             if not snn:
-                snn = os.environ.get('SLURM_NNODES')
-            _logger.debug(f'SLURM num nodes: {snn}')
+                snn = os.environ.get("SLURM_NNODES")
+            _logger.debug(f"SLURM num nodes: {snn}")
 
             if scon and snn:
                 return [int(scon)] * int(snn)
 
         raise RuntimeError(
-                'SLURM_JOB_CPUS_PER_NODE is not set in the environment, and also'
-                ' SLURM_CPUS_ON_NODE is missing or neither SLURM_JOB_NUM_NODES nor'
-                ' SLURM_NNODES is set. Please create an issue on GitHub with the output'
-                ' of "sbatch --version" on this cluster.')
+            "SLURM_JOB_CPUS_PER_NODE is not set in the environment, and also"
+            " SLURM_CPUS_ON_NODE is missing or neither SLURM_JOB_NUM_NODES nor"
+            " SLURM_NNODES is set. Please create an issue on GitHub with the output"
+            ' of "sbatch --version" on this cluster.'
+        )
 
     def agent_launch_command(self, agent_cmd: list[str], nnodes: int) -> list[str]:
         """Return a command for launching one agent on each node.
@@ -312,12 +319,14 @@ class SlurmInfo:
         # than calculated anew from --nodes and --ntasks-per-node, so we specify it
         # explicitly to avoid getting an agent per logical cpu rather than per node.
         srun_cmd = [
-                'srun', f'--nodes={nnodes}', f'--ntasks={nnodes}',
-                '--ntasks-per-node=1'
-                ]
+            "srun",
+            f"--nodes={nnodes}",
+            f"--ntasks={nnodes}",
+            "--ntasks-per-node=1",
+        ]
 
         if self.quirks.overlap:
-            srun_cmd.append('--overlap')
+            srun_cmd.append("--overlap")
 
         return srun_cmd + agent_cmd
 
@@ -328,25 +337,30 @@ class SlurmInfo:
         behaviour within a release series.
         """
         proc = subprocess.run(
-                ['srun', '--version'], check=True, capture_output=True, text=True,
-                encoding='utf-8'
-                )
+            ["srun", "--version"],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
 
         output = proc.stdout.strip().split()
         if len(output) < 2:
             raise RuntimeError(
-                    f'Unexpected srun version output "{output}". MUSCLE3 does not know'
-                    ' how to run on this version of SLURM. Please file an issue on'
-                    ' GitHub.')
+                f'Unexpected srun version output "{output}". MUSCLE3 does not know'
+                " how to run on this version of SLURM. Please file an issue on"
+                " GitHub."
+            )
 
         version_str = output[1]
-        version = version_str.split('.')
+        version = version_str.split(".")
         if len(version) < 2:
-            _logger.error(f'srun produced unexpected version {version_str}')
+            _logger.error(f"srun produced unexpected version {version_str}")
             raise RuntimeError(
-                    f'Unexpected srun version output "{output}". MUSCLE3 does not know'
-                    ' how to run on this version of SLURM. Please file an issue on'
-                    ' GitHub.')
+                f'Unexpected srun version output "{output}". MUSCLE3 does not know'
+                " how to run on this version of SLURM. Please file an issue on"
+                " GitHub."
+            )
         return int(version[0]), int(version[1])
 
 

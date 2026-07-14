@@ -7,8 +7,7 @@ _T = TypeVar("_T")
 
 
 def _extend_list_to_size(lst: list[_T], size: int, padding: _T) -> None:
-    """When lst is smaller than size, extend to size using padding as values
-    """
+    """When lst is smaller than size, extend to size using padding as values"""
     num_extend = size - len(lst)
     if num_extend > 0:
         lst += [padding] * num_extend
@@ -30,10 +29,16 @@ class Port(ymmsl.v0_2.Port):
         operator (Operator): Operator associated with this port.
     """
 
-    def __init__(self, name: str, operator: Operator, is_vector: bool,
-                 is_connected: bool, our_ndims: int, peer_dims: list[int],
-                 timeline: Optional[Timeline] = None
-                 ) -> None:
+    def __init__(
+        self,
+        name: str,
+        operator: Operator,
+        is_vector: bool,
+        is_connected: bool,
+        our_ndims: int,
+        peer_dims: list[int],
+        timeline: Optional[Timeline] = None
+    ) -> None:
         """Create a Port.
 
         Args:
@@ -56,26 +61,30 @@ class Port(ymmsl.v0_2.Port):
                 self._length = peer_dims[-1]
             elif our_ndims > len(peer_dims):
                 raise RuntimeError(
-                        f'Vector port "{name}" is connected to an instance set with'
-                        ' fewer dimensions. It should be connected to a scalar port on'
-                        ' a set with one more dimension, or to a vector port on a set'
-                        ' with the same number of dimensions.')
+                    f'Vector port "{name}" is connected to an instance set with'
+                    " fewer dimensions. It should be connected to a scalar port on"
+                    " a set with one more dimension, or to a vector port on a set"
+                    " with the same number of dimensions."
+                )
             else:
                 raise RuntimeError(
-                        f'Port "{name}" is connected to an instance set with more than'
-                        ' one dimension more than its own, which is not possible.')
+                    f'Port "{name}" is connected to an instance set with more than'
+                    " one dimension more than its own, which is not possible."
+                )
             self._is_open = [True] * self._length
         else:
             if our_ndims < len(peer_dims):
                 raise RuntimeError(
-                        f'Scalar port "{name}" is connected to an instance set with'
-                        ' more dimensions. It should be connected to a scalar port on'
-                        ' an instance set with the same dimensions, or to a vector port'
-                        ' on an instance set with one less dimension.')
+                    f'Scalar port "{name}" is connected to an instance set with'
+                    " more dimensions. It should be connected to a scalar port on"
+                    " an instance set with the same dimensions, or to a vector port"
+                    " on an instance set with one less dimension."
+                )
             elif our_ndims > len(peer_dims) + 1:
                 raise RuntimeError(
-                        f'Scalar port "{name}" is connected to an instance set with at'
-                        ' least two fewer dimensions, which is not possible.')
+                    f'Scalar port "{name}" is connected to an instance set with at'
+                    " least two fewer dimensions, which is not possible."
+                )
             self._length = None
             self._is_open = [True]
 
@@ -97,8 +106,7 @@ class Port(ymmsl.v0_2.Port):
         return self._is_connected
 
     def is_open(self, slot: Optional[int] = None) -> bool:
-        """Returns whether this port is open.
-        """
+        """Returns whether this port is open."""
         if slot is not None:
             return self._is_open[slot]
         return self._is_open[0]
@@ -112,8 +120,7 @@ class Port(ymmsl.v0_2.Port):
         return self._length is not None
 
     def is_resizable(self) -> bool:
-        """Returns whether this port can be resized.
-        """
+        """Returns whether this port can be resized."""
         return self._is_resizable
 
     def get_length(self) -> int:
@@ -123,7 +130,7 @@ class Port(ymmsl.v0_2.Port):
             RuntimeError: If this port is a scalar port.
         """
         if self._length is None:
-            raise RuntimeError(f'Tried to get length of scalar port {self.name}')
+            raise RuntimeError(f"Tried to get length of scalar port {self.name}")
         return self._length
 
     def set_length(self, length: int) -> None:
@@ -139,7 +146,8 @@ class Port(ymmsl.v0_2.Port):
         """
         if not self._is_resizable:
             raise RuntimeError(
-                    f'Tried to resize port {self.name}, but it is not resizable.')
+                f"Tried to resize port {self.name}, but it is not resizable."
+            )
         if length != self._length:
             self._length = length
             self._is_open = [True] * self._length
@@ -150,24 +158,21 @@ class Port(ymmsl.v0_2.Port):
             _extend_list_to_size(self._is_resuming, self._length, False)
 
     def set_closed(self, slot: Optional[int] = None) -> None:
-        """Marks this port as closed.
-        """
+        """Marks this port as closed."""
         if slot is not None:
             self._is_open[slot] = False
         else:
             self._is_open = [False]
 
     def restore_message_counts(self, num_messages: list[int]) -> None:
-        """Restore message counts from a snapshot
-        """
+        """Restore message counts from a snapshot"""
         self._num_messages = num_messages
         self._is_resuming = [True] * len(self._num_messages)
         _extend_list_to_size(self._num_messages, self._length or 1, 0)
         _extend_list_to_size(self._is_resuming, self._length or 1, False)
 
     def get_message_counts(self) -> list[int]:
-        """Get a list of message counts for all slots in this port
-        """
+        """Get a list of message counts for all slots in this port"""
         return self._num_messages.copy()
 
     def increment_num_messages(self, slot: Optional[int] = None) -> None:

@@ -15,18 +15,25 @@ from .conftest import skip_if_python_only
 
 def tcp_server_process(control_pipe):
     control_pipe[0].close()
-    settings = Settings({'test_setting': 42})
-    data = {'test1': 10, 'test2': [None, True, 'testing']}
-    receiver = Reference('test_receiver.test_port2')
+    settings = Settings({"test_setting": 42})
+    data = {"test1": 10, "test2": [None, True, "testing"]}
+    receiver = Reference("test_receiver.test_port2")
     message = MPPMessage(
-            Reference('test_sender.test_port'),
-            receiver,
-            10, 1.0, 2.0, settings, 0, 1.0, data).encoded()
+        Reference("test_sender.test_port"),
+        receiver,
+        10,
+        1.0,
+        2.0,
+        settings,
+        0,
+        1.0,
+        data,
+    ).encoded()
 
     def handle_request(request_bytes):
         request = msgpack.unpackb(request_bytes, raw=False)
         assert request[0] == RequestType.GET_NEXT_MESSAGE.value
-        assert request[1] == 'test_receiver.test_port2'
+        assert request[1] == "test_receiver.test_port2"
         return message
 
     post_office = MagicMock()
@@ -52,16 +59,16 @@ def test_cpp_tcp_client(log_file_in_tmpdir):
     # create C++ client
     # it receives and checks settings, and sends a log message
     # see libmuscle/cpp/src/libmuscle/tests/mpp_client_test.cpp
-    cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
+    cpp_build_dir = Path(__file__).parents[1] / "libmuscle" / "cpp" / "build"
     env = os.environ.copy()
-    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    if 'LD_LIBRARY_PATH' in env:
-        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    lib_paths = [cpp_build_dir / "msgpack" / "msgpack" / "lib"]
+    if "LD_LIBRARY_PATH" in env:
+        env["LD_LIBRARY_PATH"] += ":" + ":".join(map(str, lib_paths))
     else:
-        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+        env["LD_LIBRARY_PATH"] = ":".join(map(str, lib_paths))
 
-    cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
-    cpp_test_client = cpp_test_dir / 'mpp_client_test'
+    cpp_test_dir = cpp_build_dir / "libmuscle" / "tests"
+    cpp_test_client = cpp_test_dir / "mpp_client_test"
     result = subprocess.run([str(cpp_test_client), server_loc], env=env)
 
     server_pipe[0].send(None)

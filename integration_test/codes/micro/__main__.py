@@ -2,13 +2,11 @@ from ymmsl import Operator
 
 from libmuscle import Instance, Message
 
-instance = Instance({
-        Operator.F_INIT: ['init'],
-        Operator.O_F: ['final']})
+instance = Instance({Operator.F_INIT: ["init"], Operator.O_F: ["final"]})
 
 while instance.reuse_instance():
     # f_init
-    msg = instance.receive('init')
+    msg = instance.receive("init")
 
     # o_f
-    instance.send('final', Message(msg.timestamp, msg.next_timestamp, msg.data))
+    instance.send("final", Message(msg.timestamp, msg.next_timestamp, msg.data))

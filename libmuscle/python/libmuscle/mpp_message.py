@@ -16,6 +16,7 @@ class ExtTypeId(IntEnum):
     built-in ones. These are distinguished by a number from 0 to 127.
     This class is our registry of extension type ids.
     """
+
     CLOSE_PORT = 0
     SETTINGS = 1
     GRID_INT32 = 2
@@ -26,11 +27,12 @@ class ExtTypeId(IntEnum):
 
 
 _grid_types = {
-        ExtTypeId.GRID_INT32,
-        ExtTypeId.GRID_INT64,
-        ExtTypeId.GRID_FLOAT32,
-        ExtTypeId.GRID_FLOAT64,
-        ExtTypeId.GRID_BOOL}
+    ExtTypeId.GRID_INT32,
+    ExtTypeId.GRID_INT64,
+    ExtTypeId.GRID_FLOAT32,
+    ExtTypeId.GRID_FLOAT64,
+    ExtTypeId.GRID_BOOL,
+}
 
 
 class ClosePort:
@@ -42,26 +44,27 @@ class ClosePort:
 
     All information is carried by the type, this has no attributes.
     """
+
     pass
 
 
 def _encode_grid(grid: Grid) -> msgpack.ExtType:
-    """Encodes a Grid object into the wire format.
-    """
+    """Encodes a Grid object into the wire format."""
     ext_type_map = {
-            'int32': ExtTypeId.GRID_INT32,
-            'int64': ExtTypeId.GRID_INT64,
-            'float32': ExtTypeId.GRID_FLOAT32,
-            'float64': ExtTypeId.GRID_FLOAT64,
-            'bool': ExtTypeId.GRID_BOOL}
+        "int32": ExtTypeId.GRID_INT32,
+        "int64": ExtTypeId.GRID_INT64,
+        "float32": ExtTypeId.GRID_FLOAT32,
+        "float64": ExtTypeId.GRID_FLOAT64,
+        "bool": ExtTypeId.GRID_BOOL,
+    }
 
     array = grid.array
     if array.flags.f_contiguous:
         # indexes that differ in the first place are adjacent
-        order = 'fa'
+        order = "fa"
     else:
         # indexes that differ in the last place are adjacent
-        order = 'la'
+        order = "la"
 
     # dtype is a bit weird, but this seems to be consistent
     if isinstance(array.dtype, np.dtype):
@@ -70,41 +73,40 @@ def _encode_grid(grid: Grid) -> msgpack.ExtType:
         array_type = str(np.dtype(array_type))
 
     if array_type not in ext_type_map:
-        raise RuntimeError('Unsupported array data type')
+        raise RuntimeError("Unsupported array data type")
 
-    buf = array.tobytes(order='A')
+    buf = array.tobytes(order="A")
 
     # array_type is redundant, but useful metadata.
     grid_dict = {
-            'type': array_type,
-            'shape': list(array.shape),
-            'order': order,
-            'data': buf,
-            'indexes': grid.indexes}
+        "type": array_type,
+        "shape": list(array.shape),
+        "order": order,
+        "data": buf,
+        "indexes": grid.indexes,
+    }
     packed_data = msgpack.packb(grid_dict, use_bin_type=True)
     return msgpack.ExtType(ext_type_map[array_type], packed_data)
 
 
 def _decode_grid(code: int, data: Buffer) -> Grid:
-    """Creates a Grid from serialised data.
-    """
+    """Creates a Grid from serialised data."""
     type_map = {
-            ExtTypeId.GRID_INT32: np.int32,
-            ExtTypeId.GRID_INT64: np.int64,
-            ExtTypeId.GRID_FLOAT32: np.float32,
-            ExtTypeId.GRID_FLOAT64: np.float64,
-            ExtTypeId.GRID_BOOL: np.bool_}
+        ExtTypeId.GRID_INT32: np.int32,
+        ExtTypeId.GRID_INT64: np.int64,
+        ExtTypeId.GRID_FLOAT32: np.float32,
+        ExtTypeId.GRID_FLOAT64: np.float64,
+        ExtTypeId.GRID_BOOL: np.bool_,
+    }
 
-    order_map = {
-            'fa': 'F',
-            'la': 'C'}
+    order_map = {"fa": "F", "la": "C"}
 
     grid_dict = msgpack.unpackb(data, raw=False)
-    order = order_map[grid_dict['order']]
-    shape = tuple(grid_dict['shape'])
+    order = order_map[grid_dict["order"]]
+    shape = tuple(grid_dict["shape"])
     dtype = type_map[ExtTypeId(code)]
-    array = np.ndarray(shape, dtype, grid_dict['data'], order=order)  # type: ignore
-    indexes = grid_dict['indexes']
+    array = np.ndarray(shape, dtype, grid_dict["data"], order=order)  # type: ignore
+    indexes = grid_dict["indexes"]
     if indexes == []:
         indexes = None
     return Grid(array, indexes)
@@ -117,10 +119,9 @@ def _data_encoder(obj: Any) -> Any:
     numpy.ndarray objects the user may want to send.
     """
     if isinstance(obj, ClosePort):
-        return msgpack.ExtType(ExtTypeId.CLOSE_PORT, b'')
+        return msgpack.ExtType(ExtTypeId.CLOSE_PORT, b"")
     elif isinstance(obj, Settings):
-        packed_data = msgpack.packb(obj.as_ordered_dict(),
-                                    use_bin_type=True)
+        packed_data = msgpack.packb(obj.as_ordered_dict(), use_bin_type=True)
         return msgpack.ExtType(ExtTypeId.SETTINGS, packed_data)
     elif isinstance(obj, np.ndarray):
         return _encode_grid(Grid(obj))
@@ -147,13 +148,20 @@ class MPPMessage:
     they can be routed by a MUSCLE Transport Overlay when we get to
     multi-site running in the future.
     """
-    def __init__(self, sender: Reference, receiver: Reference,
-                 port_length: Optional[int],
-                 timestamp: float, next_timestamp: Optional[float],
-                 settings_overlay: Settings, message_number: int,
-                 saved_until: float, data: Any,
-                 iteration: Optional[list] = None
-                 ) -> None:
+
+    def __init__(
+        self,
+        sender: Reference,
+        receiver: Reference,
+        port_length: Optional[int],
+        timestamp: float,
+        next_timestamp: Optional[float],
+        settings_overlay: Settings,
+        message_number: int,
+        saved_until: float,
+        data: Any,
+        iteration: Optional[list] = None
+    ) -> None:
         """Create an MPPMessage.
 
         Senders and receivers are refered to by a Reference, which
@@ -196,14 +204,13 @@ class MPPMessage:
             self.data = data
 
     @staticmethod
-    def from_bytes(message: Buffer) -> 'MPPMessage':
+    def from_bytes(message: Buffer) -> "MPPMessage":
         """Create an MPP Message from an encoded buffer.
 
         Args:
             message: MessagePack encoded message data.
         """
-        message_dict = msgpack.unpackb(
-                message, ext_hook=_ext_decoder, raw=False)
+        message_dict = msgpack.unpackb(message, ext_hook=_ext_decoder, raw=False)
         sender = Reference(message_dict["sender"])
         receiver = Reference(message_dict["receiver"])
         port_length = message_dict["port_length"]
@@ -216,25 +223,34 @@ class MPPMessage:
         data = message_dict["data"]
         iteration = message_dict.get("iteration")
         return MPPMessage(
-                sender, receiver, port_length, timestamp, next_timestamp,
-                settings_overlay, message_number, saved_until, data,
-                iteration)
+            sender,
+            receiver,
+            port_length,
+            timestamp,
+            next_timestamp,
+            settings_overlay,
+            message_number,
+            saved_until,
+            data,
+            iteration
+        )
 
     def encoded(self) -> Buffer:
-        """Encode the message and return as a bytes buffer.
-        """
+        """Encode the message and return as a bytes buffer."""
         message_dict = {
-                'sender': str(self.sender),
-                'receiver': str(self.receiver),
-                'port_length': self.port_length,
-                'timestamp': self.timestamp,
-                'next_timestamp': self.next_timestamp,
-                'settings_overlay': self.settings_overlay,
-                'message_number': self.message_number,
-                'saved_until': self.saved_until,
-                'data': self.data,
-                'iteration': self.iteration
-                }
+            "sender": str(self.sender),
+            "receiver": str(self.receiver),
+            "port_length": self.port_length,
+            "timestamp": self.timestamp,
+            "next_timestamp": self.next_timestamp,
+            "settings_overlay": self.settings_overlay,
+            "message_number": self.message_number,
+            "saved_until": self.saved_until,
+            "data": self.data,
+            "iteration": self.iteration,
+        }
 
-        return cast(Buffer, msgpack.packb(
-            message_dict, default=_data_encoder, use_bin_type=True))
+        return cast(
+            Buffer,
+            msgpack.packb(message_dict, default=_data_encoder, use_bin_type=True),
+        )

@@ -8,14 +8,14 @@ from libmuscle.pytest import MuscleTester
 
 from libmuscle import Message
 
-YMMSL_CODES_DIR = Path(__file__).parent / 'ymmsl' / 'codes'
-CODES_DIR = Path(__file__).parent / 'codes'
+YMMSL_CODES_DIR = Path(__file__).parent / "ymmsl" / "codes"
+CODES_DIR = Path(__file__).parent / "codes"
 
 
 @pytest.fixture(autouse=True)
 def set_pythonpath(monkeypatch):
     """Ensure the codes directory is on PYTHONPATH so 'python3 -m micro' works."""
-    monkeypatch.setenv("PYTHONPATH", str(CODES_DIR),  prepend=":")
+    monkeypatch.setenv("PYTHONPATH", str(CODES_DIR), prepend=":")
 
 
 def test_micro_model_with_tester(muscle3_tester: MuscleTester) -> None:
@@ -30,14 +30,14 @@ def test_micro_model_with_tester(muscle3_tester: MuscleTester) -> None:
       - Expects to receive the same integers back on 'final'
     """
     tester = muscle3_tester.start_implementation(
-        YMMSL_CODES_DIR / 'micro1.ymmsl','micro1'
-        )
+        YMMSL_CODES_DIR / "micro1.ymmsl", "micro1"
+    )
 
     for i in range(2):
         msg = Message(float(i) * 10.0, float(i + 1) * 10.0, i)
 
-        tester.send('init', msg)
-        reply = tester.receive('final')
+        tester.send("init", msg)
+        reply = tester.receive("final")
 
         assert reply.data == i, (
             f"Iteration {i}: expected micro to echo back {i}, got {reply.data}"
@@ -60,17 +60,17 @@ def test_macro_model_with_tester(muscle3_tester: MuscleTester) -> None:
       - Sends the same value back on 'in'
     """
     tester = muscle3_tester.start_implementation(
-        YMMSL_CODES_DIR / 'macro.ymmsl', 'macro'
-        )
+        YMMSL_CODES_DIR / "macro.ymmsl", "macro"
+    )
 
     for i in range(2):
-        msg = tester.receive('out')
+        msg = tester.receive("out")
         assert msg.data == i, (
             f"Iteration {i}: expected macro to send {i}, got {msg.data}"
         )
 
         reply = Message(msg.timestamp, msg.next_timestamp, msg.data)
-        tester.send('in', reply)
+        tester.send("in", reply)
 
 
 def test_receive_timeout_raises_error(muscle3_tester: MuscleTester) -> None:
@@ -81,18 +81,19 @@ def test_receive_timeout_raises_error(muscle3_tester: MuscleTester) -> None:
     the tester's receive will time out and raise a RuntimeError.
     """
     tester = muscle3_tester.start_implementation(
-        YMMSL_CODES_DIR / 'micro1.ymmsl', 'micro1', default_timeout=2.0
+        YMMSL_CODES_DIR / "micro1.ymmsl", "micro1", default_timeout=2.0
     )
 
     with pytest.raises(RuntimeError):
-        tester.receive('final')
+        tester.receive("final")
+
 
 def test_failing_actor(muscle3_tester: MuscleTester) -> None:
     """Test that a RuntimeError is raised when the actor crashes after registering.
 
     The test_program registers with MUSCLE3 using start_implementation, then crashes.
     Any subsequent communication attempt should raise a RuntimeError. This RuntimeError
-    should be raised in at least min(RECONNECT_TIMEOUT, default_timeout) seconds. 
+    should be raised in at least min(RECONNECT_TIMEOUT, default_timeout) seconds.
     """
     default_timeout = 1.0
     tester = muscle3_tester.start_implementation(
@@ -111,7 +112,7 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
 
     start = time.monotonic()
     with pytest.raises(RuntimeError):
-        tester.receive('output')
+        tester.receive("output")
     elapsed = time.monotonic() - start
 
     eps = 5
@@ -120,6 +121,7 @@ def test_failing_actor(muscle3_tester: MuscleTester) -> None:
         f"Expected reconnection retries to take at most {max_allowed_time:.1f} s "
         f"(including {eps}s eps), but it took {elapsed:.1f} s"
     )
+
 
 def test_failing_executable(muscle3_tester: MuscleTester) -> None:
     """Test that a RuntimeError is raised within default_timeout seconds when the
@@ -153,4 +155,3 @@ def test_failing_executable(muscle3_tester: MuscleTester) -> None:
         f"Expected start_implementation to raise within {max_allowed_time:.1f} s "
         f"(including {eps}s eps), but it took {elapsed:.1f} s"
     )
-

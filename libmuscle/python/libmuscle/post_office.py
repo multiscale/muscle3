@@ -13,9 +13,9 @@ class PostOffice:
     A PostOffice holds outboxes with messages for receivers. It also
     acts as a request handler for incoming requests for messages.
     """
+
     def __init__(self) -> None:
-        """Create a PostOffice.
-        """
+        """Create a PostOffice."""
         self._outboxes: dict[Reference, Outbox] = {}
 
         self._outbox_lock = Lock()
@@ -52,8 +52,7 @@ class PostOffice:
         self._outboxes[receiver].deposit(message)
 
     def wait_for_receivers(self) -> None:
-        """Waits until all outboxes are empty.
-        """
+        """Waits until all outboxes are empty."""
         for outbox in self._outboxes.values():
             while not outbox.is_empty():
                 time.sleep(0.1)

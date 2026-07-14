@@ -12,6 +12,7 @@ class TopologyStore:
     Attributes:
         conduits (list[Conduit]): A list of conduits.
     """
+
     def __init__(self, config: Configuration) -> None:
         """Creates a TopologyStore.
 
@@ -59,8 +60,7 @@ class TopologyStore:
         """
         return self.model.components[component].ports
 
-    def get_peer_dimensions(self, component: Reference
-                            ) -> dict[Reference, list[int]]:
+    def get_peer_dimensions(self, component: Reference) -> dict[Reference, list[int]]:
         """Returns the dimensions of peer components.
 
         For each component that the given component shares a conduit with,
@@ -105,6 +105,6 @@ class TopologyStore:
             if dims >= peer_dims:
                 peers.append(base)
             else:
-                for peer_indices in generate_indices(peer_dims[len(dims):]):
+                for peer_indices in generate_indices(peer_dims[len(dims) :]):
                     peers.append(base + peer_indices)
         return peers

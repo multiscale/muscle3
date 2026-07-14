@@ -7,6 +7,7 @@ class IAgentManager:
     Only implemented by AgentManager, and only exists to avoid a circular dependency
     between AgentManager, MAPServer, and MAPRequestHandler. Ugh.
     """
+
     def report_resources(self, resources: OnNodeResources) -> None:
         """Report resources found on a node.
 

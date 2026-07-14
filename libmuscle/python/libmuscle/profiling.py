@@ -7,6 +7,7 @@ from ymmsl.v0_2 import Port
 
 class ProfileEventType(Enum):
     """Profiling event types for MUSCLE3."""
+
     REGISTER = 0
     CONNECT = 4
     SEND = 2
@@ -29,6 +30,7 @@ class ProfileTimestamp:
     Attributes:
         nanoseconds: Nanoseconds since the UNIX epoch.
     """
+
     _time_ref = time_ns() - perf_counter_ns()
 
     def __init__(self, nanoseconds: Optional[int] = None) -> None:
@@ -78,18 +80,19 @@ class ProfileEvent:
         message_timestamp: Timestamp sent with the message, if
                 applicable.
     """
+
     def __init__(
-            self,
-            event_type: ProfileEventType,
-            start_time: Optional[ProfileTimestamp] = None,
-            stop_time: Optional[ProfileTimestamp] = None,
-            port: Optional[Port] = None,
-            port_length: Optional[int] = None,
-            slot: Optional[int] = None,
-            message_number: Optional[int] = None,
-            message_size: Optional[int] = None,
-            message_timestamp: Optional[float] = None
-            ) -> None:
+        self,
+        event_type: ProfileEventType,
+        start_time: Optional[ProfileTimestamp] = None,
+        stop_time: Optional[ProfileTimestamp] = None,
+        port: Optional[Port] = None,
+        port_length: Optional[int] = None,
+        slot: Optional[int] = None,
+        message_number: Optional[int] = None,
+        message_size: Optional[int] = None,
+        message_timestamp: Optional[float] = None,
+    ) -> None:
 
         self.event_type = event_type
         self.start_time = start_time
@@ -102,11 +105,9 @@ class ProfileEvent:
         self.message_timestamp = message_timestamp
 
     def start(self) -> None:
-        """Sets start_time to the current time.
-        """
+        """Sets start_time to the current time."""
         self.start_time = ProfileTimestamp()
 
     def stop(self) -> None:
-        """Sets stop_time to the current time.
-        """
+        """Sets stop_time to the current time."""
         self.stop_time = ProfileTimestamp()

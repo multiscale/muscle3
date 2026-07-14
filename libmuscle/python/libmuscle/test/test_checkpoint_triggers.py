@@ -64,14 +64,14 @@ def test_range_checkpoint_trigger_default_stop():
     range = CheckpointRangeRule(start=1.0, every=1.2)
     trigger = RangeCheckpointTrigger(range)
 
-    assert trigger.next_checkpoint(-1.) == 1
-    assert trigger.previous_checkpoint(-1.) is None
+    assert trigger.next_checkpoint(-1.0) == 1
+    assert trigger.previous_checkpoint(-1.0) is None
 
-    assert trigger.next_checkpoint(148148.) == pytest.approx(148148.2)
-    assert trigger.previous_checkpoint(148148.) == pytest.approx(148147)
+    assert trigger.next_checkpoint(148148.0) == pytest.approx(148148.2)
+    assert trigger.previous_checkpoint(148148.0) == pytest.approx(148147)
 
-    assert trigger.next_checkpoint(148148148.) == pytest.approx(148148149)
-    assert trigger.previous_checkpoint(148148148.) == pytest.approx(148148147.8)
+    assert trigger.next_checkpoint(148148148.0) == pytest.approx(148148149)
+    assert trigger.previous_checkpoint(148148148.0) == pytest.approx(148148147.8)
 
 
 def test_range_checkpoint_trigger_default_start():
@@ -84,19 +84,19 @@ def test_range_checkpoint_trigger_default_start():
     assert trigger.next_checkpoint(0.0) == pytest.approx(1.2)
     assert trigger.previous_checkpoint(0.0) == pytest.approx(0.0)
 
-    assert trigger.next_checkpoint(-148148.) == pytest.approx(-148147.2)
-    assert trigger.previous_checkpoint(-148148.) == pytest.approx(-148148.4)
+    assert trigger.next_checkpoint(-148148.0) == pytest.approx(-148147.2)
+    assert trigger.previous_checkpoint(-148148.0) == pytest.approx(-148148.4)
 
 
 def test_combined_checkpoint_trigger_every_at():
     rules = [CheckpointRangeRule(every=10.0), CheckpointAtRule([3.0, 7.0, 13.0, 17.0])]
     trigger = CombinedCheckpointTriggers(rules)
 
-    assert trigger.next_checkpoint(-11.) == pytest.approx(-10)
+    assert trigger.next_checkpoint(-11.0) == pytest.approx(-10)
     assert trigger.previous_checkpoint(-11) == pytest.approx(-20)
 
-    assert trigger.next_checkpoint(0.) == pytest.approx(3)
-    assert trigger.previous_checkpoint(0.) == pytest.approx(0)
+    assert trigger.next_checkpoint(0.0) == pytest.approx(3)
+    assert trigger.previous_checkpoint(0.0) == pytest.approx(0)
 
     assert trigger.next_checkpoint(8.3) == pytest.approx(10)
     assert trigger.previous_checkpoint(8.3) == pytest.approx(7)
@@ -109,16 +109,18 @@ def test_combined_checkpoint_trigger_every_at():
 
 
 def test_combined_checkpoint_trigger_at_ranges():
-    rules = [CheckpointAtRule([3.0, 7.0, 13.0, 17.0]),
-             CheckpointRangeRule(start=0.0, every=5.0, stop=20.0),
-             CheckpointRangeRule(start=20.0, every=20.0, stop=100.0)]
+    rules = [
+        CheckpointAtRule([3.0, 7.0, 13.0, 17.0]),
+        CheckpointRangeRule(start=0.0, every=5.0, stop=20.0),
+        CheckpointRangeRule(start=20.0, every=20.0, stop=100.0),
+    ]
     trigger = CombinedCheckpointTriggers(rules)
 
-    assert trigger.next_checkpoint(-11.) == pytest.approx(0)
+    assert trigger.next_checkpoint(-11.0) == pytest.approx(0)
     assert trigger.previous_checkpoint(-11) is None
 
-    assert trigger.next_checkpoint(0.) == pytest.approx(3)
-    assert trigger.previous_checkpoint(0.) == pytest.approx(0)
+    assert trigger.next_checkpoint(0.0) == pytest.approx(3)
+    assert trigger.previous_checkpoint(0.0) == pytest.approx(0)
 
     assert trigger.next_checkpoint(8.3) == pytest.approx(10)
     assert trigger.previous_checkpoint(8.3) == pytest.approx(7)
@@ -152,10 +154,14 @@ def test_trigger_manager_reference_time():
 def test_trigger_manager():
     ref_elapsed = 0.0
     trigger_manager = TriggerManager()
-    trigger_manager.set_checkpoint_info(ref_elapsed, Checkpoints(
+    trigger_manager.set_checkpoint_info(
+        ref_elapsed,
+        Checkpoints(
             at_end=True,
             wallclock_time=[CheckpointAtRule([1e-12])],
-            simulation_time=[CheckpointAtRule([1.0, 3.0, 5.0])]))
+            simulation_time=[CheckpointAtRule([1.0, 3.0, 5.0])],
+        ),
+    )
 
     assert trigger_manager.should_save_snapshot(0.1)
     triggers = trigger_manager.get_triggers()

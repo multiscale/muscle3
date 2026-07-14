@@ -25,6 +25,7 @@ class Plate:
     program-implemented conduit and therefore final. The other one does the same, but
     the other way around, and the bool referring to the sending endpoint.
     """
+
     def __init__(self) -> None:
         """Create a Plate."""
         self._by_snd: dict[Reference, ConduitIndex] = {}
@@ -39,9 +40,13 @@ class Plate:
             recv_final: True iff the receiver is final (a program port)
         """
         self._by_snd.setdefault(conduit.sender, {})[conduit.receiver] = (
-                conduit, recv_final)
+            conduit,
+            recv_final,
+        )
         self._by_recv.setdefault(conduit.receiver, {})[conduit.sender] = (
-                conduit, snd_final)
+            conduit,
+            snd_final,
+        )
 
     def pop_by_receiver(self, receiver: Reference) -> ConduitIndex:
         """Remove and return all conduits with the given receiver.
@@ -93,7 +98,8 @@ being added to the flattened model.
 
 
 def process_components(
-        nested_config: Configuration, flat_model: Model, node: Node) -> list[Node]:
+    nested_config: Configuration, flat_model: Model, node: Node
+) -> list[Node]:
     """Copy components to the flattened model.
 
     This copies the components in the given model in nested_config to flat_model,
@@ -118,7 +124,8 @@ def process_components(
         cmp_path = parent_path + component.name
         cmp_mult = parent_mult + component.multiplicity
         impl_ref = nested_config.custom_implementations.get(
-                cmp_path, component.implementation)
+            cmp_path, component.implementation
+        )
         if impl_ref is None:
             continue
 
@@ -135,8 +142,8 @@ def process_components(
 
 
 def process_conduits(
-        nested_config: Configuration, flat_model: Model, node: Node, plate: Plate
-        ) -> None:
+    nested_config: Configuration, flat_model: Model, node: Node, plate: Plate
+) -> None:
     """Copy flat conduits to flat model and partial conduits to plate.
 
     This takes the conduits from current node's model, prefixes them with its component
@@ -157,7 +164,8 @@ def process_conduits(
         snd_cmp = conduit.sending_component()
         if snd_cmp != Reference([]):
             snd_impl = nested_config.custom_implementations.get(
-                    parent_path + snd_cmp, model.components[snd_cmp].implementation)
+                parent_path + snd_cmp, model.components[snd_cmp].implementation
+            )
             if snd_impl is None:
                 continue
             snd_is_program = snd_impl not in nested_config.models
@@ -167,7 +175,8 @@ def process_conduits(
         recv_cmp = conduit.receiving_component()
         if recv_cmp != Reference([]):
             recv_impl = nested_config.custom_implementations.get(
-                    parent_path + recv_cmp, model.components[recv_cmp].implementation)
+                parent_path + recv_cmp, model.components[recv_cmp].implementation
+            )
             if recv_impl is None:
                 continue
             recv_is_program = recv_impl not in nested_config.models
@@ -175,9 +184,10 @@ def process_conduits(
             recv_is_program = False
 
         prefixed_conduit = Conduit(
-                str(parent_path + conduit.sender),
-                str(parent_path + conduit.receiver),
-                conduit.filters)
+            str(parent_path + conduit.sender),
+            str(parent_path + conduit.receiver),
+            conduit.filters,
+        )
         if snd_is_program and recv_is_program:
             flat_model.conduits.append(prefixed_conduit)
         else:
@@ -185,8 +195,8 @@ def process_conduits(
 
 
 def glue_partial_conduits(
-        nested_config: Configuration, flat_model: Model, node: Node, plate: Plate
-        ) -> None:
+    nested_config: Configuration, flat_model: Model, node: Node, plate: Plate
+) -> None:
     """Glue together conduits at model ports.
 
     Conduits that do not lead directly from one program-implemented conduit to another
@@ -216,8 +226,10 @@ def glue_partial_conduits(
         for in_cdt, snd_final in incoming_conduits.values():
             for out_cdt, recv_final in outgoing_conduits.values():
                 joined_cdt = Conduit(
-                        str(in_cdt.sender), str(out_cdt.receiver),
-                        in_cdt.filters + out_cdt.filters)
+                    str(in_cdt.sender),
+                    str(out_cdt.receiver),
+                    in_cdt.filters + out_cdt.filters,
+                )
 
                 if snd_final and recv_final:
                     flat_model.conduits.append(joined_cdt)
@@ -226,8 +238,8 @@ def glue_partial_conduits(
 
 
 def flatten(
-        nested_config: Configuration, model: Optional[Reference] = None
-        ) -> Configuration:
+    nested_config: Configuration, model: Optional[Reference] = None
+) -> Configuration:
     """Creates a flat version of the given configuration.
 
     The result will have a single model, without any components that have a model for
@@ -258,8 +270,13 @@ def flatten(
     plate = Plate()
     root_model = config.root_model(model)
     flat_model = Model(
-            str(root_model.name), Ports(), root_model.description,
-            root_model.supported_settings, [], [])
+        str(root_model.name),
+        Ports(),
+        root_model.description,
+        root_model.supported_settings,
+        [],
+        [],
+    )
 
     queue: list[Node] = [(root_model, Reference([]), [])]
     while queue:

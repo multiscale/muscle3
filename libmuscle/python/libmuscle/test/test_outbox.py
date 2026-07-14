@@ -16,11 +16,8 @@ def outbox():
 def message():
     Ref = Reference
     return MPPMessage(
-            Ref('sender.out'), Ref('receiver.in'),
-            None, 0.0, 1.0,
-            b'',
-            0, 1.0,
-            b'testing')
+        Ref("sender.out"), Ref("receiver.in"), None, 0.0, 1.0, b"", 0, 1.0, b"testing"
+    )
 
 
 def test_create_outbox():

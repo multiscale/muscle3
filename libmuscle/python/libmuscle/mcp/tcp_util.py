@@ -7,8 +7,8 @@ import libmuscle.mark as mark
 
 
 class SocketClosed(Exception):
-    """Raised when trying to read from a socket that was closed.
-    """
+    """Raised when trying to read from a socket that was closed."""
+
     pass
 
 
@@ -45,7 +45,8 @@ def recv_all(socket: SocketType, length: int) -> Buffer:
         mark.before_tcp_receive(socket)
         bytes_left = length - received_count
         received_now = socket.recv_into(
-            memoryview(databuf)[received_count:], bytes_left)
+            memoryview(databuf)[received_count:], bytes_left
+        )
 
         if received_now == 0:
             raise SocketClosed("Socket closed while receiving")
@@ -68,7 +69,7 @@ def send_int64(socket: SocketType, data: int) -> None:
     Raises:
         RuntimeError: If there was an error sending the data.
     """
-    buf = data.to_bytes(8, byteorder='little')
+    buf = data.to_bytes(8, byteorder="little")
     mark.before_tcp_send(socket)
     socket.sendall(buf)
 
@@ -85,7 +86,7 @@ def recv_int64(socket: SocketType) -> int:
     """
     mark.before_tcp_receive(socket)
     buf = recv_all(socket, 8)
-    return int.from_bytes(buf, 'little')
+    return int.from_bytes(buf, "little")
 
 
 def send_frame(socket: SocketType, data: Buffer) -> None:

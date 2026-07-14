@@ -34,6 +34,7 @@ class LogHandlingThread(Thread):
     This gets log records from a queue and sends them to the logging
     system.
     """
+
     def __init__(self, queue: Queue) -> None:
         """Creates a LogHandlingThread.
 
@@ -65,9 +66,13 @@ _ResultType = Union[Process, CrashedResult]
 
 class InstanceManager:
     """Instantiates and manages running instances"""
+
     def __init__(
-            self, configuration: Configuration, run_dir: RunDir,
-            instance_registry: InstanceRegistry) -> None:
+        self,
+        configuration: Configuration,
+        run_dir: RunDir,
+        instance_registry: InstanceRegistry,
+    ) -> None:
         """Create an InstanceManager.
 
         Args:
@@ -85,8 +90,12 @@ class InstanceManager:
         self._log_records_in: Queue[logging.LogRecord] = Queue()
 
         self._instantiator = NativeInstantiator(
-                self._resources_in, self._requests_out, self._results_in,
-                self._log_records_in, self._run_dir.path)
+            self._resources_in,
+            self._requests_out,
+            self._results_in,
+            self._log_records_in,
+            self._run_dir.path,
+        )
         self._instantiator.start()
 
         self._log_handler = LogHandlingThread(self._log_records_in)
@@ -95,11 +104,12 @@ class InstanceManager:
         self._allocations: Optional[dict[Reference, ResourceAssignment]] = None
 
         resources = self._resources_in.get()
-        _logger.debug(f'Got resources {resources}')
+        _logger.debug(f"Got resources {resources}")
         if isinstance(resources, CrashedResult):
             msg = (
-                'Instantiator crashed. This should not happen, please file a bug'
-                ' report.')
+                "Instantiator crashed. This should not happen, please file a bug"
+                " report."
+            )
             _logger.error(msg)
             raise RuntimeError(msg) from resources.exception
 
@@ -121,36 +131,44 @@ class InstanceManager:
         """Starts all the instances of the model."""
         self._allocations = self._planner.allocate_all(self._configuration)
         for instance, resources in self._allocations.items():
-            _logger.info(f'Planned {instance} on {resources.as_resources()}')
+            _logger.info(f"Planned {instance} on {resources.as_resources()}")
 
         model = self._configuration.root_model()
         for instance, resources in self._allocations.items():
             component = model.components[instance.without_trailing_ints()]
             if component.implementation is None:
                 _logger.warning(
-                        f'No implementation specified for {component.name}'
-                        ', not starting it.')
+                    f"No implementation specified for {component.name}"
+                    ", not starting it."
+                )
                 continue
             program = self._configuration.programs[component.implementation]
             if program.execution_model is ExecutionModel.MANUAL:
                 _logger.info(
-                        f'Instance {instance} has execution_model MANUAL'
-                        ' - please start it manually.')
+                    f"Instance {instance} has execution_model MANUAL"
+                    " - please start it manually."
+                )
                 continue
-            program.env['MUSCLE_MANAGER'] = self._manager_location
+            program.env["MUSCLE_MANAGER"] = self._manager_location
             idir = self._run_dir.add_instance_dir(instance)
-            workdir = idir / 'workdir'
+            workdir = idir / "workdir"
             workdir.mkdir()
-            stdout_path = idir / 'stdout.txt'
-            stderr_path = idir / 'stderr.txt'
+            stdout_path = idir / "stdout.txt"
+            stderr_path = idir / "stderr.txt"
 
             res_req = self._configuration.get_resources(model.name + component.name)
 
             request = InstantiationRequest(
-                    instance, program,
-                    res_req,
-                    resources, idir, workdir, stdout_path, stderr_path)
-            _logger.info(f'Instantiating {instance}')
+                instance,
+                program,
+                res_req,
+                resources,
+                idir,
+                workdir,
+                stdout_path,
+                stderr_path,
+            )
+            _logger.info(f"Instantiating {instance}")
             self._requests_out.put(request)
             self._num_running += 1
 
@@ -165,7 +183,8 @@ class InstanceManager:
         """
         if self._allocations is None:
             raise RuntimeError(
-                    'Tried to get resources but we are running without --start-all')
+                "Tried to get resources but we are running without --start-all"
+            )
 
         return self._allocations
 
@@ -190,8 +209,9 @@ class InstanceManager:
                     _logger.error(str(result.exception))
                 else:
                     _logger.error(
-                        'Instantiator crashed. This should not happen, please file'
-                        ' a bug report.')
+                        "Instantiator crashed. This should not happen, please file"
+                        " a bug report."
+                    )
                 return False
 
             results.append(result)
@@ -209,93 +229,93 @@ class InstanceManager:
             if result.status == ProcessStatus.CANCELED:
                 if result.exit_code == 0:
                     _logger.info(
-                            f'Instance {result.instance} was not started'
-                            f' because of an error elsewhere')
+                        f"Instance {result.instance} was not started"
+                        f" because of an error elsewhere"
+                    )
                 else:
                     _logger.info(
-                            f'Instance {result.instance} was shut down by'
-                            f' MUSCLE3 because an error occurred elsewhere')
+                        f"Instance {result.instance} was shut down by"
+                        f" MUSCLE3 because an error occurred elsewhere"
+                    )
                 # Ensure we don't see this as a succesful run when shutdown() is called
                 # by another thread:
                 all_seemingly_okay = False
             else:
-                stderr_file = (
-                        self._run_dir.instance_dir(result.instance) /
-                        'stderr.txt')
+                stderr_file = self._run_dir.instance_dir(result.instance) / "stderr.txt"
                 if result.exit_code == 0:
                     if self._instance_registry.did_register(result.instance):
                         _logger.info(
-                                f'Instance {result.instance} finished with'
-                                ' exit code 0')
+                            f"Instance {result.instance} finished with exit code 0"
+                        )
                     else:
                         _logger.error(
-                                f'Instance {result.instance} quit with no error'
-                                ' (exit code 0), but it never registered with the'
-                                ' manager. Maybe it never created an Instance'
-                                ' object?')
+                            f"Instance {result.instance} quit with no error"
+                            " (exit code 0), but it never registered with the"
+                            " manager. Maybe it never created an Instance"
+                            " object?"
+                        )
                         crashes.append((result, stderr_file))
                 else:
                     try:
                         with stderr_file.open() as f:
-                            peer_crash = any(['peer crash?' in line for line in f])
+                            peer_crash = any(["peer crash?" in line for line in f])
                     except FileNotFoundError:
                         peer_crash = False
 
                     if peer_crash:
                         _logger.warning(
-                                f'Instance {result.instance} crashed, likely because'
-                                f' an error occurred elsewhere.')
+                            f"Instance {result.instance} crashed, likely because"
+                            f" an error occurred elsewhere."
+                        )
                         indirect_crashes.append((result, stderr_file))
                     else:
                         _logger.error(
-                                f'Instance {result.instance} quit with exit code'
-                                f' {result.exit_code}')
+                            f"Instance {result.instance} quit with exit code"
+                            f" {result.exit_code}"
+                        )
                         crashes.append((result, stderr_file))
 
-            _logger.debug(f'Status: {result.status}')
-            _logger.debug(f'Exit code: {result.exit_code}')
-            _logger.debug(f'Error msg: {result.error_msg}')
+            _logger.debug(f"Status: {result.status}")
+            _logger.debug(f"Exit code: {result.exit_code}")
+            _logger.debug(f"Error msg: {result.error_msg}")
 
         # Show errors from crashed components
         if crashes:
             for result, stderr_file in crashes:
+                _logger.error(f"The last error output of {result.instance} was:")
+                _logger.error("\n" + indent(last_lines(stderr_file, 20), "    "))
                 _logger.error(
-                        f'The last error output of {result.instance} was:')
-                _logger.error(
-                        '\n' + indent(last_lines(stderr_file, 20), '    '))
-                _logger.error(
-                        'More output may be found in'
-                        f' {self._run_dir.instance_dir(result.instance)}\n'
-                        )
+                    "More output may be found in"
+                    f" {self._run_dir.instance_dir(result.instance)}\n"
+                )
         elif indirect_crashes:
             # Possibly a component exited without error, but prematurely. If this
             # caused ancillary crashes due to dropped connections, then the logs
             # of those will give a hint as to what the problem may be, so print
             # those instead.
             _logger.error(
-                    'At this point, one or more instances crashed because they'
-                    ' lost their connection to another instance, but no other'
-                    ' crashing instance was found that could have caused this.')
+                "At this point, one or more instances crashed because they"
+                " lost their connection to another instance, but no other"
+                " crashing instance was found that could have caused this."
+            )
             _logger.error(
-                    'This means that either another instance quit before it was'
-                    ' supposed to, but with exit code 0, or there was an actual'
-                    ' network problem that caused the connection to drop.')
-            _logger.error(
-                    'Here is the output of the instances that lost connection:')
+                "This means that either another instance quit before it was"
+                " supposed to, but with exit code 0, or there was an actual"
+                " network problem that caused the connection to drop."
+            )
+            _logger.error("Here is the output of the instances that lost connection:")
             for result, stderr_file in indirect_crashes:
+                _logger.error(f"The last error output of {result.instance} was:")
+                _logger.error("\n" + indent(last_lines(stderr_file, 20), "    "))
                 _logger.error(
-                        f'The last error output of {result.instance} was:')
-                _logger.error(
-                        '\n' + indent(last_lines(stderr_file, 20), '    '))
-                _logger.error(
-                        'More output may be found in'
-                        f' {self._run_dir.instance_dir(result.instance)}\n'
-                        )
+                    "More output may be found in"
+                    f" {self._run_dir.instance_dir(result.instance)}\n"
+                )
         elif not all_seemingly_okay:
             # shutdown() was called by another thread (e.g. the DeadlockDetector):
-            _logger.error('The simulation was aborted.')
+            _logger.error("The simulation was aborted.")
         else:
-            _logger.info('The simulation finished without error.')
+            _logger.info("The simulation finished without error.")
 
         return all_seemingly_okay
 
@@ -305,7 +325,7 @@ class InstanceManager:
         This will wait for any processes still running before shutting
         down and returning.
         """
-        _logger.debug('Shutting down instance manager')
+        _logger.debug("Shutting down instance manager")
         self._requests_out.put(CancelAllRequest())
         self._requests_out.put(ShutdownRequest())
         self._instantiator.join()
@@ -313,9 +333,12 @@ class InstanceManager:
         self._log_handler.join()
         # Close multiprocessing.Queues and ensure their feeder threads exit
         queues: list[Queue] = [
-                self._resources_in, self._requests_out,
-                self._results_in, self._log_records_in]
+            self._resources_in,
+            self._requests_out,
+            self._results_in,
+            self._log_records_in,
+        ]
         for queue in queues:
             queue.close()
             queue.join_thread()
-        _logger.debug('Instance manager shut down cleanly')
+        _logger.debug("Instance manager shut down cleanly")

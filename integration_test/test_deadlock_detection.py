@@ -18,6 +18,7 @@ def suppress_deadlock_exception_output(func):
             if "deadlock" not in exc_str and "did the peer crash?" not in exc_str:
                 raise
             sys.exit(1)
+
     return wrapper
 
 
@@ -136,79 +137,100 @@ settings:
 
 def test_no_deadlock(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_CONFIG, tmp_path,
-        {"macro": ("python", macro),
-         "micro": ("python", micro)})
+        MACRO_MICRO_CONFIG,
+        tmp_path,
+        {"macro": ("python", macro), "micro": ("python", micro)},
+    )
 
 
 def test_deadlock1(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_CONFIG, tmp_path,
-        {"macro": ("python", macro),
-         "micro": ("python", deadlocking_micro)},
-        expect_success=False)
+        MACRO_MICRO_CONFIG,
+        tmp_path,
+        {"macro": ("python", macro), "micro": ("python", deadlocking_micro)},
+        expect_success=False,
+    )
 
 
 def test_deadlock2(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_CONFIG, tmp_path,
-        {"macro": ("python", deadlocking_macro),
-         "micro": ("python", micro)},
-        expect_success=False)
+        MACRO_MICRO_CONFIG,
+        tmp_path,
+        {"macro": ("python", deadlocking_macro), "micro": ("python", micro)},
+        expect_success=False,
+    )
 
 
 def test_no_deadlock_with_dispatch(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_WITH_DISPATCH_CONFIG, tmp_path,
-        {"macro": ("python", macro),
-         "micro1": ("python", micro),
-         "micro2": ("python", micro),
-         "micro3": ("python", micro)})
+        MACRO_MICRO_WITH_DISPATCH_CONFIG,
+        tmp_path,
+        {
+            "macro": ("python", macro),
+            "micro1": ("python", micro),
+            "micro2": ("python", micro),
+            "micro3": ("python", micro),
+        },
+    )
 
 
 def test_deadlock1_with_dispatch(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_WITH_DISPATCH_CONFIG, tmp_path,
-        {"macro": ("python", macro),
-         "micro1": ("python", micro),
-         "micro2": ("python", deadlocking_micro),
-         "micro3": ("python", micro)},
-        expect_success=False)
+        MACRO_MICRO_WITH_DISPATCH_CONFIG,
+        tmp_path,
+        {
+            "macro": ("python", macro),
+            "micro1": ("python", micro),
+            "micro2": ("python", deadlocking_micro),
+            "micro3": ("python", micro),
+        },
+        expect_success=False,
+    )
 
 
 def test_deadlock2_with_dispatch(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_WITH_DISPATCH_CONFIG, tmp_path,
-        {"macro": ("python", deadlocking_macro),
-         "micro1": ("python", micro),
-         "micro2": ("python", micro),
-         "micro3": ("python", micro)},
-        expect_success=False)
+        MACRO_MICRO_WITH_DISPATCH_CONFIG,
+        tmp_path,
+        {
+            "macro": ("python", deadlocking_macro),
+            "micro1": ("python", micro),
+            "micro2": ("python", micro),
+            "micro3": ("python", micro),
+        },
+        expect_success=False,
+    )
 
 
 @skip_if_python_only
 def test_no_deadlock_cpp(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_CONFIG, tmp_path,
-        {"macro": ("cpp", "component_test"),
-         "micro": ("python", micro)})
+        MACRO_MICRO_CONFIG,
+        tmp_path,
+        {"macro": ("cpp", "component_test"), "micro": ("python", micro)},
+    )
 
 
 @skip_if_python_only
 def test_deadlock1_cpp(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_CONFIG, tmp_path,
-        {"macro": ("cpp", "component_test"),
-         "micro": ("python", deadlocking_micro)},
-        expect_success=False)
+        MACRO_MICRO_CONFIG,
+        tmp_path,
+        {"macro": ("cpp", "component_test"), "micro": ("python", deadlocking_micro)},
+        expect_success=False,
+    )
 
 
 @skip_if_python_only
 def test_deadlock2_cpp(tmp_path):
     run_manager_with_actors(
-        MACRO_MICRO_WITH_DISPATCH_CONFIG, tmp_path,
-        {"macro": ("cpp", "component_test"),
-         "micro1": ("python", micro),
-         "micro2": ("python", deadlocking_micro),
-         "micro3": ("cpp", "component_test")},
-        expect_success=False)
+        MACRO_MICRO_WITH_DISPATCH_CONFIG,
+        tmp_path,
+        {
+            "macro": ("cpp", "component_test"),
+            "micro1": ("python", micro),
+            "micro2": ("python", deadlocking_micro),
+            "micro3": ("cpp", "component_test"),
+        },
+        expect_success=False,
+    )

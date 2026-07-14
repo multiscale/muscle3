@@ -35,9 +35,15 @@ _logger = logging.getLogger(__name__)
 
 class NativeInstantiator(mp.Process):
     """Instantiates instances on the local machine."""
+
     def __init__(
-            self, resources: mp.Queue, requests: mp.Queue, results: mp.Queue,
-            log_records: mp.Queue, run_dir: Path) -> None:
+        self,
+        resources: mp.Queue,
+        requests: mp.Queue,
+        results: mp.Queue,
+        log_records: mp.Queue,
+        run_dir: Path,
+    ) -> None:
         """Create a NativeInstantiator
 
         Args:
@@ -47,7 +53,7 @@ class NativeInstantiator(mp.Process):
             log_messages: Queue to push log messages to
             run_dir: Run directory for the current run
         """
-        super().__init__(name='NativeInstantiator')
+        super().__init__(name="NativeInstantiator")
         self._resources_out = resources
         self._requests_in = requests
         self._results_out = results
@@ -59,7 +65,7 @@ class NativeInstantiator(mp.Process):
     def run(self) -> None:
         """Entry point for the process"""
         try:
-            logs_dir = self._run_dir / 'logs'
+            logs_dir = self._run_dir / "logs"
             logs_dir.mkdir(exist_ok=True)
 
             self._agent_manager = AgentManager(logs_dir)
@@ -71,7 +77,7 @@ class NativeInstantiator(mp.Process):
         except ConfigurationError as e:
             self._results_out.put(CrashedResult(e))
 
-        except:     # noqa
+        except:  # noqa
             for line in traceback.format_exception(*sys.exc_info()):
                 _logger.error(line)
 
@@ -92,15 +98,15 @@ class NativeInstantiator(mp.Process):
                 try:
                     request = self._requests_in.get_nowait()
                     if isinstance(request, ShutdownRequest):
-                        _logger.debug('Got ShutdownRequest')
+                        _logger.debug("Got ShutdownRequest")
                         shutting_down = True
 
                     elif isinstance(request, CancelAllRequest):
-                        _logger.debug('Got CancelAllRequest')
+                        _logger.debug("Got CancelAllRequest")
                         self._agent_manager.cancel_all()
 
                     elif isinstance(request, InstantiationRequest):
-                        _logger.debug('Got InstantiationRequest')
+                        _logger.debug("Got InstantiationRequest")
                         if not shutting_down:
                             self._instantiate(request)
 
@@ -111,7 +117,7 @@ class NativeInstantiator(mp.Process):
             self._report_finished_processes()
 
             if shutting_down:
-                _logger.debug(f'Remaining processes: {self._processes}')
+                _logger.debug(f"Remaining processes: {self._processes}")
                 done = not self._processes
 
             if not done:
@@ -134,15 +140,17 @@ class NativeInstantiator(mp.Process):
         agent_res = self._agent_manager.get_resources()
 
         env_ncpus = dict(
-                zip(global_resources().nodes, global_resources().logical_cpus_per_node)
-                )
+            zip(global_resources().nodes, global_resources().logical_cpus_per_node)
+        )
 
         for node_name in env_ncpus:
             if node_name not in agent_res.nodes():
                 _logger.warning(
-                        f'The environment suggests we should have node {node_name},'
-                        ' but no agent reported running on it. We won''t be able'
-                        ' to use this node.')
+                    f"The environment suggests we should have node {node_name},"
+                    " but no agent reported running on it. We won"
+                    "t be able"
+                    " to use this node."
+                )
             else:
                 env_nncpus = env_ncpus[node_name]
                 ag_nncores = len(agent_res[node_name].cpu_cores)
@@ -151,33 +159,37 @@ class NativeInstantiator(mp.Process):
                 if ag_nncores != ag_nnthreads and ag_nnthreads == env_nncpus:
                     if not already_logged_smt:
                         _logger.info(
-                                'Detected SMT (hyperthreading) as available and'
-                                ' enabled. Note that MUSCLE3 will assign whole cores to'
-                                ' each thread or MPI process.')
+                            "Detected SMT (hyperthreading) as available and"
+                            " enabled. Note that MUSCLE3 will assign whole cores to"
+                            " each thread or MPI process."
+                        )
                         already_logged_smt = True
 
                     resources.add_node(agent_res[node_name])
 
                 elif ag_nncores < env_nncpus:
                     _logger.warning(
-                            f'Node {node_name} should have {env_nncpus} cores'
-                            f' available, but the agent reports only {ag_nncores}'
-                            f' available to it. We\'ll use the {ag_nncores} we seem to'
-                            ' have.')
+                        f"Node {node_name} should have {env_nncpus} cores"
+                        f" available, but the agent reports only {ag_nncores}"
+                        f" available to it. We'll use the {ag_nncores} we seem to"
+                        " have."
+                    )
 
                     resources.add_node(agent_res[node_name])
 
                 elif env_nncpus < ag_nncores:
                     _logger.warning(
-                            f'Node {node_name} should have {env_nncpus} cores'
-                            f' available, but the agent reports {ag_nncores} available'
-                            ' to it. Maybe the cluster does not constrain resources?'
-                            f' We\'ll use the {env_nncpus} that we should have got.')
+                        f"Node {node_name} should have {env_nncpus} cores"
+                        f" available, but the agent reports {ag_nncores} available"
+                        " to it. Maybe the cluster does not constrain resources?"
+                        f" We'll use the {env_nncpus} that we should have got."
+                    )
                     resources.add_node(
-                            OnNodeResources(
-                                node_name,
-                                agent_res[node_name].cpu_cores.get_first_cores(
-                                    env_nncpus)))
+                        OnNodeResources(
+                            node_name,
+                            agent_res[node_name].cpu_cores.get_first_cores(env_nncpus),
+                        )
+                    )
 
                 else:
                     # no SMT, agent matches environment
@@ -186,12 +198,12 @@ class NativeInstantiator(mp.Process):
         for node in agent_res:
             if node.node_name not in env_ncpus:
                 _logger.warning(
-                        f'An agent is running on node {node.node_name} but the'
-                        ' environment does not list it as ours. It seems that the'
-                        ' node\'s hostname does not match what SLURM calls it. We will'
-                        ' not use this node, because we\'re not sure it\'s really ours'
-                        ' or if it is, how many resources on it we can use.'
-                        )
+                    f"An agent is running on node {node.node_name} but the"
+                    " environment does not list it as ours. It seems that the"
+                    " node's hostname does not match what SLURM calls it. We will"
+                    " not use this node, because we're not sure it's really ours"
+                    " or if it is, how many resources on it we can use."
+                )
 
         self._resources_out.put(resources)
 
@@ -200,19 +212,21 @@ class NativeInstantiator(mp.Process):
         name = str(request.instance)
 
         env = create_instance_env(
-                request.instance, request.program.base_env, request.program.env)
+            request.instance, request.program.base_env, request.program.env
+        )
         self._add_resources(env, request.res_req)
 
-        rankfile = request.instance_dir / 'rankfile'
+        rankfile = request.instance_dir / "rankfile"
 
         if global_resources().on_cluster():
             rankfile_contents, resource_env = prep_resources(
-                  request.program.execution_model, request.resources, rankfile)
+                request.program.execution_model, request.resources, rankfile
+            )
 
             if rankfile_contents:
-                with rankfile.open('w') as f:
+                with rankfile.open("w") as f:
                     f.write(rankfile_contents)
-                env['MUSCLE_RANKFILE'] = str(rankfile)
+                env["MUSCLE_RANKFILE"] = str(rankfile)
 
             env.update(resource_env)
 
@@ -221,48 +235,59 @@ class NativeInstantiator(mp.Process):
 
         self._processes[name] = Process(request.instance, request.resources)
 
-        _logger.debug(f'Instantiating {name} on {request.resources}')
+        _logger.debug(f"Instantiating {name} on {request.resources}")
         try:
             self._agent_manager.start(
-                    request.resources.by_rank[0].node_name,
-                    name, request.work_dir, args, env,
-                    request.stdout_path, request.stderr_path)
+                request.resources.by_rank[0].node_name,
+                name,
+                request.work_dir,
+                args,
+                env,
+                request.stdout_path,
+                request.stderr_path,
+            )
             self._processes[name].status = ProcessStatus.RUNNING
 
         except Exception as e:
-            _logger.warning(f'Instance {name} failed to start: {e}')
+            _logger.warning(f"Instance {name} failed to start: {e}")
             self._processes[name].status = ProcessStatus.ERROR
-            self._processes[name].error_msg = f'Instance failed to start: {e}'
+            self._processes[name].error_msg = f"Instance failed to start: {e}"
 
     def _write_run_script(
-            self, request: InstantiationRequest, rankfile: Optional[Path]) -> Path:
+        self, request: InstantiationRequest, rankfile: Optional[Path]
+    ) -> Path:
         """Create and write out the run script and return its location."""
         # TODO: Only write out once for each program
         if request.program.script:
             run_script = request.program.script
         else:
             run_script = make_script(
-                    request.program, request.res_req, request.work_dir,
-                    not global_resources().on_cluster(), rankfile)
+                request.program,
+                request.res_req,
+                request.work_dir,
+                not global_resources().on_cluster(),
+                rankfile,
+            )
 
-        run_script_file = request.instance_dir / 'run_script.sh'
+        run_script_file = request.instance_dir / "run_script.sh"
 
-        with run_script_file.open('w') as f:
+        with run_script_file.open("w") as f:
             f.write(run_script)
 
         run_script_file.chmod(0o700)
         return run_script_file
 
     def _add_resources(
-            self, env: dict[str, str], res_req: ResourceRequirements) -> None:
+        self, env: dict[str, str], res_req: ResourceRequirements
+    ) -> None:
         """Add resource env vars to the given env."""
         if isinstance(res_req, ThreadedResReq):
             num_threads = res_req.threads
         elif isinstance(res_req, (MPICoresResReq, MPINodesResReq)):
             num_threads = res_req.threads_per_mpi_process
 
-        env['MUSCLE_THREADS'] = str(num_threads)
-        env['OMP_NUM_THREADS'] = str(num_threads)
+        env["MUSCLE_THREADS"] = str(num_threads)
+        env["OMP_NUM_THREADS"] = str(num_threads)
 
         num_mpi_processes: Optional[int] = None
         if isinstance(res_req, MPICoresResReq):
@@ -271,7 +296,7 @@ class NativeInstantiator(mp.Process):
             num_mpi_processes = res_req.nodes * res_req.mpi_processes_per_node
 
         if num_mpi_processes is not None:
-            env['MUSCLE_MPI_PROCESSES'] = str(num_mpi_processes)
+            env["MUSCLE_MPI_PROCESSES"] = str(num_mpi_processes)
 
     def _report_failed_processes(self) -> None:
         """Get processes that failed to start and report their status."""
@@ -294,7 +319,7 @@ class NativeInstantiator(mp.Process):
                     process.status = ProcessStatus.SUCCESS
                 else:
                     process.status = ProcessStatus.ERROR
-                    process.error_msg = 'Instance returned a non-zero exit code'
+                    process.error_msg = "Instance returned a non-zero exit code"
             process.exit_code = exit_code
             self._results_out.put(process)
             del self._processes[name]

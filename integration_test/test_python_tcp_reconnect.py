@@ -47,40 +47,43 @@ def _inject_fault(socket: SocketType) -> None:
 
 @pytest.fixture
 def tcp_fault_injection():
-    with patch('libmuscle.mark.before_tcp_receive', _inject_fault):
-        with patch('libmuscle.mark.before_tcp_send', _inject_fault):
+    with patch("libmuscle.mark.before_tcp_receive", _inject_fault):
+        with patch("libmuscle.mark.before_tcp_send", _inject_fault):
             yield
 
 
 def component():
     _logger = logging.getLogger()
 
-    _logger.info('starting instance')
-    instance = Instance({
-        Operator.F_INIT: ['init'],
-        Operator.O_I: ['out'],
-        Operator.S: ['in'],
-        Operator.O_F: ['result']})
+    _logger.info("starting instance")
+    instance = Instance(
+        {
+            Operator.F_INIT: ["init"],
+            Operator.O_I: ["out"],
+            Operator.S: ["in"],
+            Operator.O_F: ["result"],
+        }
+    )
 
     j = 0
-    _logger.info('starting pre-receive')
+    _logger.info("starting pre-receive")
     while instance.reuse_instance():
-        _logger.info('top of reuse loop')
-        init_msg = instance.receive('init', default=Message(0.0, data=None))
+        _logger.info("top of reuse loop")
+        init_msg = instance.receive("init", default=Message(0.0, data=None))
         assert init_msg.data is None or init_msg.data == [j] * (j * _data_scale)
 
-        if instance.is_connected('out'):
+        if instance.is_connected("out"):
             for i in range(_loops):
-                _logger.info(f'i = {i}')
+                _logger.info(f"i = {i}")
                 data = [i] * (i * _data_scale)
                 out_msg = Message(float(i), data=data)
-                instance.send('out', out_msg)
+                instance.send("out", out_msg)
 
-                in_msg = instance.receive('in', default=out_msg)
+                in_msg = instance.receive("in", default=out_msg)
                 assert in_msg.data == data
 
-        _logger.info('sending final result')
-        instance.send('result', init_msg)
+        _logger.info("sending final result")
+        instance.send("result", init_msg)
         j += 1
 
 
@@ -91,20 +94,19 @@ def test_python_tcp_reconnect(tcp_fault_injection, log_file_in_tmpdir):
     _repeat_period = uniform(3.0, 5.0)
 
     components = [
-            Component('macro', Ports(o_i='out', s='in'), '', 'component'),
-            Component('micro', Ports('init', o_f='result'), '', 'component')]
+        Component("macro", Ports(o_i="out", s="in"), "", "component"),
+        Component("micro", Ports("init", o_f="result"), "", "component"),
+    ]
 
-    conduits = [
-                Conduit('macro.out', 'micro.init'),
-                Conduit('micro.result', 'macro.in')]
+    conduits = [Conduit("macro.out", "micro.init"), Conduit("micro.result", "macro.in")]
 
-    model = Model('test_python_tcp_reconnect', None, '', None, components, conduits)
+    model = Model("test_python_tcp_reconnect", None, "", None, components, conduits)
     settings = Settings()
-    settings['muscle_remote_log_level'] = 'warning'
-    settings['muscle_local_log_level'] = 'debug'
+    settings["muscle_remote_log_level"] = "warning"
+    settings["muscle_local_log_level"] = "debug"
 
-    configuration = Configuration('python_tcp_reconnect', None, [model], None, settings)
+    configuration = Configuration("python_tcp_reconnect", None, [model], None, settings)
 
-    implementations = {'component': component}
+    implementations = {"component": component}
 
     run_simulation(configuration, implementations)

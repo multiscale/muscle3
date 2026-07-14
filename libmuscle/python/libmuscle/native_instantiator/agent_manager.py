@@ -30,6 +30,7 @@ class AgentManager(IAgentManager):
     cancel processes on nodes, and it gets called by MAPServer with requests from the
     agents.
     """
+
     def __init__(self, agent_dir: Path) -> None:
         """Create an AgentManager.
 
@@ -42,7 +43,7 @@ class AgentManager(IAgentManager):
         self._expected_nodes = global_resources().nodes
         self._nodes: dict[str, str] = dict()
         self._resources: Resources = Resources([])
-        self._resources_lock = Lock()   # protects _nodes and _resources
+        self._resources_lock = Lock()  # protects _nodes and _resources
 
         self._finished_processes: list[tuple[str, int]] = list()
         self._finished_processes_lock = Lock()
@@ -61,8 +62,15 @@ class AgentManager(IAgentManager):
         return self._resources
 
     def start(
-            self, node_name: str, name: str, work_dir: Path, args: list[str],
-            env: dict[str, str], stdout: Path, stderr: Path) -> None:
+        self,
+        node_name: str,
+        name: str,
+        work_dir: Path,
+        args: list[str],
+        env: dict[str, str],
+        stdout: Path,
+        stderr: Path,
+    ) -> None:
         """Start a process on a node.
 
         The files that the output is directed to will be overwritten if they already
@@ -116,7 +124,8 @@ class AgentManager(IAgentManager):
             self._agents_process.wait(60)
         except TimeoutExpired:
             _logger.warning(
-                    'Agents did not shut down within one minute, sending signal...')
+                "Agents did not shut down within one minute, sending signal..."
+            )
             self._agents_process.kill()
 
         try:
@@ -124,7 +133,7 @@ class AgentManager(IAgentManager):
             self._agents_stdout.close()
             self._agents_stderr.close()
         except TimeoutExpired:
-            _logger.warning('Agents still not down, continuing shutdown anyway.')
+            _logger.warning("Agents still not down, continuing shutdown anyway.")
 
         self._server.stop()
 
@@ -136,7 +145,7 @@ class AgentManager(IAgentManager):
         Args:
             resources: Description of a node's resources
         """
-        _logger.debug(f'Agent reported {resources}')
+        _logger.debug(f"Agent reported {resources}")
 
         # The agent reports a hostname, which we assume contains the node name
         agent_hostname = resources.node_name
@@ -146,9 +155,10 @@ class AgentManager(IAgentManager):
                 break
         else:
             _logger.warning(
-                    f'Agent reported hostname {resources.node_name}, which could not'
-                    ' be matched against any expected node name from'
-                    f' {self._expected_nodes}.')
+                f"Agent reported hostname {resources.node_name}, which could not"
+                " be matched against any expected node name from"
+                f" {self._expected_nodes}."
+            )
 
         with self._resources_lock:
             self._nodes[resources.node_name] = agent_hostname
@@ -176,28 +186,33 @@ class AgentManager(IAgentManager):
             server_location: MAPServer network location string for the agents to
                 connect to
         """
-        _logger.info('Launching MUSCLE agents...')
+        _logger.info("Launching MUSCLE agents...")
 
         python = sys.executable
         if not python:
             raise RuntimeError(
-                    'Could not launch agents because sys.executable is not set.')
+                "Could not launch agents because sys.executable is not set."
+            )
 
-        log_level = logging.getLogger('libmuscle').getEffectiveLevel()
+        log_level = logging.getLogger("libmuscle").getEffectiveLevel()
 
         args = [
-                sys.executable, '-m', 'libmuscle.native_instantiator.agent',
-                server_location, str(log_level)]
+            sys.executable,
+            "-m",
+            "libmuscle.native_instantiator.agent",
+            server_location,
+            str(log_level),
+        ]
 
         args = global_resources().agent_launch_command(args)
 
-        self._agents_stdout = (agent_dir / 'agent_launch.out').open('a')
-        self._agents_stderr = (agent_dir / 'agent_launch.err').open('a')
+        self._agents_stdout = (agent_dir / "agent_launch.out").open("a")
+        self._agents_stderr = (agent_dir / "agent_launch.err").open("a")
 
-        _logger.debug(f'Launching agents using {args}')
+        _logger.debug(f"Launching agents using {args}")
         self._agents_process = Popen(
-                args, cwd=agent_dir, stdout=self._agents_stdout,
-                stderr=self._agents_stderr)
+            args, cwd=agent_dir, stdout=self._agents_stdout, stderr=self._agents_stderr
+        )
 
         num_expected = len(self._expected_nodes)
 
@@ -208,23 +223,25 @@ class AgentManager(IAgentManager):
                 resources_complete = len(self._nodes) == num_expected
                 too_many_agents = len(self._nodes) > num_expected
 
-            _logger.debug(f'{len(self._nodes)} agents up of {num_expected}')
+            _logger.debug(f"{len(self._nodes)} agents up of {num_expected}")
 
             if self._agents_process.poll() is not None:
                 msg = (
-                        'Agents unexpectedly stopped running. This is not supposed'
-                        ' to happen. Please see the agent log for more information,'
-                        ' and please file an issue on GitHub.')
+                    "Agents unexpectedly stopped running. This is not supposed"
+                    " to happen. Please see the agent log for more information,"
+                    " and please file an issue on GitHub."
+                )
                 _logger.error(msg)
                 raise RuntimeError(msg)
 
             if too_many_agents:
                 msg = (
-                        'More agents were started than MUSCLE3 asked for. This is not'
-                        ' supposed to happen. Please file an issue on GitHub, with the'
-                        ' SLURM version (use "sbatch -V") and the sbatch command used'
-                        ' to submit the job.')
+                    "More agents were started than MUSCLE3 asked for. This is not"
+                    " supposed to happen. Please file an issue on GitHub, with the"
+                    ' SLURM version (use "sbatch -V") and the sbatch command used'
+                    " to submit the job."
+                )
                 _logger.error(msg)
                 raise RuntimeError(msg)
 
-        _logger.info(f'All agents running on {self._nodes}')
+        _logger.info(f"All agents running on {self._nodes}")

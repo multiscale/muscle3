@@ -108,7 +108,7 @@ def test_request_peers(mocked_mmp_client, profile_data) -> None:
         [["component.out", "other.in"]],
         {"other": [20]},
         {"other": ["direct:test", "tcp:test"]},
-        [["out", "O_F"]],
+        [["out", "O_F", ""]],
     ]
     stub.call.return_value = (
         msgpack.packb(result_msg, use_bin_type=True),

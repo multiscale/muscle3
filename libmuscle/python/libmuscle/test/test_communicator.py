@@ -51,8 +51,10 @@ def timeline_manager():
         yield MockTimelineManager.return_value
 
 @pytest.fixture
-def communicator(connected_port_manager, profiler):
-    return Communicator(Ref("component"), [], connected_port_manager, profiler, Mock())
+def communicator(connected_port_manager, profiler, timeline_manager):
+    comm = Communicator(Ref("component"), [], connected_port_manager, profiler, Mock())
+    comm.setup_timeline_manager("component")
+    return comm
 
 
 @pytest.fixture

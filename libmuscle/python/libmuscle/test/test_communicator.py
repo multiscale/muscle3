@@ -47,13 +47,14 @@ def mpp_client(MPPClient):
 
 @pytest.fixture
 def timeline_manager():
-    with patch('libmuscle.communicator.TimelineManager') as MockTimelineManager:
-        yield MockTimelineManager.return_value
+    with patch("libmuscle.communicator.TimelineManager") as MockTimelineManager:
+        MockTimelineManager.return_value.get_iteration.return_value = None
+        yield MockTimelineManager
+
 
 @pytest.fixture
 def communicator(connected_port_manager, profiler, timeline_manager):
     comm = Communicator(Ref("component"), [], connected_port_manager, profiler, Mock())
-    comm.setup_timeline_manager("component")
     return comm
 
 
@@ -84,7 +85,28 @@ def test_create_communicator(communicator, mpp_server):
     pass
 
 
-def test_send_message(connected_communicator, mpp_server):
+def test_create_communicator_creates_timeline_manager(
+    communicator, connected_port_manager, timeline_manager
+):
+    timeline_manager.assert_called_once_with("component", connected_port_manager)
+    assert communicator._timeline_manager == timeline_manager.return_value
+    timeline_manager.return_value.connect_sub_timelines.assert_not_called()
+
+
+def test_set_peer_info_sets_up_timeline_manager(
+    communicator, connected_port_manager, timeline_manager
+):
+    peer_info = MagicMock()
+
+    communicator.set_peer_info(peer_info)
+
+    assert communicator._peer_info == peer_info
+    connected_port_manager.connect_ports.assert_called_once_with(peer_info)
+    timeline_manager.return_value.connect_sub_timelines.assert_called_once_with()
+
+
+def test_send_message(connected_communicator, mpp_server, timeline_manager):
+    timeline_manager.return_value.get_iteration.return_value = [2, 0]
     msg = Message(0.0, 1.0, "Testing", Settings({"s0": 0, "s1": "1"}))
 
     connected_communicator.send_message("out_v", msg, 7, -1.0)
@@ -105,6 +127,8 @@ def test_send_message(connected_communicator, mpp_server):
     assert encoded_msg.message_number == 0
     assert encoded_msg.saved_until == -1.0
     assert encoded_msg.data == "Testing"
+    assert encoded_msg.iteration == [2, 0]
+    timeline_manager.return_value.get_iteration.assert_called_with("out_v")
 
 
 def test_send_message_disconnected(connected_communicator, mpp_server):

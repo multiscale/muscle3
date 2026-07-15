@@ -212,10 +212,6 @@ class Instance:
             else MMSFValidator(self._port_manager)
         )
 
-        # TimelineManager reads port.timeline from the connected ports, so it
-        # must be created after _connect() populates those via connect_ports().
-        self._communicator.setup_timeline_manager(str(self._name))
-
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
 
@@ -766,7 +762,6 @@ class Instance:
         connect_event = ProfileEvent(ProfileEventType.CONNECT, ProfileTimestamp())
 
         peer_info = self.__manager.request_peers()
-        self._port_manager.connect_ports(peer_info)
         self._communicator.set_peer_info(peer_info)
 
         self._settings_manager.base = self.__manager.get_settings()

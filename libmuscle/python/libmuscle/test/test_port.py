@@ -11,13 +11,12 @@ def test_create_port():
     assert port._length is None
     assert port._is_resizable is False
     assert port._is_connected is True
-    assert port._iteration is None
-    assert port.timeline == Timeline('')
+    assert port.timeline == Timeline("")
 
 
 def test_create_port_with_timeline():
-    timeline = Timeline(':t')
-    port = Port('out', Operator.O_I, False, True, 0, [], timeline)
+    timeline = Timeline(":t")
+    port = Port("out", Operator.O_I, False, True, 0, [], timeline)
     assert port.timeline == timeline
 
 
@@ -81,8 +80,3 @@ def test_port_properties():
     assert port.get_length() == 0
     port.set_length(27)
     assert port.get_length() == 27
-
-    port = Port('out', Operator.O_F, False, True, 0, [])
-    assert port.get_iteration() is None
-    port.set_iteration([3, 1])
-    assert port.get_iteration() == [3, 1]

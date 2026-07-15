@@ -109,8 +109,7 @@ class Communicator:
         # indexed by remote instance id
         self._clients: dict[Reference, MPPClient] = {}
 
-    def setup_timeline_manager(self, instance_name: str) -> None:
-        self._timeline_manager = TimelineManager(instance_name, self._port_manager)
+        self._timeline_manager = TimelineManager(str(kernel), port_manager)
 
     def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.
@@ -128,12 +127,15 @@ class Communicator:
         """Inform this Communicator about its peers.
 
         This tells the Communicator about its peers, so that it can route
-        messages accordingly.
+        messages accordingly. This also connects our ports to their peers,
+        and completes the TimelineManager's initialization.
 
         Args:
             peer_info: Information about the peers.
         """
         self._peer_info = peer_info
+        self._port_manager.connect_ports(peer_info)
+        self._timeline_manager.connect_sub_timelines()
 
     def set_receive_timeout(self, receive_timeout: float) -> None:
         """Update the timeout after which the manager is notified that we are waiting
@@ -210,7 +212,7 @@ class Communicator:
                 port.get_num_messages(slot),
                 checkpoints_considered_until,
                 message.data,
-                port.get_iteration()
+                self._timeline_manager.get_iteration(port_name),
             )
             encoded_message = mpp_message.encoded()
             self._server.deposit(recv_endpoint.ref(), encoded_message)

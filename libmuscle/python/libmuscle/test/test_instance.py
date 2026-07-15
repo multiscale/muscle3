@@ -246,19 +246,10 @@ def test_create_instance_profiling(
     instance.error_shutdown("Ensure all threads and resources are cleaned up")
 
 
-def test_create_instance_timeline_manager(
-        manager_location_argv, instance_argv, communicator, declared_ports):
-
-    instance = Instance(declared_ports)
-    instance.error_shutdown("Ensure all threads and resources are cleaned up")
-    communicator.setup_timeline_manager.assert_called_once_with('component')
-
-
 def test_create_instance_connecting(
     manager_location_argv,
     instance_argv,
     mmp_client,
-    port_manager,
     communicator,
     settings_manager,
     declared_ports,
@@ -270,7 +261,6 @@ def test_create_instance_connecting(
     mmp_client.get_settings.return_value = settings
 
     instance = Instance(declared_ports)
-    port_manager.connect_ports.assert_called_once_with(peer_info)
     communicator.set_peer_info.assert_called_once_with(peer_info)
 
     assert settings_manager.base == settings

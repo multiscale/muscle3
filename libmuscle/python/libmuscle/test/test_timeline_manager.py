@@ -5,14 +5,18 @@ from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
-from libmuscle.timeline_manager import TimelineManager
+from libmuscle.timeline_manager import (
+    TimelineManager,
+    _all_ports_participated,
+    _reset_participation,
+)
 
 INSTANCE_NAME = "component"
 
 
 @pytest.fixture
 def port_manager() -> PortManager:
-    """Port manager with all four operator types across named and unnamed timelines."""
+    """Port manager with all four operator types across named timelines."""
     pm = PortManager([], None)
     peer_info = PeerInfo(
         Ref(INSTANCE_NAME),
@@ -22,7 +26,6 @@ def port_manager() -> PortManager:
         {},
         [
             Port(Id("out_macro"), Operator.O_I, Timeline(":macro")),
-            Port(Id("out_no_tl"), Operator.O_I),
             Port(Id("in_micro"), Operator.S, Timeline(":micro")),
             Port(Id("out_f"), Operator.O_F, Timeline(":output_tl")),
             Port(Id("in_f"), Operator.F_INIT),
@@ -35,12 +38,74 @@ def port_manager() -> PortManager:
 def test_init(port_manager: PortManager) -> None:
     tm = TimelineManager(INSTANCE_NAME, port_manager)
     assert tm._iteration is None
-    assert set(tm._sub_timelines.keys()) == {
-            Timeline(":macro"), Timeline(":micro"), Timeline(":" + INSTANCE_NAME)}
+    assert tm._ports == []
+    assert tm._participated == {}
+    assert tm._sub_timelines == {}
+
+
+def test_connect_sub_timelines(port_manager: PortManager) -> None:
+    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm.connect_sub_timelines()
+    assert set(tm._sub_timelines.keys()) == {Timeline(":macro"), Timeline(":micro")}
+
+
+def test_connect_sub_timelines_main_ports(port_manager: PortManager) -> None:
+    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm.connect_sub_timelines()
+    assert {str(port.name) for port in tm._ports} == {"in_f", "out_f"}
+    assert tm._participated == {"in_f": False, "out_f": False}
 
 
 def test_sub_timeline_manager_init(port_manager: PortManager) -> None:
     tm = TimelineManager(INSTANCE_NAME, port_manager)
-    assert tm._sub_timelines[Timeline(":" + INSTANCE_NAME)]._iteration is None
+    tm.connect_sub_timelines()
     assert tm._sub_timelines[Timeline(":macro")]._iteration is None
     assert tm._sub_timelines[Timeline(":micro")]._iteration is None
+
+
+def test_sub_timeline_manager_participation(port_manager: PortManager) -> None:
+    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm.connect_sub_timelines()
+    for stm in tm._sub_timelines.values():
+        assert stm._participated == {str(port.name): False for port in stm._ports}
+
+
+def test_participation_helpers(port_manager: PortManager) -> None:
+    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm.connect_sub_timelines()
+    ports = tm._ports
+    participated = tm._participated
+
+    assert not participated["in_f"]
+    assert not _all_ports_participated(ports, participated)
+    assert _all_ports_participated(ports, participated, Operator.S)
+
+    participated["in_f"] = True
+
+    assert participated["in_f"]
+    assert not participated["out_f"]
+    assert not _all_ports_participated(ports, participated)
+    assert _all_ports_participated(ports, participated, Operator.F_INIT)
+
+    participated["out_f"] = True
+
+    assert _all_ports_participated(ports, participated)
+
+    _reset_participation(participated)
+
+    assert participated == {"in_f": False, "out_f": False}
+    assert tm._participated == {"in_f": False, "out_f": False}
+
+
+def test_get_iteration_main_timeline(port_manager: PortManager) -> None:
+    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm.connect_sub_timelines()
+    tm._iteration = [3]
+    assert tm.get_iteration("out_f") == [3]
+
+
+def test_get_iteration_sub_timeline(port_manager: PortManager) -> None:
+    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm.connect_sub_timelines()
+    tm._sub_timelines[Timeline(":macro")]._iteration = [3, 1]
+    assert tm.get_iteration("out_macro") == [3, 1]

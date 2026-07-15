@@ -145,6 +145,17 @@ class TimelineManager:
             return self._iteration
         return self._sub_timelines[port.timeline].get_iteration()
 
+    def _is_root(self) -> bool:
+        """Return whether this component has no connected F_INIT ports.
+
+        A root component may still declare F_INIT ports, as long as none of
+        them are connected to a peer; a component that declares no F_INIT
+        ports at all is trivially root.
+        """
+        return not any(
+            p.is_connected() for p in self._ports if p.operator == Operator.F_INIT
+        )
+
     def check_send_message(self, port_name: str) -> None:
         """Check and update the timeline state before sending on the given port.
 
@@ -180,9 +191,7 @@ class TimelineManager:
                 sub-timelines).
         """
         port = self._port_manager.get_port(port_name)
-        is_root = not any(
-            p.is_connected() for p in self._ports if p.operator == Operator.F_INIT
-        )
+        is_root = self._is_root()
 
         if port.operator == Operator.O_F:
             if self._iteration is None:
@@ -259,30 +268,62 @@ class TimelineManager:
     def check_receive(self, port_name: str) -> None:
         """Check that receiving on the given port is currently allowed.
 
-        NOTE: The caller (Instance.__check_port) already guarantees the operator
-        allows receiving, so the port is either F_INIT or S.
+        An F_INIT port may always receive before the main timeline has
+        started, and afterwards may receive again as long as it has not
+        already received a message for the current iteration; this only
+        matters when there are multiple F_INIT ports, since the first one to
+        receive in a cycle always finds the main timeline not yet started.
 
-        F_INIT:
-            1. Not yet started (self._iteration is None): Allowed.
-            2. Yet started (self._iteration is not None):
-                   not self._participated[port_name]: Allowed.
-            NOTE: Only reachable with multiple F_INIT ports. The first port always hits
-            case 1 (self._iteration is None after reset). Subsequent ports in the same
-            cycle arrive here with the same iteration. A new iteration never arrives
-            here, after reset() self._iteration is None, so any new iteration lands in
-            case 1.
+        An S port is gated the same way an O_I port is gated for sending: on
+        a root component, S may receive before the main timeline has
+        started; any other component must first receive a message on every
+        F_INIT port. Once that is satisfied, whether this specific S port
+        may receive is delegated to the corresponding SubTimelineManager.
 
-            Otherwise --> error.
+        Args:
+            port_name: Name of the F_INIT or S port about to receive. The
+                caller (Instance.__check_port) has already confirmed that
+                this operator is allowed to receive.
 
-        S:
-            1. self._iteration is None, the sub-timeline is a bridge, and this
-               is a root component (no connected F_INIT ports): Allowed.
-            2. self._iteration is not None (O_I was sent, F_INIT was received,
-               or case 1a just allowed it):
-                   self._sub_timelines[port.timeline].check_receive(
-                       port, self._iteration)
+        Raises:
+            RuntimeError: If this F_INIT port already received a message for
+                the current iteration, if this S port's component is
+                non-root and has not yet received on every F_INIT port, or
+                if receiving on this S port would violate its sub-timeline's
+                ordering or completeness (see SubTimelineManager.check_receive).
         """
-        pass
+        port = self._port_manager.get_port(port_name)
+
+        if port.operator == Operator.F_INIT:
+            if self._participated[port_name]:
+                raise RuntimeError(
+                    f'Port "{port_name}" already received a message for this iteration.'
+                )
+            return
+
+        if port.operator == Operator.S:
+            if self._iteration is None:
+                if not self._is_root():
+                    raise RuntimeError(
+                        f'Port "{port_name}" tried to receive the first message,'
+                        " but this component has connected F_INIT ports and must"
+                        " receive on all of them first."
+                    )
+            elif not _all_ports_participated(
+                self._ports, self._participated, Operator.F_INIT
+            ):
+                raise RuntimeError(
+                    f'Port "{port_name}" tried to receive a message, but not all'
+                    " F_INIT ports have received a message for this iteration yet."
+                )
+
+            self._sub_timelines[port.timeline].check_receive(port)
+            return
+
+        raise RuntimeError(
+            f'Port "{port_name}" is not an F_INIT or S port, and cannot'
+            " receive a message here."
+        )
 
     def check_received_message(
         self, port_name: str, iteration: Optional[list[int]]
@@ -344,6 +385,7 @@ class SubTimelineManager:
         """
         self._sub_timeline = sub_timeline
         self._iteration: Optional[list[int]] = None
+        self._first_operator: Optional[Operator] = None
 
         self._ports = [
             port_manager.get_port(name)
@@ -355,11 +397,15 @@ class SubTimelineManager:
     def check_send_message(self, port: Port, parent_iteration: list[int]) -> None:
         """Check and update this sub-timeline's iteration state before sending.
 
-        The first message sent on any O_I port of this sub-timeline starts its iteration
-        nested one level below the main timeline's current iteration. Afterwards, an O_I
-        port that has already sent for the current sub-iteration may send again only
-        once every O_I and S port of this sub-timeline has participated, in which case
-        the sub-iteration advances and participation is reset for the new one.
+        The first message sent on any O_I port of this sub-timeline starts its
+        iteration, nested one level below the main timeline's current iteration, and
+        establishes O_I as the operator that leads this sub-timeline: from then on,
+        every sub-iteration follows the order O_I-then-S, and it is a send on O_I,
+        once every O_I and S port of this sub-timeline has participated, that
+        advances to the next sub-iteration. If S led instead (received before any
+        O_I port had sent), an O_I port may still send its one message per
+        sub-iteration, but only a receive on S can advance to the next one; a second
+        send on O_I before that happens is rejected.
 
         Args:
             port: The O_I port that is about to send.
@@ -368,16 +414,23 @@ class SubTimelineManager:
                 is sent on it.
 
         Raises:
-            RuntimeError: If this port already sent a message for the
-                current sub-iteration and not every port of this
-                sub-timeline has participated yet, so the sub-iteration
-                cannot advance.
+            RuntimeError: If this port already sent a message for the current
+                sub-iteration and either S led this sub-timeline (only a
+                receive on S may advance it) or not every port of this
+                sub-timeline has participated yet.
         """
         port_name = str(port.name)
 
         if self._iteration is None:
             self._iteration = parent_iteration + [0]
+            self._first_operator = Operator.O_I
         elif self._participated[port_name]:
+            if self._first_operator != Operator.O_I:
+                raise RuntimeError(
+                    f'Port "{port_name}" tried to send a message, but S received'
+                    " first on this sub-timeline, so only a receive on S can"
+                    " advance to the next sub-iteration, not a send on O_I."
+                )
             if not _all_ports_participated(self._ports, self._participated):
                 raise RuntimeError(
                     f'Port "{port_name}" tried to send a message, but it already'
@@ -393,28 +446,65 @@ class SubTimelineManager:
         """Return the current iteration of this sub-timeline."""
         return self._iteration
 
-    def check_receive(self, port: Port, parent_iteration: list[int]) -> None:
+    def check_receive(self, port: Port) -> None:
         """Check that receiving on the given S port is currently allowed.
 
-        1. Not yet started (self._iteration is None):
-               a. sub_timeline is a bridge:
-                      Allowed.
-               b. Otherwise → Error (no O_I port has sent yet on this
-                  sub-timeline).
-        2. Yet started (self._iteration is not None):
-               a. not self._participated[str(port.name)]:
-                      Allowed, unless the sub-timeline is not a bridge and
-                      not _all_ports_participated(
-                          self._ports, self._participated, Operator.O_I)
-                      → Error (not every O_I port has sent yet).
-               b. self._participated[str(port.name)]:
-                      Allowed only if the sub-timeline is a bridge (bridges
-                      permit interleaved sends/receives within the same
-                      iteration).
+        If this S port has not yet received for the current sub-iteration,
+        it may do so as long as either no O_I port of this sub-timeline has
+        sent yet (this S port would be the first to act, establishing S as
+        the operator that leads this sub-timeline) or every O_I port has
+        already sent. If this S port already received for the current
+        sub-iteration, it may receive again, advancing to the next
+        sub-iteration, only if S led this sub-timeline and every S port has
+        received; if O_I led instead, only a send on O_I can advance it, and
+        a second receive on S before that happens is rejected.
 
-               Otherwise → Error.
+        No pre-declared bridge role is needed for this: whichever operator,
+        O_I or S, acts first for a sub-iteration determines that
+        sub-iteration's order, and either order is accepted as long as
+        completeness is respected.
+
+        Args:
+            port: The S port that is about to receive.
+
+        Raises:
+            RuntimeError: If this S port has not yet received for the
+                current sub-iteration and only some, not all, of this
+                sub-timeline's O_I ports have sent so far, or if it already
+                received for the current sub-iteration and either O_I led
+                this sub-timeline (only a send on O_I may advance it) or not
+                every S port has received yet.
         """
-        pass
+        port_name = str(port.name)
+
+        if not self._participated[port_name]:
+            any_o_i_participated = any(
+                self._participated[str(p.name)]
+                for p in self._ports
+                if p.operator == Operator.O_I
+            )
+            if any_o_i_participated and not _all_ports_participated(
+                self._ports, self._participated, Operator.O_I
+            ):
+                raise RuntimeError(
+                    f'Port "{port_name}" tried to receive a message, but only'
+                    " some of this sub-timeline's O_I ports have sent so far."
+                )
+            return
+
+        if self._first_operator != Operator.S:
+            raise RuntimeError(
+                f'Port "{port_name}" tried to receive a message, but O_I sent'
+                " first on this sub-timeline, so only a send on O_I can"
+                " advance to the next sub-iteration, not a receive on S."
+            )
+
+        if not _all_ports_participated(self._ports, self._participated, Operator.S):
+            raise RuntimeError(
+                f'Port "{port_name}" already received a message for this'
+                " sub-iteration, and not every S port of this sub-timeline"
+                " has received yet."
+            )
 
     def check_received_message(self, port_name: str, iteration: list[int]) -> None:
         """Record that a message has been received on the given S port.
@@ -441,9 +531,11 @@ class SubTimelineManager:
     def reset(self) -> None:
         """Reset this sub-timeline once the main timeline's cycle completes.
 
-        Called by TimelineManager.reset(). Clears this sub-timeline's iteration and
-        participation state, so that the next message sent on one of its O_I ports
-        starts a new sub-timeline iteration.
+        Called by TimelineManager.reset(). Clears this sub-timeline's iteration,
+        participation state, and leading operator, so that the next message sent or
+        received on one of its O_I or S ports starts a new sub-timeline iteration and
+        freely re-establishes which operator leads it.
         """
         self._iteration = None
+        self._first_operator = None
         _reset_participation(self._participated)

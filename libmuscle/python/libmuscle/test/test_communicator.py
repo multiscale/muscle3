@@ -106,7 +106,7 @@ def test_set_peer_info_sets_up_timeline_manager(
 
 
 def test_send_message(connected_communicator, mpp_server, timeline_manager):
-    timeline_manager.return_value.get_iteration.return_value = [2, 0]
+    timeline_manager.return_value.check_send_message.return_value = [2, 0]
     msg = Message(0.0, 1.0, "Testing", Settings({"s0": 0, "s1": "1"}))
 
     connected_communicator.send_message("out_v", msg, 7, -1.0)
@@ -128,7 +128,7 @@ def test_send_message(connected_communicator, mpp_server, timeline_manager):
     assert encoded_msg.saved_until == -1.0
     assert encoded_msg.data == "Testing"
     assert encoded_msg.iteration == [2, 0]
-    timeline_manager.return_value.get_iteration.assert_called_with("out_v")
+    timeline_manager.return_value.check_send_message.assert_called_with("out_v", 7)
 
 
 def test_send_message_disconnected(connected_communicator, mpp_server):

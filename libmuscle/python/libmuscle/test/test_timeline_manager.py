@@ -1,4 +1,5 @@
 import pytest
+from ymmsl.v0_2 import Conduit
 from ymmsl.v0_2 import Identifier as Id
 from ymmsl.v0_2 import Operator, Port, Timeline
 from ymmsl.v0_2 import Reference as Ref
@@ -16,13 +17,28 @@ INSTANCE_NAME = "component"
 
 @pytest.fixture
 def port_manager() -> PortManager:
-    """Port manager with all four operator types across named timelines."""
+    """Port manager with all four operator types across named timelines.
+
+    Every port has a peer connected via a conduit, since the TimelineManager
+    only tracks connected ports (an unconnected port never sends or receives,
+    so it can't be required to participate in an iteration).
+    """
     pm = PortManager([], None)
     peer_info = PeerInfo(
         Ref(INSTANCE_NAME),
         [],
-        [],
-        {},
+        [
+            Conduit(f"{INSTANCE_NAME}.out_macro", "peer_macro.in"),
+            Conduit("peer_micro.out", f"{INSTANCE_NAME}.in_micro"),
+            Conduit(f"{INSTANCE_NAME}.out_f", "peer_f.in"),
+            Conduit("peer_init.out", f"{INSTANCE_NAME}.in_f"),
+        ],
+        {
+            Ref("peer_macro"): [],
+            Ref("peer_micro"): [],
+            Ref("peer_f"): [],
+            Ref("peer_init"): [],
+        },
         {},
         [
             Port(Id("out_macro"), Operator.O_I, Timeline(":macro")),
@@ -53,7 +69,7 @@ def test_connect_sub_timelines_main_ports(port_manager: PortManager) -> None:
     tm = TimelineManager(INSTANCE_NAME, port_manager)
     tm.connect_sub_timelines()
     assert {str(port.name) for port in tm._ports} == {"in_f", "out_f"}
-    assert tm._participated == {"in_f": False, "out_f": False}
+    assert tm._participated == {("in_f", None): False, ("out_f", None): False}
 
 
 def test_sub_timeline_manager_init(port_manager: PortManager) -> None:
@@ -67,7 +83,9 @@ def test_sub_timeline_manager_participation(port_manager: PortManager) -> None:
     tm = TimelineManager(INSTANCE_NAME, port_manager)
     tm.connect_sub_timelines()
     for stm in tm._sub_timelines.values():
-        assert stm._participated == {str(port.name): False for port in stm._ports}
+        assert stm._participated == {
+            (str(port.name), None): False for port in stm._ports
+        }
 
 
 def test_participation_helpers(port_manager: PortManager) -> None:
@@ -76,25 +94,25 @@ def test_participation_helpers(port_manager: PortManager) -> None:
     ports = tm._ports
     participated = tm._participated
 
-    assert not participated["in_f"]
+    assert not participated[("in_f", None)]
     assert not _all_ports_participated(ports, participated)
     assert _all_ports_participated(ports, participated, Operator.S)
 
-    participated["in_f"] = True
+    participated[("in_f", None)] = True
 
-    assert participated["in_f"]
-    assert not participated["out_f"]
+    assert participated[("in_f", None)]
+    assert not participated[("out_f", None)]
     assert not _all_ports_participated(ports, participated)
     assert _all_ports_participated(ports, participated, Operator.F_INIT)
 
-    participated["out_f"] = True
+    participated[("out_f", None)] = True
 
     assert _all_ports_participated(ports, participated)
 
     _reset_participation(participated)
 
-    assert participated == {"in_f": False, "out_f": False}
-    assert tm._participated == {"in_f": False, "out_f": False}
+    assert participated == {("in_f", None): False, ("out_f", None): False}
+    assert tm._participated == {("in_f", None): False, ("out_f", None): False}
 
 
 def test_get_iteration_main_timeline(port_manager: PortManager) -> None:

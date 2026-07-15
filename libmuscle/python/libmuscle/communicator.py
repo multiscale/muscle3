@@ -173,13 +173,15 @@ class Communicator:
             _logger.debug(f"Sending message on {port_name}[{slot}]")
             slot_list = [slot]
 
-        if not isinstance(message.data, ClosePort):
-            self._timeline_manager.check_send_message(port_name)
-
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
         if not self._port_manager.get_port(str(snd_endpoint.port)).is_connected():
             # log sending on disconnected port
             return
+
+        if isinstance(message.data, ClosePort):
+            iteration = self._timeline_manager.get_iteration(port_name)
+        else:
+            iteration = self._timeline_manager.check_send_message(port_name, slot)
 
         port = self._port_manager.get_port(port_name)
         profile_event = ProfileEvent(
@@ -213,7 +215,7 @@ class Communicator:
                 port.get_num_messages(slot),
                 checkpoints_considered_until,
                 message.data,
-                self._timeline_manager.get_iteration(port_name),
+                iteration,
             )
             encoded_message = mpp_message.encoded()
             self._server.deposit(recv_endpoint.ref(), encoded_message)
@@ -267,8 +269,6 @@ class Communicator:
             port_and_slot = f"{port_name}[{slot}]"
             slot_list = [slot]
         _logger.debug(f"Waiting for message on {port_and_slot}")
-
-        self._timeline_manager.check_receive(port_name)
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
@@ -333,6 +333,8 @@ class Communicator:
 
         if isinstance(mpp_message.data, ClosePort):
             port.set_closed(slot)
+        else:
+            self._timeline_manager.check_receive(port_name, slot)
 
         message = Message(
             mpp_message.timestamp,
@@ -407,7 +409,10 @@ class Communicator:
         if isinstance(mpp_message.data, ClosePort):
             _logger.debug(f"Port {port_and_slot} is now closed")
 
-        self._timeline_manager.check_received_message(port_name, mpp_message.iteration)
+        if not isinstance(mpp_message.data, ClosePort):
+            self._timeline_manager.check_received_message(
+                port_name, mpp_message.iteration, slot
+            )
 
         return message, mpp_message.saved_until
 
@@ -539,15 +544,16 @@ class Communicator:
                             self._drain_incoming_port(port_name)
                         else:
                             self._drain_incoming_vector_port(port_name)
-                    except RuntimeError:
+                    except RuntimeError as exc:
                         peer_endpoints = self._peer_info.get_peer_endpoints(
                             Identifier(port_name), []
                         )
                         peer_name = str(peer_endpoints[0].kernel)
                         _logger.warning(
                             "Connection with peer '%s' was lost at the end of the "
-                            "simulation, probably because it crashed.",
+                            "simulation, probably because it crashed (%s).",
                             peer_name,
+                            exc,
                         )
 
     def _close_ports(self) -> None:

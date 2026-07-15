@@ -160,7 +160,7 @@ class MPPMessage:
         message_number: int,
         saved_until: float,
         data: Any,
-        iteration: Optional[list] = None
+        iteration: Optional[list] = None,
     ) -> None:
         """Create an MPPMessage.
 
@@ -232,7 +232,7 @@ class MPPMessage:
             message_number,
             saved_until,
             data,
-            iteration
+            iteration,
         )
 
     def encoded(self) -> Buffer:

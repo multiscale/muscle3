@@ -320,8 +320,11 @@ def test_request_peers_bidir(registered_mmp_request_handler2):
         assert locations[f"micro[2][{i}]"] == [f"direct:micro[2][{i}]"]
 
     assert ports == [
-            ["init", "F_INIT", ""], ["out", "O_I", ""],
-            ["in", "S", ""], ["final", "O_F", ""]]
+        ["init", "F_INIT", ""],
+        ["out", "O_I", ""],
+        ["in", "S", ""],
+        ["final", "O_F", ""],
+    ]
 
 
 def test_request_peers_own_conduits(registered_mmp_request_handler2):

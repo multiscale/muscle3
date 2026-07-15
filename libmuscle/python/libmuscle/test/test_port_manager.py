@@ -139,7 +139,7 @@ def test_connect_inferred_ports() -> None:
         Ref("other1"): ["direct:test1"],
         Ref("other2"): ["direct:test2"],
     }
-    timeline_in = Timeline(':t')
+    timeline_in = Timeline(":t")
     ymmsl_ports = [
         Port(Id("in"), Operator.F_INIT, timeline_in),
         Port(Id("out1"), Operator.O_F),
@@ -158,17 +158,15 @@ def test_connect_inferred_ports() -> None:
     assert ports["in"]._is_resizable is False
     assert ports["in"].timeline == timeline_in
 
-
     assert ports["out1"].name == Id("out1")
     assert ports["out1"].operator == Operator.O_F
     assert ports["out1"]._length is None
-    assert ports["out1"].timeline == Timeline('')
-
+    assert ports["out1"].timeline == Timeline("")
 
     assert ports["out3"].name == Id("out3")
     assert ports["out3"].operator == Operator.O_F
     assert ports["out3"]._length is None
-    assert ports["out3"].timeline == Timeline('')
+    assert ports["out3"].timeline == Timeline("")
 
 
 def test_connect_inferred_ports_oi_s() -> None:

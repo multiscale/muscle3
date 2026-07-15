@@ -55,9 +55,9 @@ class PortManager:
         return self._muscle_settings_in.is_connected()
 
     def list_ports(
-            self,
-            timeline: Optional[Timeline] = None,
-            ) -> dict[Operator, list[str]]:
+        self,
+        timeline: Optional[Timeline] = None,
+    ) -> dict[Operator, list[str]]:
         """Returns a description of the ports this PortManager has.
 
         Args:
@@ -213,7 +213,7 @@ class PortManager:
                 is_connected,
                 len(self._index),
                 peer_dims,
-                port.timeline
+                port.timeline,
             )
         return ports
 

@@ -257,10 +257,7 @@ class Communicator:
             RuntimeError: If the network connection had an error, or the
                     message number was incorrect.
         """
-        if port_name == "muscle_settings_in":
-            port = self._port_manager._muscle_settings_in
-        else:
-            port = self._port_manager.get_port(port_name)
+        port = self._port_manager.get_port(port_name)
 
         if slot is None:
             port_and_slot = port_name

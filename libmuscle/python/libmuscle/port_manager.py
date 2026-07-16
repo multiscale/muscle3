@@ -99,6 +99,8 @@ class PortManager:
         Returns:
             A Port object for the port
         """
+        if port_name == "muscle_settings_in":
+            return self._muscle_settings_in
         return self._ports[port_name]
 
     def restore_message_counts(self, port_message_counts: dict[str, list[int]]) -> None:

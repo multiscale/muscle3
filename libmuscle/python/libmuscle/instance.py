@@ -969,11 +969,9 @@ class Instance:
             if iteration is None:
                 raise RuntimeError(
                     "Cannot save an intermediate snapshot: the main timeline"
-                    " has not started yet, or has just completed a full"
-                    " cycle. Make sure save_snapshot() is only called once"
-                    " F_INIT has been received and, if applicable, after the"
-                    " current sub-timeline (O_I/S) iteration has produced a"
-                    " result to save."
+                    " has not started yet, even though this component has"
+                    " connected F_INIT ports. Make sure save_snapshot() is"
+                    " only called once F_INIT has been received."
                 )
         timestamp = self._snapshot_manager.save_snapshot(
             message,

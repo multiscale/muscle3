@@ -111,23 +111,15 @@ class SnapshotManager:
         snapshot = cast(Snapshot, self._resume_from_snapshot)
         return cast(Message, snapshot.message)
 
-    def resume_iteration(self) -> list[int]:
-        """Get the timeline iteration to resume at.
+    def resume_iteration(self) -> Optional[list[int]]:
+        """Get the timeline iteration to resume at, if we're resuming.
 
-        Raises:
-            RuntimeError: If the snapshot being resumed from does not record
-                an iteration, e.g. because it was saved by a version of
-                MUSCLE3 predating this field. Such a snapshot cannot be
-                resumed from correctly.
+        Returns:
+            None if the snapshot being resumed from predates this field (it
+            was saved by an older version of MUSCLE3). TimelineManager
+            .skip_f_init() tolerates this only for a component in the root.
         """
         assert self._resume_from_snapshot is not None
-        if self._resume_from_snapshot.iteration is None:
-            raise RuntimeError(
-                "Cannot resume from this snapshot: it does not record the"
-                " timeline iteration to restore. This may be because it was"
-                " saved by a version of MUSCLE3 predating this field. Please"
-                " rerun without resuming from this snapshot."
-            )
         return self._resume_from_snapshot.iteration
 
     def save_snapshot(

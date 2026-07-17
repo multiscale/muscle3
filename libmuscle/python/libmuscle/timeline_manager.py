@@ -176,12 +176,16 @@ class TimelineManager:
         }
 
     def get_iteration(self) -> Optional[list[int]]:
-        """Return the timeline's current iteration, if any.
+        """Return the main timeline's current iteration.
 
         Returns:
-            self._iteration: None if the main timeline has not started yet no messages
-            have been sended or received for this timeline.
+            self._iteration, or [] for a root component that has not sent or
+            received anything yet: that is exactly what its iteration would
+            become on its first O_F/O_I send anyway (see check_send_message). None
+            only for a non-root component that has not yet received F_INIT.
         """
+        if self._iteration is None and self._is_root():
+            return []
         return self._iteration
 
     def _is_root(self) -> bool:
@@ -316,7 +320,7 @@ class TimelineManager:
             " message here."
         )
 
-    def skip_f_init(self, iteration: list[int]) -> None:
+    def skip_f_init(self, iteration: Optional[list[int]] = None) -> None:
         """Pretend every F_INIT port has already received, for snapshot resume.
 
         Call this when resuming from an intermediate snapshot: the F_INIT message
@@ -327,8 +331,20 @@ class TimelineManager:
 
         Args:
             iteration: The timeline's iteration at the time the snapshot was taken.
+
+        Raises:
+            RuntimeError: If no iteration was given and this component is not
+                root, meaning F_INIT was received before the snapshot was
+                taken and its iteration should have been recorded in it.
         """
         self.reset()
+        if iteration is None and not self._is_root():
+            raise RuntimeError(
+                "Resuming from an intermediate snapshot, but it does not"
+                " record the timeline iteration F_INIT was received at, even"
+                " though this component has connected F_INIT ports. This"
+                " snapshot cannot be resumed correctly."
+            )
         self._iteration = iteration
         for port in self._ports:
             if port.operator == Operator.F_INIT:

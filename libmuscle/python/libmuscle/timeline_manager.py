@@ -1,9 +1,12 @@
+import logging
 from typing import Any, Optional
 
 from ymmsl.v0_2 import Operator, Timeline
 
 from libmuscle.port import Port
 from libmuscle.port_manager import PortManager
+
+_logger = logging.getLogger(__name__)
 
 _ParticipationKey = tuple[str, Optional[int]]
 
@@ -114,10 +117,6 @@ class TimelineManager:
     Every TimelineManager and SubTimelineManager records, for each of its
     ports, whether that port has already sent or received a message for the
     current iteration, in a dict of booleans keyed by port name.
-
-    TODO: Support an instance-wide skip_checks flag
-    (InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS), for cases such as
-    ImplementationTester.
     """
 
     def __init__(self, instance_name: str, port_manager: PortManager) -> None:
@@ -146,6 +145,16 @@ class TimelineManager:
         main-timeline (F_INIT and O_F) ports and their participation tracking.
         """
         all_ports = self._port_manager.list_ports()
+
+        if any(
+            self._port_manager.get_port(name).is_connected()
+            for name in all_ports.get(Operator.NONE, [])
+        ):
+            _logger.warning(
+                "This instance is using ports with Operator.NONE. This does not "
+                "adhere to the Multiscale Modelling and Simulation Framework "
+                "and may lead to deadlocks."
+            )
 
         self._ports = [
             self._port_manager.get_port(name)
@@ -328,6 +337,11 @@ class TimelineManager:
         this run must not receive it again. Without this, the timeline would
         still look unstarted, and the first O_F or O_I send afterwards would be
         rejected as if F_INIT had never been received.
+
+        TODO: This marks every slot of every F_INIT port as participated, even
+        though a vector F_INIT port could in principle have only partially
+        received messages on some slots at snapshot time. Reconcile this once
+        that scenario is supported (or confirmed not to be possible).
 
         Args:
             iteration: The timeline's iteration at the time the snapshot was taken.

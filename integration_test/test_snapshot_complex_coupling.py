@@ -8,7 +8,6 @@ from ymmsl.v0_2 import Operator
 
 from libmuscle import (
     KEEPS_NO_STATE_FOR_NEXT_USE,
-    SKIP_MMSF_SEQUENCE_CHECKS,
     USES_CHECKPOINT_API,
     Instance,
     Message,
@@ -71,7 +70,7 @@ def echo_component(max_channels=2):
         Operator.F_INIT: [f"in{i + 1}" for i in range(max_channels)],
         Operator.O_F: [f"out{i + 1}" for i in range(max_channels)],
     }
-    instance = Instance(ports, KEEPS_NO_STATE_FOR_NEXT_USE | SKIP_MMSF_SEQUENCE_CHECKS)
+    instance = Instance(ports, KEEPS_NO_STATE_FOR_NEXT_USE)
 
     while instance.reuse_instance():
         for p_in, p_out in zip(ports[Operator.F_INIT], ports[Operator.O_F]):

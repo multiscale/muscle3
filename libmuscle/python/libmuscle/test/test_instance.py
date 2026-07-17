@@ -371,8 +371,6 @@ def test_get_setting_with_default_and_type(instance, settings_manager):
 
 
 def test_list_ports(instance, port_manager):
-    port_manager.list_ports.assert_called_once_with()
-    port_manager.list_ports.reset_mock()
     instance.list_ports()
     port_manager.list_ports.assert_called_once_with()
 

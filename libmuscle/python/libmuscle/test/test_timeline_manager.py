@@ -1,3 +1,5 @@
+from logging import WARNING
+
 import pytest
 from ymmsl.v0_2 import Conduit
 from ymmsl.v0_2 import Identifier as Id
@@ -13,6 +15,44 @@ from libmuscle.timeline_manager import (
 )
 
 INSTANCE_NAME = "component"
+
+
+def _build_port_manager(
+    ports: dict, sub_timeline: Timeline = Timeline(":main")
+) -> PortManager:
+    """Build a connected PortManager, each port wired to its own dummy peer.
+
+    F_INIT and O_F ports are on the (unnamed) main timeline; O_I and S ports
+    all share ``sub_timeline``.
+    """
+    conduits = []
+    peer_dims = {}
+    ymmsl_ports = []
+    for operator, names in ports.items():
+        port_timeline = sub_timeline if operator in (Operator.O_I, Operator.S) else None
+        for name in names:
+            peer = Ref(f"peer_{name}")
+            if operator in (Operator.F_INIT, Operator.S):
+                conduits.append(Conduit(f"{peer}.out", f"{INSTANCE_NAME}.{name}"))
+            else:
+                conduits.append(Conduit(f"{INSTANCE_NAME}.{name}", f"{peer}.in"))
+            peer_dims[peer] = []
+            ymmsl_ports.append(Port(Id(name), operator, port_timeline))
+
+    pm = PortManager([], None)
+    peer_info = PeerInfo(Ref(INSTANCE_NAME), [], conduits, peer_dims, {}, ymmsl_ports)
+    pm.connect_ports(peer_info)
+    return pm
+
+
+def _make_timeline_manager(
+    ports: dict, sub_timeline: Timeline = Timeline(":main")
+) -> TimelineManager:
+    """Build a fully connected TimelineManager for the given ports."""
+    pm = _build_port_manager(ports, sub_timeline)
+    tm = TimelineManager(INSTANCE_NAME, pm)
+    tm.connect_sub_timelines()
+    return tm
 
 
 @pytest.fixture
@@ -112,4 +152,152 @@ def test_participation_helpers(port_manager: PortManager) -> None:
     _reset_participation(participated)
 
     assert participated == {("in_f", None): False, ("out_f", None): False}
-    assert tm._participated == {("in_f", None): False, ("out_f", None): False}
+
+
+# --- Sequence-level scenarios, ported from the retired MMSFValidator tests ---
+#
+# Unlike MMSFValidator, which only logged a warning on an out-of-order call,
+# TimelineManager raises RuntimeError. There is also no reuse_instance()-like
+# call here: a cycle resets implicitly once every O_F port has sent (see
+# TimelineManager.reset()), so these scenarios drive check_send_message /
+# check_receive / check_received_message directly.
+
+
+@pytest.mark.parametrize("num_iterations", [0, 1, 2])
+@pytest.mark.parametrize("num_reuse", [1, 5])
+def test_full_cycle_correct(num_iterations: int, num_reuse: int) -> None:
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    for i in range(num_reuse):
+        tm.check_receive("f_i")
+        tm.check_received_message("f_i", [i])
+        for _ in range(num_iterations):
+            iteration = tm.check_send_message("o_i")
+            tm.check_receive("s")
+            tm.check_received_message("s", iteration)
+        tm.check_send_message("o_f")
+
+
+def test_send_o_i_before_f_init_received_raises() -> None:
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    with pytest.raises(RuntimeError, match="must receive on all"):
+        tm.check_send_message("o_i")
+
+
+def test_receive_f_init_twice_in_same_iteration_raises() -> None:
+    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [])
+
+    with pytest.raises(RuntimeError, match="already received"):
+        tm.check_receive("f_i")
+
+
+def test_receive_s_with_only_some_o_i_sent_raises() -> None:
+    # S may receive before any O_I has sent (bridge exception) or once every O_I
+    # has sent, but not while only some O_I ports have sent.
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i1", "o_i2"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [])
+    tm.check_send_message("o_i1")
+
+    with pytest.raises(RuntimeError, match="only some"):
+        tm.check_receive("s")
+
+
+def test_send_o_i_twice_before_s_received_raises() -> None:
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [])
+    tm.check_send_message("o_i")
+
+    with pytest.raises(RuntimeError, match="not every port"):
+        tm.check_send_message("o_i")
+
+
+def test_send_o_f_with_unfinished_sub_timeline_raises() -> None:
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [])
+    tm.check_send_message("o_i")
+
+    with pytest.raises(RuntimeError, match="sub-timeline has not yet completed"):
+        tm.check_send_message("o_f")
+
+
+def test_send_o_f_with_unreceived_f_init_port_raises() -> None:
+    tm = _make_timeline_manager(
+        {Operator.F_INIT: ["f_i1", "f_i2"], Operator.O_F: ["o_f"]}
+    )
+    tm.check_receive("f_i1")
+    tm.check_received_message("f_i1", [])
+
+    with pytest.raises(RuntimeError, match="not all"):
+        tm.check_send_message("o_f")
+
+
+def test_root_o_f_only_repeats_cleanly() -> None:
+    tm = _make_timeline_manager({Operator.O_F: ["o_f"]})
+    for _ in range(5):
+        tm.check_send_message("o_f")
+
+
+def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
+    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
+    for i in range(5):
+        tm.check_receive("f_i")
+        tm.check_received_message("f_i", [i])
+        tm.check_send_message("o_f")
+
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [5])
+    with pytest.raises(RuntimeError, match="already received"):
+        tm.check_receive("f_i")
+
+
+def test_operator_none_ports_logs_warning(caplog: pytest.LogCaptureFixture) -> None:
+    pm = _build_port_manager({Operator.NONE: ["n"]})
+    tm = TimelineManager(INSTANCE_NAME, pm)
+
+    with caplog.at_level(WARNING, logger="libmuscle.timeline_manager"):
+        tm.connect_sub_timelines()
+
+    assert any(
+        "Operator.NONE" in message
+        for logger_name, level, message in caplog.record_tuples
+        if logger_name == "libmuscle.timeline_manager" and level == WARNING
+    )

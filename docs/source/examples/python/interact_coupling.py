@@ -241,8 +241,7 @@ def temporal_coupler() -> None:
     """
     instance = Instance({
         Operator.O_I: ['a_out', 'b_out'],
-        Operator.S: ['a_in', 'b_in']},
-        InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS)
+        Operator.S: ['a_in', 'b_in']})
 
     while instance.reuse_instance():
         # Receive initial messages and initialise state
@@ -277,7 +276,7 @@ def checkpointing_temporal_coupler() -> None:
     instance = Instance({
         Operator.O_I: ['a_out', 'b_out'],
         Operator.S: ['a_in', 'b_in']},
-        InstanceFlags.USES_CHECKPOINT_API | InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS)
+        InstanceFlags.USES_CHECKPOINT_API)
 
     while instance.reuse_instance():
         if instance.resuming():

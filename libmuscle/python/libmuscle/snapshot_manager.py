@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Optional, cast
+from typing import Any, Optional, cast
 
 from ymmsl.v0_2 import Operator, Reference, Settings
 
@@ -122,6 +122,18 @@ class SnapshotManager:
         assert self._resume_from_snapshot is not None
         return self._resume_from_snapshot.iteration
 
+    def resume_sub_timelines(self) -> Optional[dict[str, dict[str, Any]]]:
+        """Get the sub-timeline states to resume at, if we're resuming.
+
+        Returns:
+            None if the snapshot being resumed from predates this field (it
+            was saved by an older version of MUSCLE3), or if this component
+            has no sub-timelines. TimelineManager.restore_sub_timelines()
+            tolerates this by leaving every sub-timeline unstarted.
+        """
+        assert self._resume_from_snapshot is not None
+        return self._resume_from_snapshot.sub_timeline_states
+
     def save_snapshot(
         self,
         msg: Optional[Message],
@@ -131,6 +143,7 @@ class SnapshotManager:
         f_init_max_timestamp: Optional[float],
         settings_overlay: Settings,
         iteration: Optional[list[int]] = None,
+        sub_timeline_states: Optional[dict[str, dict[str, Any]]] = None,
     ) -> float:
         """Save a (final) snapshot.
 
@@ -142,6 +155,8 @@ class SnapshotManager:
             f_init_max_timestamp: Timestamp for final snapshots.
             settings_overlay: Current settings overlay.
             iteration: The timeline's iteration at the time of saving.
+            sub_timeline_states: Every sub-timeline's state at the time of
+                saving.
 
         Returns:
             Simulation time at which the snapshot was made.
@@ -167,6 +182,7 @@ class SnapshotManager:
             msg,
             settings_overlay,
             iteration,
+            sub_timeline_states,
         )
 
         path = self.__store_snapshot(snapshot)

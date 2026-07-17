@@ -170,9 +170,15 @@ class PortManager:
         """
         assert self._declared_ports is not None
 
-        # TODO: should declared ports also support a timeline? If so, the list[str] per
-        # operator could be changed to list[str | PortDeclaration] where PortDeclaration
-        # is a small class holding the port name and an optional Timeline.
+        # The component code only declares operator and name per port, not a
+        # timeline (there is no way to express one in this API), so look the
+        # timeline up from the yMMSL configuration instead, by port name.
+        # Ports the manager doesn't know about (e.g. muscle_settings_in) are
+        # not on any named timeline.
+        timelines_by_name = {
+            str(port.name): port.timeline for port in peer_info.list_ymmsl_ports()
+        }
+
         ports = dict()
         for operator, port_list in self._declared_ports.items():
             for port_desc in port_list:
@@ -192,6 +198,7 @@ class PortManager:
                     is_connected,
                     len(self._index),
                     peer_dims,
+                    timelines_by_name.get(port_name),
                 )
         return ports
 

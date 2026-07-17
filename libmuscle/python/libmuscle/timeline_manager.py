@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from ymmsl.v0_2 import Operator, Timeline
 
@@ -351,6 +351,41 @@ class TimelineManager:
                 for slot in _slots(port):
                     self._participated[(str(port.name), slot)] = True
 
+    def get_sub_timeline_states(self) -> dict[str, dict[str, Any]]:
+        """Return the state of every sub-timeline, for saving in a snapshot.
+
+        Returns:
+            A dict mapping each sub-timeline's name to its state, as
+            returned by SubTimelineManager.get_state().
+        """
+        return {str(tl): stm.get_state() for tl, stm in self._sub_timelines.items()}
+
+    def restore_sub_timelines(
+        self, states: Optional[dict[str, dict[str, Any]]]
+    ) -> None:
+        """Restore sub-timeline state from a snapshot, for snapshot resume.
+
+        Call this when resuming from an intermediate snapshot, after
+        skip_f_init(), which resets every sub-timeline before this restores
+        the state each of them was in when the snapshot was taken. Without
+        this, every sub-timeline would look unstarted, and the first message
+        sent or received on one of its ports could embed or expect an
+        iteration that does not match what its peer has already moved on to.
+
+        Args:
+            states: The saved sub-timeline states, keyed by sub-timeline
+                name, as returned by get_sub_timeline_states(); or None if
+                the snapshot being resumed from predates this field (it was
+                saved by an older version of MUSCLE3), in which case there
+                is nothing to restore and every sub-timeline starts fresh.
+        """
+        if states is None:
+            return
+        for tl, stm in self._sub_timelines.items():
+            state = states.get(str(tl))
+            if state is not None:
+                stm.restore_state(state)
+
     def check_receive(self, port_name: str, slot: Optional[int] = None) -> None:
         """Check that receiving on the given port is currently allowed.
 
@@ -588,10 +623,13 @@ class SubTimelineManager:
         sent yet (this S port would be the first to act, establishing S as
         the operator that leads this sub-timeline) or every O_I port has
         already sent. If this S port already received for the current
-        sub-iteration, it may receive again, advancing to the next
-        sub-iteration, only if S led this sub-timeline and every S port has
-        received; if O_I led instead, only a send on O_I can advance it, and
-        a second receive on S before that happens is rejected.
+        sub-iteration, it may receive again only if S led this sub-timeline;
+        check_received_message then decides, based on the message's actual
+        iteration, whether this is a legal catch-up to a later iteration or
+        should be rejected. If O_I led instead, only a send on O_I can
+        advance the sub-iteration, so a second receive on S before that
+        happens is rejected here already, without needing to look at the
+        message.
 
         No pre-declared bridge role is needed for this: whichever operator,
         O_I or S, acts first for a sub-iteration determines that
@@ -606,9 +644,8 @@ class SubTimelineManager:
             RuntimeError: If this S port has not yet received for the
                 current sub-iteration and only some, not all, of this
                 sub-timeline's O_I ports have sent so far, or if it already
-                received for the current sub-iteration and either O_I led
-                this sub-timeline (only a send on O_I may advance it) or not
-                every S port has received yet.
+                received for the current sub-iteration and O_I led this
+                sub-timeline (only a send on O_I may advance it).
         """
         port_name = str(port.name)
 
@@ -632,29 +669,34 @@ class SubTimelineManager:
                 " advance to the next sub-iteration, not a receive on S."
             )
 
-        if not _all_ports_participated(self._ports, self._participated, Operator.S):
-            raise RuntimeError(
-                f'Port "{port_name}" already received a message for this'
-                " sub-iteration, and not every S port of this sub-timeline"
-                " has received yet."
-            )
-
     def check_received_message(
         self, port_name: str, slot: Optional[int], iteration: list[int]
     ) -> None:
         """Record that a message has been received on the given S port.
 
-        check_receive already established that this receive is legal.
+        check_receive already established that this receive is legal in
+        terms of protocol (port and operator ordering); this method uses the
+        message's actual iteration to decide the remaining case: a repeat
+        receive on an S-led sub-timeline.
 
         If this sub-timeline has not started yet, its iteration is adopted
         from the message and S is recorded as the operator that leads this
         sub-timeline: this only happens when this S port is the first to act
         for this sub-timeline, ahead of any O_I port. If this port and slot
         has not yet received for the current sub-iteration, the message must
-        carry that same iteration. If this port and slot already received for
-        the current sub-iteration, check_receive has already confirmed every
-        port of this sub-timeline has participated, so the sub-iteration
-        advances and participation is reset for the new one.
+        carry that same iteration.
+
+        If this port and slot already received for the current sub-iteration
+        (only possible when S leads, per check_receive), this sub-timeline
+        never advances its own count by guessing; instead, it adopts the
+        message's iteration directly, but only once every S port is caught
+        up with each other at the current iteration (nothing left pending)
+        and the message is for a strictly later iteration than that. This
+        keeps this sub-timeline's count a direct mirror of what the sending
+        peer actually reports, rather than an independently-incremented
+        guess that could drift from it, e.g. because this sub-timeline
+        happens to receive several messages from a faster peer before ever
+        sending a reply.
 
         Args:
             port_name: Name of the S port a message was received on.
@@ -665,7 +707,10 @@ class SubTimelineManager:
         Raises:
             RuntimeError: If this port and slot has not yet received for the
                 current sub-iteration and the message's iteration does not
-                match this sub-timeline's current iteration.
+                match this sub-timeline's current iteration; or if it already
+                received for the current sub-iteration and either not every
+                S port has caught up to it yet, or the message's iteration is
+                not strictly later than the current one.
         """
         key = (port_name, slot)
 
@@ -680,7 +725,21 @@ class SubTimelineManager:
                     f" {self._iteration}."
                 )
         else:
-            _advance_iteration(self._iteration)
+            if not _all_ports_participated(
+                self._ports, self._participated, Operator.S
+            ):
+                raise RuntimeError(
+                    f'Port "{port_name}" already received a message for this'
+                    " sub-iteration, and not every S port of this"
+                    " sub-timeline has received yet."
+                )
+            if iteration <= self._iteration:
+                raise RuntimeError(
+                    f'Port "{port_name}" received a message with iteration'
+                    f" {iteration}, but this sub-timeline is already at"
+                    f" iteration {self._iteration}."
+                )
+            self._iteration = iteration
             _reset_participation(self._participated)
 
         self._participated[key] = True
@@ -696,3 +755,38 @@ class SubTimelineManager:
         self._iteration = None
         self._first_operator = None
         _reset_participation(self._participated)
+
+    def get_state(self) -> dict[str, Any]:
+        """Return this sub-timeline's state, for saving in a snapshot.
+
+        Returns:
+            A plain, msgpack-serialisable representation of this
+            sub-timeline's iteration, leading operator, and per-port
+            participation.
+        """
+        return {
+            "iteration": self._iteration,
+            "first_operator": (
+                self._first_operator.name if self._first_operator is not None else None
+            ),
+            "participated": [
+                [port_name, slot, participated]
+                for (port_name, slot), participated in self._participated.items()
+            ],
+        }
+
+    def restore_state(self, state: dict[str, Any]) -> None:
+        """Restore this sub-timeline's state from a snapshot, for snapshot resume.
+
+        Args:
+            state: The saved state, as returned by get_state().
+        """
+        self._iteration = state["iteration"]
+        first_operator = state["first_operator"]
+        self._first_operator = (
+            Operator[first_operator] if first_operator is not None else None
+        )
+        self._participated = {
+            (port_name, slot): participated
+            for port_name, slot, participated in state["participated"]
+        }

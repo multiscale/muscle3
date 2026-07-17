@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import Any, Optional, cast
 
 import msgpack
 from typing_extensions import Buffer
@@ -27,6 +27,7 @@ class Snapshot(ABC):
         message: Optional["communicator.Message"],
         settings_overlay: Settings,
         iteration: Optional[list[int]] = None,
+        sub_timeline_states: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         self.triggers = triggers
         self.wallclock_time = wallclock_time
@@ -38,6 +39,9 @@ class Snapshot(ABC):
         self.settings_overlay = settings_overlay
         # The timeline's iteration when the snapshot was taken.
         self.iteration = iteration
+        # Every sub-timeline's state when the snapshot was taken, keyed by
+        # sub-timeline name; see TimelineManager.get_sub_timeline_states().
+        self.sub_timeline_states = sub_timeline_states
 
     @classmethod
     @abstractmethod
@@ -77,6 +81,7 @@ class MsgPackSnapshot(Snapshot):
             cls.bytes_to_message(dct["message"]),
             Settings(dct["settings_overlay"]),
             dct.get("iteration"),
+            dct.get("sub_timeline_states"),
         )
 
     def to_bytes(self) -> bytes:
@@ -91,6 +96,7 @@ class MsgPackSnapshot(Snapshot):
                     "message": self.message_to_bytes(self.message),
                     "settings_overlay": self.settings_overlay.as_ordered_dict(),
                     "iteration": self.iteration,
+                    "sub_timeline_states": self.sub_timeline_states,
                 }
             ),
         )

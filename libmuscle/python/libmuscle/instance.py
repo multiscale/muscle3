@@ -261,6 +261,9 @@ class Instance:
             self._communicator._timeline_manager.skip_f_init(
                 self._snapshot_manager.resume_iteration()
             )
+            self._communicator._timeline_manager.restore_sub_timelines(
+                self._snapshot_manager.resume_sub_timelines()
+            )
 
         # now _first_run, _do_resume and _do_init are also set correctly
 
@@ -964,6 +967,7 @@ class Instance:
         walltime = self._trigger_manager.elapsed_walltime()
         # TODO: Also add an iteration for the final snapshot?
         iteration = None
+        sub_timeline_states = None
         if not final:
             iteration = self._communicator._timeline_manager.get_iteration()
             if iteration is None:
@@ -973,6 +977,9 @@ class Instance:
                     " connected F_INIT ports. Make sure save_snapshot() is"
                     " only called once F_INIT has been received."
                 )
+            sub_timeline_states = (
+                self._communicator._timeline_manager.get_sub_timeline_states()
+            )
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,
@@ -981,6 +988,7 @@ class Instance:
             f_init_max_timestamp,
             self._settings_manager.overlay,
             iteration,
+            sub_timeline_states,
         )
         self._trigger_manager.update_checkpoints(timestamp)
 

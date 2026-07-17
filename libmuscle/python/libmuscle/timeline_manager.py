@@ -339,31 +339,22 @@ class TimelineManager:
 
         An F_INIT port may always receive before the main timeline has
         started, and afterwards may receive again as long as it has not
-        already received a message for the current iteration; this only
-        matters when there are multiple F_INIT ports, since the first one to
-        receive in a cycle always finds the main timeline not yet started.
+        already received a message for the current iteration.
 
-        An S port is gated the same way an O_I port is gated for sending: a
-        component with no connected F_INIT ports has its main timeline already
-        at iteration [] from connect_sub_timelines() onwards (see
-        _has_connected_f_init), so S may receive straight away; any other
-        component must first receive a message on every F_INIT port. Once that
+        S may receive straight away if the component has no connected F_INIT ports,
+        otherwise it must first receive a message on every F_INIT port. Once that
         is satisfied, whether this specific S port may receive is delegated to
         the corresponding SubTimelineManager.
 
         Args:
-            port_name: Name of the F_INIT or S port about to receive. The
-                caller (Instance.__check_port) has already confirmed that
-                this operator is allowed to receive.
+            port_name: Name of the F_INIT or S port about to receive.
             slot: The slot being received on, if this is a vector port.
 
         Raises:
             RuntimeError: If this F_INIT port already received a message for
                 the current iteration, if this S port's component has
                 connected F_INIT ports and has not yet received on every one
-                of them, or if receiving on this S port would violate its
-                sub-timeline's ordering or completeness (see
-                SubTimelineManager.check_receive).
+                of them.
         """
         port = self._port_manager.get_port(port_name)
 
@@ -392,11 +383,6 @@ class TimelineManager:
             self._sub_timelines[port.timeline].check_receive(port, slot)
             return
 
-        raise RuntimeError(
-            f'Port "{port_name}" is not an F_INIT or S port, and cannot'
-            " receive a message here."
-        )
-
     def check_received_message(
         self,
         port_name: str,
@@ -405,18 +391,14 @@ class TimelineManager:
     ) -> None:
         """Record that a message has been received on the given port.
 
-        check_receive already established that this receive is legal.
+        check_receive already established that this receive is allowed.
 
         For an F_INIT port, if the main timeline has not started yet, its
-        iteration is adopted from the message (which may be a nested list,
-        if the sender is itself on a nested sub-timeline); otherwise the
-        message must carry the same iteration the main timeline is already
-        on.
+        iteration is adopted from the message, otherwise the message must carry
+        the same iteration the main timeline is already on.
 
         For an S port, recording the message is delegated directly to the
-        corresponding SubTimelineManager: check_receive already guarantees
-        the main timeline has started (self._iteration is not None) by this
-        point, since it raises otherwise.
+        corresponding SubTimelineManager.
 
         Args:
             port_name: Name of the F_INIT or S port a message was received
@@ -426,12 +408,16 @@ class TimelineManager:
                 port.
 
         Raises:
-            RuntimeError: If an already-started F_INIT port received a
-                message with an iteration different from the one the main
-                timeline is on, or if a message without an iteration was
-                received on an S port.
+            RuntimeError: If the message did not carry an iteration, or if an
+                F_INIT port received a message with an iteration different
+                from the one the main timeline is on.
         """
         port = self._port_manager.get_port(port_name)
+
+        if iteration is None:
+            raise RuntimeError(
+                f'Port "{port_name}" received a message without an iteration.'
+            )
 
         if port.operator == Operator.F_INIT:
             if self._iteration is None:
@@ -445,30 +431,16 @@ class TimelineManager:
             self._participated[(port_name, slot)] = True
             return
 
-        if port.operator == Operator.S:
-            if iteration is None:
-                raise RuntimeError(
-                    f'Port "{port_name}" received a message without an iteration.'
-                )
-            self._sub_timelines[port.timeline].check_received_message(
-                port_name, slot, iteration
-            )
-            return
-
-        raise RuntimeError(
-            f'Port "{port_name}" is not an F_INIT or S port, and cannot'
-            " receive a message here."
+        self._sub_timelines[port.timeline].check_received_message(
+            port_name, slot, iteration
         )
 
     def reset(self) -> None:
-        """Reset the main timeline once every O_F port has sent for this iteration.
+        """Reset the main timeline and it's sub-timelines.
 
-        Called from check_send_message, once every O_F port on the main timeline has
-        sent a message for the current iteration. Clears the main timeline's iteration
-        (back to [] if there are no connected F_INIT ports to wait for; see
-        _has_connected_f_init) and participation state, and resets every
-        sub-timeline in turn, so that the next message received on F_INIT
-        starts a new main timeline iteration.
+        Clears the main timeline's iteration (back to [] if there are no connected
+        F_INIT ports to wait for) and participation state, and resets every sub-timeline
+        in turn.
         """
         self._iteration = None if self._has_connected_f_init() else []
         _reset_participation(self._participated)

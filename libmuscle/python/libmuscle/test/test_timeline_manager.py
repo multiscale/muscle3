@@ -50,7 +50,7 @@ def _make_timeline_manager(
 ) -> TimelineManager:
     """Build a fully connected TimelineManager for the given ports."""
     pm = _build_port_manager(ports, sub_timeline)
-    tm = TimelineManager(INSTANCE_NAME, pm)
+    tm = TimelineManager(pm)
     tm.connect_sub_timelines()
     return tm
 
@@ -92,7 +92,7 @@ def port_manager() -> PortManager:
 
 
 def test_init(port_manager: PortManager) -> None:
-    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm = TimelineManager(port_manager)
     assert tm._iteration is None
     assert tm._ports == []
     assert tm._participated == {}
@@ -100,27 +100,27 @@ def test_init(port_manager: PortManager) -> None:
 
 
 def test_connect_sub_timelines(port_manager: PortManager) -> None:
-    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm = TimelineManager(port_manager)
     tm.connect_sub_timelines()
     assert set(tm._sub_timelines.keys()) == {Timeline(":macro"), Timeline(":micro")}
 
 
 def test_connect_sub_timelines_main_ports(port_manager: PortManager) -> None:
-    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm = TimelineManager(port_manager)
     tm.connect_sub_timelines()
     assert {str(port.name) for port in tm._ports} == {"in_f", "out_f"}
     assert tm._participated == {("in_f", None): False, ("out_f", None): False}
 
 
 def test_sub_timeline_manager_init(port_manager: PortManager) -> None:
-    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm = TimelineManager(port_manager)
     tm.connect_sub_timelines()
     assert tm._sub_timelines[Timeline(":macro")]._iteration is None
     assert tm._sub_timelines[Timeline(":micro")]._iteration is None
 
 
 def test_sub_timeline_manager_participation(port_manager: PortManager) -> None:
-    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm = TimelineManager(port_manager)
     tm.connect_sub_timelines()
     for stm in tm._sub_timelines.values():
         assert stm._participated == {
@@ -129,7 +129,7 @@ def test_sub_timeline_manager_participation(port_manager: PortManager) -> None:
 
 
 def test_participation_helpers(port_manager: PortManager) -> None:
-    tm = TimelineManager(INSTANCE_NAME, port_manager)
+    tm = TimelineManager(port_manager)
     tm.connect_sub_timelines()
     ports = tm._ports
     participated = tm._participated
@@ -276,6 +276,28 @@ def test_root_o_f_only_repeats_cleanly() -> None:
         tm.check_send_message("o_f")
 
 
+def test_root_component_with_sub_timeline_repeats_cleanly() -> None:
+    # A root component (no connected F_INIT ports) may still have O_I/S ports,
+    # e.g. a macro model with no coarser peer that still drives a micro model.
+    tm = _make_timeline_manager(
+        {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
+    )
+    for _ in range(3):
+        iteration = tm.check_send_message("o_i")
+        tm.check_receive("s")
+        tm.check_received_message("s", iteration)
+        tm.check_send_message("o_f")
+
+
+def test_root_component_with_sub_timeline_o_f_first_does_not_raise() -> None:
+    # O_F sending before any O_I/S activity used to incorrectly raise "a root
+    # component may not have O_I or S ports".
+    tm = _make_timeline_manager(
+        {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
+    )
+    tm.check_send_message("o_f")
+
+
 def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
     for i in range(5):
@@ -291,7 +313,7 @@ def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
 
 def test_operator_none_ports_logs_warning(caplog: pytest.LogCaptureFixture) -> None:
     pm = _build_port_manager({Operator.NONE: ["n"]})
-    tm = TimelineManager(INSTANCE_NAME, pm)
+    tm = TimelineManager(pm)
 
     with caplog.at_level(WARNING, logger="libmuscle.timeline_manager"):
         tm.connect_sub_timelines()

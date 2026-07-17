@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, Optional, cast
+from typing import Optional, cast
 
 from ymmsl.v0_2 import Operator, Reference, Settings
 
@@ -8,6 +8,7 @@ from libmuscle.communicator import Message
 from libmuscle.mmp_client import MMPClient
 from libmuscle.port_manager import PortManager
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
+from libmuscle.timeline_manager import TimelineState
 
 _logger = logging.getLogger(__name__)
 
@@ -111,28 +112,17 @@ class SnapshotManager:
         snapshot = cast(Snapshot, self._resume_from_snapshot)
         return cast(Message, snapshot.message)
 
-    def resume_iteration(self) -> Optional[list[int]]:
-        """Get the timeline iteration to resume at, if we're resuming.
+    def resume_state(self) -> Optional[TimelineState]:
+        """Get the timeline state to resume at, if we're resuming.
 
         Returns:
             None if the snapshot being resumed from predates this field (it
             was saved by an older version of MUSCLE3). TimelineManager
-            .skip_f_init() tolerates this only for a component in the root.
+            .restore_state() tolerates this only for a component with no
+            connected F_INIT ports.
         """
         assert self._resume_from_snapshot is not None
-        return self._resume_from_snapshot.iteration
-
-    def resume_sub_timelines(self) -> Optional[dict[str, dict[str, Any]]]:
-        """Get the sub-timeline states to resume at, if we're resuming.
-
-        Returns:
-            None if the snapshot being resumed from predates this field (it
-            was saved by an older version of MUSCLE3), or if this component
-            has no sub-timelines. TimelineManager.restore_sub_timelines()
-            tolerates this by leaving every sub-timeline unstarted.
-        """
-        assert self._resume_from_snapshot is not None
-        return self._resume_from_snapshot.sub_timeline_states
+        return self._resume_from_snapshot.timeline_state
 
     def save_snapshot(
         self,
@@ -142,8 +132,7 @@ class SnapshotManager:
         wallclock_time: float,
         f_init_max_timestamp: Optional[float],
         settings_overlay: Settings,
-        iteration: Optional[list[int]] = None,
-        sub_timeline_states: Optional[dict[str, dict[str, Any]]] = None,
+        timeline_state: Optional[TimelineState] = None,
     ) -> float:
         """Save a (final) snapshot.
 
@@ -154,9 +143,8 @@ class SnapshotManager:
             wallclock_time: Wallclock time when saving.
             f_init_max_timestamp: Timestamp for final snapshots.
             settings_overlay: Current settings overlay.
-            iteration: The timeline's iteration at the time of saving.
-            sub_timeline_states: Every sub-timeline's state at the time of
-                saving.
+            timeline_state: The main timeline's iteration and every
+                sub-timeline's state at the time of saving.
 
         Returns:
             Simulation time at which the snapshot was made.
@@ -181,8 +169,7 @@ class SnapshotManager:
             final,
             msg,
             settings_overlay,
-            iteration,
-            sub_timeline_states,
+            timeline_state,
         )
 
         path = self.__store_snapshot(snapshot)

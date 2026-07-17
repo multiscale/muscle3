@@ -241,11 +241,8 @@ class Instance:
             do_reuse = self._decide_reuse_instance()
 
         if self._do_resume and not self._do_init:
-            self._communicator._timeline_manager.skip_f_init(
-                self._snapshot_manager.resume_iteration()
-            )
-            self._communicator._timeline_manager.restore_sub_timelines(
-                self._snapshot_manager.resume_sub_timelines()
+            self._communicator._timeline_manager.restore_state(
+                self._snapshot_manager.resume_state()
             )
 
         # now _first_run, _do_resume and _do_init are also set correctly
@@ -946,21 +943,10 @@ class Instance:
         """
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
-        # TODO: Also add an iteration for the final snapshot?
-        iteration = None
-        sub_timeline_states = None
+        # TODO: Also add a timeline state for the final snapshot?
+        timeline_state = None
         if not final:
-            iteration = self._communicator._timeline_manager.get_iteration()
-            if iteration is None:
-                raise RuntimeError(
-                    "Cannot save an intermediate snapshot: the main timeline"
-                    " has not started yet, even though this component has"
-                    " connected F_INIT ports. Make sure save_snapshot() is"
-                    " only called once F_INIT has been received."
-                )
-            sub_timeline_states = (
-                self._communicator._timeline_manager.get_sub_timeline_states()
-            )
+            timeline_state = self._communicator._timeline_manager.get_state()
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,
@@ -968,8 +954,7 @@ class Instance:
             walltime,
             f_init_max_timestamp,
             self._settings_manager.overlay,
-            iteration,
-            sub_timeline_states,
+            timeline_state,
         )
         self._trigger_manager.update_checkpoints(timestamp)
 

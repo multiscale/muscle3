@@ -86,7 +86,7 @@ def test_create_communicator(communicator, mpp_server):
 def test_create_communicator_creates_timeline_manager(
     communicator, connected_port_manager, timeline_manager
 ):
-    timeline_manager.assert_called_once_with("component", connected_port_manager)
+    timeline_manager.assert_called_once_with(connected_port_manager)
     assert communicator._timeline_manager == timeline_manager.return_value
     timeline_manager.return_value.connect_sub_timelines.assert_not_called()
 

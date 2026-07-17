@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from typing import Any, Optional
 
 from ymmsl.v0_2 import Operator, Timeline
@@ -8,22 +9,26 @@ from libmuscle.port_manager import PortManager
 
 _logger = logging.getLogger(__name__)
 
-_ParticipationKey = tuple[str, Optional[int]]
+
+@dataclass
+class TimelineState:
+    """The main timeline's iteration and participation, and every
+    sub-timeline's state.
+
+    Returned by TimelineManager.get_state() for saving in a snapshot, and
+    passed back into TimelineManager.restore_state() to resume from one.
+    """
+
+    iteration: list[int]
+    # Every main-timeline (F_INIT/O_F) port and slot's participation, as
+    # [port_name, slot, participated] triples (msgpack cannot serialize the
+    # (port_name, slot) tuple keys TimelineManager itself uses as a dict key).
+    participated: list[list[Any]]
+    sub_timeline_states: dict[str, dict[str, Any]]
 
 
 def _slots(port: Port) -> list[Optional[int]]:
-    """Return the slots to track participation for on the given port.
-
-    A vector port has one slot per element (each of which may be sent or
-    received on independently, e.g. because it connects to a different peer
-    instance); a scalar port has a single, slot-less, entry.
-
-    Args:
-        port: The port to get the slots of.
-
-    Returns:
-        A list of slots, or [None] for a scalar port.
-    """
+    """Return the slot indices of a port, or [None] if it's scalar."""
     if port.is_vector():
         return list(range(port.get_length()))
     return [None]
@@ -31,7 +36,7 @@ def _slots(port: Port) -> list[Optional[int]]:
 
 def _all_ports_participated(
     ports: list[Port],
-    participated: dict[_ParticipationKey, bool],
+    participated: dict[tuple[str, Optional[int]], bool],
     operator: Optional[Operator] = None,
 ) -> bool:
     """Return True if every matching port has participated in the current iteration.
@@ -58,7 +63,7 @@ def _all_ports_participated(
 
 def _any_port_participated(
     ports: list[Port],
-    participated: dict[_ParticipationKey, bool],
+    participated: dict[tuple[str, Optional[int]], bool],
     operator: Optional[Operator] = None,
 ) -> bool:
     """Return True if any matching port (or slot of it) has participated.
@@ -81,71 +86,53 @@ def _any_port_participated(
     )
 
 
-def _reset_participation(participated: dict[_ParticipationKey, bool]) -> None:
-    """Mark every port and slot as not yet participated, for a new iteration.
-
-    Must be called whenever _advance_iteration is called, since starting a
-    new iteration means none of the ports have participated in it yet.
+def _reset_participation(participated: dict[tuple[str, Optional[int]], bool]) -> None:
+    """Mark every port and slot as not yet participated, reset all to False.
 
     Args:
         participated: Whether each port and slot, keyed by (name, slot), has
-            sent or received a message for the current iteration. Modified
-            in-place, reset to all False.
+            sent or received a message for the current iteration.
     """
     for key in participated:
         participated[key] = False
 
 
-def _advance_iteration(iteration: list[int]) -> None:
-    """Increment the sub-iteration counter in-place.
-
-    Advances the last element of iteration by one.
-
-    Args:
-        iteration: The current iteration state. Modified in-place.
-    """
-    iteration[-1] += 1
-
-
 class TimelineManager:
-    """Tracks iteration state for the main timeline and manages sub-timelines.
+    """Tracks iteration state for the main timeline and manages it's sub-timelines.
 
-    O_F and F_INIT ports live on the main timeline, tracked directly by this
-    manager. O_I and S ports live on sub-timelines, each tracked by its own
-    SubTimelineManager, grouped by the port's timeline attribute.
+    O_F and F_INIT ports live on the main timeline, tracked directly by this manager.
+    O_I and S ports live on sub-timelines, each tracked by its own SubTimelineManager,
+    grouped by the port's timeline attribute.
 
     Every TimelineManager and SubTimelineManager records, for each of its
     ports, whether that port has already sent or received a message for the
     current iteration, in a dict of booleans keyed by port name.
     """
 
-    def __init__(self, instance_name: str, port_manager: PortManager) -> None:
+    def __init__(self, port_manager: PortManager) -> None:
         """Create a TimelineManager.
 
-        This only stores the instance name and port manager. The sub-timelines
-        cannot be determined yet, since port.timeline is only populated once
-        the ports have been connected to their peers.
+        The sub-timelines cannot be determined yet, since port.timeline is only
+        populated once the ports have been connected to their peers.
 
         Args:
-            instance_name: Component name for this instance.
             port_manager: The port manager for this instance.
         """
-        self._instance_name = instance_name
         self._port_manager = port_manager
         self._iteration: Optional[list[int]] = None
         self._ports: list[Port] = []
-        self._participated: dict[_ParticipationKey, bool] = {}
+        self._participated: dict[tuple[str, Optional[int]], bool] = {}
         self._sub_timelines: dict[Timeline, SubTimelineManager] = {}
 
     def connect_sub_timelines(self) -> None:
-        """Create the SubTimelineManagers once the ports are connected.
-
-        This must be called after PortManager.connect_ports() has run, since
-        it reads port.timeline from the connected ports. Also collects the
-        main-timeline (F_INIT and O_F) ports and their participation tracking.
+        """Create the SubTimelineManagers once the ports are connected. It also collects
+        the main-timeline (F_INIT and O_F) ports and their participation tracking, and
+        starts the main timeline at [] right away if it has no F_INIT message to wait
+        for.
         """
         all_ports = self._port_manager.list_ports()
 
+        # TODO: Which checks should hold for the Operator.NONE?
         if any(
             self._port_manager.get_port(name).is_connected()
             for name in all_ports.get(Operator.NONE, [])
@@ -175,36 +162,46 @@ class TimelineManager:
             if self._port_manager.get_port(name).is_connected()
         }
 
-        # NOTE: The timeline strings received from the manager are the local relative
-        # names declared in yMMSL (e.g. "tl1"), not full absolute paths. For nested
-        # topologies (e.g. a micro component under meso and macro) the correct
-        # absolute timeline would be ":macro:meso", but only the local name is sent.
         # Assumes every O_I/S port has a non-empty timeline.
         self._sub_timelines = {
             tl: SubTimelineManager(tl, self._port_manager) for tl in sub_timelines
         }
 
-    def get_iteration(self) -> Optional[list[int]]:
-        """Return the main timeline's current iteration.
+        # A component with no connected F_INIT ports has no F_INIT message to
+        # learn its iteration from, so its main timeline starts at [].
+        self._iteration = None if self._has_connected_f_init() else []
 
-        Returns:
-            self._iteration, or [] for a root component that has not sent or
-            received anything yet: that is exactly what its iteration would
-            become on its first O_F/O_I send anyway (see check_send_message). None
-            only for a non-root component that has not yet received F_INIT.
+    def get_state(self) -> TimelineState:
+        """Return the main timeline's iteration and participation, and every
+        sub-timeline's state, for saving in a snapshot.
+
+        Raises:
+            RuntimeError: If the main timeline has not started yet, because
+                this component has connected F_INIT ports and none have been
+                received yet. Make sure this is only called once F_INIT has
+                been received.
         """
-        if self._iteration is None and self._is_root():
-            return []
-        return self._iteration
+        if self._iteration is None:
+            raise RuntimeError(
+                "Cannot save an intermediate snapshot: the main timeline"
+                " has not started yet, even though this component has"
+                " connected F_INIT ports. Make sure save_snapshot() is"
+                " only called once F_INIT has been received."
+            )
+        return TimelineState(
+            iteration=self._iteration,
+            participated=[
+                [port_name, slot, participated]
+                for (port_name, slot), participated in self._participated.items()
+            ],
+            sub_timeline_states={
+                str(tl): stm.get_state() for tl, stm in self._sub_timelines.items()
+            },
+        )
 
-    def _is_root(self) -> bool:
-        """Return whether this component has no connected F_INIT ports.
-
-        A root component may still declare F_INIT ports, as long as none of
-        them are connected to a peer; a component that declares no F_INIT
-        ports at all is trivially root.
-        """
-        return not any(
+    def _has_connected_f_init(self) -> bool:
+        """Return whether this component has any connected F_INIT ports."""
+        return any(
             p.is_connected() for p in self._ports if p.operator == Operator.F_INIT
         )
 
@@ -213,192 +210,129 @@ class TimelineManager:
     ) -> list[int]:
         """Check and update the timeline state before sending on the given port.
 
-        A component is root if it has no connected F_INIT ports, and on a root component
-        the first message sent on an O_F or O_I port starts the main timeline at
-        iteration []. Any other component must first receive a message on every F_INIT
-        port before it may send on O_F or O_I. The iteration it starts on is then simply
-        copied from that message (see check_received_message).
-
-        Once the timeline has started, an O_F port may send again only once every F_INIT
-        port has received a message for the current iteration and every sub-timeline
-        that has started has completed its current iteration. Once the last O_F port has
-        sent for the current iteration, the main timeline is reset in preparation for
-        the next one, which also resets every sub-timeline.
-
-        An O_I port only starts or validates the main timeline as described above. The
-        corresponding sub-timeline's iteration is advanced separately, by delegating to
-        SubTimelineManager.check_send_message.
+        Both O_F and O_I require that all F_INIT ports should have received a message
+        for the current iteration. After this the specific checks for the O_F or O_I
+        port will be done and the iteration of it's timeline will be returned.
 
         Args:
-            port_name: Name of the O_F or O_I port that is about to send. The
-                caller (Instance.__check_port) has already confirmed that
-                this operator is allowed to send.
+            port_name: Name of the O_F or O_I port that is about to send.
             slot: The slot being sent on, if this is a vector port.
 
         Returns:
-            The iteration to embed in the outgoing message. Captured before
-            any reset triggered by this same send, so that a send which
-            completes the current (sub-)iteration still embeds the iteration
-            it belongs to, rather than the one that follows it.
+            The iteration to embed in the outgoing message.
 
         Raises:
-            RuntimeError: If sending on this port at this point would
-                violate the Multiscale Modeling and Simulation Framework,
-                e.g. because F_INIT has not been received yet on a non-root
-                component, this port already sent a message for the current
-                iteration, not every F_INIT port has received yet, an
-                unfinished sub-timeline remains, or a root component
-                declares O_I/S ports (a root component cannot have
-                sub-timelines).
+            RuntimeError: If sending on this port at this point would violate
+                the Multiscale Modeling and Simulation Framework.
         """
         port = self._port_manager.get_port(port_name)
-        is_root = self._is_root()
+
+        if self._iteration is None:
+            raise RuntimeError(
+                f'Port "{port_name}" tried to send a message, but this'
+                " component has connected F_INIT ports and must receive on"
+                " all of them first."
+            )
+        if not _all_ports_participated(
+            self._ports, self._participated, Operator.F_INIT
+        ):
+            raise RuntimeError(
+                f'Port "{port_name}" tried to send a message, but not all'
+                " F_INIT ports have received a message for this iteration yet."
+            )
 
         if port.operator == Operator.O_F:
-            if self._iteration is None:
-                if not is_root:
-                    raise RuntimeError(
-                        f'Port "{port_name}" tried to send the first message on the'
-                        " main timeline, but this component has connected F_INIT"
-                        " ports and must receive on all of them first."
-                    )
-                if self._sub_timelines:
-                    raise RuntimeError(
-                        f'Port "{port_name}" tried to send the first message on the'
-                        " main timeline, but this component has sub-timelines. A"
-                        " root component may not have O_I or S ports."
-                    )
-                self._iteration = []
-                self._participated[(port_name, slot)] = True
-                iteration = self._iteration
-                if _all_ports_participated(self._ports, self._participated):
-                    self.reset()
-                return iteration
+            return self._check_send_o_f(port_name, slot)
 
-            if not _all_ports_participated(
-                self._ports, self._participated, Operator.F_INIT
-            ):
-                raise RuntimeError(
-                    f'Port "{port_name}" tried to send a message, but not all'
-                    " F_INIT ports have received a message for this iteration yet."
-                )
-
-            if self._participated.get((port_name, slot), False):
-                raise RuntimeError(
-                    f'Port "{port_name}" already sent a message for this iteration.'
-                )
-
-            for stm in self._sub_timelines.values():
-                if stm._iteration is not None and not _all_ports_participated(
-                    stm._ports, stm._participated
-                ):
-                    raise RuntimeError(
-                        f'Port "{port_name}" tried to send a message, but a'
-                        " sub-timeline has not yet completed its current iteration."
-                    )
-
-            self._participated[(port_name, slot)] = True
-            iteration = self._iteration
-            if _all_ports_participated(self._ports, self._participated):
-                self.reset()
-            return iteration
-
-        if port.operator == Operator.O_I:
-            if self._iteration is None:
-                if not is_root:
-                    raise RuntimeError(
-                        f'Port "{port_name}" tried to send the first message, but'
-                        " this component has connected F_INIT ports and must"
-                        " receive on all of them first."
-                    )
-                self._iteration = []
-            elif not _all_ports_participated(
-                self._ports, self._participated, Operator.F_INIT
-            ):
-                raise RuntimeError(
-                    f'Port "{port_name}" tried to send a message, but not all'
-                    " F_INIT ports have received a message for this iteration yet."
-                )
-
-            return self._sub_timelines[port.timeline].check_send_message(
-                port, slot, self._iteration
-            )
-
-        raise RuntimeError(
-            f'Port "{port_name}" is not an O_F or O_I port, and cannot send a'
-            " message here."
+        return self._sub_timelines[port.timeline].check_send_message(
+            port, slot, self._iteration
         )
 
-    def skip_f_init(self, iteration: Optional[list[int]] = None) -> None:
-        """Pretend every F_INIT port has already received, for snapshot resume.
+    def _check_send_o_f(self, port_name: str, slot: Optional[int]) -> list[int]:
+        """Check the O_F-specific send conditions, update state, and return
+        the iteration to embed in the outgoing message.
 
-        Call this when resuming from an intermediate snapshot: the F_INIT message
-        was already received in a previous run, before the snapshot was taken, so
-        this run must not receive it again. Without this, the timeline would
-        still look unstarted, and the first O_F or O_I send afterwards would be
-        rejected as if F_INIT had never been received.
-
-        TODO: This marks every slot of every F_INIT port as participated, even
-        though a vector F_INIT port could in principle have only partially
-        received messages on some slots at snapshot time. Reconcile this once
-        that scenario is supported (or confirmed not to be possible).
+        An O_F port requires that it has not already sent for the current iteration and
+        that every sub-timeline has completed its current iteration.
+        Once every O_F port has sent, the main timeline and every sub-timeline are reset
+        for the next iteration.
 
         Args:
-            iteration: The timeline's iteration at the time the snapshot was taken.
-
-        Raises:
-            RuntimeError: If no iteration was given and this component is not
-                root, meaning F_INIT was received before the snapshot was
-                taken and its iteration should have been recorded in it.
-        """
-        self.reset()
-        if iteration is None and not self._is_root():
-            raise RuntimeError(
-                "Resuming from an intermediate snapshot, but it does not"
-                " record the timeline iteration F_INIT was received at, even"
-                " though this component has connected F_INIT ports. This"
-                " snapshot cannot be resumed correctly."
-            )
-        self._iteration = iteration
-        for port in self._ports:
-            if port.operator == Operator.F_INIT:
-                for slot in _slots(port):
-                    self._participated[(str(port.name), slot)] = True
-
-    def get_sub_timeline_states(self) -> dict[str, dict[str, Any]]:
-        """Return the state of every sub-timeline, for saving in a snapshot.
+            port_name: Name of the O_F port that is about to send.
+            slot: The slot being sent on, if this is a vector port.
 
         Returns:
-            A dict mapping each sub-timeline's name to its state, as
-            returned by SubTimelineManager.get_state().
+            The iteration to embed in the outgoing message, captured before
+            any reset triggered by this same send.
+
+        Raises:
+            RuntimeError: If this port already sent a message for the current
+                iteration, or an unfinished sub-timeline remains.
         """
-        return {str(tl): stm.get_state() for tl, stm in self._sub_timelines.items()}
+        assert self._iteration is not None, "checked by _check_main_timeline_started"
+        if self._participated.get((port_name, slot), False):
+            raise RuntimeError(
+                f'Port "{port_name}" already sent a message for this iteration.'
+            )
 
-    def restore_sub_timelines(
-        self, states: Optional[dict[str, dict[str, Any]]]
-    ) -> None:
-        """Restore sub-timeline state from a snapshot, for snapshot resume.
+        for stm in self._sub_timelines.values():
+            if stm._iteration is not None and not _all_ports_participated(
+                stm._ports, stm._participated
+            ):
+                raise RuntimeError(
+                    f'Port "{port_name}" tried to send a message, but a'
+                    " sub-timeline has not yet completed its current iteration."
+                )
 
-        Call this when resuming from an intermediate snapshot, after
-        skip_f_init(), which resets every sub-timeline before this restores
-        the state each of them was in when the snapshot was taken. Without
-        this, every sub-timeline would look unstarted, and the first message
-        sent or received on one of its ports could embed or expect an
-        iteration that does not match what its peer has already moved on to.
+        self._participated[(port_name, slot)] = True
+        iteration = self._iteration
+        if _all_ports_participated(self._ports, self._participated):
+            self.reset()
+        return iteration
+
+    def restore_state(self, state: Optional[TimelineState]) -> None:
+        """Restore the main timeline and every sub-timeline, for snapshot resume.
+
+        Resets everything first, then restores the main timeline's iteration, per-port
+        participation, and every sub-timeline's state from the snapshot.
+
+        If no state was given, there is no participation record to restore, so every
+        F_INIT port and slot is instead marked as participated.
 
         Args:
-            states: The saved sub-timeline states, keyed by sub-timeline
-                name, as returned by get_sub_timeline_states(); or None if
-                the snapshot being resumed from predates this field (it was
-                saved by an older version of MUSCLE3), in which case there
-                is nothing to restore and every sub-timeline starts fresh.
+            state: The saved timeline state, as returned by get_state(), or
+                None if the snapshot was saved by an older version of MUSCLE3.
+
+        Raises:
+            RuntimeError: If no state was given while this component has connected
+                F_INIT ports, so there is no recorded iteration to resume from and this
+                snapshot cannot be resumed correctly.
         """
-        if states is None:
+        self.reset()
+        if state is None and self._iteration is None:
+            raise RuntimeError(
+                "Resuming from an intermediate snapshot, but it does not"
+                " record the timeline iteration F_INIT was received at,"
+                " even though this component has connected F_INIT ports."
+                " This snapshot cannot be resumed correctly."
+            )
+
+        if state is None:
+            for port in self._ports:
+                if port.operator == Operator.F_INIT:
+                    for slot in _slots(port):
+                        self._participated[(str(port.name), slot)] = True
             return
+
+        self._iteration = state.iteration
+        self._participated = {
+            (port_name, slot): participated
+            for port_name, slot, participated in state.participated
+        }
         for tl, stm in self._sub_timelines.items():
-            state = states.get(str(tl))
-            if state is not None:
-                stm.restore_state(state)
+            sub_state = state.sub_timeline_states.get(str(tl))
+            if sub_state is not None:
+                stm.restore_state(sub_state)
 
     def check_receive(self, port_name: str, slot: Optional[int] = None) -> None:
         """Check that receiving on the given port is currently allowed.
@@ -409,11 +343,13 @@ class TimelineManager:
         matters when there are multiple F_INIT ports, since the first one to
         receive in a cycle always finds the main timeline not yet started.
 
-        An S port is gated the same way an O_I port is gated for sending: on
-        a root component, S may receive before the main timeline has
-        started; any other component must first receive a message on every
-        F_INIT port. Once that is satisfied, whether this specific S port
-        may receive is delegated to the corresponding SubTimelineManager.
+        An S port is gated the same way an O_I port is gated for sending: a
+        component with no connected F_INIT ports has its main timeline already
+        at iteration [] from connect_sub_timelines() onwards (see
+        _has_connected_f_init), so S may receive straight away; any other
+        component must first receive a message on every F_INIT port. Once that
+        is satisfied, whether this specific S port may receive is delegated to
+        the corresponding SubTimelineManager.
 
         Args:
             port_name: Name of the F_INIT or S port about to receive. The
@@ -423,10 +359,11 @@ class TimelineManager:
 
         Raises:
             RuntimeError: If this F_INIT port already received a message for
-                the current iteration, if this S port's component is
-                non-root and has not yet received on every F_INIT port, or
-                if receiving on this S port would violate its sub-timeline's
-                ordering or completeness (see SubTimelineManager.check_receive).
+                the current iteration, if this S port's component has
+                connected F_INIT ports and has not yet received on every one
+                of them, or if receiving on this S port would violate its
+                sub-timeline's ordering or completeness (see
+                SubTimelineManager.check_receive).
         """
         port = self._port_manager.get_port(port_name)
 
@@ -439,13 +376,12 @@ class TimelineManager:
 
         if port.operator == Operator.S:
             if self._iteration is None:
-                if not self._is_root():
-                    raise RuntimeError(
-                        f'Port "{port_name}" tried to receive the first message,'
-                        " but this component has connected F_INIT ports and must"
-                        " receive on all of them first."
-                    )
-            elif not _all_ports_participated(
+                raise RuntimeError(
+                    f'Port "{port_name}" tried to receive the first message,'
+                    " but this component has connected F_INIT ports and must"
+                    " receive on all of them first."
+                )
+            if not _all_ports_participated(
                 self._ports, self._participated, Operator.F_INIT
             ):
                 raise RuntimeError(
@@ -477,10 +413,10 @@ class TimelineManager:
         message must carry the same iteration the main timeline is already
         on.
 
-        For an S port, if the main timeline has not started yet (only
-        possible on a root component receiving before any O_I has sent), it
-        starts at iteration []; recording the message itself is then
-        delegated to the corresponding SubTimelineManager.
+        For an S port, recording the message is delegated directly to the
+        corresponding SubTimelineManager: check_receive already guarantees
+        the main timeline has started (self._iteration is not None) by this
+        point, since it raises otherwise.
 
         Args:
             port_name: Name of the F_INIT or S port a message was received
@@ -514,8 +450,6 @@ class TimelineManager:
                 raise RuntimeError(
                     f'Port "{port_name}" received a message without an iteration.'
                 )
-            if self._iteration is None:
-                self._iteration = []
             self._sub_timelines[port.timeline].check_received_message(
                 port_name, slot, iteration
             )
@@ -531,10 +465,12 @@ class TimelineManager:
 
         Called from check_send_message, once every O_F port on the main timeline has
         sent a message for the current iteration. Clears the main timeline's iteration
-        and participation state, and resets every sub-timeline in turn, so that the next
-        message received on F_INIT starts a new main timeline iteration.
+        (back to [] if there are no connected F_INIT ports to wait for; see
+        _has_connected_f_init) and participation state, and resets every
+        sub-timeline in turn, so that the next message received on F_INIT
+        starts a new main timeline iteration.
         """
-        self._iteration = None
+        self._iteration = None if self._has_connected_f_init() else []
         _reset_participation(self._participated)
         for stm in self._sub_timelines.values():
             stm.reset()
@@ -585,6 +521,10 @@ class SubTimelineManager:
         one; a second send on the same O_I port and slot before that happens is
         rejected.
 
+        An O_I port only validates the main timeline as described above;
+        advancing its own sub-timeline's iteration is delegated to
+        SubTimelineManager.check_send_message.
+
         Args:
             port: The O_I port that is about to send.
             slot: The slot being sent on, if this is a vector port.
@@ -623,7 +563,7 @@ class SubTimelineManager:
                     " sent one for this sub-iteration and not every port of this"
                     " sub-timeline has participated yet."
                 )
-            _advance_iteration(self._iteration)
+            self._iteration[-1] += 1
             _reset_participation(self._participated)
 
         self._participated[key] = True
@@ -739,9 +679,7 @@ class SubTimelineManager:
                     f" {self._iteration}."
                 )
         else:
-            if not _all_ports_participated(
-                self._ports, self._participated, Operator.S
-            ):
+            if not _all_ports_participated(self._ports, self._participated, Operator.S):
                 raise RuntimeError(
                     f'Port "{port_name}" already received a message for this'
                     " sub-iteration, and not every S port of this"

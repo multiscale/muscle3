@@ -109,7 +109,7 @@ class Communicator:
         # indexed by remote instance id
         self._clients: dict[Reference, MPPClient] = {}
 
-        self._timeline_manager = TimelineManager(str(kernel), port_manager)
+        self._timeline_manager = TimelineManager(port_manager)
 
     def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.

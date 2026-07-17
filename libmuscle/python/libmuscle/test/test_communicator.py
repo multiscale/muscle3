@@ -48,7 +48,6 @@ def mpp_client(MPPClient):
 @pytest.fixture
 def timeline_manager():
     with patch("libmuscle.communicator.TimelineManager") as MockTimelineManager:
-        MockTimelineManager.return_value.get_iteration.return_value = None
         yield MockTimelineManager
 
 

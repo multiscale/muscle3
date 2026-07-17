@@ -111,6 +111,25 @@ class SnapshotManager:
         snapshot = cast(Snapshot, self._resume_from_snapshot)
         return cast(Message, snapshot.message)
 
+    def resume_iteration(self) -> list[int]:
+        """Get the timeline iteration to resume at.
+
+        Raises:
+            RuntimeError: If the snapshot being resumed from does not record
+                an iteration, e.g. because it was saved by a version of
+                MUSCLE3 predating this field. Such a snapshot cannot be
+                resumed from correctly.
+        """
+        assert self._resume_from_snapshot is not None
+        if self._resume_from_snapshot.iteration is None:
+            raise RuntimeError(
+                "Cannot resume from this snapshot: it does not record the"
+                " timeline iteration to restore. This may be because it was"
+                " saved by a version of MUSCLE3 predating this field. Please"
+                " rerun without resuming from this snapshot."
+            )
+        return self._resume_from_snapshot.iteration
+
     def save_snapshot(
         self,
         msg: Optional[Message],
@@ -119,6 +138,7 @@ class SnapshotManager:
         wallclock_time: float,
         f_init_max_timestamp: Optional[float],
         settings_overlay: Settings,
+        iteration: Optional[list[int]] = None,
     ) -> float:
         """Save a (final) snapshot.
 
@@ -129,6 +149,7 @@ class SnapshotManager:
             wallclock_time: Wallclock time when saving.
             f_init_max_timestamp: Timestamp for final snapshots.
             settings_overlay: Current settings overlay.
+            iteration: The timeline's iteration at the time of saving.
 
         Returns:
             Simulation time at which the snapshot was made.
@@ -147,7 +168,13 @@ class SnapshotManager:
                 port_message_counts[port_name] = new_counts
 
         snapshot = MsgPackSnapshot(
-            triggers, wallclock_time, port_message_counts, final, msg, settings_overlay
+            triggers,
+            wallclock_time,
+            port_message_counts,
+            final,
+            msg,
+            settings_overlay,
+            iteration,
         )
 
         path = self.__store_snapshot(snapshot)

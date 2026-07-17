@@ -175,20 +175,14 @@ class TimelineManager:
             tl: SubTimelineManager(tl, self._port_manager) for tl in sub_timelines
         }
 
-    def get_iteration(self, port_name: str) -> Optional[list[int]]:
-        """Return the iteration to embed in an outgoing message on the given port.
-
-        Args:
-            port_name: The name of an O_F or O_I port that is about to send.
+    def get_iteration(self) -> Optional[list[int]]:
+        """Return the timeline's current iteration, if any.
 
         Returns:
-            self._iteration for an O_F port, or the iteration of the
-            sub-timeline the port lives on for an O_I port.
+            self._iteration: None if the main timeline has not started yet no messages
+            have been sended or received for this timeline.
         """
-        port = self._port_manager.get_port(port_name)
-        if port.operator == Operator.O_F:
-            return self._iteration
-        return self._sub_timelines[port.timeline].get_iteration()
+        return self._iteration
 
     def _is_root(self) -> bool:
         """Return whether this component has no connected F_INIT ports.
@@ -321,6 +315,25 @@ class TimelineManager:
             f'Port "{port_name}" is not an O_F or O_I port, and cannot send a'
             " message here."
         )
+
+    def skip_f_init(self, iteration: list[int]) -> None:
+        """Pretend every F_INIT port has already received, for snapshot resume.
+
+        Call this when resuming from an intermediate snapshot: the F_INIT message
+        was already received in a previous run, before the snapshot was taken, so
+        this run must not receive it again. Without this, the timeline would
+        still look unstarted, and the first O_F or O_I send afterwards would be
+        rejected as if F_INIT had never been received.
+
+        Args:
+            iteration: The timeline's iteration at the time the snapshot was taken.
+        """
+        self.reset()
+        self._iteration = iteration
+        for port in self._ports:
+            if port.operator == Operator.F_INIT:
+                for slot in _slots(port):
+                    self._participated[(str(port.name), slot)] = True
 
     def check_receive(self, port_name: str, slot: Optional[int] = None) -> None:
         """Check that receiving on the given port is currently allowed.
@@ -550,10 +563,6 @@ class SubTimelineManager:
 
         self._participated[key] = True
         return list(self._iteration)
-
-    def get_iteration(self) -> Optional[list[int]]:
-        """Return the current iteration of this sub-timeline."""
-        return self._iteration
 
     def check_receive(self, port: Port, slot: Optional[int] = None) -> None:
         """Check that receiving on the given S port is currently allowed.

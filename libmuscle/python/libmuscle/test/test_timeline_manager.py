@@ -113,17 +113,3 @@ def test_participation_helpers(port_manager: PortManager) -> None:
 
     assert participated == {("in_f", None): False, ("out_f", None): False}
     assert tm._participated == {("in_f", None): False, ("out_f", None): False}
-
-
-def test_get_iteration_main_timeline(port_manager: PortManager) -> None:
-    tm = TimelineManager(INSTANCE_NAME, port_manager)
-    tm.connect_sub_timelines()
-    tm._iteration = [3]
-    assert tm.get_iteration("out_f") == [3]
-
-
-def test_get_iteration_sub_timeline(port_manager: PortManager) -> None:
-    tm = TimelineManager(INSTANCE_NAME, port_manager)
-    tm.connect_sub_timelines()
-    tm._sub_timelines[Timeline(":macro")]._iteration = [3, 1]
-    assert tm.get_iteration("out_macro") == [3, 1]

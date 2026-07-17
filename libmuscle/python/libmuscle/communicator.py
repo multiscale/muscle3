@@ -179,7 +179,7 @@ class Communicator:
             return
 
         if isinstance(message.data, ClosePort):
-            iteration = self._timeline_manager.get_iteration(port_name)
+            iteration = None
         else:
             iteration = self._timeline_manager.check_send_message(port_name, slot)
 

@@ -26,6 +26,7 @@ class Snapshot(ABC):
         is_final_snapshot: bool,
         message: Optional["communicator.Message"],
         settings_overlay: Settings,
+        iteration: Optional[list[int]] = None,
     ) -> None:
         self.triggers = triggers
         self.wallclock_time = wallclock_time
@@ -35,6 +36,8 @@ class Snapshot(ABC):
         # self.message is None for implicit snapshots, so we cannot store the
         # Settings overlay in that message object.
         self.settings_overlay = settings_overlay
+        # The timeline's iteration when the snapshot was taken.
+        self.iteration = iteration
 
     @classmethod
     @abstractmethod
@@ -73,6 +76,7 @@ class MsgPackSnapshot(Snapshot):
             dct["is_final_snapshot"],
             cls.bytes_to_message(dct["message"]),
             Settings(dct["settings_overlay"]),
+            dct.get("iteration"),
         )
 
     def to_bytes(self) -> bytes:
@@ -86,6 +90,7 @@ class MsgPackSnapshot(Snapshot):
                     "is_final_snapshot": self.is_final_snapshot,
                     "message": self.message_to_bytes(self.message),
                     "settings_overlay": self.settings_overlay.as_ordered_dict(),
+                    "iteration": self.iteration,
                 }
             ),
         )

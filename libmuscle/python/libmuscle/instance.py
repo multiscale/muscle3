@@ -257,8 +257,10 @@ class Instance:
         else:
             do_reuse = self._decide_reuse_instance()
 
-        if self._do_resume and not self._do_init and self._mmsf_validator:
-            self._mmsf_validator.skip_f_init()
+        if self._do_resume and not self._do_init:
+            self._communicator._timeline_manager.skip_f_init(
+                self._snapshot_manager.resume_iteration()
+            )
 
         # now _first_run, _do_resume and _do_init are also set correctly
 
@@ -960,6 +962,19 @@ class Instance:
         """
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
+        # TODO: Also add an iteration for the final snapshot?
+        iteration = None
+        if not final:
+            iteration = self._communicator._timeline_manager.get_iteration()
+            if iteration is None:
+                raise RuntimeError(
+                    "Cannot save an intermediate snapshot: the main timeline"
+                    " has not started yet, or has just completed a full"
+                    " cycle. Make sure save_snapshot() is only called once"
+                    " F_INIT has been received and, if applicable, after the"
+                    " current sub-timeline (O_I/S) iteration has produced a"
+                    " result to save."
+                )
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,
@@ -967,6 +982,7 @@ class Instance:
             walltime,
             f_init_max_timestamp,
             self._settings_manager.overlay,
+            iteration,
         )
         self._trigger_manager.update_checkpoints(timestamp)
 

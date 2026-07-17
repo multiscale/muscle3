@@ -53,8 +53,7 @@ def timeline_manager():
 
 @pytest.fixture
 def communicator(connected_port_manager, profiler, timeline_manager):
-    comm = Communicator(Ref("component"), [], connected_port_manager, profiler, Mock())
-    return comm
+    return Communicator(Ref("component"), [], connected_port_manager, profiler, Mock())
 
 
 @pytest.fixture

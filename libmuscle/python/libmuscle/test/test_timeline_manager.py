@@ -242,6 +242,69 @@ def test_send_o_i_twice_before_s_received_raises() -> None:
         tm.check_send_message("o_i")
 
 
+@pytest.mark.parametrize("num_iterations", [0, 1, 2])
+def test_full_cycle_s_led_correct(num_iterations: int) -> None:
+    # Mirrors test_full_cycle_correct, but with S acting first each
+    # sub-iteration instead of O_I.
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [])
+
+    for i in range(num_iterations):
+        tm.check_receive("s")
+        tm.check_received_message("s", [i])
+        tm.check_send_message("o_i")
+
+    tm.check_send_message("o_f")
+
+
+def test_send_o_i_with_only_some_s_received_raises() -> None:
+    # Mirrors test_receive_s_with_only_some_o_i_sent_raises: when S leads, O_I
+    # may send once every S port has received, but not while only some have.
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s1", "s2"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [])
+    tm.check_receive("s1")
+    tm.check_received_message("s1", [0])
+
+    with pytest.raises(RuntimeError, match="only some"):
+        tm.check_send_message("o_i")
+
+
+def test_receive_s_twice_before_o_i_sent_raises() -> None:
+    # Mirrors test_send_o_i_twice_before_s_received_raises: a repeat receive
+    # on S must still wait for O_I to have sent before it can advance.
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [])
+    tm.check_receive("s")
+    tm.check_received_message("s", [0])
+
+    with pytest.raises(RuntimeError, match="not every port"):
+        tm.check_receive("s")
+
+
 def test_send_o_f_with_unfinished_sub_timeline_raises() -> None:
     tm = _make_timeline_manager(
         {

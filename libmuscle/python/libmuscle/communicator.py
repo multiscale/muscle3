@@ -127,14 +127,13 @@ class Communicator:
         """Inform this Communicator about its peers.
 
         This tells the Communicator about its peers, so that it can route
-        messages accordingly. This also connects our ports to their peers,
-        and completes the TimelineManager's initialization.
+        messages accordingly. This also completes the TimelineManager's
+        initialization.
 
         Args:
             peer_info: Information about the peers.
         """
         self._peer_info = peer_info
-        self._port_manager.connect_ports(peer_info)
         self._timeline_manager.connect_sub_timelines()
 
     def set_receive_timeout(self, receive_timeout: float) -> None:
@@ -541,16 +540,15 @@ class Communicator:
                             self._drain_incoming_port(port_name)
                         else:
                             self._drain_incoming_vector_port(port_name)
-                    except RuntimeError as exc:
+                    except RuntimeError:
                         peer_endpoints = self._peer_info.get_peer_endpoints(
                             Identifier(port_name), []
                         )
                         peer_name = str(peer_endpoints[0].kernel)
                         _logger.warning(
                             "Connection with peer '%s' was lost at the end of the "
-                            "simulation, probably because it crashed (%s).",
+                            "simulation, probably because it crashed.",
                             peer_name,
-                            exc,
                         )
 
     def _close_ports(self) -> None:

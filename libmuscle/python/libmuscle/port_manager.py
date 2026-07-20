@@ -61,14 +61,12 @@ class PortManager:
         """Returns a description of the ports this PortManager has.
 
         Args:
-            timeline: Omit (or pass None) to return all ports regardless of
-                timeline. Pass Timeline() to return only ports with no explicit
-                timeline. Pass a specific Timeline to return only ports on that
-                timeline.
+            timeline: Pass a specific Timeline to return only ports on that timeline.
 
         Returns:
-            A dictionary, indexed by Operator, containing lists of port names.
-            Operators with no associated ports are not included.
+            A dictionary, indexed by Operator, containing lists of
+            port names. Operators with no associated ports are not
+            included.
         """
         result: dict[Operator, list[str]] = {}
         for port_name, port in self._ports.items():
@@ -170,11 +168,13 @@ class PortManager:
         """
         assert self._declared_ports is not None
 
-        # The component code only declares operator and name per port, not a
-        # timeline (there is no way to express one in this API), so look the
-        # timeline up from the yMMSL configuration instead, by port name.
-        # Ports the manager doesn't know about (e.g. muscle_settings_in) are
-        # not on any named timeline.
+        # NOTE: timeline is not something component code can currently declare (the
+        # ports dict in Instance() only carries operator + name), so we always resolve
+        # it from the yMMSL config instead. Should timeline become a declarable
+        # property of a port like operator/name are, or should it stay a
+        # config-time-only concept (since it describes how a component is
+        # wired into a larger coupled simulation, not something the
+        # component itself should hardcode)?
         timelines_by_name = {
             str(port.name): port.timeline for port in peer_info.list_ymmsl_ports()
         }

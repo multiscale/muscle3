@@ -182,7 +182,7 @@ class MPPMessage:
             saved_until: Elapsed time until which the sender has
                 processed checkpoints.
             data: The serialised contents of the message.
-            iteration: The iteration of the sending port, or None if not yet set.
+            iteration: The iteration of the sending port, or None.
         """
         # make sure timestamp and next_timestamp are floats
         timestamp = float(timestamp)

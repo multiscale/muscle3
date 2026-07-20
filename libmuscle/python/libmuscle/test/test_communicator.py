@@ -99,7 +99,6 @@ def test_set_peer_info_sets_up_timeline_manager(
     communicator.set_peer_info(peer_info)
 
     assert communicator._peer_info == peer_info
-    connected_port_manager.connect_ports.assert_called_once_with(peer_info)
     timeline_manager.return_value.connect_sub_timelines.assert_called_once_with()
 
 

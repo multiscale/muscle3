@@ -8,7 +8,7 @@ from libmuscle.communicator import Message
 from libmuscle.mmp_client import MMPClient
 from libmuscle.port_manager import PortManager
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
-from libmuscle.timeline_manager import TimelineState
+from libmuscle.timeline_manager import TimelineManager, TimelineState
 
 _logger = logging.getLogger(__name__)
 
@@ -116,13 +116,28 @@ class SnapshotManager:
         """Get the timeline state to resume at, if we're resuming.
 
         Returns:
-            None if the snapshot being resumed from predates this field (it
-            was saved by an older version of MUSCLE3). TimelineManager
-            .restore_state() tolerates this only for a component with no
-            connected F_INIT ports.
+            None if the snapshot being resumed was saved by an older version of MUSCLE3.
         """
         assert self._resume_from_snapshot is not None
         return self._resume_from_snapshot.timeline_state
+
+    def capture_timeline_state(
+        self, timeline_manager: TimelineManager, final: bool
+    ) -> Optional[TimelineState]:
+        """Capture the timeline manager's state for saving in a snapshot.
+
+        A final-snapshot resume always re-enters through F_INIT, which
+        re-adopts iteration and participation from the incoming messages,
+        exactly like a fresh start, so only an intermediate snapshot needs
+        its timeline state captured here.
+
+        Args:
+            timeline_manager: The communicator's TimelineManager to capture from.
+            final: Whether the snapshot being saved is a final one.
+        """
+        if final:
+            return None
+        return timeline_manager.get_state()
 
     def save_snapshot(
         self,
@@ -143,8 +158,7 @@ class SnapshotManager:
             wallclock_time: Wallclock time when saving.
             f_init_max_timestamp: Timestamp for final snapshots.
             settings_overlay: Current settings overlay.
-            timeline_state: The main timeline's iteration and every
-                sub-timeline's state at the time of saving.
+            timeline_state: The timeline's state at the time of saving.
 
         Returns:
             Simulation time at which the snapshot was made.

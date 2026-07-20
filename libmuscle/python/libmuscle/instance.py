@@ -745,6 +745,7 @@ class Instance:
         connect_event = ProfileEvent(ProfileEventType.CONNECT, ProfileTimestamp())
 
         peer_info = self.__manager.request_peers()
+        self._port_manager.connect_ports(peer_info)
         self._communicator.set_peer_info(peer_info)
 
         self._settings_manager.base = self.__manager.get_settings()
@@ -943,10 +944,9 @@ class Instance:
         """
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
-        # TODO: Also add a timeline state for the final snapshot?
-        timeline_state = None
-        if not final:
-            timeline_state = self._communicator._timeline_manager.get_state()
+        timeline_state = self._snapshot_manager.capture_timeline_state(
+            self._communicator._timeline_manager, final
+        )
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,

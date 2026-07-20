@@ -37,8 +37,8 @@ class Snapshot(ABC):
         # self.message is None for implicit snapshots, so we cannot store the
         # Settings overlay in that message object.
         self.settings_overlay = settings_overlay
-        # The main timeline's iteration and every sub-timeline's state when the
-        # snapshot was taken; see TimelineManager.get_state().
+        # The main timeline's state when the snapshot was taken, see
+        # TimelineManager.get_state().
         self.timeline_state = timeline_state
 
     @classmethod

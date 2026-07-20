@@ -1,9 +1,9 @@
 from logging import WARNING
+from typing import Optional
 
 import pytest
-from ymmsl.v0_2 import Conduit
+from ymmsl.v0_2 import Conduit, Operator, Port, Timeline
 from ymmsl.v0_2 import Identifier as Id
-from ymmsl.v0_2 import Operator, Port, Timeline
 from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.peer_info import PeerInfo
@@ -18,13 +18,14 @@ INSTANCE_NAME = "component"
 
 
 def _build_port_manager(
-    ports: dict, sub_timeline: Timeline = Timeline(":main")
+    ports: dict, sub_timeline: Optional[Timeline] = None
 ) -> PortManager:
     """Build a connected PortManager, each port wired to its own dummy peer.
 
     F_INIT and O_F ports are on the (unnamed) main timeline; O_I and S ports
     all share ``sub_timeline``.
     """
+    sub_timeline = sub_timeline if sub_timeline is not None else Timeline(":main")
     conduits = []
     peer_dims = {}
     ymmsl_ports = []
@@ -46,7 +47,7 @@ def _build_port_manager(
 
 
 def _make_timeline_manager(
-    ports: dict, sub_timeline: Timeline = Timeline(":main")
+    ports: dict, sub_timeline: Optional[Timeline] = None
 ) -> TimelineManager:
     """Build a fully connected TimelineManager for the given ports."""
     pm = _build_port_manager(ports, sub_timeline)

@@ -73,12 +73,17 @@ def _reset_participation(participated: dict[tuple[str, Optional[int]], bool]) ->
 
 
 def _sub_timeline_complete(stm: "SubTimelineManager") -> bool:
-    """Return whether a sub-timeline is done with this cycle: either it was
-    never used this cycle, or every one of its ports has participated.
+    """Return whether a sub-timeline is done with this cycle.
+
+    If it was used this cycle, every one of its ports must have
+    participated. If it wasn't used this cycle, that's only fine if it has
+    been used in some earlier cycle (e.g. a cache skipping a refresh); a
+    sub-timeline that has never been used at all is not considered complete,
+    since it would then never be used for the lifetime of the instance.
     """
-    return stm._iteration is None or _all_ports_participated(
-        stm._ports, stm._participated
-    )
+    if stm._iteration is not None:
+        return _all_ports_participated(stm._ports, stm._participated)
+    return stm._ever_used
 
 
 class TimelineManager:
@@ -451,6 +456,9 @@ class SubTimelineManager:
         self._sub_timeline = sub_timeline
         self._iteration: Optional[list[int]] = None
         self._first_operator: Optional[Operator] = None
+        self._ever_used = False
+        """Whether this sub-timeline has been used in some cycle, current or
+        past. Unlike _iteration, this is not cleared by reset()."""
 
         self._ports = [
             port_manager.get_port(name)
@@ -497,6 +505,7 @@ class SubTimelineManager:
         """
         port_name = str(port.name)
         key = (port_name, slot)
+        self._ever_used = True
 
         if self._iteration is None:
             self._iteration = parent_iteration + [0]
@@ -607,6 +616,7 @@ class SubTimelineManager:
                 iteration is not strictly later than the current one.
         """
         key = (port_name, slot)
+        self._ever_used = True
 
         if self._iteration is None:
             self._iteration = iteration
@@ -656,6 +666,7 @@ class SubTimelineManager:
                 [port_name, slot, participated]
                 for (port_name, slot), participated in self._participated.items()
             ],
+            "ever_used": self._ever_used,
         }
 
     def restore_state(self, state: dict[str, Any]) -> None:
@@ -673,3 +684,6 @@ class SubTimelineManager:
             (port_name, slot): participated
             for port_name, slot, participated in state["participated"]
         }
+        # Older snapshots don't have this key; a snapshot always implies the
+        # sub-timeline has an iteration to resume, i.e. it has been used.
+        self._ever_used = state.get("ever_used", True)

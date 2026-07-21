@@ -240,7 +240,8 @@ class Instance:
         else:
             do_reuse = self._decide_reuse_instance()
 
-        if self._do_resume and not self._do_init:
+        restored_from_intermediate = self._do_resume and not self._do_init
+        if restored_from_intermediate:
             self._communicator._timeline_manager.restore_state(
                 self._snapshot_manager.resume_state()
             )
@@ -262,6 +263,12 @@ class Instance:
             ):
                 # store a None instead of a Message
                 self._save_snapshot(None, True, self.__f_init_max_timestamp)
+
+        if (
+            not restored_from_intermediate
+            and self._communicator._timeline_manager.cycle_complete()
+        ):
+            self._communicator._timeline_manager.reset()
 
         if not do_reuse:
             self.__shutdown()
@@ -944,9 +951,7 @@ class Instance:
         """
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
-        timeline_state = self._snapshot_manager.capture_timeline_state(
-            self._communicator._timeline_manager, final
-        )
+        timeline_state = self._communicator._timeline_manager.get_state()
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,

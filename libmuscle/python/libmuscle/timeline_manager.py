@@ -158,10 +158,10 @@ class TimelineManager:
         """
         if self._iteration is None:
             raise RuntimeError(
-                "Cannot save an intermediate snapshot: the main timeline"
-                " has not started yet, even though this component has"
-                " connected F_INIT ports. Make sure save_snapshot() is"
-                " only called once F_INIT has been received."
+                "Cannot save a snapshot: this instance has connected F_INIT"
+                " ports, but hasn't received a message on any of them yet."
+                " Make sure a snapshot is only saved after this instance has"
+                " started receiving messages."
             )
         return TimelineState(
             iteration=self._iteration,
@@ -172,6 +172,15 @@ class TimelineManager:
             sub_timeline_states={
                 str(tl): stm.get_state() for tl, stm in self._sub_timelines.items()
             },
+        )
+
+    def cycle_complete(self) -> bool:
+        """Return whether every main-timeline port has participated and
+        every sub-timeline has completed a sub-iteration.
+        """
+        return _all_ports_participated(self._ports, self._participated) and all(
+            _all_ports_participated(stm._ports, stm._participated)
+            for stm in self._sub_timelines.values()
         )
 
     def _has_connected_f_init(self) -> bool:
@@ -228,21 +237,18 @@ class TimelineManager:
         the iteration to embed in the outgoing message.
 
         An O_F port requires that it has not already sent for the current iteration and
-        that every sub-timeline has completed its current iteration.
-        Once every O_F port has sent, the main timeline and every sub-timeline are reset
-        for the next iteration.
+        that every sub-timeline has completed a sub-iteration.
 
         Args:
             port_name: Name of the O_F port that is about to send.
             slot: The slot being sent on, if this is a vector port.
 
         Returns:
-            The iteration to embed in the outgoing message, captured before
-            any reset triggered by this same send.
+            The iteration to embed in the outgoing message.
 
         Raises:
             RuntimeError: If this port already sent a message for the current
-                iteration, or an unfinished sub-timeline remains.
+                iteration, or a sub-timeline hasn't completed a sub-iteration.
         """
         assert self._iteration is not None, "checked by _check_main_timeline_started"
         if self._participated.get((port_name, slot), False):
@@ -251,19 +257,14 @@ class TimelineManager:
             )
 
         for stm in self._sub_timelines.values():
-            if stm._iteration is not None and not _all_ports_participated(
-                stm._ports, stm._participated
-            ):
+            if not _all_ports_participated(stm._ports, stm._participated):
                 raise RuntimeError(
                     f'Port "{port_name}" tried to send a message, but a'
-                    " sub-timeline has not yet completed its current iteration."
+                    " sub-timeline has not completed a sub-iteration yet."
                 )
 
         self._participated[(port_name, slot)] = True
-        iteration = self._iteration
-        if _all_ports_participated(self._ports, self._participated):
-            self.reset()
-        return iteration
+        return self._iteration
 
     def restore_state(self, state: Optional[TimelineState]) -> None:
         """Restore the main timeline and every sub-timeline, for snapshot resume.

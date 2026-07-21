@@ -155,16 +155,7 @@ def test_participation_helpers(port_manager: PortManager) -> None:
     assert participated == {("in_f", None): False, ("out_f", None): False}
 
 
-# --- Sequence-level scenarios, ported from the retired MMSFValidator tests ---
-#
-# Unlike MMSFValidator, which only logged a warning on an out-of-order call,
-# TimelineManager raises RuntimeError. There is also no reuse_instance()-like
-# call here: a cycle resets implicitly once every O_F port has sent (see
-# TimelineManager.reset()), so these scenarios drive check_send_message /
-# check_receive / check_received_message directly.
-
-
-@pytest.mark.parametrize("num_iterations", [0, 1, 2])
+@pytest.mark.parametrize("num_iterations", [1, 2])
 @pytest.mark.parametrize("num_reuse", [1, 5])
 def test_full_cycle_correct(num_iterations: int, num_reuse: int) -> None:
     tm = _make_timeline_manager(
@@ -182,6 +173,24 @@ def test_full_cycle_correct(num_iterations: int, num_reuse: int) -> None:
             iteration = tm.check_send_message("o_i")
             tm.check_receive("s")
             tm.check_received_message("s", iteration)
+        tm.check_send_message("o_f")
+        assert tm.cycle_complete()
+        tm.reset()
+
+
+def test_send_o_f_with_unused_sub_timeline_raises() -> None:
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [0])
+
+    with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
         tm.check_send_message("o_f")
 
 
@@ -243,10 +252,8 @@ def test_send_o_i_twice_before_s_received_raises() -> None:
         tm.check_send_message("o_i")
 
 
-@pytest.mark.parametrize("num_iterations", [0, 1, 2])
+@pytest.mark.parametrize("num_iterations", [1, 2])
 def test_full_cycle_s_led_correct(num_iterations: int) -> None:
-    # Mirrors test_full_cycle_correct, but with S acting first each
-    # sub-iteration instead of O_I.
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -267,8 +274,6 @@ def test_full_cycle_s_led_correct(num_iterations: int) -> None:
 
 
 def test_send_o_i_with_only_some_s_received_raises() -> None:
-    # Mirrors test_receive_s_with_only_some_o_i_sent_raises: when S leads, O_I
-    # may send once every S port has received, but not while only some have.
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -287,8 +292,6 @@ def test_send_o_i_with_only_some_s_received_raises() -> None:
 
 
 def test_receive_s_twice_before_o_i_sent_raises() -> None:
-    # Mirrors test_send_o_i_twice_before_s_received_raises: a repeat receive
-    # on S must still wait for O_I to have sent before it can advance.
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -319,7 +322,7 @@ def test_send_o_f_with_unfinished_sub_timeline_raises() -> None:
     tm.check_received_message("f_i", [])
     tm.check_send_message("o_i")
 
-    with pytest.raises(RuntimeError, match="sub-timeline has not yet completed"):
+    with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
         tm.check_send_message("o_f")
 
 
@@ -338,11 +341,11 @@ def test_root_o_f_only_repeats_cleanly() -> None:
     tm = _make_timeline_manager({Operator.O_F: ["o_f"]})
     for _ in range(5):
         tm.check_send_message("o_f")
+        assert tm.cycle_complete()
+        tm.reset()
 
 
 def test_root_component_with_sub_timeline_repeats_cleanly() -> None:
-    # A root component (no connected F_INIT ports) may still have O_I/S ports,
-    # e.g. a macro model with no coarser peer that still drives a micro model.
     tm = _make_timeline_manager(
         {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
     )
@@ -351,15 +354,16 @@ def test_root_component_with_sub_timeline_repeats_cleanly() -> None:
         tm.check_receive("s")
         tm.check_received_message("s", iteration)
         tm.check_send_message("o_f")
+        assert tm.cycle_complete()
+        tm.reset()
 
 
-def test_root_component_with_sub_timeline_o_f_first_does_not_raise() -> None:
-    # O_F sending before any O_I/S activity used to incorrectly raise "a root
-    # component may not have O_I or S ports".
+def test_root_component_with_sub_timeline_o_f_first_raises() -> None:
     tm = _make_timeline_manager(
         {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
     )
-    tm.check_send_message("o_f")
+    with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
+        tm.check_send_message("o_f")
 
 
 def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
@@ -368,11 +372,67 @@ def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
         tm.check_receive("f_i")
         tm.check_received_message("f_i", [i])
         tm.check_send_message("o_f")
+        assert tm.cycle_complete()
+        tm.reset()
 
     tm.check_receive("f_i")
     tm.check_received_message("f_i", [5])
     with pytest.raises(RuntimeError, match="already received"):
         tm.check_receive("f_i")
+
+
+def test_get_state_raises_before_f_init_received() -> None:
+    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
+    with pytest.raises(RuntimeError, match="hasn.t received a message"):
+        tm.get_state()
+
+
+def test_cycle_complete_false_until_every_main_port_participated() -> None:
+    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
+    assert not tm.cycle_complete()
+
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [0])
+    assert not tm.cycle_complete()
+
+    tm.check_send_message("o_f")
+    assert tm.cycle_complete()
+
+
+def test_cycle_complete_false_if_sub_timeline_restarts_after_o_f_sent() -> None:
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [0])
+    iteration = tm.check_send_message("o_i")
+    tm.check_receive("s")
+    tm.check_received_message("s", iteration)
+    tm.check_send_message("o_f")
+    assert tm.cycle_complete()
+
+    tm.check_send_message("o_i")
+    assert not tm.cycle_complete()
+
+
+def test_get_state_after_o_f_sent_reflects_completed_cycle_before_reset() -> None:
+    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [3])
+    tm.check_send_message("o_f")
+
+    assert tm.cycle_complete()
+    state = tm.get_state()
+    assert state.iteration == [3]
+
+    tm.reset()
+    with pytest.raises(RuntimeError, match="hasn.t received a message"):
+        tm.get_state()
 
 
 def test_operator_none_ports_logs_warning(caplog: pytest.LogCaptureFixture) -> None:

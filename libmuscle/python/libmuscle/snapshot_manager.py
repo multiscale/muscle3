@@ -8,7 +8,7 @@ from libmuscle.communicator import Message
 from libmuscle.mmp_client import MMPClient
 from libmuscle.port_manager import PortManager
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
-from libmuscle.timeline_manager import TimelineManager, TimelineState
+from libmuscle.timeline_manager import TimelineState
 
 _logger = logging.getLogger(__name__)
 
@@ -120,24 +120,6 @@ class SnapshotManager:
         """
         assert self._resume_from_snapshot is not None
         return self._resume_from_snapshot.timeline_state
-
-    def capture_timeline_state(
-        self, timeline_manager: TimelineManager, final: bool
-    ) -> Optional[TimelineState]:
-        """Capture the timeline manager's state for saving in a snapshot.
-
-        A final-snapshot resume always re-enters through F_INIT, which
-        re-adopts iteration and participation from the incoming messages,
-        exactly like a fresh start, so only an intermediate snapshot needs
-        its timeline state captured here.
-
-        Args:
-            timeline_manager: The communicator's TimelineManager to capture from.
-            final: Whether the snapshot being saved is a final one.
-        """
-        if final:
-            return None
-        return timeline_manager.get_state()
 
     def save_snapshot(
         self,

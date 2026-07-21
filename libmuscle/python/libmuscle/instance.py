@@ -19,6 +19,7 @@ from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.snapshot_manager import SnapshotManager
+from libmuscle.timeline_manager import TimelineState
 from libmuscle.util import extract_log_file_location
 
 _logger = logging.getLogger(__name__)
@@ -176,6 +177,10 @@ class Instance:
         self._do_init = False
         """Whether to do f_init on this iteration of the reuse loop"""
 
+        self._pending_final_snapshot_state: Optional[TimelineState] = None
+        """Timeline state captured by should_save_final_snapshot(), for
+        save_final_snapshot() to use afterwards."""
+
         self._f_init_cache: _FInitCacheType = {}
         """Stores pre-received messages for f_init ports"""
 
@@ -233,6 +238,8 @@ class Instance:
         """
         self._api_guard.verify_reuse_instance()
 
+        ended_cycle_state = self._reset_completed_cycle()
+
         if self._do_reuse is not None:
             # thank you, should_save_final_snapshot, for running this already
             do_reuse = self._do_reuse
@@ -240,8 +247,7 @@ class Instance:
         else:
             do_reuse = self._decide_reuse_instance()
 
-        restored_from_intermediate = self._do_resume and not self._do_init
-        if restored_from_intermediate:
+        if self._do_resume and not self._do_init:
             self._communicator._timeline_manager.restore_state(
                 self._snapshot_manager.resume_state()
             )
@@ -262,13 +268,9 @@ class Instance:
                 do_reuse, self.__f_init_max_timestamp
             ):
                 # store a None instead of a Message
-                self._save_snapshot(None, True, self.__f_init_max_timestamp)
-
-        if (
-            not restored_from_intermediate
-            and self._communicator._timeline_manager.cycle_complete()
-        ):
-            self._communicator._timeline_manager.reset()
+                self._save_snapshot(
+                    None, True, self.__f_init_max_timestamp, ended_cycle_state
+                )
 
         if not do_reuse:
             self.__shutdown()
@@ -704,6 +706,7 @@ class Instance:
         """
         self._api_guard.verify_should_save_final_snapshot()
 
+        self._pending_final_snapshot_state = self._reset_completed_cycle()
         self._do_reuse = self._decide_reuse_instance()
         result = self._trigger_manager.should_save_final_snapshot(
             self._do_reuse, self.__f_init_max_timestamp
@@ -730,7 +733,13 @@ class Instance:
         self._api_guard.verify_save_final_snapshot()
         if message is None:
             raise RuntimeError("Please specify a Message to save as snapshot.")
-        self._save_snapshot(message, True, self.__f_init_max_timestamp)
+        self._save_snapshot(
+            message,
+            True,
+            self.__f_init_max_timestamp,
+            self._pending_final_snapshot_state,
+        )
+        self._pending_final_snapshot_state = None
         self._api_guard.save_final_snapshot_done()
 
     @property
@@ -889,6 +898,25 @@ class Instance:
             self._communicator._receive_timeout,
         )
 
+    def _reset_completed_cycle(self) -> Optional[TimelineState]:
+        """Capture and clear the timeline state of the cycle that just
+        completed, if any.
+
+        Must be called before _decide_reuse_instance(), since that may
+        pre-receive the next F_INIT message and needs the timeline already
+        reset to adopt its iteration. Returns the captured state, for a
+        final snapshot (implicit here, or manual via
+        should_save_final_snapshot()/save_final_snapshot()) that still needs
+        it, since reset() would otherwise erase it. Returns None, without
+        resetting, if the cycle hasn't completed yet.
+        """
+        timeline_manager = self._communicator._timeline_manager
+        if not timeline_manager.cycle_complete():
+            return None
+        state = timeline_manager.get_state()
+        timeline_manager.reset()
+        return state
+
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
 
@@ -940,6 +968,7 @@ class Instance:
         message: Optional[Message],
         final: bool,
         f_init_max_timestamp: Optional[float] = None,
+        timeline_state: Optional[TimelineState] = None,
     ) -> None:
         """Save a snapshot to disk and notify manager.
 
@@ -948,10 +977,13 @@ class Instance:
             final: Whether this is a final snapshot or an intermediate
                 one
             f_init_max_timestamp: Timestamp for final snapshots
+            timeline_state: The timeline state to save, if already captured. Captured
+                here otherwise.
         """
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
-        timeline_state = self._communicator._timeline_manager.get_state()
+        if timeline_state is None:
+            timeline_state = self._communicator._timeline_manager.get_state()
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,

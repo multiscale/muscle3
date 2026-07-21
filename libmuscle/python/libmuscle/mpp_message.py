@@ -7,6 +7,7 @@ from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.grid import Grid
+from libmuscle.timeline_manager import IterationCount
 
 
 class ExtTypeId(IntEnum):
@@ -160,7 +161,7 @@ class MPPMessage:
         message_number: int,
         saved_until: float,
         data: Any,
-        iteration: Optional[list] = None,
+        iteration: Optional[IterationCount] = None,
     ) -> None:
         """Create an MPPMessage.
 

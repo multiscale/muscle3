@@ -147,6 +147,7 @@ def test_receive_message(connected_communicator, mpp_client):
         0,
         1.0,
         "Testing",
+        [0],
     )
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
@@ -176,6 +177,7 @@ def test_receive_message_vector(connected_communicator, mpp_client):
         0,
         3.5,
         "Testing2",
+        [0],
     )
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
@@ -248,6 +250,7 @@ def test_port_count_validation(
         0,
         7.6,
         b"test",
+        [0],
     )
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
@@ -313,6 +316,7 @@ def test_port_discard_success_on_resume(
                 message_number,
                 1.0,
                 {"this is message": message_number},
+                [0],
             ).encoded(),
             MagicMock(),
         )

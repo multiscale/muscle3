@@ -7,11 +7,7 @@ from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
-from libmuscle.timeline_manager import (
-    TimelineManager,
-    _all_participated,
-    _reset_participation,
-)
+from libmuscle.timeline_manager import TimelineManager, _all_participated
 
 INSTANCE_NAME = "component"
 
@@ -98,13 +94,13 @@ def test_init(port_manager: PortManager) -> None:
     assert tm._receive_ports == []
     assert tm._send_participated == set()
     assert tm._receive_participated == set()
-    assert tm._subtimelines == {}
+    assert tm._submanagers == {}
 
 
 def test_on_ports_connected(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
     tm.on_ports_connected()
-    assert set(tm._subtimelines.keys()) == {Timeline(":macro"), Timeline(":micro")}
+    assert set(tm._submanagers.keys()) == {Timeline(":macro"), Timeline(":micro")}
 
 
 def test_on_ports_connected_main_ports(port_manager: PortManager) -> None:
@@ -145,14 +141,14 @@ def test_on_ports_connected_includes_muscle_settings_in() -> None:
 def test_subtimeline_manager_init(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
     tm.on_ports_connected()
-    assert tm._subtimelines[Timeline(":macro")]._iteration is None
-    assert tm._subtimelines[Timeline(":micro")]._iteration is None
+    assert tm._submanagers[Timeline(":macro")]._iteration is None
+    assert tm._submanagers[Timeline(":micro")]._iteration is None
 
 
 def test_subtimeline_manager_participation(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
     tm.on_ports_connected()
-    for stm in tm._subtimelines.values():
+    for stm in tm._submanagers.values():
         assert stm._send_participated == set()
         assert stm._receive_participated == set()
 
@@ -176,7 +172,8 @@ def test_participation_helpers(port_manager: PortManager) -> None:
 
     assert _all_participated(tm._send_participated, tm._num_send_slots)
 
-    _reset_participation(tm._send_participated, tm._receive_participated)
+    tm._send_participated = set()
+    tm._receive_participated = set()
 
     assert tm._send_participated == set()
     assert tm._receive_participated == set()
@@ -195,11 +192,11 @@ def test_full_cycle_correct(num_iterations: int, num_reuse: int) -> None:
     )
     for i in range(num_reuse):
         tm.check_receive("f_i")
-        tm.check_received_message("f_i", [i])
+        tm.check_received_message("f_i", None, [i])
         for _ in range(num_iterations):
             iteration = tm.check_send_message("o_i")
             tm.check_receive("s")
-            tm.check_received_message("s", iteration)
+            tm.check_received_message("s", None, iteration)
         tm.check_send_message("o_f")
         assert tm.cycle_complete()
         tm.reset()
@@ -216,10 +213,10 @@ def test_send_o_f_with_previously_used_subtimeline_skipped_ok() -> None:
     )
     # First cycle: use the sub-timeline once, establishing it.
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [0])
+    tm.check_received_message("f_i", None, [0])
     iteration = tm.check_send_message("o_i")
     tm.check_receive("s")
-    tm.check_received_message("s", iteration)
+    tm.check_received_message("s", None, iteration)
     tm.check_send_message("o_f")
     assert tm.cycle_complete()
     tm.reset()
@@ -227,7 +224,7 @@ def test_send_o_f_with_previously_used_subtimeline_skipped_ok() -> None:
     # Second cycle: a cache-like component may skip the sub-timeline
     # entirely, having already used it before.
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [1])
+    tm.check_received_message("f_i", None, [1])
     tm.check_send_message("o_f")
     assert tm.cycle_complete()
 
@@ -242,7 +239,7 @@ def test_send_o_f_with_never_used_subtimeline_raises() -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [0])
+    tm.check_received_message("f_i", None, [0])
 
     with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
         tm.check_send_message("o_f")
@@ -258,7 +255,7 @@ def test_send_o_f_with_incomplete_subtimeline_raises() -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [0])
+    tm.check_received_message("f_i", None, [0])
     tm.check_send_message("o_i")
 
     with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
@@ -292,7 +289,7 @@ def test_send_o_i_gated_by_muscle_settings_in() -> None:
     tm.on_ports_connected()
 
     tm.check_receive("muscle_settings_in")
-    tm.check_received_message("muscle_settings_in", [0])
+    tm.check_received_message("muscle_settings_in", None, [0])
 
     tm.check_send_message("out")
 
@@ -300,7 +297,7 @@ def test_send_o_i_gated_by_muscle_settings_in() -> None:
 def test_receive_f_init_twice_in_same_iteration_raises() -> None:
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [])
+    tm.check_received_message("f_i", None, [])
 
     with pytest.raises(RuntimeError, match="already received"):
         tm.check_receive("f_i")
@@ -318,7 +315,7 @@ def test_receive_s_with_only_some_o_i_sent_raises() -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [])
+    tm.check_received_message("f_i", None, [])
     tm.check_send_message("o_i1")
 
     with pytest.raises(RuntimeError, match="only some"):
@@ -335,7 +332,7 @@ def test_send_o_i_twice_before_s_received_raises() -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [])
+    tm.check_received_message("f_i", None, [])
     tm.check_send_message("o_i")
 
     with pytest.raises(RuntimeError, match="not every port"):
@@ -353,11 +350,11 @@ def test_full_cycle_s_led_correct(num_iterations: int) -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [])
+    tm.check_received_message("f_i", None, [])
 
     for i in range(num_iterations):
         tm.check_receive("s")
-        tm.check_received_message("s", [i])
+        tm.check_received_message("s", None, [i])
         tm.check_send_message("o_i")
 
     tm.check_send_message("o_f")
@@ -373,9 +370,9 @@ def test_send_o_i_with_only_some_s_received_raises() -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [])
+    tm.check_received_message("f_i", None, [])
     tm.check_receive("s1")
-    tm.check_received_message("s1", [0])
+    tm.check_received_message("s1", None, [0])
 
     with pytest.raises(RuntimeError, match="only some"):
         tm.check_send_message("o_i")
@@ -391,9 +388,9 @@ def test_receive_s_twice_before_o_i_sent_raises() -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [])
+    tm.check_received_message("f_i", None, [])
     tm.check_receive("s")
-    tm.check_received_message("s", [0])
+    tm.check_received_message("s", None, [0])
 
     with pytest.raises(RuntimeError, match="not every port"):
         tm.check_receive("s")
@@ -409,7 +406,7 @@ def test_send_o_f_with_unfinished_subtimeline_raises() -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [])
+    tm.check_received_message("f_i", None, [])
     tm.check_send_message("o_i")
 
     with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
@@ -431,7 +428,7 @@ def test_root_component_with_subtimeline_repeats_cleanly() -> None:
     for _ in range(3):
         iteration = tm.check_send_message("o_i")
         tm.check_receive("s")
-        tm.check_received_message("s", iteration)
+        tm.check_received_message("s", None, iteration)
         tm.check_send_message("o_f")
         assert tm.cycle_complete()
         tm.reset()
@@ -449,21 +446,15 @@ def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
     for i in range(5):
         tm.check_receive("f_i")
-        tm.check_received_message("f_i", [i])
+        tm.check_received_message("f_i", None, [i])
         tm.check_send_message("o_f")
         assert tm.cycle_complete()
         tm.reset()
 
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [5])
+    tm.check_received_message("f_i", None, [5])
     with pytest.raises(RuntimeError, match="already received"):
         tm.check_receive("f_i")
-
-
-def test_get_state_raises_before_f_init_received() -> None:
-    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
-    with pytest.raises(RuntimeError, match="hasn.t received a message"):
-        tm.get_state()
 
 
 def test_cycle_complete_false_until_every_main_port_participated() -> None:
@@ -471,7 +462,7 @@ def test_cycle_complete_false_until_every_main_port_participated() -> None:
     assert not tm.cycle_complete()
 
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [0])
+    tm.check_received_message("f_i", None, [0])
     assert not tm.cycle_complete()
 
     tm.check_send_message("o_f")
@@ -488,10 +479,10 @@ def test_cycle_complete_false_if_subtimeline_restarts_after_o_f_sent() -> None:
         }
     )
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [0])
+    tm.check_received_message("f_i", None, [0])
     iteration = tm.check_send_message("o_i")
     tm.check_receive("s")
-    tm.check_received_message("s", iteration)
+    tm.check_received_message("s", None, iteration)
     tm.check_send_message("o_f")
     assert tm.cycle_complete()
 
@@ -502,13 +493,9 @@ def test_cycle_complete_false_if_subtimeline_restarts_after_o_f_sent() -> None:
 def test_get_state_after_o_f_sent_reflects_completed_cycle_before_reset() -> None:
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
     tm.check_receive("f_i")
-    tm.check_received_message("f_i", [3])
+    tm.check_received_message("f_i", None, [3])
     tm.check_send_message("o_f")
 
     assert tm.cycle_complete()
     state = tm.get_state()
     assert state.iteration == [3]
-
-    tm.reset()
-    with pytest.raises(RuntimeError, match="hasn.t received a message"):
-        tm.get_state()

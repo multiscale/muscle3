@@ -74,14 +74,14 @@ def declared_ports():
 
 @pytest.fixture
 def mock_ports():
-    in_port = Port("in", Operator.F_INIT, False, True, 0, [])
-    nc_port = Port("not_connected", Operator.F_INIT, False, False, 0, [])
-    outv_port = Port("out_v", Operator.O_I, True, True, 0, [13])
-    outr_port = Port("out_r", Operator.O_I, True, True, 0, [])
-    inv_port = Port("in_v", Operator.S, True, True, 0, [13])
-    inr_port = Port("in_r", Operator.S, True, True, 0, [])
-    ncv_port = Port("not_connected_v", Operator.S, True, False, 0, [])
-    out_port = Port("out", Operator.O_F, False, True, 0, [])
+    in_port = Port("in", Operator.F_INIT, None, False, True, 0, [])
+    nc_port = Port("not_connected", Operator.F_INIT, None, False, False, 0, [])
+    outv_port = Port("out_v", Operator.O_I, None, True, True, 0, [13])
+    outr_port = Port("out_r", Operator.O_I, None, True, True, 0, [])
+    inv_port = Port("in_v", Operator.S, None, True, True, 0, [13])
+    inr_port = Port("in_r", Operator.S, None, True, True, 0, [])
+    ncv_port = Port("not_connected_v", Operator.S, None, True, False, 0, [])
+    out_port = Port("out", Operator.O_F, None, False, True, 0, [])
 
     return {
         "in": in_port,

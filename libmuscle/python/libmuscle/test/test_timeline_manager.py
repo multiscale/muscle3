@@ -18,19 +18,19 @@ INSTANCE_NAME = "component"
 
 
 def _build_port_manager(
-    ports: dict, sub_timeline: Optional[Timeline] = None
+    ports: dict, subtimeline: Optional[Timeline] = None
 ) -> PortManager:
     """Build a connected PortManager, each port wired to its own dummy peer.
 
     F_INIT and O_F ports are on the (unnamed) main timeline; O_I and S ports
-    all share ``sub_timeline``.
+    all share ``subtimeline``.
     """
-    sub_timeline = sub_timeline if sub_timeline is not None else Timeline(":main")
+    subtimeline = subtimeline if subtimeline is not None else Timeline(":main")
     conduits = []
     peer_dims = {}
     ymmsl_ports = []
     for operator, names in ports.items():
-        port_timeline = sub_timeline if operator in (Operator.O_I, Operator.S) else None
+        port_timeline = subtimeline if operator in (Operator.O_I, Operator.S) else None
         for name in names:
             peer = Ref(f"peer_{name}")
             if operator in (Operator.F_INIT, Operator.S):
@@ -47,12 +47,12 @@ def _build_port_manager(
 
 
 def _make_timeline_manager(
-    ports: dict, sub_timeline: Optional[Timeline] = None
+    ports: dict, subtimeline: Optional[Timeline] = None
 ) -> TimelineManager:
     """Build a fully connected TimelineManager for the given ports."""
-    pm = _build_port_manager(ports, sub_timeline)
+    pm = _build_port_manager(ports, subtimeline)
     tm = TimelineManager(pm)
-    tm.connect_sub_timelines()
+    tm.connect_subtimelines()
     return tm
 
 
@@ -97,33 +97,33 @@ def test_init(port_manager: PortManager) -> None:
     assert tm._iteration is None
     assert tm._ports == []
     assert tm._participated == {}
-    assert tm._sub_timelines == {}
+    assert tm._subtimelines == {}
 
 
-def test_connect_sub_timelines(port_manager: PortManager) -> None:
+def test_connect_subtimelines(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
-    tm.connect_sub_timelines()
-    assert set(tm._sub_timelines.keys()) == {Timeline(":macro"), Timeline(":micro")}
+    tm.connect_subtimelines()
+    assert set(tm._subtimelines.keys()) == {Timeline(":macro"), Timeline(":micro")}
 
 
-def test_connect_sub_timelines_main_ports(port_manager: PortManager) -> None:
+def test_connect_subtimelines_main_ports(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
-    tm.connect_sub_timelines()
+    tm.connect_subtimelines()
     assert {str(port.name) for port in tm._ports} == {"in_f", "out_f"}
     assert tm._participated == {("in_f", None): False, ("out_f", None): False}
 
 
-def test_sub_timeline_manager_init(port_manager: PortManager) -> None:
+def test_subtimeline_manager_init(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
-    tm.connect_sub_timelines()
-    assert tm._sub_timelines[Timeline(":macro")]._iteration is None
-    assert tm._sub_timelines[Timeline(":micro")]._iteration is None
+    tm.connect_subtimelines()
+    assert tm._subtimelines[Timeline(":macro")]._iteration is None
+    assert tm._subtimelines[Timeline(":micro")]._iteration is None
 
 
-def test_sub_timeline_manager_participation(port_manager: PortManager) -> None:
+def test_subtimeline_manager_participation(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
-    tm.connect_sub_timelines()
-    for stm in tm._sub_timelines.values():
+    tm.connect_subtimelines()
+    for stm in tm._subtimelines.values():
         assert stm._participated == {
             (str(port.name), None): False for port in stm._ports
         }
@@ -131,7 +131,7 @@ def test_sub_timeline_manager_participation(port_manager: PortManager) -> None:
 
 def test_participation_helpers(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
-    tm.connect_sub_timelines()
+    tm.connect_subtimelines()
     ports = tm._ports
     participated = tm._participated
 
@@ -178,7 +178,7 @@ def test_full_cycle_correct(num_iterations: int, num_reuse: int) -> None:
         tm.reset()
 
 
-def test_send_o_f_with_previously_used_sub_timeline_skipped_ok() -> None:
+def test_send_o_f_with_previously_used_subtimeline_skipped_ok() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -205,7 +205,7 @@ def test_send_o_f_with_previously_used_sub_timeline_skipped_ok() -> None:
     assert tm.cycle_complete()
 
 
-def test_send_o_f_with_never_used_sub_timeline_raises() -> None:
+def test_send_o_f_with_never_used_subtimeline_raises() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -221,7 +221,7 @@ def test_send_o_f_with_never_used_sub_timeline_raises() -> None:
         tm.check_send_message("o_f")
 
 
-def test_send_o_f_with_incomplete_sub_timeline_raises() -> None:
+def test_send_o_f_with_incomplete_subtimeline_raises() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -353,7 +353,7 @@ def test_receive_s_twice_before_o_i_sent_raises() -> None:
         tm.check_receive("s")
 
 
-def test_send_o_f_with_unfinished_sub_timeline_raises() -> None:
+def test_send_o_f_with_unfinished_subtimeline_raises() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -389,7 +389,7 @@ def test_root_o_f_only_repeats_cleanly() -> None:
         tm.reset()
 
 
-def test_root_component_with_sub_timeline_repeats_cleanly() -> None:
+def test_root_component_with_subtimeline_repeats_cleanly() -> None:
     tm = _make_timeline_manager(
         {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
     )
@@ -402,7 +402,7 @@ def test_root_component_with_sub_timeline_repeats_cleanly() -> None:
         tm.reset()
 
 
-def test_root_component_with_sub_timeline_o_f_first_raises() -> None:
+def test_root_component_with_subtimeline_o_f_first_raises() -> None:
     tm = _make_timeline_manager(
         {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
     )
@@ -443,7 +443,7 @@ def test_cycle_complete_false_until_every_main_port_participated() -> None:
     assert tm.cycle_complete()
 
 
-def test_cycle_complete_false_if_sub_timeline_restarts_after_o_f_sent() -> None:
+def test_cycle_complete_false_if_subtimeline_restarts_after_o_f_sent() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -484,7 +484,7 @@ def test_operator_none_ports_logs_warning(caplog: pytest.LogCaptureFixture) -> N
     tm = TimelineManager(pm)
 
     with caplog.at_level(WARNING, logger="libmuscle.timeline_manager"):
-        tm.connect_sub_timelines()
+        tm.connect_subtimelines()
 
     assert any(
         "Operator.NONE" in message

@@ -183,6 +183,8 @@ class MPPMessage:
                 processed checkpoints.
             data: The serialised contents of the message.
             iteration: The iteration of the sending port, or None.
+                TODO: When replacing ClosePort with Milestones we shouldn't allow a None
+                anymore here
         """
         # make sure timestamp and next_timestamp are floats
         timestamp = float(timestamp)

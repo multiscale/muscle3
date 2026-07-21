@@ -14,7 +14,7 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
-from libmuscle.timeline_manager import TimelineManager
+from libmuscle.timeline_manager import TimelineManager, TimelineState
 
 _logger = logging.getLogger(__name__)
 
@@ -134,7 +134,7 @@ class Communicator:
             peer_info: Information about the peers.
         """
         self._peer_info = peer_info
-        self._timeline_manager.connect_sub_timelines()
+        self._timeline_manager.connect_subtimelines()
 
     def set_receive_timeout(self, receive_timeout: float) -> None:
         """Update the timeout after which the manager is notified that we are waiting
@@ -145,6 +145,28 @@ class Communicator:
                 notification mechanism.
         """
         self._receive_timeout = receive_timeout
+
+    def get_timeline_state(self) -> TimelineState:
+        """Return the current state of the timeline manager, for saving in a
+        snapshot.
+        """
+        return self._timeline_manager.get_state()
+
+    def restore_timeline_state(self, state: Optional[TimelineState]) -> None:
+        """Restore the timeline manager to a previously saved state.
+
+        Args:
+            state: The state to restore, as returned by get_timeline_state().
+        """
+        self._timeline_manager.restore_state(state)
+
+    def is_cycle_complete(self) -> bool:
+        """Return whether the current reuse loop cycle has completed."""
+        return self._timeline_manager.cycle_complete()
+
+    def reset_timeline(self) -> None:
+        """Reset the timeline manager for the next reuse loop cycle."""
+        self._timeline_manager.reset()
 
     def send_message(
         self,
@@ -177,6 +199,8 @@ class Communicator:
             # log sending on disconnected port
             return
 
+        # TODO: ClosePort will be replaced with milestones, and then we do need an
+        # iteration count.
         if isinstance(message.data, ClosePort):
             iteration = None
         else:
@@ -323,14 +347,14 @@ class Communicator:
         mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
         recv_decode_event.stop()
 
-        if mpp_message.port_length is not None:
-            if port.is_resizable():
-                port.set_length(mpp_message.port_length)
-
         if isinstance(mpp_message.data, ClosePort):
             port.set_closed(slot)
         else:
             self._timeline_manager.check_receive(port_name, slot)
+
+        if mpp_message.port_length is not None:
+            if port.is_resizable():
+                port.set_length(mpp_message.port_length)
 
         message = Message(
             mpp_message.timestamp,

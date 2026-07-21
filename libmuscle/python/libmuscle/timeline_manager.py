@@ -24,7 +24,7 @@ class TimelineState:
     # [port_name, slot, participated] triples (msgpack cannot serialize the
     # (port_name, slot) tuple keys TimelineManager itself uses as a dict key).
     participated: list[list[Any]]
-    sub_timeline_states: dict[str, dict[str, Any]]
+    subtimeline_states: dict[str, dict[str, Any]]
 
 
 def _slots(port: Port) -> list[Optional[int]]:
@@ -72,8 +72,8 @@ def _reset_participation(participated: dict[tuple[str, Optional[int]], bool]) ->
         participated[key] = False
 
 
-def _sub_timeline_complete(stm: "SubTimelineManager") -> bool:
-    """Return whether a sub-timeline is done with this cycle.
+def _subtimeline_complete(stm: "SubTimelineManager") -> bool:
+    """Return whether a subtimeline is done with this cycle.
 
     If it was used this cycle, every one of its ports must have
     participated. If it wasn't used this cycle, that's only fine if it has
@@ -111,9 +111,9 @@ class TimelineManager:
         self._iteration: Optional[list[int]] = None
         self._ports: list[Port] = []
         self._participated: dict[tuple[str, Optional[int]], bool] = {}
-        self._sub_timelines: dict[Timeline, SubTimelineManager] = {}
+        self._subtimelines: dict[Timeline, SubTimelineManager] = {}
 
-    def connect_sub_timelines(self) -> None:
+    def connect_subtimelines(self) -> None:
         """Create the SubTimelineManagers once the ports are connected. It also collects
         the main-timeline (F_INIT and O_F) ports and their participation tracking, and
         starts the main timeline at [] right away if it has no F_INIT message to wait
@@ -144,7 +144,7 @@ class TimelineManager:
             for slot in _slots(port)
         }
 
-        sub_timelines = {
+        subtimelines = {
             self._port_manager.get_port(name).timeline
             for op in (Operator.O_I, Operator.S)
             for name in all_ports.get(op, [])
@@ -152,8 +152,8 @@ class TimelineManager:
         }
 
         # Assumes every O_I/S port has a non-empty timeline.
-        self._sub_timelines = {
-            tl: SubTimelineManager(tl, self._port_manager) for tl in sub_timelines
+        self._subtimelines = {
+            tl: SubTimelineManager(tl, self._port_manager) for tl in subtimelines
         }
 
         # A component with no connected F_INIT ports has no F_INIT message to
@@ -183,8 +183,8 @@ class TimelineManager:
                 [port_name, slot, participated]
                 for (port_name, slot), participated in self._participated.items()
             ],
-            sub_timeline_states={
-                str(tl): stm.get_state() for tl, stm in self._sub_timelines.items()
+            subtimeline_states={
+                str(tl): stm.get_state() for tl, stm in self._subtimelines.items()
             },
         )
 
@@ -194,7 +194,7 @@ class TimelineManager:
         used at all this cycle.
         """
         return _all_ports_participated(self._ports, self._participated) and all(
-            _sub_timeline_complete(stm) for stm in self._sub_timelines.values()
+            _subtimeline_complete(stm) for stm in self._subtimelines.values()
         )
 
     def _has_connected_f_init(self) -> bool:
@@ -242,7 +242,7 @@ class TimelineManager:
         if port.operator == Operator.O_F:
             return self._check_send_o_f(port_name, slot)
 
-        return self._sub_timelines[port.timeline].check_send_message(
+        return self._subtimelines[port.timeline].check_send_message(
             port, slot, self._iteration
         )
 
@@ -272,8 +272,8 @@ class TimelineManager:
                 f'Port "{port_name}" already sent a message for this iteration.'
             )
 
-        for stm in self._sub_timelines.values():
-            if not _sub_timeline_complete(stm):
+        for stm in self._subtimelines.values():
+            if not _subtimeline_complete(stm):
                 raise RuntimeError(
                     f'Port "{port_name}" tried to send a message, but a'
                     " sub-timeline has not completed a sub-iteration yet."
@@ -321,8 +321,8 @@ class TimelineManager:
             (port_name, slot): participated
             for port_name, slot, participated in state.participated
         }
-        for tl, stm in self._sub_timelines.items():
-            sub_state = state.sub_timeline_states.get(str(tl))
+        for tl, stm in self._subtimelines.items():
+            sub_state = state.subtimeline_states.get(str(tl))
             if sub_state is not None:
                 stm.restore_state(sub_state)
 
@@ -372,7 +372,7 @@ class TimelineManager:
                     " F_INIT ports have received a message for this iteration yet."
                 )
 
-            self._sub_timelines[port.timeline].check_receive(port, slot)
+            self._subtimelines[port.timeline].check_receive(port, slot)
             return
 
     def check_received_message(
@@ -423,7 +423,7 @@ class TimelineManager:
             self._participated[(port_name, slot)] = True
             return
 
-        self._sub_timelines[port.timeline].check_received_message(
+        self._subtimelines[port.timeline].check_received_message(
             port_name, slot, iteration
         )
 
@@ -436,7 +436,7 @@ class TimelineManager:
         """
         self._iteration = None if self._has_connected_f_init() else []
         _reset_participation(self._participated)
-        for stm in self._sub_timelines.values():
+        for stm in self._subtimelines.values():
             stm.reset()
 
 
@@ -444,16 +444,16 @@ class SubTimelineManager:
     """Tracks iteration state for a single sub-timeline."""
 
     def __init__(
-        self, sub_timeline: Optional[Timeline], port_manager: PortManager
+        self, subtimeline: Optional[Timeline], port_manager: PortManager
     ) -> None:
         """Create a SubTimelineManager.
 
         Args:
-            sub_timeline: The timeline this manager tracks.
+            subtimeline: The timeline this manager tracks.
             port_manager: The port manager; used to look up the O_I and S ports
                 belonging to this sub-timeline.
         """
-        self._sub_timeline = sub_timeline
+        self._subtimeline = subtimeline
         self._iteration: Optional[list[int]] = None
         self._first_operator: Optional[Operator] = None
         self._ever_used = False
@@ -463,7 +463,7 @@ class SubTimelineManager:
         self._ports = [
             port_manager.get_port(name)
             for op in (Operator.O_I, Operator.S)
-            for name in port_manager.list_ports(sub_timeline).get(op, [])
+            for name in port_manager.list_ports(subtimeline).get(op, [])
             if port_manager.get_port(name).is_connected()
         ]
         self._participated = {

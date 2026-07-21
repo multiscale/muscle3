@@ -178,8 +178,7 @@ class Instance:
         """Whether to do f_init on this iteration of the reuse loop"""
 
         self._pending_final_snapshot_state: Optional[TimelineState] = None
-        """Timeline state captured by should_save_final_snapshot(), for
-        save_final_snapshot() to use afterwards."""
+        """Timeline state for a final snapshot to use afterwards."""
 
         self._f_init_cache: _FInitCacheType = {}
         """Stores pre-received messages for f_init ports"""
@@ -238,8 +237,6 @@ class Instance:
         """
         self._api_guard.verify_reuse_instance()
 
-        ended_cycle_state = self._reset_completed_cycle()
-
         if self._do_reuse is not None:
             # thank you, should_save_final_snapshot, for running this already
             do_reuse = self._do_reuse
@@ -248,7 +245,7 @@ class Instance:
             do_reuse = self._decide_reuse_instance()
 
         if self._do_resume and not self._do_init:
-            self._communicator._timeline_manager.restore_state(
+            self._communicator.restore_timeline_state(
                 self._snapshot_manager.resume_state()
             )
 
@@ -269,7 +266,10 @@ class Instance:
             ):
                 # store a None instead of a Message
                 self._save_snapshot(
-                    None, True, self.__f_init_max_timestamp, ended_cycle_state
+                    None,
+                    True,
+                    self.__f_init_max_timestamp,
+                    self._pending_final_snapshot_state,
                 )
 
         if not do_reuse:
@@ -706,7 +706,6 @@ class Instance:
         """
         self._api_guard.verify_should_save_final_snapshot()
 
-        self._pending_final_snapshot_state = self._reset_completed_cycle()
         self._do_reuse = self._decide_reuse_instance()
         result = self._trigger_manager.should_save_final_snapshot(
             self._do_reuse, self.__f_init_max_timestamp
@@ -902,29 +901,27 @@ class Instance:
         """Capture and clear the timeline state of the cycle that just
         completed, if any.
 
-        Must be called before _decide_reuse_instance(), since that may
-        pre-receive the next F_INIT message and needs the timeline already
-        reset to adopt its iteration. Returns the captured state, for a
-        final snapshot (implicit here, or manual via
-        should_save_final_snapshot()/save_final_snapshot()) that still needs
-        it, since reset() would otherwise erase it. Returns None, without
-        resetting, if the cycle hasn't completed yet.
+        Returns the captured state, for a final snapshot that stil needs it, since
+        reset() would otherwise erase it. Returns None, without resetting, if the cycle
+        hasn't completed yet.
         """
-        timeline_manager = self._communicator._timeline_manager
-        if not timeline_manager.cycle_complete():
+        if not self._communicator.is_cycle_complete():
             return None
-        state = timeline_manager.get_state()
-        timeline_manager.reset()
+        state = self._communicator.get_timeline_state()
+        self._communicator.reset_timeline()
         return state
 
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
 
-        This sets self._first_run, self._do_resume and self._do_init, and
-        returns whether to reuse one more time. This is the real top of
+        This resets the timeline manager for the cycle that just completed
+        (if any), sets self._first_run, self._do_resume and self._do_init,
+        and returns whether to reuse one more time. This is the real top of
         the reuse loop, and it gets called by reuse_instance and
         should_save_final_snapshot.
         """
+        self._pending_final_snapshot_state = self._reset_completed_cycle()
+
         if self._first_run is None:
             self._first_run = True
         elif self._first_run:
@@ -983,7 +980,7 @@ class Instance:
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
         if timeline_state is None:
-            timeline_state = self._communicator._timeline_manager.get_state()
+            timeline_state = self._communicator.get_timeline_state()
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,

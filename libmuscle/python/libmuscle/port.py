@@ -33,22 +33,22 @@ class Port(ymmsl.v0_2.Port):
         self,
         name: str,
         operator: Operator,
+        timeline: Optional[Timeline],
         is_vector: bool,
         is_connected: bool,
         our_ndims: int,
         peer_dims: list[int],
-        timeline: Optional[Timeline] = None,
     ) -> None:
         """Create a Port.
 
         Args:
             name: Name of this port.
             operator: Corresponding operator.
+            timeline: The timeline this port is on.
             is_vector: Whether this is a vector port.
             is_connected: Whether this port is connected to a peer.
             our_ndims: Number of dimensions of our instance set.
             peer_dims: Dimensions of the peer instance set of this port.
-            timeline: The timeline this port is on.
         """
         super().__init__(Identifier(name), operator, timeline)
 

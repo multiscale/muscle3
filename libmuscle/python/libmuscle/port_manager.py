@@ -148,13 +148,16 @@ class PortManager:
             return Port(
                 str(msi),
                 Operator.F_INIT,
+                None,
                 False,
                 True,
                 len(self._index),
                 peer_info.get_peer_dims(sender_component),
             )
 
-        return Port(str(msi), Operator.F_INIT, False, False, len(self._index), [])
+        return Port(
+            str(msi), Operator.F_INIT, None, False, False, len(self._index), []
+        )
 
     def _ports_from_declared(self, peer_info: PeerInfo) -> dict[str, Port]:
         """Derives port definitions from supplied declaration.
@@ -170,11 +173,7 @@ class PortManager:
 
         # NOTE: timeline is not something component code can currently declare (the
         # ports dict in Instance() only carries operator + name), so we always resolve
-        # it from the yMMSL config instead. Should timeline become a declarable
-        # property of a port like operator/name are, or should it stay a
-        # config-time-only concept (since it describes how a component is
-        # wired into a larger coupled simulation, not something the
-        # component itself should hardcode)?
+        # it from the yMMSL config.
         timelines_by_name = {
             str(port.name): port.timeline for port in peer_info.list_ymmsl_ports()
         }
@@ -194,11 +193,11 @@ class PortManager:
                 ports[port_name] = Port(
                     port_name,
                     operator,
+                    timelines_by_name.get(port_name),
                     is_vector,
                     is_connected,
                     len(self._index),
                     peer_dims,
-                    timelines_by_name.get(port_name),
                 )
         return ports
 
@@ -218,11 +217,11 @@ class PortManager:
             ports[port_name] = Port(
                 port_name,
                 port.operator,
+                port.timeline,
                 is_vector,
                 is_connected,
                 len(self._index),
                 peer_dims,
-                port.timeline,
             )
         return ports
 

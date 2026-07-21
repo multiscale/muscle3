@@ -178,7 +178,7 @@ def test_full_cycle_correct(num_iterations: int, num_reuse: int) -> None:
         tm.reset()
 
 
-def test_send_o_f_with_unused_sub_timeline_raises() -> None:
+def test_send_o_f_with_unused_sub_timeline_ok() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -189,6 +189,22 @@ def test_send_o_f_with_unused_sub_timeline_raises() -> None:
     )
     tm.check_receive("f_i")
     tm.check_received_message("f_i", [0])
+    tm.check_send_message("o_f")
+    assert tm.cycle_complete()
+
+
+def test_send_o_f_with_incomplete_sub_timeline_raises() -> None:
+    tm = _make_timeline_manager(
+        {
+            Operator.F_INIT: ["f_i"],
+            Operator.O_I: ["o_i"],
+            Operator.S: ["s"],
+            Operator.O_F: ["o_f"],
+        }
+    )
+    tm.check_receive("f_i")
+    tm.check_received_message("f_i", [0])
+    tm.check_send_message("o_i")
 
     with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
         tm.check_send_message("o_f")

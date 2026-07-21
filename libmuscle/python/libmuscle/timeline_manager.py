@@ -72,6 +72,15 @@ def _reset_participation(participated: dict[tuple[str, Optional[int]], bool]) ->
         participated[key] = False
 
 
+def _sub_timeline_complete(stm: "SubTimelineManager") -> bool:
+    """Return whether a sub-timeline is done with this cycle: either it was
+    never used this cycle, or every one of its ports has participated.
+    """
+    return stm._iteration is None or _all_ports_participated(
+        stm._ports, stm._participated
+    )
+
+
 class TimelineManager:
     """Tracks iteration state for the main timeline and manages it's sub-timelines.
 
@@ -176,11 +185,11 @@ class TimelineManager:
 
     def cycle_complete(self) -> bool:
         """Return whether every main-timeline port has participated and
-        every sub-timeline has completed a sub-iteration.
+        every sub-timeline has either completed a sub-iteration or wasn't
+        used at all this cycle.
         """
         return _all_ports_participated(self._ports, self._participated) and all(
-            _all_ports_participated(stm._ports, stm._participated)
-            for stm in self._sub_timelines.values()
+            _sub_timeline_complete(stm) for stm in self._sub_timelines.values()
         )
 
     def _has_connected_f_init(self) -> bool:
@@ -237,7 +246,8 @@ class TimelineManager:
         the iteration to embed in the outgoing message.
 
         An O_F port requires that it has not already sent for the current iteration and
-        that every sub-timeline has completed a sub-iteration.
+        that every sub-timeline has either completed a sub-iteration or wasn't used at
+        all this iteration.
 
         Args:
             port_name: Name of the O_F port that is about to send.
@@ -248,7 +258,8 @@ class TimelineManager:
 
         Raises:
             RuntimeError: If this port already sent a message for the current
-                iteration, or a sub-timeline hasn't completed a sub-iteration.
+                iteration, or a sub-timeline was used but hasn't completed a
+                sub-iteration.
         """
         assert self._iteration is not None, "checked by _check_main_timeline_started"
         if self._participated.get((port_name, slot), False):
@@ -257,7 +268,7 @@ class TimelineManager:
             )
 
         for stm in self._sub_timelines.values():
-            if not _all_ports_participated(stm._ports, stm._participated):
+            if not _sub_timeline_complete(stm):
                 raise RuntimeError(
                     f'Port "{port_name}" tried to send a message, but a'
                     " sub-timeline has not completed a sub-iteration yet."

@@ -167,9 +167,7 @@ class PortManager:
                 peer_info.get_peer_dims(sender_component),
             )
 
-        return Port(
-            str(msi), Operator.F_INIT, None, False, False, len(self._index), []
-        )
+        return Port(str(msi), Operator.F_INIT, None, False, False, len(self._index), [])
 
     def _ports_from_declared(self, peer_info: PeerInfo) -> dict[str, Port]:
         """Derives port definitions from supplied declaration.

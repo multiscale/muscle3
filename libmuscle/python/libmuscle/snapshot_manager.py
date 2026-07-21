@@ -112,12 +112,8 @@ class SnapshotManager:
         snapshot = cast(Snapshot, self._resume_from_snapshot)
         return cast(Message, snapshot.message)
 
-    def resume_state(self) -> Optional[TimelineState]:
-        """Get the timeline state to resume at, if we're resuming.
-
-        Returns:
-            None if the snapshot being resumed was saved by an older version of MUSCLE3.
-        """
+    def resume_state(self) -> TimelineState:
+        """Get the timeline state to resume at."""
         assert self._resume_from_snapshot is not None
         return self._resume_from_snapshot.timeline_state
 
@@ -129,7 +125,7 @@ class SnapshotManager:
         wallclock_time: float,
         f_init_max_timestamp: Optional[float],
         settings_overlay: Settings,
-        timeline_state: Optional[TimelineState] = None,
+        timeline_state: TimelineState,
     ) -> float:
         """Save a (final) snapshot.
 

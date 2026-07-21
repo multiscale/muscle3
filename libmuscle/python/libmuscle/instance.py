@@ -1007,7 +1007,7 @@ class Instance:
         self.__check_port(port_name, slot, False, True)
 
         port = self._port_manager.get_port(port_name)
-        if port.operator == Operator.F_INIT:
+        if port.operator is Operator.F_INIT:
             if (port_name, slot) in self._f_init_cache:
                 msg = self._f_init_cache[(port_name, slot)]
                 del self._f_init_cache[(port_name, slot)]

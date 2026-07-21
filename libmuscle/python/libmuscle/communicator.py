@@ -134,7 +134,7 @@ class Communicator:
             peer_info: Information about the peers.
         """
         self._peer_info = peer_info
-        self._timeline_manager.connect_subtimelines()
+        self._timeline_manager.on_ports_connected()
 
     def set_receive_timeout(self, receive_timeout: float) -> None:
         """Update the timeout after which the manager is notified that we are waiting
@@ -152,7 +152,7 @@ class Communicator:
         """
         return self._timeline_manager.get_state()
 
-    def restore_timeline_state(self, state: Optional[TimelineState]) -> None:
+    def restore_timeline_state(self, state: TimelineState) -> None:
         """Restore the timeline manager to a previously saved state.
 
         Args:

@@ -77,6 +77,18 @@ class PortManager:
             result[port.operator].append(port_name)
         return result
 
+    def list_subtimelines(self) -> set[Timeline]:
+        """Returns the timelines of this instance's connected O_I/S ports.
+
+        Returns:
+            The set of distinct timelines of all connected O_I and S ports.
+        """
+        return {
+            port.timeline
+            for port in self._ports.values()
+            if port.operator in (Operator.O_I, Operator.S) and port.is_connected()
+        }
+
     def port_exists(self, port_name: str) -> bool:
         """Returns whether a port with the given name exists.
 

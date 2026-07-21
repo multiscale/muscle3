@@ -88,7 +88,7 @@ def test_create_communicator_creates_timeline_manager(
 ):
     timeline_manager.assert_called_once_with(connected_port_manager)
     assert communicator._timeline_manager == timeline_manager.return_value
-    timeline_manager.return_value.connect_subtimelines.assert_not_called()
+    timeline_manager.return_value.on_ports_connected.assert_not_called()
 
 
 def test_set_peer_info_sets_up_timeline_manager(
@@ -99,7 +99,7 @@ def test_set_peer_info_sets_up_timeline_manager(
     communicator.set_peer_info(peer_info)
 
     assert communicator._peer_info == peer_info
-    timeline_manager.return_value.connect_subtimelines.assert_called_once_with()
+    timeline_manager.return_value.on_ports_connected.assert_called_once_with()
 
 
 def test_send_message(connected_communicator, mpp_server, timeline_manager):

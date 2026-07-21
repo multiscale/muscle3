@@ -1,8 +1,17 @@
+import msgpack
 import pytest
 from ymmsl.v0_2 import Settings
 
 from libmuscle.communicator import Message
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
+from libmuscle.timeline_manager import TimelineState
+
+TEST_TIMELINE_STATE = TimelineState(
+    iteration=[1],
+    send_participated=[],
+    receive_participated=[["in", None]],
+    subtimeline_states={},
+)
 
 
 @pytest.fixture
@@ -19,6 +28,7 @@ def snapshot() -> Snapshot:
         is_final,
         message,
         Settings({"test": 1}),
+        TEST_TIMELINE_STATE,
     )
     assert snapshot.triggers == triggers
     assert snapshot.wallclock_time == wallclock_time
@@ -45,6 +55,7 @@ def test_snapshot(snapshot: Snapshot) -> None:
     assert snapshot2.message.timestamp == snapshot.message.timestamp
     assert snapshot2.message.next_timestamp == snapshot.message.next_timestamp
     assert snapshot2.message.data == snapshot.message.data
+    assert snapshot2.timeline_state == snapshot.timeline_state
 
 
 def test_snapshot_metadata(snapshot: Snapshot) -> None:
@@ -61,7 +72,9 @@ def test_snapshot_metadata(snapshot: Snapshot) -> None:
 
 def test_message_with_settings() -> None:
     message = Message(1.0, 2.0, "test_data", Settings({"setting": True}))
-    snapshot = MsgPackSnapshot([], 0, {}, False, message, Settings())
+    snapshot = MsgPackSnapshot(
+        [], 0, {}, False, message, Settings(), TEST_TIMELINE_STATE
+    )
     assert snapshot.message.settings.get("setting") is True
 
     binary_snapshot = snapshot.to_bytes()
@@ -73,7 +86,9 @@ def test_message_with_settings() -> None:
 
 def test_implicit_snapshot() -> None:
     message = None
-    snapshot = MsgPackSnapshot([], 0, {}, True, message, Settings())
+    snapshot = MsgPackSnapshot(
+        [], 0, {}, True, message, Settings(), TEST_TIMELINE_STATE
+    )
     assert snapshot.message is None
 
     binary_snapshot = snapshot.to_bytes()
@@ -81,3 +96,13 @@ def test_implicit_snapshot() -> None:
 
     snapshot2 = MsgPackSnapshot.from_bytes(binary_snapshot)
     assert snapshot2.message is None
+
+
+def test_snapshot_without_timeline_state_raises() -> None:
+    snapshot = MsgPackSnapshot([], 0, {}, True, None, Settings(), TEST_TIMELINE_STATE)
+    dct = msgpack.loads(snapshot.to_bytes())
+    del dct["timeline_state"]
+    binary_snapshot = msgpack.dumps(dct)
+
+    with pytest.raises(RuntimeError, match="requires a TimelineState"):
+        MsgPackSnapshot.from_bytes(binary_snapshot)

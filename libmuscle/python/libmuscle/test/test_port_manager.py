@@ -222,6 +222,40 @@ def test_port_message_counts(port_manager) -> None:
         port_manager.restore_message_counts({"x?invalid_port": 3})
 
 
+def test_list_subtimelines() -> None:
+    declared_ports = {
+        Operator.O_I: ["oi_conn", "oi_unconn"],
+        Operator.S: ["s_conn"],
+        Operator.F_INIT: ["fi_conn"],
+        Operator.O_F: ["of_conn"],
+    }
+    port_manager = PortManager([], declared_ports)
+
+    component_id = Ref("component")
+    conduits = [
+        Conduit("component.oi_conn", "other.in1"),
+        Conduit("other.out2", "component.s_conn"),
+        Conduit("other.out3", "component.fi_conn"),
+        Conduit("component.of_conn", "other.in4"),
+    ]
+    peer_dims = {Ref("other"): []}
+    peer_locations = {Ref("other"): ["direct:test"]}
+    ymmsl_ports = [
+        Port(Id("oi_conn"), Operator.O_I, Timeline(":a")),
+        Port(Id("s_conn"), Operator.S, Timeline(":a")),
+        Port(Id("oi_unconn"), Operator.O_I, Timeline(":b")),
+        Port(Id("fi_conn"), Operator.F_INIT),
+        Port(Id("of_conn"), Operator.O_F),
+    ]
+    peer_info = PeerInfo(
+        component_id, [], conduits, peer_dims, peer_locations, ymmsl_ports
+    )
+
+    port_manager.connect_ports(peer_info)
+
+    assert port_manager.list_subtimelines() == {Timeline(":a")}
+
+
 def test_vector_port_message_counts(port_manager2) -> None:
     msg_counts = port_manager2.get_message_counts()
     assert msg_counts == {"out": [0] * 20, "in": [0] * 20, "muscle_settings_in": [0]}

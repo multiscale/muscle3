@@ -27,7 +27,7 @@ class Snapshot(ABC):
         is_final_snapshot: bool,
         message: Optional["communicator.Message"],
         settings_overlay: Settings,
-        timeline_state: Optional[TimelineState] = None,
+        timeline_state: TimelineState,
     ) -> None:
         self.triggers = triggers
         self.wallclock_time = wallclock_time
@@ -72,6 +72,12 @@ class MsgPackSnapshot(Snapshot):
     def from_bytes(cls, data: bytes) -> "Snapshot":
         dct = msgpack.loads(data)
         timeline_state_dct = dct.get("timeline_state")
+        if not timeline_state_dct:
+            raise RuntimeError(
+                "This snapshot does not contain a TimelineState. This version of"
+                " MUSCLE3 requires a TimelineState to be present in every"
+                " snapshot."
+            )
         return cls(
             dct["triggers"],
             dct["wallclock_time"],
@@ -79,7 +85,7 @@ class MsgPackSnapshot(Snapshot):
             dct["is_final_snapshot"],
             cls.bytes_to_message(dct["message"]),
             Settings(dct["settings_overlay"]),
-            TimelineState(**timeline_state_dct) if timeline_state_dct else None,
+            TimelineState(**timeline_state_dct),
         )
 
     def to_bytes(self) -> bytes:
@@ -93,11 +99,7 @@ class MsgPackSnapshot(Snapshot):
                     "is_final_snapshot": self.is_final_snapshot,
                     "message": self.message_to_bytes(self.message),
                     "settings_overlay": self.settings_overlay.as_ordered_dict(),
-                    "timeline_state": (
-                        asdict(self.timeline_state)
-                        if self.timeline_state is not None
-                        else None
-                    ),
+                    "timeline_state": asdict(self.timeline_state),
                 }
             ),
         )

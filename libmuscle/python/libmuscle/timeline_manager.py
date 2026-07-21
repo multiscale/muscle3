@@ -1,13 +1,28 @@
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Optional, TypedDict
 
+from typing_extensions import TypeAlias
 from ymmsl.v0_2 import Operator, Timeline
 
 from libmuscle.port import Port
 from libmuscle.port_manager import PortManager
 
 _logger = logging.getLogger(__name__)
+
+
+PortAndSlot: TypeAlias = tuple[str, Optional[int]]  # (port_name, slot)
+
+
+class SubTimelineState(TypedDict):
+    """A single sub-timeline's state, as returned by
+    SubTimelineManager.get_state() for saving in a snapshot."""
+
+    iteration: Optional[list[int]]
+    first_operator: Optional[str]
+    send_participated: list[PortAndSlot]
+    receive_participated: list[PortAndSlot]
+    ever_used: bool
 
 
 @dataclass
@@ -20,11 +35,9 @@ class TimelineState:
     """
 
     iteration: list[int]
-    # Every main-timeline (F_INIT/O_F) port and slot's participation, as
-    # [port_name, slot, participated] triples (msgpack cannot serialize the
-    # (port_name, slot) tuple keys TimelineManager itself uses as a dict key).
-    participated: list[list[Any]]
-    subtimeline_states: dict[str, dict[str, Any]]
+    send_participated: list[PortAndSlot]
+    receive_participated: list[PortAndSlot]
+    subtimeline_states: dict[str, SubTimelineState]
 
 
 def _slots(port: Port) -> list[Optional[int]]:
@@ -34,42 +47,35 @@ def _slots(port: Port) -> list[Optional[int]]:
     return [None]
 
 
-def _all_ports_participated(
-    ports: list[Port],
-    participated: dict[tuple[str, Optional[int]], bool],
-    operator: Optional[Operator] = None,
-) -> bool:
-    """Return True if every matching port has participated in the current iteration.
+def _count_slots(ports: list[Port]) -> int:
+    """Return the total number of port/slot combinations, where a vector port counts
+    once per slot.
+    """
+    return sum(len(_slots(port)) for port in ports)
 
-    For a vector port, every one of its slots must have participated.
+
+def _all_participated(participated: set[PortAndSlot], count: int) -> bool:
+    """Return True if every one of count port/slot combinations has participated.
 
     Args:
-        ports: All ports sharing the same (sub)timeline.
-        participated: Whether each port and slot, keyed by (name, slot), has
-            sent or received a message for the current iteration.
-        operator: If given, only ports with this operator are considered;
-            otherwise every port in ports is considered.
+        participated: The (name, slot) combinations that have already sent or
+            received a message for the current (sub-)iteration.
+        count: The total number of port/slot combinations expected to participate.
 
     Returns:
-        True if every matching port (and every slot of it) has participated.
+        True if every expected port/slot combination has participated.
     """
-    return all(
-        participated.get((str(port.name), slot), False)
-        for port in ports
-        if operator is None or port.operator == operator
-        for slot in _slots(port)
-    )
+    return len(participated) == count
 
 
-def _reset_participation(participated: dict[tuple[str, Optional[int]], bool]) -> None:
-    """Mark every port and slot as not yet participated, reset all to False.
+def _reset_participation(*participated: set[PortAndSlot]) -> None:
+    """Clear each given set, marking every port and slot as not participated.
 
     Args:
-        participated: Whether each port and slot, keyed by (name, slot), has
-            sent or received a message for the current iteration.
+        participated: One or more sets of (name, slot) combinations to clear.
     """
-    for key in participated:
-        participated[key] = False
+    for p in participated:
+        p.clear()
 
 
 def _subtimeline_complete(stm: "SubTimelineManager") -> bool:
@@ -82,7 +88,9 @@ def _subtimeline_complete(stm: "SubTimelineManager") -> bool:
     since it would then never be used for the lifetime of the instance.
     """
     if stm._iteration is not None:
-        return _all_ports_participated(stm._ports, stm._participated)
+        return _all_participated(
+            stm._send_participated, stm._num_send_slots
+        ) and _all_participated(stm._receive_participated, stm._num_receive_slots)
     return stm._ever_used
 
 
@@ -95,7 +103,9 @@ class TimelineManager:
 
     Every TimelineManager and SubTimelineManager records, for each of its
     ports, whether that port has already sent or received a message for the
-    current iteration, in a dict of booleans keyed by port name.
+    current iteration, as a set of (port name, slot) tuples, split by
+    direction: one set for the ports that send (O_F or O_I) and one for the
+    ports that receive (F_INIT or S).
     """
 
     def __init__(self, port_manager: PortManager) -> None:
@@ -109,11 +119,15 @@ class TimelineManager:
         """
         self._port_manager = port_manager
         self._iteration: Optional[list[int]] = None
-        self._ports: list[Port] = []
-        self._participated: dict[tuple[str, Optional[int]], bool] = {}
+        self._send_ports: list[Port] = []
+        self._receive_ports: list[Port] = []
+        self._num_send_slots = 0
+        self._num_receive_slots = 0
+        self._send_participated: set[PortAndSlot] = set()
+        self._receive_participated: set[PortAndSlot] = set()
         self._subtimelines: dict[Timeline, SubTimelineManager] = {}
 
-    def connect_subtimelines(self) -> None:
+    def on_ports_connected(self) -> None:
         """Create the SubTimelineManagers once the ports are connected. It also collects
         the main-timeline (F_INIT and O_F) ports and their participation tracking, and
         starts the main timeline at [] right away if it has no F_INIT message to wait
@@ -121,35 +135,27 @@ class TimelineManager:
         """
         all_ports = self._port_manager.list_ports()
 
-        # TODO: Which checks should hold for the Operator.NONE?
-        if any(
-            self._port_manager.get_port(name).is_connected()
-            for name in all_ports.get(Operator.NONE, [])
-        ):
-            _logger.warning(
-                "This instance is using ports with Operator.NONE. This does not "
-                "adhere to the Multiscale Modelling and Simulation Framework "
-                "and may lead to deadlocks."
-            )
-
-        self._ports = [
+        self._receive_ports = [
             self._port_manager.get_port(name)
-            for op in (Operator.F_INIT, Operator.O_F)
-            for name in all_ports.get(op, [])
+            for name in all_ports.get(Operator.F_INIT, [])
             if self._port_manager.get_port(name).is_connected()
         ]
-        self._participated = {
-            (str(port.name), slot): False
-            for port in self._ports
-            for slot in _slots(port)
-        }
-
-        subtimelines = {
-            self._port_manager.get_port(name).timeline
-            for op in (Operator.O_I, Operator.S)
-            for name in all_ports.get(op, [])
+        # muscle_settings_in is F_INIT too, but it's not a declared port, so
+        # list_ports() doesn't return it; check_receive/check_received_message
+        # do treat it as F_INIT though, so it must be tracked here as well.
+        if self._port_manager.settings_in_connected():
+            self._receive_ports.append(
+                self._port_manager.get_port("muscle_settings_in")
+            )
+        self._send_ports = [
+            self._port_manager.get_port(name)
+            for name in all_ports.get(Operator.O_F, [])
             if self._port_manager.get_port(name).is_connected()
-        }
+        ]
+        self._num_receive_slots = _count_slots(self._receive_ports)
+        self._num_send_slots = _count_slots(self._send_ports)
+
+        subtimelines = self._port_manager.list_subtimelines()
 
         # Assumes every O_I/S port has a non-empty timeline.
         self._subtimelines = {
@@ -179,10 +185,8 @@ class TimelineManager:
             )
         return TimelineState(
             iteration=self._iteration,
-            participated=[
-                [port_name, slot, participated]
-                for (port_name, slot), participated in self._participated.items()
-            ],
+            send_participated=list(self._send_participated),
+            receive_participated=list(self._receive_participated),
             subtimeline_states={
                 str(tl): stm.get_state() for tl, stm in self._subtimelines.items()
             },
@@ -193,24 +197,26 @@ class TimelineManager:
         every sub-timeline has either completed a sub-iteration or wasn't
         used at all this cycle.
         """
-        return _all_ports_participated(self._ports, self._participated) and all(
-            _subtimeline_complete(stm) for stm in self._subtimelines.values()
+        return (
+            _all_participated(self._receive_participated, self._num_receive_slots)
+            and _all_participated(self._send_participated, self._num_send_slots)
+            and all(_subtimeline_complete(stm) for stm in self._subtimelines.values())
         )
 
     def _has_connected_f_init(self) -> bool:
-        """Return whether this component has any connected F_INIT ports."""
-        return any(
-            p.is_connected() for p in self._ports if p.operator == Operator.F_INIT
-        )
+        """Return whether this component has any connected F_INIT ports,
+        including muscle_settings_in."""
+        return bool(self._receive_ports)
 
     def check_send_message(
         self, port_name: str, slot: Optional[int] = None
     ) -> list[int]:
         """Check and update the timeline state before sending on the given port.
 
-        Both O_F and O_I require that all F_INIT ports should have received a message
-        for the current iteration. After this the specific checks for the O_F or O_I
-        port will be done and the iteration of it's timeline will be returned.
+        By the time a send is possible, Instance has already received a message on
+        every F_INIT port for the current iteration, so this delegates straight to
+        the specific checks for the O_F or O_I port and returns the iteration of
+        its timeline.
 
         Args:
             port_name: Name of the O_F or O_I port that is about to send.
@@ -218,28 +224,13 @@ class TimelineManager:
 
         Returns:
             The iteration to embed in the outgoing message.
-
-        Raises:
-            RuntimeError: If sending on this port at this point would violate
-                the Multiscale Modeling and Simulation Framework.
         """
         port = self._port_manager.get_port(port_name)
+        assert self._iteration is not None, (
+            "Instance always receives on every F_INIT port before O_F/O_I can send"
+        )
 
-        if self._iteration is None:
-            raise RuntimeError(
-                f'Port "{port_name}" tried to send a message, but this'
-                " component has connected F_INIT ports and must receive on"
-                " all of them first."
-            )
-        if not _all_ports_participated(
-            self._ports, self._participated, Operator.F_INIT
-        ):
-            raise RuntimeError(
-                f'Port "{port_name}" tried to send a message, but not all'
-                " F_INIT ports have received a message for this iteration yet."
-            )
-
-        if port.operator == Operator.O_F:
+        if port.operator is Operator.O_F:
             return self._check_send_o_f(port_name, slot)
 
         return self._subtimelines[port.timeline].check_send_message(
@@ -266,8 +257,9 @@ class TimelineManager:
                 iteration, or a sub-timeline was used but hasn't completed a
                 sub-iteration.
         """
-        assert self._iteration is not None, "checked by _check_main_timeline_started"
-        if self._participated.get((port_name, slot), False):
+        assert self._iteration is not None
+        key = (port_name, slot)
+        if key in self._send_participated:
             raise RuntimeError(
                 f'Port "{port_name}" already sent a message for this iteration.'
             )
@@ -279,47 +271,25 @@ class TimelineManager:
                     " sub-timeline has not completed a sub-iteration yet."
                 )
 
-        self._participated[(port_name, slot)] = True
+        self._send_participated.add(key)
         return self._iteration
 
-    def restore_state(self, state: Optional[TimelineState]) -> None:
+    def restore_state(self, state: TimelineState) -> None:
         """Restore the main timeline and every sub-timeline, for snapshot resume.
 
         Resets everything first, then restores the main timeline's iteration, per-port
         participation, and every sub-timeline's state from the snapshot.
 
-        If no state was given, there is no participation record to restore, so every
-        F_INIT port and slot is instead marked as participated.
-
         Args:
-            state: The saved timeline state, as returned by get_state(), or
-                None if the snapshot was saved by an older version of MUSCLE3.
-
-        Raises:
-            RuntimeError: If no state was given while this component has connected
-                F_INIT ports, so there is no recorded iteration to resume from and this
-                snapshot cannot be resumed correctly.
+            state: The saved timeline state, as returned by get_state().
         """
         self.reset()
-        if state is None and self._iteration is None:
-            raise RuntimeError(
-                "Resuming from an intermediate snapshot, but it does not"
-                " record the timeline iteration F_INIT was received at,"
-                " even though this component has connected F_INIT ports."
-                " This snapshot cannot be resumed correctly."
-            )
-
-        if state is None:
-            for port in self._ports:
-                if port.operator == Operator.F_INIT:
-                    for slot in _slots(port):
-                        self._participated[(str(port.name), slot)] = True
-            return
-
         self._iteration = state.iteration
-        self._participated = {
-            (port_name, slot): participated
-            for port_name, slot, participated in state.participated
+        self._send_participated = {
+            (port_name, slot) for port_name, slot in state.send_participated
+        }
+        self._receive_participated = {
+            (port_name, slot) for port_name, slot in state.receive_participated
         }
         for tl, stm in self._subtimelines.items():
             sub_state = state.subtimeline_states.get(str(tl))
@@ -350,22 +320,22 @@ class TimelineManager:
         """
         port = self._port_manager.get_port(port_name)
 
-        if port.operator == Operator.F_INIT:
-            if self._participated.get((port_name, slot), False):
+        if port.operator is Operator.F_INIT:
+            if (port_name, slot) in self._receive_participated:
                 raise RuntimeError(
                     f'Port "{port_name}" already received a message for this iteration.'
                 )
             return
 
-        if port.operator == Operator.S:
+        if port.operator is Operator.S:
             if self._iteration is None:
                 raise RuntimeError(
                     f'Port "{port_name}" tried to receive the first message,'
                     " but this component has connected F_INIT ports and must"
                     " receive on all of them first."
                 )
-            if not _all_ports_participated(
-                self._ports, self._participated, Operator.F_INIT
+            if not _all_participated(
+                self._receive_participated, self._num_receive_slots
             ):
                 raise RuntimeError(
                     f'Port "{port_name}" tried to receive a message, but not all'
@@ -411,7 +381,7 @@ class TimelineManager:
                 f'Port "{port_name}" received a message without an iteration.'
             )
 
-        if port.operator == Operator.F_INIT:
+        if port.operator is Operator.F_INIT:
             if self._iteration is None:
                 self._iteration = iteration
             elif iteration != self._iteration:
@@ -420,7 +390,7 @@ class TimelineManager:
                     f" {iteration}, but the main timeline is at iteration"
                     f" {self._iteration}."
                 )
-            self._participated[(port_name, slot)] = True
+            self._receive_participated.add((port_name, slot))
             return
 
         self._subtimelines[port.timeline].check_received_message(
@@ -435,7 +405,7 @@ class TimelineManager:
         in turn.
         """
         self._iteration = None if self._has_connected_f_init() else []
-        _reset_participation(self._participated)
+        _reset_participation(self._send_participated, self._receive_participated)
         for stm in self._subtimelines.values():
             stm.reset()
 
@@ -460,17 +430,20 @@ class SubTimelineManager:
         """Whether this sub-timeline has been used in some cycle, current or
         past. Unlike _iteration, this is not cleared by reset()."""
 
-        self._ports = [
+        self._send_ports = [
             port_manager.get_port(name)
-            for op in (Operator.O_I, Operator.S)
-            for name in port_manager.list_ports(subtimeline).get(op, [])
+            for name in port_manager.list_ports(subtimeline).get(Operator.O_I, [])
             if port_manager.get_port(name).is_connected()
         ]
-        self._participated = {
-            (str(port.name), slot): False
-            for port in self._ports
-            for slot in _slots(port)
-        }
+        self._receive_ports = [
+            port_manager.get_port(name)
+            for name in port_manager.list_ports(subtimeline).get(Operator.S, [])
+            if port_manager.get_port(name).is_connected()
+        ]
+        self._num_send_slots = _count_slots(self._send_ports)
+        self._num_receive_slots = _count_slots(self._receive_ports)
+        self._send_participated: set[PortAndSlot] = set()
+        self._receive_participated: set[PortAndSlot] = set()
 
     def check_send_message(
         self, port: Port, slot: Optional[int], parent_iteration: list[int]
@@ -510,31 +483,36 @@ class SubTimelineManager:
         if self._iteration is None:
             self._iteration = parent_iteration + [0]
             self._first_operator = Operator.O_I
-        elif not self._participated.get(key, False):
-            if self._first_operator == Operator.S and not _all_ports_participated(
-                self._ports, self._participated, Operator.S
+        elif key not in self._send_participated:
+            if self._first_operator is Operator.S and not _all_participated(
+                self._receive_participated, self._num_receive_slots
             ):
                 raise RuntimeError(
                     f'Port "{port_name}" tried to send a message, but only'
                     " some of this sub-timeline's S ports have received so far."
                 )
         else:
-            if self._first_operator != Operator.O_I:
+            if self._first_operator is not Operator.O_I:
                 raise RuntimeError(
                     f'Port "{port_name}" tried to send a message, but S received'
                     " first on this sub-timeline, so only a receive on S can"
                     " advance to the next sub-iteration, not a send on O_I."
                 )
-            if not _all_ports_participated(self._ports, self._participated):
+            if not (
+                _all_participated(self._send_participated, self._num_send_slots)
+                and _all_participated(
+                    self._receive_participated, self._num_receive_slots
+                )
+            ):
                 raise RuntimeError(
                     f'Port "{port_name}" tried to send a message, but it already'
                     " sent one for this sub-iteration and not every port of this"
                     " sub-timeline has participated yet."
                 )
             self._iteration[-1] += 1
-            _reset_participation(self._participated)
+            _reset_participation(self._send_participated, self._receive_participated)
 
-        self._participated[key] = True
+        self._send_participated.add(key)
         return list(self._iteration)
 
     def check_receive(self, port: Port, slot: Optional[int] = None) -> None:
@@ -564,9 +542,9 @@ class SubTimelineManager:
         """
         port_name = str(port.name)
 
-        if not self._participated.get((port_name, slot), False):
-            if self._first_operator == Operator.O_I and not _all_ports_participated(
-                self._ports, self._participated, Operator.O_I
+        if (port_name, slot) not in self._receive_participated:
+            if self._first_operator is Operator.O_I and not _all_participated(
+                self._send_participated, self._num_send_slots
             ):
                 raise RuntimeError(
                     f'Port "{port_name}" tried to receive a message, but only'
@@ -574,13 +552,16 @@ class SubTimelineManager:
                 )
             return
 
-        if self._first_operator != Operator.S:
+        if self._first_operator is not Operator.S:
             raise RuntimeError(
                 f'Port "{port_name}" tried to receive a message, but O_I sent'
                 " first on this sub-timeline, so only a send on O_I can"
                 " advance to the next sub-iteration, not a receive on S."
             )
-        if not _all_ports_participated(self._ports, self._participated):
+        if not (
+            _all_participated(self._send_participated, self._num_send_slots)
+            and _all_participated(self._receive_participated, self._num_receive_slots)
+        ):
             raise RuntimeError(
                 f'Port "{port_name}" tried to receive a message, but it already'
                 " received one for this sub-iteration and not every port of"
@@ -621,7 +602,7 @@ class SubTimelineManager:
         if self._iteration is None:
             self._iteration = iteration
             self._first_operator = Operator.S
-        elif not self._participated.get(key, False):
+        elif key not in self._receive_participated:
             if iteration != self._iteration:
                 raise RuntimeError(
                     f'Port "{port_name}" received a message with iteration'
@@ -636,9 +617,9 @@ class SubTimelineManager:
                     f" iteration {self._iteration}."
                 )
             self._iteration = iteration
-            _reset_participation(self._participated)
+            _reset_participation(self._send_participated, self._receive_participated)
 
-        self._participated[key] = True
+        self._receive_participated.add(key)
 
     def reset(self) -> None:
         """Reset this sub-timeline once the main timeline's cycle completes.
@@ -647,9 +628,9 @@ class SubTimelineManager:
         """
         self._iteration = None
         self._first_operator = None
-        _reset_participation(self._participated)
+        _reset_participation(self._send_participated, self._receive_participated)
 
-    def get_state(self) -> dict[str, Any]:
+    def get_state(self) -> SubTimelineState:
         """Return this sub-timeline's state, for saving in a snapshot.
 
         Returns:
@@ -662,14 +643,12 @@ class SubTimelineManager:
             "first_operator": (
                 self._first_operator.name if self._first_operator is not None else None
             ),
-            "participated": [
-                [port_name, slot, participated]
-                for (port_name, slot), participated in self._participated.items()
-            ],
+            "send_participated": list(self._send_participated),
+            "receive_participated": list(self._receive_participated),
             "ever_used": self._ever_used,
         }
 
-    def restore_state(self, state: dict[str, Any]) -> None:
+    def restore_state(self, state: SubTimelineState) -> None:
         """Restore this sub-timeline's state from a snapshot, for snapshot resume.
 
         Args:
@@ -680,9 +659,11 @@ class SubTimelineManager:
         self._first_operator = (
             Operator[first_operator] if first_operator is not None else None
         )
-        self._participated = {
-            (port_name, slot): participated
-            for port_name, slot, participated in state["participated"]
+        self._send_participated = {
+            (port_name, slot) for port_name, slot in state["send_participated"]
+        }
+        self._receive_participated = {
+            (port_name, slot) for port_name, slot in state["receive_participated"]
         }
         # Older snapshots don't have this key; a snapshot always implies the
         # sub-timeline has an iteration to resume, i.e. it has been used.

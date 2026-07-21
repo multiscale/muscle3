@@ -241,7 +241,7 @@ def test_send_o_f_with_never_used_subtimeline_raises() -> None:
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [0])
 
-    with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
+    with pytest.raises(RuntimeError, match="has not been used yet"):
         tm.check_send_message("o_f")
 
 
@@ -438,7 +438,7 @@ def test_root_component_with_subtimeline_o_f_first_raises() -> None:
     tm = _make_timeline_manager(
         {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
     )
-    with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
+    with pytest.raises(RuntimeError, match="has not been used yet"):
         tm.check_send_message("o_f")
 
 

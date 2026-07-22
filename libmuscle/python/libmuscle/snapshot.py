@@ -71,13 +71,6 @@ class MsgPackSnapshot(Snapshot):
     @classmethod
     def from_bytes(cls, data: bytes) -> "Snapshot":
         dct = msgpack.loads(data)
-        timeline_state_dct = dct.get("timeline_state")
-        if not timeline_state_dct:
-            raise RuntimeError(
-                "This snapshot does not contain a TimelineState. This version of"
-                " MUSCLE3 requires a TimelineState to be present in every"
-                " snapshot."
-            )
         return cls(
             dct["triggers"],
             dct["wallclock_time"],
@@ -85,7 +78,7 @@ class MsgPackSnapshot(Snapshot):
             dct["is_final_snapshot"],
             cls.bytes_to_message(dct["message"]),
             Settings(dct["settings_overlay"]),
-            TimelineState(**timeline_state_dct),
+            TimelineState(**dct["timeline_state"]),
         )
 
     def to_bytes(self) -> bytes:

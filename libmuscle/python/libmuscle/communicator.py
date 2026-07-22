@@ -160,13 +160,14 @@ class Communicator:
         """
         self._timeline_manager.restore_state(state)
 
-    def is_cycle_complete(self) -> bool:
-        """Return whether the current reuse loop cycle has completed."""
-        return self._timeline_manager.cycle_complete()
+    def has_f_init_connections(self) -> bool:
+        """Return whether the main timeline has any connected F_INIT ports,
+        including muscle_settings_in."""
+        return self._timeline_manager.has_connected_f_init()
 
-    def reset_timeline(self) -> None:
+    def finish_timeline_cycle(self) -> None:
         """Reset the timeline manager for the next reuse loop cycle."""
-        self._timeline_manager.reset()
+        self._timeline_manager.finish_cycle()
 
     def send_message(
         self,
@@ -281,6 +282,7 @@ class Communicator:
                     message number was incorrect.
         """
         port = self._port_manager.get_port(port_name)
+        self._timeline_manager.check_receive(port_name, slot)
 
         if slot is None:
             port_and_slot = port_name
@@ -349,8 +351,6 @@ class Communicator:
 
         if isinstance(mpp_message.data, ClosePort):
             port.set_closed(slot)
-        else:
-            self._timeline_manager.check_receive(port_name, slot)
 
         if mpp_message.port_length is not None:
             if port.is_resizable():

@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 from ymmsl.v0_2 import Operator, Reference, Settings
 
-from libmuscle.communicator import Message
+from libmuscle.communicator import Communicator, Message
 from libmuscle.mmp_client import MMPClient
 from libmuscle.port_manager import PortManager
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
@@ -28,7 +28,11 @@ class SnapshotManager:
     """
 
     def __init__(
-        self, instance_id: Reference, manager: MMPClient, port_manager: PortManager
+        self,
+        instance_id: Reference,
+        manager: MMPClient,
+        port_manager: PortManager,
+        communicator: Communicator,
     ) -> None:
         """Create a new snapshot manager
 
@@ -36,12 +40,14 @@ class SnapshotManager:
             instance_id: The id of this instance.
             manager: The client used to submit data to the manager.
             port_manager: The port manager belonging to this instance.
+            communicator: The communicator belonging to this instance.
         """
         self._instance_id = instance_id
         # replace identifier[i] by identifier-i to use in snapshot file name
         # using a dash (-) because that is not allowed in Identifiers
         self._safe_id = str(instance_id).replace("[", "-").replace("]", "")
         self._port_manager = port_manager
+        self._communicator = communicator
         self._manager = manager
 
         self._resume_from_snapshot: Optional[Snapshot] = None
@@ -112,10 +118,13 @@ class SnapshotManager:
         snapshot = cast(Snapshot, self._resume_from_snapshot)
         return cast(Message, snapshot.message)
 
-    def resume_state(self) -> TimelineState:
-        """Get the timeline state to resume at."""
+    def restore_timeline_state(self) -> None:
+        """Restore the communicator's timeline manager to the resumed-from
+        snapshot's saved state."""
         assert self._resume_from_snapshot is not None
-        return self._resume_from_snapshot.timeline_state
+        self._communicator.restore_timeline_state(
+            self._resume_from_snapshot.timeline_state
+        )
 
     def save_snapshot(
         self,
@@ -196,7 +205,15 @@ class SnapshotManager:
             data = snapshot_file.read()
 
             if version == MsgPackSnapshot.SNAPSHOT_VERSION_BYTE:
-                return MsgPackSnapshot.from_bytes(data)
+                try:
+                    return MsgPackSnapshot.from_bytes(data)
+                except Exception as e:
+                    raise RuntimeError(
+                        f"Unable to load snapshot from {snapshot_location}: could"
+                        " not read its contents. This may be because it was saved"
+                        " with a different version of libmuscle, or because the"
+                        " data is corrupted."
+                    ) from e
             raise RuntimeError(
                 "Unable to load snapshot from"
                 f" {snapshot_location}: unknown version of"

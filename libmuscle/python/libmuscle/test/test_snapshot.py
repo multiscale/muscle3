@@ -104,5 +104,5 @@ def test_snapshot_without_timeline_state_raises() -> None:
     del dct["timeline_state"]
     binary_snapshot = msgpack.dumps(dct)
 
-    with pytest.raises(RuntimeError, match="requires a TimelineState"):
+    with pytest.raises(KeyError, match="timeline_state"):
         MsgPackSnapshot.from_bytes(binary_snapshot)

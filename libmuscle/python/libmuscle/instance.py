@@ -19,7 +19,6 @@ from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.snapshot_manager import SnapshotManager
-from libmuscle.timeline_manager import TimelineState
 from libmuscle.util import extract_log_file_location
 
 _logger = logging.getLogger(__name__)
@@ -154,7 +153,7 @@ class Instance:
         """Settings for this instance."""
 
         self._snapshot_manager = SnapshotManager(
-            self._instance_id, self.__manager, self._port_manager
+            self._instance_id, self.__manager, self._port_manager, self._communicator
         )
         """Resumes, loads and saves snapshots."""
 
@@ -176,9 +175,6 @@ class Instance:
 
         self._do_init = False
         """Whether to do f_init on this iteration of the reuse loop"""
-
-        self._pending_final_snapshot_state: Optional[TimelineState] = None
-        """Timeline state for a final snapshot to use afterwards."""
 
         self._f_init_cache: _FInitCacheType = {}
         """Stores pre-received messages for f_init ports"""
@@ -245,9 +241,7 @@ class Instance:
             do_reuse = self._decide_reuse_instance()
 
         if self._do_resume and not self._do_init:
-            self._communicator.restore_timeline_state(
-                self._snapshot_manager.resume_state()
-            )
+            self._snapshot_manager.restore_timeline_state()
 
         # now _first_run, _do_resume and _do_init are also set correctly
 
@@ -265,12 +259,7 @@ class Instance:
                 do_reuse, self.__f_init_max_timestamp
             ):
                 # store a None instead of a Message
-                self._save_snapshot(
-                    None,
-                    True,
-                    self.__f_init_max_timestamp,
-                    self._pending_final_snapshot_state,
-                )
+                self._save_snapshot(None, True, self.__f_init_max_timestamp)
 
         if not do_reuse:
             self.__shutdown()
@@ -732,13 +721,7 @@ class Instance:
         self._api_guard.verify_save_final_snapshot()
         if message is None:
             raise RuntimeError("Please specify a Message to save as snapshot.")
-        self._save_snapshot(
-            message,
-            True,
-            self.__f_init_max_timestamp,
-            self._pending_final_snapshot_state,
-        )
-        self._pending_final_snapshot_state = None
+        self._save_snapshot(message, True, self.__f_init_max_timestamp)
         self._api_guard.save_final_snapshot_done()
 
     @property
@@ -897,30 +880,17 @@ class Instance:
             self._communicator._receive_timeout,
         )
 
-    def _reset_completed_cycle(self) -> Optional[TimelineState]:
-        """Capture and clear the timeline state of the cycle that just
-        completed, if any.
-
-        Returns the captured state, for a final snapshot that stil needs it, since
-        reset() would otherwise erase it. Returns None, without resetting, if the cycle
-        hasn't completed yet.
-        """
-        if not self._communicator.is_cycle_complete():
-            return None
-        state = self._communicator.get_timeline_state()
-        self._communicator.reset_timeline()
-        return state
-
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
 
         This resets the timeline manager for the cycle that just completed
-        (if any), sets self._first_run, self._do_resume and self._do_init,
-        and returns whether to reuse one more time. This is the real top of
-        the reuse loop, and it gets called by reuse_instance and
-        should_save_final_snapshot.
+        (if any; there isn't one yet on the very first call), sets
+        self._first_run, self._do_resume and self._do_init, and returns whether
+        to reuse one more time. This is the real top of the reuse loop, and it
+        gets called by reuse_instance and should_save_final_snapshot.
         """
-        self._pending_final_snapshot_state = self._reset_completed_cycle()
+        if self._first_run is not None:
+            self._communicator.finish_timeline_cycle()
 
         if self._first_run is None:
             self._first_run = True
@@ -933,7 +903,7 @@ class Instance:
             self._do_init = False
             return True
 
-        f_init_connected = self._have_f_init_connections()
+        f_init_connected = self._communicator.has_f_init_connections()
 
         # resume from final
         if self._first_run and self._snapshot_manager.resuming_from_final():
@@ -965,7 +935,6 @@ class Instance:
         message: Optional[Message],
         final: bool,
         f_init_max_timestamp: Optional[float] = None,
-        timeline_state: Optional[TimelineState] = None,
     ) -> None:
         """Save a snapshot to disk and notify manager.
 
@@ -974,13 +943,10 @@ class Instance:
             final: Whether this is a final snapshot or an intermediate
                 one
             f_init_max_timestamp: Timestamp for final snapshots
-            timeline_state: The timeline state to save, if already captured. Captured
-                here otherwise.
         """
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
-        if timeline_state is None:
-            timeline_state = self._communicator.get_timeline_state()
+        timeline_state = self._communicator.get_timeline_state()
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,
@@ -1183,17 +1149,6 @@ class Instance:
                         )
                         self.__shutdown(err_msg)
                         raise RuntimeError(err_msg)
-
-    def _have_f_init_connections(self) -> bool:
-        """Checks whether we have connected F_INIT ports.
-
-        This includes muscle_settings_in, and any user-defined ports.
-        """
-        ports = self._port_manager.list_ports()
-        f_init_connected = any(
-            [self.is_connected(port) for port in ports.get(Operator.F_INIT, [])]
-        )
-        return f_init_connected or self._port_manager.settings_in_connected()
 
     def _pre_receive(self) -> bool:
         """Pre-receives on all ports.

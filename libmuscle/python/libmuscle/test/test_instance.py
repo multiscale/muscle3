@@ -469,6 +469,7 @@ def test_reuse_f_init_vector_port(instance, port_manager, communicator):
 
 def test_reuse_no_f_init_ports(instance, connected_port_manager, communicator):
     connected_port_manager.list_ports.return_value = {}
+    communicator.has_f_init_connections.return_value = False
 
     assert instance.reuse_instance() is True
     assert instance.reuse_instance() is False

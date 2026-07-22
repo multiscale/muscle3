@@ -15,6 +15,7 @@ from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
 from libmuscle.timeline_manager import TimelineManager, TimelineState
+from libmuscle.util import port_desc
 
 _logger = logging.getLogger(__name__)
 
@@ -188,12 +189,8 @@ class Communicator:
             checkpoints_considered_until: When we last checked if we
                 should save a snapshot (wallclock time).
         """
-        if slot is None:
-            _logger.debug(f"Sending message on {port_name}")
-            slot_list: list[int] = []
-        else:
-            _logger.debug(f"Sending message on {port_name}[{slot}]")
-            slot_list = [slot]
+        _logger.debug(f"Sending message on {port_desc(port_name, slot)}")
+        slot_list: list[int] = [] if slot is None else [slot]
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
         if not self._port_manager.get_port(str(snd_endpoint.port)).is_connected():
@@ -284,12 +281,8 @@ class Communicator:
         port = self._port_manager.get_port(port_name)
         self._timeline_manager.check_receive(port_name, slot)
 
-        if slot is None:
-            port_and_slot = port_name
-            slot_list: list[int] = []
-        else:
-            port_and_slot = f"{port_name}[{slot}]"
-            slot_list = [slot]
+        port_and_slot = port_desc(port_name, slot)
+        slot_list: list[int] = [] if slot is None else [slot]
         _logger.debug(f"Waiting for message on {port_and_slot}")
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
@@ -497,10 +490,7 @@ class Communicator:
             port_name: The name of the port to close.
         """
         message = Message(float("inf"), None, ClosePort(), Settings())
-        if slot is None:
-            _logger.debug(f"Closing port {port_name}")
-        else:
-            _logger.debug(f"Closing port {port_name}[{slot}]")
+        _logger.debug(f"Closing port {port_desc(port_name, slot)}")
         self.send_message(port_name, message, slot)
 
     def _close_outgoing_ports(self) -> None:

@@ -41,6 +41,21 @@ def instance_indices(instance: Reference) -> list[int]:
     return [cast(int, instance[j]) for j in range(i, len(instance))]
 
 
+def port_desc(port_name: str, slot: Optional[int]) -> str:
+    """Return a human-readable label for a port, including its slot if given.
+
+    Args:
+        port_name: Name of the port.
+        slot: The slot on the port, or None if it's scalar.
+
+    Returns:
+        The port name, with the slot appended in brackets if it is not None.
+    """
+    if slot is None:
+        return port_name
+    return f"{port_name}[{slot}]"
+
+
 def generate_indices(dims: list[int]) -> Generator[list[int], None, None]:
     """Generates all indices in a block of the given dimensions.
 

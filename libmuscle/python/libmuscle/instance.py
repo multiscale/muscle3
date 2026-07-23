@@ -242,6 +242,7 @@ class Instance:
 
         if self._do_resume and not self._do_init:
             self._snapshot_manager.restore_timeline_state()
+            assert self._communicator.has_completed_f_init()
 
         # now _first_run, _do_resume and _do_init are also set correctly
 

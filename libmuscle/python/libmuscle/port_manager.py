@@ -54,6 +54,17 @@ class PortManager:
         """Returns whether muscle_settings_in is connected."""
         return self._muscle_settings_in.is_connected()
 
+    def has_f_init_connections(self) -> bool:
+        """Return whether this instance has any connected F_INIT ports,
+        including muscle_settings_in."""
+        if self.settings_in_connected():
+            return True
+        return any(
+            port.is_connected()
+            for port in self._ports.values()
+            if port.operator is Operator.F_INIT
+        )
+
     def list_ports(
         self,
         timeline: Optional[Timeline] = None,

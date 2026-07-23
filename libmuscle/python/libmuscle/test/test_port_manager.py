@@ -71,6 +71,38 @@ def test_connect_ports(index, port_manager) -> None:
     assert ports["out"]._length is None
 
 
+def test_has_f_init_connections(index) -> None:
+    declared_ports = {Operator.F_INIT: ["in"], Operator.O_F: ["out"]}
+    port_manager = PortManager(index, declared_ports)
+
+    component_id = Ref("component")
+    peer_dims = {Ref("other"): []}
+    peer_locations = {Ref("other"): ["direct:test"]}
+
+    peer_info = PeerInfo(component_id, index, [], peer_dims, peer_locations, [])
+    port_manager.connect_ports(peer_info)
+    assert port_manager.has_f_init_connections() is False
+
+    conduits = [Conduit("other.out", "component.in")]
+    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations, [])
+    port_manager.connect_ports(peer_info)
+    assert port_manager.has_f_init_connections() is True
+
+
+def test_has_f_init_connections_settings_in_only(index) -> None:
+    declared_ports = {Operator.O_F: ["out"]}
+    port_manager = PortManager(index, declared_ports)
+
+    component_id = Ref("component")
+    conduits = [Conduit("other.settings_out", "component.muscle_settings_in")]
+    peer_dims = {Ref("other"): []}
+    peer_locations = {Ref("other"): ["direct:test"]}
+    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations, [])
+    port_manager.connect_ports(peer_info)
+
+    assert port_manager.has_f_init_connections() is True
+
+
 def test_connect_vector_ports(index) -> None:
     declared_ports = {Operator.F_INIT: ["in[]"], Operator.O_F: ["out1", "out2[]"]}
 

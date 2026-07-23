@@ -108,17 +108,19 @@ class AlreadyParticipated(TimelineError):
 
 
 class MessageOutOfSync(TimelineError):
-    """A received message doesn't belong where this component expects it,
-    without exposing the internal iteration count that detected it."""
+    """A received message doesn't belong where this component expects it.
 
-    def __init__(self, port: Port, slot: Optional[int], reason: str) -> None:
+    The timeline manager's bookkeeping should never let this state be reached. Seeing
+    this means there is probably a bug in MUSCLE3."""
+
+    def __init__(self, port: Port, slot: Optional[int]) -> None:
         self.port = port
         self.slot = slot
-        self.reason = reason
         super().__init__(
             f"Received a message on {_port_ref(port, [slot])} that this"
-            f" component wasn't expecting. This usually means {reason}, or that"
-            " a snapshot was resumed inconsistently."
+            " component wasn't expecting. This should not happen and is probably"
+            " a bug in MUSCLE3. Please file an issue at"
+            " https://github.com/multiscale/muscle3/issues."
         )
 
 
@@ -290,7 +292,7 @@ class TimelineManager:
 
         # A component with no connected F_INIT ports has no F_INIT message to
         # learn its iteration from, so its main timeline starts at [].
-        self._iteration = None if self.has_connected_f_init() else []
+        self._iteration = None if self._port_manager.has_f_init_connections() else []
 
     def get_state(self) -> TimelineState:
         """Return the main timeline's iteration and participation, and every
@@ -334,11 +336,6 @@ class TimelineManager:
                 expected += _expected_actions(stm._send, stm._receive)
 
         raise CycleIncomplete(expected)
-
-    def has_connected_f_init(self) -> bool:
-        """Return whether this component has any connected F_INIT ports,
-        including muscle_settings_in."""
-        return bool(self._receive.ports)
 
     def check_send_message(
         self, port_name: str, slot: Optional[int] = None
@@ -421,11 +418,6 @@ class TimelineManager:
             if sub_state is not None:
                 stm.restore_state(sub_state)
 
-    def has_completed_f_init(self) -> bool:
-        """Return whether every connected F_INIT port and slot (including
-        muscle_settings_in) has participated on the main timeline."""
-        return self._receive.all_participated()
-
     def check_receive(self, port_name: str, slot: Optional[int] = None) -> None:
         """Check that receiving on the given port is currently allowed.
 
@@ -488,12 +480,7 @@ class TimelineManager:
             if self._iteration is None:
                 self._iteration = iteration
             elif iteration != self._iteration:
-                raise MessageOutOfSync(
-                    port,
-                    slot,
-                    "this component and its connected peer are not calling"
-                    " reuse_instance() the same number of times",
-                )
+                raise MessageOutOfSync(port, slot)
             self._receive.participate(port_name, slot)
             return
 
@@ -506,7 +493,7 @@ class TimelineManager:
         F_INIT ports to wait for) and participation state, and resets every sub-timeline
         in turn.
         """
-        self._iteration = None if self.has_connected_f_init() else []
+        self._iteration = None if self._port_manager.has_f_init_connections() else []
         self._send.reset()
         self._receive.reset()
         for stm in self._submanagers.values():
@@ -691,20 +678,10 @@ class SubTimelineManager:
             self._first_operator = Operator.S
         elif not self._receive.has_participated(port_name, slot):
             if iteration != self._iteration:
-                raise MessageOutOfSync(
-                    port,
-                    slot,
-                    "the connected components are sending and receiving a"
-                    " different number of messages on this port",
-                )
+                raise MessageOutOfSync(port, slot)
         else:
             if iteration <= self._iteration:
-                raise MessageOutOfSync(
-                    port,
-                    slot,
-                    "the connected components are sending and receiving a"
-                    " different number of messages on this port",
-                )
+                raise MessageOutOfSync(port, slot)
             self._iteration = iteration
             self._send.reset()
             self._receive.reset()

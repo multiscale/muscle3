@@ -61,8 +61,8 @@ class SnapshotManager:
 
         If there is a snapshot to resume from, this loads it and does
         any resume work that libmuscle should do, including restoring
-        message counts and storing the resumed-from snapshot again as
-        our first snapshot.
+        message counts, restoring the timeline state, and storing the
+        resumed-from snapshot again as our first snapshot.
 
         Args:
             resume_snapshot: Snapshot to resume from (or None if not
@@ -84,6 +84,7 @@ class SnapshotManager:
             self.resume_overlay = snapshot.settings_overlay
 
             self._port_manager.restore_message_counts(snapshot.port_message_counts)
+            self._communicator.restore_timeline_state(snapshot.timeline_state)
             # Store a copy of the snapshot in the current run directory
             path = self.__store_snapshot(snapshot)
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
@@ -117,14 +118,6 @@ class SnapshotManager:
         """Get the Message to resume from."""
         snapshot = cast(Snapshot, self._resume_from_snapshot)
         return cast(Message, snapshot.message)
-
-    def restore_timeline_state(self) -> None:
-        """Restore the communicator's timeline manager to the resumed-from
-        snapshot's saved state."""
-        assert self._resume_from_snapshot is not None
-        self._communicator.restore_timeline_state(
-            self._resume_from_snapshot.timeline_state
-        )
 
     def save_snapshot(
         self,

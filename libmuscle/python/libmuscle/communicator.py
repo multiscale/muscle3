@@ -161,16 +161,6 @@ class Communicator:
         """
         self._timeline_manager.restore_state(state)
 
-    def has_f_init_connections(self) -> bool:
-        """Return whether the main timeline has any connected F_INIT ports,
-        including muscle_settings_in."""
-        return self._timeline_manager.has_connected_f_init()
-
-    def has_completed_f_init(self) -> bool:
-        """Return whether every connected F_INIT port and slot (including
-        muscle_settings_in) has participated on the main timeline."""
-        return self._timeline_manager.has_completed_f_init()
-
     def finish_timeline_cycle(self) -> None:
         """Reset the timeline manager for the next reuse loop cycle."""
         self._timeline_manager.finish_cycle()

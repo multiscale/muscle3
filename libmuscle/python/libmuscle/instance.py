@@ -240,10 +240,6 @@ class Instance:
         else:
             do_reuse = self._decide_reuse_instance()
 
-        if self._do_resume and not self._do_init:
-            self._snapshot_manager.restore_timeline_state()
-            assert self._communicator.has_completed_f_init()
-
         # now _first_run, _do_resume and _do_init are also set correctly
 
         do_implicit_checkpoint = (
@@ -904,7 +900,7 @@ class Instance:
             self._do_init = False
             return True
 
-        f_init_connected = self._communicator.has_f_init_connections()
+        f_init_connected = self._port_manager.has_f_init_connections()
 
         # resume from final
         if self._first_run and self._snapshot_manager.resuming_from_final():

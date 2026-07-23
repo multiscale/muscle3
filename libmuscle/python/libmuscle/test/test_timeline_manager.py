@@ -259,7 +259,7 @@ def test_send_o_f_with_incomplete_subtimeline_raises() -> None:
     tm.check_received_message("f_i", None, [0])
     tm.check_send_message("o_i")
 
-    with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
+    with pytest.raises(RuntimeError, match="Not allowed to send a message"):
         tm.check_send_message("o_f")
 
 
@@ -319,7 +319,7 @@ def test_receive_s_with_only_some_o_i_sent_raises() -> None:
     tm.check_received_message("f_i", None, [])
     tm.check_send_message("o_i1")
 
-    with pytest.raises(RuntimeError, match="only some"):
+    with pytest.raises(RuntimeError, match="Not allowed to receive a message"):
         tm.check_receive("s")
 
 
@@ -336,7 +336,7 @@ def test_send_o_i_twice_before_s_received_raises() -> None:
     tm.check_received_message("f_i", None, [])
     tm.check_send_message("o_i")
 
-    with pytest.raises(RuntimeError, match="not every port"):
+    with pytest.raises(RuntimeError, match="Not allowed to send a message"):
         tm.check_send_message("o_i")
 
 
@@ -375,7 +375,7 @@ def test_send_o_i_with_only_some_s_received_raises() -> None:
     tm.check_receive("s1")
     tm.check_received_message("s1", None, [0])
 
-    with pytest.raises(RuntimeError, match="only some"):
+    with pytest.raises(RuntimeError, match="Not allowed to send a message"):
         tm.check_send_message("o_i")
 
 
@@ -393,7 +393,7 @@ def test_receive_s_twice_before_o_i_sent_raises() -> None:
     tm.check_receive("s")
     tm.check_received_message("s", None, [0])
 
-    with pytest.raises(RuntimeError, match="not every port"):
+    with pytest.raises(RuntimeError, match="Not allowed to receive a message"):
         tm.check_receive("s")
 
 
@@ -410,7 +410,7 @@ def test_send_o_f_with_unfinished_subtimeline_raises() -> None:
     tm.check_received_message("f_i", None, [])
     tm.check_send_message("o_i")
 
-    with pytest.raises(RuntimeError, match="not completed a sub-iteration"):
+    with pytest.raises(RuntimeError, match="Not allowed to send a message"):
         tm.check_send_message("o_f")
 
 
@@ -508,7 +508,7 @@ def test_finish_cycle_raises_on_an_untouched_timeline() -> None:
     # untouched timeline looks just like an incomplete one to it.
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
 
-    with pytest.raises(RuntimeError, match="has not completed"):
+    with pytest.raises(RuntimeError, match="Not allowed to call reuse_instance"):
         tm.finish_cycle()
 
 
@@ -531,7 +531,7 @@ def test_finish_cycle_raises_if_cycle_incomplete() -> None:
     tm.check_received_message("f_i", None, [0])
     # o_f is never sent, so the cycle never completes
 
-    with pytest.raises(RuntimeError, match='Port "o_f"'):
+    with pytest.raises(RuntimeError, match="O_F port 'o_f'"):
         tm.finish_cycle()
 
 
@@ -570,5 +570,5 @@ def test_finish_cycle_names_port_on_incomplete_subtimeline() -> None:
     # "s" never receives, so o_i's message is never picked up, and o_f is
     # never sent either
 
-    with pytest.raises(RuntimeError, match='Port "s"'):
+    with pytest.raises(RuntimeError, match="S port 's'"):
         tm.finish_cycle()

@@ -342,12 +342,12 @@ class Communicator:
         mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
         recv_decode_event.stop()
 
-        if isinstance(mpp_message.data, ClosePort):
-            port.set_closed(slot)
-
         if mpp_message.port_length is not None:
             if port.is_resizable():
                 port.set_length(mpp_message.port_length)
+
+        if isinstance(mpp_message.data, ClosePort):
+            port.set_closed(slot)
 
         message = Message(
             mpp_message.timestamp,

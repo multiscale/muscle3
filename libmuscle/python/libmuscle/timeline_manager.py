@@ -10,6 +10,7 @@ from libmuscle.util import port_desc
 
 PortAndSlot: TypeAlias = tuple[str, Optional[int]]  # (port_name, slot)
 IterationCount: TypeAlias = list[int]  # nested iteration counts of a message
+ExpectedActions: TypeAlias = list[tuple[str, Port, list[Optional[int]]]]
 
 
 class SubTimelineState(TypedDict):
@@ -36,6 +37,75 @@ class TimelineState:
     send_participated: list[PortAndSlot]
     receive_participated: list[PortAndSlot]
     subtimeline_states: dict[str, SubTimelineState]
+
+
+class TimelineError(RuntimeError):
+    """Raised when Instance's send/receive calls violate the timeline
+    consistency rules.
+
+    Messages are phrased around what the user tried to do and what to do
+    instead (which ports to send or receive on), rather than around the
+    internal iteration/sub-timeline bookkeeping used to check this.
+    """
+
+    @staticmethod
+    def _port_ref(port: Port, slots: list[Optional[int]]) -> str:
+        """Format e.g. "O_F port 'x'", "O_I port 'x[3]'", or "S port 'y'
+        (slots 2, 3, 5)"."""
+        if len(slots) == 1:
+            return f"{port.operator.name} port '{port_desc(str(port.name), slots[0])}'"
+        slot_list = ", ".join(str(slot) for slot in slots)
+        return f"{port.operator.name} port '{port.name}' (slots {slot_list})"
+
+    @classmethod
+    def _expected_message(cls, subject: str, expected: ExpectedActions) -> str:
+        bullets = "\n".join(
+            f"- A {action} on {cls._port_ref(port, slots)}"
+            for action, port, slots in expected
+        )
+        return (
+            f"Not allowed to {subject} yet: was expecting one of the following"
+            f" instead:\n{bullets}"
+        )
+
+    @classmethod
+    def blocked(
+        cls, action: str, port: Port, slot: Optional[int], expected: ExpectedActions
+    ) -> "TimelineError":
+        """The given port cannot send/receive yet: other ports must send or
+        receive a message first."""
+        subject = f"{action} a message on {cls._port_ref(port, [slot])}"
+        return cls(cls._expected_message(subject, expected))
+
+    @classmethod
+    def cycle_incomplete(cls, expected: ExpectedActions) -> "TimelineError":
+        """reuse_instance() was called before the previous cycle finished."""
+        return cls(cls._expected_message("call reuse_instance()", expected))
+
+    @classmethod
+    def already_done(
+        cls, action: str, port: Port, slot: Optional[int]
+    ) -> "TimelineError":
+        """The given port already sent/received a message this reuse loop
+        iteration."""
+        done = "sent" if action == "send" else "received"
+        return cls(
+            f"Not allowed to {action} another message on"
+            f" {cls._port_ref(port, [slot])} yet: it already {done} one this"
+            f" reuse loop iteration."
+        )
+
+    @classmethod
+    def out_of_sync(
+        cls, port: Port, slot: Optional[int], reason: str
+    ) -> "TimelineError":
+        """A received message doesn't belong where this component expects it,
+        without exposing the internal iteration count that detected it."""
+        return cls(
+            f"Received a message on {cls._port_ref(port, [slot])} that this"
+            f" component wasn't expecting. This usually means {reason}, or that"
+            " a snapshot was resumed inconsistently."
+        )
 
 
 class TimelinePorts:
@@ -81,20 +151,63 @@ class TimelinePorts:
         """Return whether every port/slot combination has participated."""
         return len(self.participated) == self.num_slots
 
-    def missing_ports(self) -> list[str]:
-        """Return descriptions of the port/slot combinations that have not
-        participated yet.
+    def missing_ports(self) -> list[tuple[Port, list[Optional[int]]]]:
+        """Return each connected port that still has slots which haven't
+        participated yet, paired with the list of those slots ([None] for a
+        scalar port).
         """
-        return [
-            f'Port "{port_desc(str(port.name), slot)}"'
-            for port in self.ports
-            for slot in (list(range(port.get_length())) if port.is_vector() else [None])
-            if (str(port.name), slot) not in self.participated
-        ]
+        result = []
+        for port in self.ports:
+            all_slots: list[Optional[int]] = (
+                list(range(port.get_length())) if port.is_vector() else [None]
+            )
+            slots = [
+                slot
+                for slot in all_slots
+                if (str(port.name), slot) not in self.participated
+            ]
+            if slots:
+                result.append((port, slots))
+        return result
+
+    def all_ports(self) -> list[tuple[Port, list[Optional[int]]]]:
+        """Return every connected port together with all of its slots
+        ([None] for a scalar port), regardless of participation.
+        """
+        result = []
+        for port in self.ports:
+            all_slots: list[Optional[int]] = (
+                list(range(port.get_length())) if port.is_vector() else [None]
+            )
+            result.append((port, all_slots))
+        return result
 
     def reset(self) -> None:
         """Clear participation, keeping the tracked ports."""
         self.participated = set()
+
+
+def _expected_actions(
+    send: Optional[TimelinePorts] = None,
+    receive: Optional[TimelinePorts] = None,
+    *,
+    missing_only: bool = True,
+) -> ExpectedActions:
+    """The expected next actions on a send/receive pair of TimelinePorts in the order
+    defined by the TimelineManager.
+
+    Pass only send or only receive when the other direction isn't relevant to the
+    check being made. Pass missing_only=False to list every port on the given side(s)
+    instead of just the ones that haven't participated yet.
+    """
+    result: ExpectedActions = []
+    if send is not None:
+        ports = send.missing_ports() if missing_only else send.all_ports()
+        result += [("send", port, slots) for port, slots in ports]
+    if receive is not None:
+        ports = receive.missing_ports() if missing_only else receive.all_ports()
+        result += [("receive", port, slots) for port, slots in ports]
+    return result
 
 
 class TimelineManager:
@@ -193,7 +306,7 @@ class TimelineManager:
         """Check if the current timeline cycle has finished and reset for the next one.
 
         Raises:
-            RuntimeError: If the cycle is not complete, i.e. only some of its
+            TimelineError: If the cycle is not complete, i.e. only some of its
                 ports have participated. Names exactly which ports haven't sent
                 or received a message yet.
         """
@@ -201,17 +314,12 @@ class TimelineManager:
             self.reset()
             return
 
-        missing = self._send.missing_ports() + self._receive.missing_ports()
+        expected = _expected_actions(self._send, self._receive)
         for stm in self._submanagers.values():
             if not stm.is_complete():
-                missing += stm._send.missing_ports() + stm._receive.missing_ports()
+                expected += _expected_actions(stm._send, stm._receive)
 
-        raise RuntimeError(
-            "The reuse loop was re-entered, but the previous cycle has not"
-            f" completed yet: {', '.join(missing)} did not send or receive a"
-            " message. Please make sure every connected port sends or receives a"
-            " message before calling reuse_instance() again."
-        )
+        raise TimelineError.cycle_incomplete(expected)
 
     def has_connected_f_init(self) -> bool:
         """Return whether this component has any connected F_INIT ports,
@@ -261,25 +369,22 @@ class TimelineManager:
             The iteration to embed in the outgoing message.
 
         Raises:
-            RuntimeError: If this port already sent a message for the current
+            TimelineError: If this port already sent a message for the current
                 iteration, or a sub-timeline was used this cycle but hasn't
                 completed a sub-iteration.
         """
         assert self._iteration is not None
-        if self._send.has_participated(port_name, slot):
-            raise RuntimeError(
-                f'Port "{port_desc(port_name, slot)}" already sent a message for this'
-                " iteration."
-            )
+        port = self._port_manager.get_port(port_name)
 
-        for tl, stm in self._submanagers.items():
+        if self._send.has_participated(port_name, slot):
+            raise TimelineError.already_done("send", port, slot)
+
+        expected: ExpectedActions = []
+        for stm in self._submanagers.values():
             if not stm.is_complete():
-                missing = stm._send.missing_ports() + stm._receive.missing_ports()
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" tried to send a message, but'
-                    f" sub-timeline {tl} has not completed a sub-iteration yet."
-                    f" Missing: {', '.join(missing)}."
-                )
+                expected += _expected_actions(stm._send, stm._receive)
+        if expected:
+            raise TimelineError.blocked("send", port, slot, expected)
 
         self._send.participate(port_name, slot)
         return self._iteration
@@ -319,10 +424,7 @@ class TimelineManager:
 
         if port.operator is Operator.F_INIT:
             if self._receive.has_participated(port_name, slot):
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" already received a message'
-                    " for this iteration."
-                )
+                raise TimelineError.already_done("receive", port, slot)
             return
 
         if port.operator is Operator.S:
@@ -353,7 +455,7 @@ class TimelineManager:
             iteration: The iteration the received message was sent with.
 
         Raises:
-            RuntimeError: If an F_INIT port received a message with an
+            TimelineError: If an F_INIT port received a message with an
                 iteration different from the one the main timeline is on.
         """
         port = self._port_manager.get_port(port_name)
@@ -362,17 +464,16 @@ class TimelineManager:
             if self._iteration is None:
                 self._iteration = iteration
             elif iteration != self._iteration:
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" received a message with'
-                    f" iteration {iteration}, but the main timeline is at"
-                    f" iteration {self._iteration}."
+                raise TimelineError.out_of_sync(
+                    port,
+                    slot,
+                    "this component and its connected peer are not calling"
+                    " reuse_instance() the same number of times",
                 )
             self._receive.participate(port_name, slot)
             return
 
-        self._submanagers[port.timeline].check_received_message(
-            port_name, slot, iteration
-        )
+        self._submanagers[port.timeline].check_received_message(port, slot, iteration)
 
     def reset(self) -> None:
         """Reset the main timeline and it's sub-timelines.
@@ -456,7 +557,7 @@ class SubTimelineManager:
         Returns: The sub-timeline iteration.
 
         Raises:
-            RuntimeError: If this port and slot has not yet sent a message
+            TimelineError: If this port and slot has not yet sent a message
                 for the current sub-iteration and S led this sub-timeline
                 with only some, not all, of its S ports having received yet;
                 or if it already sent one and either S led this sub-timeline
@@ -472,27 +573,15 @@ class SubTimelineManager:
             if self._first_operator is Operator.S and not (
                 self._receive.all_participated()
             ):
-                missing = self._receive.missing_ports()
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" tried to send a message, but'
-                    " only some of this sub-timeline's S ports have received so"
-                    f" far. Missing: {', '.join(missing)}."
-                )
+                expected = _expected_actions(receive=self._receive)
+                raise TimelineError.blocked("send", port, slot, expected)
         else:
             if self._first_operator is not Operator.O_I:
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" tried to send a message, but'
-                    " S received first on this sub-timeline, so only a receive on S"
-                    " can advance to the next sub-iteration, not a send on O_I."
-                )
+                expected = _expected_actions(receive=self._receive, missing_only=False)
+                raise TimelineError.blocked("send", port, slot, expected)
             if not (self._send.all_participated() and self._receive.all_participated()):
-                missing = self._send.missing_ports() + self._receive.missing_ports()
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" tried to send a message, but'
-                    " it already sent one for this sub-iteration and not every port of"
-                    f" this sub-timeline has participated yet. Missing:"
-                    f" {', '.join(missing)}."
-                )
+                expected = _expected_actions(self._send, self._receive)
+                raise TimelineError.blocked("send", port, slot, expected)
             self._iteration[-1] += 1
             self._send.reset()
             self._receive.reset()
@@ -518,7 +607,7 @@ class SubTimelineManager:
             slot: The slot being received on, if this is a vector port.
 
         Raises:
-            RuntimeError: If this S port has not yet received for the
+            TimelineError: If this S port has not yet received for the
                 current sub-iteration and only some, not all, of this
                 sub-timeline's O_I ports have sent so far; or if it already
                 received for the current sub-iteration and either O_I led
@@ -531,31 +620,19 @@ class SubTimelineManager:
             if self._first_operator is Operator.O_I and not (
                 self._send.all_participated()
             ):
-                missing = self._send.missing_ports()
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" tried to receive a message,'
-                    " but only some of this sub-timeline's O_I ports have sent so far."
-                    f" Missing: {', '.join(missing)}."
-                )
+                expected = _expected_actions(send=self._send)
+                raise TimelineError.blocked("receive", port, slot, expected)
             return
 
         if self._first_operator is not Operator.S:
-            raise RuntimeError(
-                f'Port "{port_desc(port_name, slot)}" tried to receive a message, but'
-                " O_I sent first on this sub-timeline, so only a send on O_I can"
-                " advance to the next sub-iteration, not a receive on S."
-            )
+            expected = _expected_actions(send=self._send, missing_only=False)
+            raise TimelineError.blocked("receive", port, slot, expected)
         if not (self._send.all_participated() and self._receive.all_participated()):
-            missing = self._send.missing_ports() + self._receive.missing_ports()
-            raise RuntimeError(
-                f'Port "{port_desc(port_name, slot)}" tried to receive a message, but'
-                " it already received one for this sub-iteration and not every port of"
-                f" this sub-timeline has participated yet. Missing:"
-                f" {', '.join(missing)}."
-            )
+            expected = _expected_actions(self._send, self._receive)
+            raise TimelineError.blocked("receive", port, slot, expected)
 
     def check_received_message(
-        self, port_name: str, slot: Optional[int], iteration: IterationCount
+        self, port: Port, slot: Optional[int], iteration: IterationCount
     ) -> None:
         """Record that a message has been received on the given S port.
 
@@ -571,33 +648,37 @@ class SubTimelineManager:
         current one.
 
         Args:
-            port_name: Name of the S port a message was received on.
+            port: The S port a message was received on.
             slot: The slot the message was received on, if this is a vector port.
             iteration: The iteration the received message was sent with.
 
         Raises:
-            RuntimeError: If this port and slot has not yet received for the
+            TimelineError: If this port and slot has not yet received for the
                 current sub-iteration and the message's iteration does not
                 match this sub-timeline's current iteration; or if it already
                 received for the current sub-iteration and the message's
                 iteration is not strictly later than the current one.
         """
+        port_name = str(port.name)
+
         if self._iteration is None:
             self._iteration = iteration
             self._first_operator = Operator.S
         elif not self._receive.has_participated(port_name, slot):
             if iteration != self._iteration:
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" received a message with'
-                    f" iteration {iteration}, but this sub-timeline is at"
-                    f" iteration {self._iteration}."
+                raise TimelineError.out_of_sync(
+                    port,
+                    slot,
+                    "the connected components are sending and receiving a"
+                    " different number of messages on this port",
                 )
         else:
             if iteration <= self._iteration:
-                raise RuntimeError(
-                    f'Port "{port_desc(port_name, slot)}" received a message with'
-                    f" iteration {iteration}, but this sub-timeline is already at"
-                    f" iteration {self._iteration}."
+                raise TimelineError.out_of_sync(
+                    port,
+                    slot,
+                    "the connected components are sending and receiving a"
+                    " different number of messages on this port",
                 )
             self._iteration = iteration
             self._send.reset()

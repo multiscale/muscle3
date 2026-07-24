@@ -88,6 +88,29 @@ class PortManager:
             result[port.operator].append(port_name)
         return result
 
+    def get_connected_ports(
+        self,
+        operator: Operator,
+        timeline: Optional[Timeline] = None,
+    ) -> list[Port]:
+        """Returns the connected ports for the given operator.
+
+        Args:
+            operator: The operator to select ports for.
+            timeline: Pass a specific Timeline to only consider ports on that timeline.
+
+        Returns:
+            The Port objects for this operator's connected ports.
+        """
+        return [
+            port
+            for port in (
+                self.get_port(name)
+                for name in self.list_ports(timeline).get(operator, [])
+            )
+            if port.is_connected()
+        ]
+
     def list_subtimelines(self) -> set[Timeline]:
         """Returns the timelines of this instance's connected O_I/S ports.
 

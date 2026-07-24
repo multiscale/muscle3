@@ -161,9 +161,9 @@ class Communicator:
         """
         self._timeline_manager.restore_state(state)
 
-    def finish_timeline_cycle(self) -> None:
-        """Reset the timeline manager for the next reuse loop cycle."""
-        self._timeline_manager.finish_cycle()
+    def finish_reuse_iteration(self) -> None:
+        """Prepare the timeline manager for the next reuse loop."""
+        self._timeline_manager.finish_reuse_loop()
 
     def send_message(
         self,
@@ -416,8 +416,7 @@ class Communicator:
         _logger.debug(f"Received message on {port_and_slot}")
         if isinstance(mpp_message.data, ClosePort):
             _logger.debug(f"Port {port_and_slot} is now closed")
-
-        if not isinstance(mpp_message.data, ClosePort):
+        else:
             assert mpp_message.iteration is not None
             self._timeline_manager.check_received_message(
                 port_name, slot, mpp_message.iteration

@@ -203,15 +203,7 @@ class SnapshotManager:
             data = snapshot_file.read()
 
             if version == MsgPackSnapshot.SNAPSHOT_VERSION_BYTE:
-                try:
-                    return MsgPackSnapshot.from_bytes(data)
-                except Exception as e:
-                    raise RuntimeError(
-                        f"Unable to load snapshot from {snapshot_location}: could"
-                        " not read its contents. This may be because it was saved"
-                        " with a different version of libmuscle, or because the"
-                        " data is corrupted."
-                    ) from e
+                return MsgPackSnapshot.from_bytes(data)
             raise RuntimeError(
                 "Unable to load snapshot from"
                 f" {snapshot_location}: unknown version of"

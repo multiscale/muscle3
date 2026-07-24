@@ -37,8 +37,6 @@ class Snapshot(ABC):
         # self.message is None for implicit snapshots, so we cannot store the
         # Settings overlay in that message object.
         self.settings_overlay = settings_overlay
-        # The main timeline's state when the snapshot was taken, see
-        # TimelineManager.get_state().
         self.timeline_state = timeline_state
 
     @classmethod
@@ -66,7 +64,7 @@ class Snapshot(ABC):
 class MsgPackSnapshot(Snapshot):
     """Snapshot stored in messagepack format"""
 
-    SNAPSHOT_VERSION_BYTE = b"1"
+    SNAPSHOT_VERSION_BYTE = b"2"
 
     @classmethod
     def from_bytes(cls, data: bytes) -> "Snapshot":

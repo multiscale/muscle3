@@ -887,7 +887,7 @@ class Instance:
         gets called by reuse_instance and should_save_final_snapshot.
         """
         if self._first_run is not None:
-            self._communicator.finish_timeline_cycle()
+            self._communicator.finish_reuse_iteration()
 
         if self._first_run is None:
             self._first_run = True
@@ -943,7 +943,6 @@ class Instance:
         """
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
-        timeline_state = self._communicator.get_timeline_state()
         timestamp = self._snapshot_manager.save_snapshot(
             message,
             final,
@@ -951,7 +950,7 @@ class Instance:
             walltime,
             f_init_max_timestamp,
             self._settings_manager.overlay,
-            timeline_state,
+            self._communicator.get_timeline_state(),
         )
         self._trigger_manager.update_checkpoints(timestamp)
 

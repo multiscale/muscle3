@@ -1,12 +1,11 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import msgpack
 import pytest
 from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.communicator import Message
-from libmuscle.snapshot import MsgPackSnapshot, SnapshotMetadata
+from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.snapshot_manager import SnapshotManager
 from libmuscle.timeline_manager import TimelineState
 
@@ -147,20 +146,6 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
         None, True, ["implicit"], 12.3, 2.5, Settings(), TEST_TIMELINE_STATE
     )
     manager.submit_snapshot_metadata.assert_called_once()
-
-
-def test_load_snapshot_from_file_with_missing_field_raises(tmp_path: Path) -> None:
-    snapshot = MsgPackSnapshot([], 0.0, {}, True, None, Settings(), TEST_TIMELINE_STATE)
-    dct = msgpack.loads(snapshot.to_bytes())
-    del dct["timeline_state"]
-
-    snapshot_path = tmp_path / "corrupted.pack"
-    with snapshot_path.open("xb") as f:
-        f.write(MsgPackSnapshot.SNAPSHOT_VERSION_BYTE)
-        f.write(msgpack.dumps(dct))
-
-    with pytest.raises(RuntimeError, match="could not read its contents"):
-        SnapshotManager.load_snapshot_from_file(snapshot_path)
 
 
 def test_load_snapshot_from_file_with_unknown_version_raises(tmp_path: Path) -> None:

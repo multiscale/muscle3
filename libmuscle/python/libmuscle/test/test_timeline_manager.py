@@ -90,10 +90,8 @@ def port_manager() -> PortManager:
 def test_init(port_manager: PortManager) -> None:
     tm = TimelineManager(port_manager)
     assert tm._iteration is None
-    assert tm._send.ports == []
-    assert tm._receive.ports == []
-    assert tm._send.participated == set()
-    assert tm._receive.participated == set()
+    assert tm._send is None
+    assert tm._receive is None
     assert tm._submanagers == {}
 
 
@@ -181,7 +179,7 @@ def test_participation_helpers(port_manager: PortManager) -> None:
 
 @pytest.mark.parametrize("num_iterations", [1, 2])
 @pytest.mark.parametrize("num_reuse", [1, 5])
-def test_full_cycle_correct(num_iterations: int, num_reuse: int) -> None:
+def test_full_reuse_loop_correct(num_iterations: int, num_reuse: int) -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -198,8 +196,7 @@ def test_full_cycle_correct(num_iterations: int, num_reuse: int) -> None:
             tm.check_receive("s")
             tm.check_received_message("s", None, iteration)
         tm.check_send_message("o_f")
-        assert tm.cycle_complete()
-        tm.reset()
+        tm.finish_reuse_loop()
 
 
 def test_send_o_f_with_previously_used_subtimeline_skipped_ok() -> None:
@@ -211,22 +208,21 @@ def test_send_o_f_with_previously_used_subtimeline_skipped_ok() -> None:
             Operator.O_F: ["o_f"],
         }
     )
-    # First cycle: use the sub-timeline once, establishing it.
+    # First reuse loop iteration: use the sub-timeline once, establishing it.
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [0])
     iteration = tm.check_send_message("o_i")
     tm.check_receive("s")
     tm.check_received_message("s", None, iteration)
     tm.check_send_message("o_f")
-    assert tm.cycle_complete()
-    tm.reset()
+    tm.finish_reuse_loop()
 
-    # Second cycle: a cache-like component may skip the sub-timeline
+    # Second reuse loop iteration: a cache-like component may skip the sub-timeline
     # entirely, having already used it before.
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [1])
     tm.check_send_message("o_f")
-    assert tm.cycle_complete()
+    tm.finish_reuse_loop()
 
 
 def test_send_o_f_with_never_used_subtimeline_ok() -> None:
@@ -243,7 +239,7 @@ def test_send_o_f_with_never_used_subtimeline_ok() -> None:
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [0])
     tm.check_send_message("o_f")
-    assert tm.cycle_complete()
+    tm.finish_reuse_loop()
 
 
 def test_send_o_f_with_incomplete_subtimeline_raises() -> None:
@@ -341,7 +337,7 @@ def test_send_o_i_twice_before_s_received_raises() -> None:
 
 
 @pytest.mark.parametrize("num_iterations", [1, 2])
-def test_full_cycle_s_led_correct(num_iterations: int) -> None:
+def test_full_reuse_loop_s_led_correct(num_iterations: int) -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -418,8 +414,7 @@ def test_root_o_f_only_repeats_cleanly() -> None:
     tm = _make_timeline_manager({Operator.O_F: ["o_f"]})
     for _ in range(5):
         tm.check_send_message("o_f")
-        assert tm.cycle_complete()
-        tm.reset()
+        tm.finish_reuse_loop()
 
 
 def test_root_component_with_subtimeline_repeats_cleanly() -> None:
@@ -431,8 +426,7 @@ def test_root_component_with_subtimeline_repeats_cleanly() -> None:
         tm.check_receive("s")
         tm.check_received_message("s", None, iteration)
         tm.check_send_message("o_f")
-        assert tm.cycle_complete()
-        tm.reset()
+        tm.finish_reuse_loop()
 
 
 def test_root_component_with_subtimeline_skipped_entirely_ok() -> None:
@@ -441,7 +435,7 @@ def test_root_component_with_subtimeline_skipped_entirely_ok() -> None:
     )
     # A component may skip its sub-timeline entirely and just send on O_F.
     tm.check_send_message("o_f")
-    assert tm.cycle_complete()
+    tm.finish_reuse_loop()
 
 
 def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
@@ -450,8 +444,7 @@ def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
         tm.check_receive("f_i")
         tm.check_received_message("f_i", None, [i])
         tm.check_send_message("o_f")
-        assert tm.cycle_complete()
-        tm.reset()
+        tm.finish_reuse_loop()
 
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [5])
@@ -459,19 +452,7 @@ def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
         tm.check_receive("f_i")
 
 
-def test_cycle_complete_false_until_every_main_port_participated() -> None:
-    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
-    assert not tm.cycle_complete()
-
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [0])
-    assert not tm.cycle_complete()
-
-    tm.check_send_message("o_f")
-    assert tm.cycle_complete()
-
-
-def test_cycle_complete_false_if_subtimeline_restarts_after_o_f_sent() -> None:
+def test_finish_reuse_loop_raises_if_subtimeline_restarts_after_o_f_sent() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -486,56 +467,57 @@ def test_cycle_complete_false_if_subtimeline_restarts_after_o_f_sent() -> None:
     tm.check_receive("s")
     tm.check_received_message("s", None, iteration)
     tm.check_send_message("o_f")
-    assert tm.cycle_complete()
 
+    # Restarting the sub-timeline after O_F has already sent makes the reuse
+    # loop iteration incomplete again.
     tm.check_send_message("o_i")
-    assert not tm.cycle_complete()
+    with pytest.raises(RuntimeError, match="Not allowed to call reuse_instance"):
+        tm.finish_reuse_loop()
 
 
-def test_get_state_after_o_f_sent_reflects_completed_cycle_before_reset() -> None:
+def test_get_state_after_o_f_sent_reflects_state_before_reset() -> None:
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [3])
     tm.check_send_message("o_f")
 
-    assert tm.cycle_complete()
     state = tm.get_state()
     assert state.iteration == [3]
 
 
-def test_finish_cycle_raises_on_an_untouched_timeline() -> None:
-    # finish_cycle() must only be called once a cycle has actually run; an
-    # untouched timeline looks just like an incomplete one to it.
+def test_finish_reuse_loop_raises_on_an_untouched_timeline() -> None:
+    # finish_reuse_loop() must only be called once a reuse loop iteration has actually
+    # run; an untouched timeline looks just like an incomplete one to it.
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
 
     with pytest.raises(RuntimeError, match="Not allowed to call reuse_instance"):
-        tm.finish_cycle()
+        tm.finish_reuse_loop()
 
 
-def test_finish_cycle_resets_when_cycle_complete() -> None:
+def test_finish_reuse_loop_resets_when_reuse_loop_complete() -> None:
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [3])
     tm.check_send_message("o_f")
 
-    tm.finish_cycle()
+    tm.finish_reuse_loop()
 
     assert tm._iteration is None
     assert tm._send.participated == set()
     assert tm._receive.participated == set()
 
 
-def test_finish_cycle_raises_if_cycle_incomplete() -> None:
+def test_finish_reuse_loop_raises_if_reuse_loop_incomplete() -> None:
     tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [0])
-    # o_f is never sent, so the cycle never completes
+    # o_f is never sent, so the reuse loop iteration never completes
 
     with pytest.raises(RuntimeError, match="O_F port 'o_f'"):
-        tm.finish_cycle()
+        tm.finish_reuse_loop()
 
 
-def test_finish_cycle_ok_when_subtimeline_skipped() -> None:
+def test_finish_reuse_loop_ok_when_subtimeline_skipped() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -546,16 +528,16 @@ def test_finish_cycle_ok_when_subtimeline_skipped() -> None:
     )
     tm.check_receive("f_i")
     tm.check_received_message("f_i", None, [0])
-    # the sub-timeline's ports are never touched this cycle, which is fine:
-    # a component may go straight from F_INIT to O_F.
+    # the sub-timeline's ports are never touched this reuse loop iteration, which is
+    # fine: a component may go straight from F_INIT to O_F.
     tm.check_send_message("o_f")
 
-    tm.finish_cycle()
+    tm.finish_reuse_loop()
 
     assert tm._iteration is None
 
 
-def test_finish_cycle_names_port_on_incomplete_subtimeline() -> None:
+def test_finish_reuse_loop_names_port_on_incomplete_subtimeline() -> None:
     tm = _make_timeline_manager(
         {
             Operator.F_INIT: ["f_i"],
@@ -571,4 +553,4 @@ def test_finish_cycle_names_port_on_incomplete_subtimeline() -> None:
     # never sent either
 
     with pytest.raises(RuntimeError, match="S port 's'"):
-        tm.finish_cycle()
+        tm.finish_reuse_loop()

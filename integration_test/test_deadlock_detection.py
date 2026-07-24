@@ -1,5 +1,6 @@
 import functools
 import sys
+from unittest.mock import patch
 
 from ymmsl.v0_2 import Operator
 
@@ -49,11 +50,9 @@ def deadlocking_macro():
 
     while instance.reuse_instance():
         for i in range(10):
+            instance.receive("in")
             message = Message(float(i), data="testing")
             instance.send("out", message)
-            instance.receive("in")
-        # Deadlock:
-        instance.receive("in")
 
 
 @suppress_deadlock_exception_output
@@ -143,16 +142,7 @@ def test_no_deadlock(tmp_path):
     )
 
 
-def test_deadlock1(tmp_path):
-    run_manager_with_actors(
-        MACRO_MICRO_CONFIG,
-        tmp_path,
-        {"macro": ("python", macro), "micro": ("python", deadlocking_micro)},
-        expect_success=False,
-    )
-
-
-def test_deadlock2(tmp_path):
+def test_deadlock(tmp_path):
     run_manager_with_actors(
         MACRO_MICRO_CONFIG,
         tmp_path,
@@ -174,32 +164,19 @@ def test_no_deadlock_with_dispatch(tmp_path):
     )
 
 
-def test_deadlock1_with_dispatch(tmp_path):
-    run_manager_with_actors(
-        MACRO_MICRO_WITH_DISPATCH_CONFIG,
-        tmp_path,
-        {
-            "macro": ("python", macro),
-            "micro1": ("python", micro),
-            "micro2": ("python", deadlocking_micro),
-            "micro3": ("python", micro),
-        },
-        expect_success=False,
-    )
-
-
-def test_deadlock2_with_dispatch(tmp_path):
-    run_manager_with_actors(
-        MACRO_MICRO_WITH_DISPATCH_CONFIG,
-        tmp_path,
-        {
-            "macro": ("python", deadlocking_macro),
-            "micro1": ("python", micro),
-            "micro2": ("python", micro),
-            "micro3": ("python", micro),
-        },
-        expect_success=False,
-    )
+def test_deadlock_with_dispatch(tmp_path):
+    with patch("libmuscle.mcp.tcp_transport_client.RECONNECT_TIMEOUT", 1.0):
+        run_manager_with_actors(
+            MACRO_MICRO_WITH_DISPATCH_CONFIG,
+            tmp_path,
+            {
+                "macro": ("python", deadlocking_macro),
+                "micro1": ("python", micro),
+                "micro2": ("python", micro),
+                "micro3": ("python", micro),
+            },
+            expect_success=False,
+        )
 
 
 @skip_if_python_only

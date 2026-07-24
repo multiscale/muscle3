@@ -84,7 +84,12 @@ class SnapshotManager:
             self.resume_overlay = snapshot.settings_overlay
 
             self._port_manager.restore_message_counts(snapshot.port_message_counts)
-            self._communicator.restore_timeline_state(snapshot.timeline_state)
+            if not snapshot.is_final_snapshot:
+                # A final snapshot's timeline state includes a look-ahead
+                # F_INIT receive done to determine whether the instance would
+                # be reused. Resuming always redoes that receive, so restoring
+                # it here would make it look like it already happened.
+                self._communicator.restore_timeline_state(snapshot.timeline_state)
             # Store a copy of the snapshot in the current run directory
             path = self.__store_snapshot(snapshot)
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))

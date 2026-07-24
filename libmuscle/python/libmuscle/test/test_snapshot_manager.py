@@ -70,7 +70,9 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == "test-1_1.pack"
 
-    snapshot_manager2 = SnapshotManager(instance_id, manager, port_manager, communicator)
+    snapshot_manager2 = SnapshotManager(
+        instance_id, manager, port_manager, communicator
+    )
 
     snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
     port_manager.restore_message_counts.assert_called_with(port_message_counts)
@@ -130,7 +132,9 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     snapshot_path = Path(metadata.snapshot_filename)
     manager.submit_snapshot_metadata.reset_mock()
 
-    snapshot_manager2 = SnapshotManager(instance_id, manager, port_manager, communicator)
+    snapshot_manager2 = SnapshotManager(
+        instance_id, manager, port_manager, communicator
+    )
 
     snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
     port_manager.restore_message_counts.assert_called_with(port_message_counts)

@@ -411,8 +411,8 @@ class TimelineManager:
             state: The saved timeline state, as returned by get_state().
         """
         self._iteration = state.iteration
-        self._send.participated = set(state.send_participated)
-        self._receive.participated = set(state.receive_participated)
+        self._send.participated = {(p, s) for p, s in state.send_participated}
+        self._receive.participated = {(p, s) for p, s in state.receive_participated}
         for tl, stm in self._submanagers.items():
             sub_state = state.subtimeline_states.get(str(tl))
             if sub_state is not None:
@@ -726,5 +726,5 @@ class SubTimelineManager:
         self._first_operator = (
             Operator[first_operator] if first_operator is not None else None
         )
-        self._send.participated = set(state["send_participated"])
-        self._receive.participated = set(state["receive_participated"])
+        self._send.participated = {(p, s) for p, s in state["send_participated"]}
+        self._receive.participated = {(p, s) for p, s in state["receive_participated"]}

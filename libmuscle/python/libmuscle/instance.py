@@ -880,11 +880,10 @@ class Instance:
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
 
-        This resets the timeline manager for the cycle that just completed
-        (if any; there isn't one yet on the very first call), sets
-        self._first_run, self._do_resume and self._do_init, and returns whether
-        to reuse one more time. This is the real top of the reuse loop, and it
-        gets called by reuse_instance and should_save_final_snapshot.
+        This sets self._first_run, self._do_resume and self._do_init, and
+        returns whether to reuse one more time. This is the real top of
+        the reuse loop, and it gets called by reuse_instance and
+        should_save_final_snapshot.
         """
         if self._first_run is not None:
             self._communicator.finish_reuse_iteration()
@@ -950,7 +949,6 @@ class Instance:
             walltime,
             f_init_max_timestamp,
             self._settings_manager.overlay,
-            self._communicator.get_timeline_state(),
         )
         self._trigger_manager.update_checkpoints(timestamp)
 

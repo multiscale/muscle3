@@ -104,11 +104,10 @@ class PortManager:
         """
         return [
             port
-            for port in (
-                self.get_port(name)
-                for name in self.list_ports(timeline).get(operator, [])
-            )
-            if port.is_connected()
+            for port in self._ports.values()
+            if port.operator is operator
+            and (timeline is None or port.timeline == timeline)
+            and port.is_connected()
         ]
 
     def list_subtimelines(self) -> set[Timeline]:

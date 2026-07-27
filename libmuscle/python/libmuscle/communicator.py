@@ -163,7 +163,7 @@ class Communicator:
 
     def finish_reuse_iteration(self) -> None:
         """Prepare the timeline manager for the next reuse loop."""
-        self._timeline_manager.finish_reuse_loop()
+        self._timeline_manager.finish_reuse_iteration()
 
     def send_message(
         self,

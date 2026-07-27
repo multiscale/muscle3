@@ -400,7 +400,7 @@ class TimelineManager:
         for stm in self._submanagers.values():
             stm.reset()
 
-    def finish_reuse_loop(self) -> None:
+    def finish_reuse_iteration(self) -> None:
         """Check if the current reuse loop iteration has finished and reset for the
         next one.
 

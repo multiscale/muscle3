@@ -169,3 +169,18 @@ def test_no_deadlock_cpp(tmp_path):
         tmp_path,
         {"macro": ("cpp", "component_test"), "micro": ("python", micro)},
     )
+
+
+@skip_if_python_only
+def test_deadlock_cpp(tmp_path):
+    run_manager_with_actors(
+        MACRO_MICRO_WITH_DISPATCH_CONFIG,
+        tmp_path,
+        {
+            "macro": ("python", deadlocking_macro),
+            "micro1": ("cpp", "component_test"),
+            "micro2": ("cpp", "component_test"),
+            "micro3": ("cpp", "component_test"),
+        },
+        expect_success=False,
+    )

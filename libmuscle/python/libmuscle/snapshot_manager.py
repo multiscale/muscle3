@@ -132,7 +132,6 @@ class SnapshotManager:
         wallclock_time: float,
         f_init_max_timestamp: Optional[float],
         settings_overlay: Settings,
-        timeline_state: TimelineState,
     ) -> float:
         """Save a (final) snapshot.
 
@@ -143,7 +142,6 @@ class SnapshotManager:
             wallclock_time: Wallclock time when saving.
             f_init_max_timestamp: Timestamp for final snapshots.
             settings_overlay: Current settings overlay.
-            timeline_state: The timeline's state at the time of saving.
 
         Returns:
             Simulation time at which the snapshot was made.
@@ -168,7 +166,7 @@ class SnapshotManager:
             final,
             msg,
             settings_overlay,
-            timeline_state,
+            self._communicator.get_timeline_state(),
         )
 
         path = self.__store_snapshot(snapshot)

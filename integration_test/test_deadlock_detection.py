@@ -37,8 +37,6 @@ def deadlocking_macro():
 
     while instance.reuse_instance():
         instance.receive("in")
-        message = Message(float(0), data="testing")
-        instance.send("out", message)
 
 
 @suppress_deadlock_exception_output

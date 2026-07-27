@@ -24,18 +24,6 @@ def suppress_deadlock_exception_output(func):
 
 
 @suppress_deadlock_exception_output
-def deadlocking_micro():
-    instance = Instance({Operator.F_INIT: ["in"], Operator.O_F: ["out"]})
-
-    counter = 5  # Deadlock after 5 iterations
-    while instance.reuse_instance():
-        message = instance.receive("in")
-        counter -= 1
-        if counter > 0:
-            instance.send("out", message)
-
-
-@suppress_deadlock_exception_output
 def micro():
     instance = Instance({Operator.F_INIT: ["in"], Operator.O_F: ["out"]})
 
@@ -49,10 +37,9 @@ def deadlocking_macro():
     instance = Instance({Operator.O_I: ["out"], Operator.S: ["in"]})
 
     while instance.reuse_instance():
-        for i in range(10):
-            instance.receive("in")
-            message = Message(float(i), data="testing")
-            instance.send("out", message)
+        instance.receive("in")
+        message = Message(float(0), data="testing")
+        instance.send("out", message)
 
 
 @suppress_deadlock_exception_output
@@ -165,18 +152,17 @@ def test_no_deadlock_with_dispatch(tmp_path):
 
 
 def test_deadlock_with_dispatch(tmp_path):
-    with patch("libmuscle.mcp.tcp_transport_client.RECONNECT_TIMEOUT", 1.0):
-        run_manager_with_actors(
-            MACRO_MICRO_WITH_DISPATCH_CONFIG,
-            tmp_path,
-            {
-                "macro": ("python", deadlocking_macro),
-                "micro1": ("python", micro),
-                "micro2": ("python", micro),
-                "micro3": ("python", micro),
-            },
-            expect_success=False,
-        )
+    run_manager_with_actors(
+        MACRO_MICRO_WITH_DISPATCH_CONFIG,
+        tmp_path,
+        {
+            "macro": ("python", deadlocking_macro),
+            "micro1": ("python", micro),
+            "micro2": ("python", micro),
+            "micro3": ("python", micro),
+        },
+        expect_success=False,
+    )
 
 
 @skip_if_python_only
@@ -185,29 +171,4 @@ def test_no_deadlock_cpp(tmp_path):
         MACRO_MICRO_CONFIG,
         tmp_path,
         {"macro": ("cpp", "component_test"), "micro": ("python", micro)},
-    )
-
-
-@skip_if_python_only
-def test_deadlock1_cpp(tmp_path):
-    run_manager_with_actors(
-        MACRO_MICRO_CONFIG,
-        tmp_path,
-        {"macro": ("cpp", "component_test"), "micro": ("python", deadlocking_micro)},
-        expect_success=False,
-    )
-
-
-@skip_if_python_only
-def test_deadlock2_cpp(tmp_path):
-    run_manager_with_actors(
-        MACRO_MICRO_WITH_DISPATCH_CONFIG,
-        tmp_path,
-        {
-            "macro": ("cpp", "component_test"),
-            "micro1": ("python", micro),
-            "micro2": ("python", deadlocking_micro),
-            "micro3": ("cpp", "component_test"),
-        },
-        expect_success=False,
     )

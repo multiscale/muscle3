@@ -569,9 +569,7 @@ class SubTimelineManager:
             if self._first_operator is not Operator.S:
                 expected = _expected_actions(send=self._send, missing_only=False)
                 raise PortBlocked(port, slot, expected)
-            if not (
-                self._send.all_participated() and self._receive.all_participated()
-            ):
+            if not (self._send.all_participated() and self._receive.all_participated()):
                 expected = _expected_actions(self._send, self._receive)
                 raise PortBlocked(port, slot, expected)
 

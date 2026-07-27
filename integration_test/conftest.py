@@ -3,6 +3,7 @@ import multiprocessing as mp
 import os
 import subprocess
 import sys
+import time
 from contextlib import ExitStack
 from pathlib import Path
 
@@ -168,19 +169,37 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
             )
 
         # check results
-        for proc in native_processes:
-            proc.wait()
-            if expect_success:
-                assert proc.returncode == 0
-        for proc in python_processes:
-            proc.join()
-            if expect_success:
-                assert proc.exitcode == 0
-        if not expect_success:
-            # Check that at least one process has failed
-            assert any(proc.returncode != 0 for proc in native_processes) or any(
-                proc.exitcode != 0 for proc in python_processes
-            )
+        remaining_processes = native_processes + python_processes
+        failed_processes = []
+        while remaining_processes:
+            still_running = []
+            for proc in remaining_processes:
+                if isinstance(proc, subprocess.Popen):
+                    returncode = proc.poll()
+                else:
+                    returncode = proc.exitcode
+                if returncode is None:
+                    still_running.append(proc)
+                elif returncode != 0:
+                    failed_processes.append(proc)
+            remaining_processes = still_running
+            if failed_processes:
+                break
+            if remaining_processes:
+                time.sleep(0.1)
+
+        for proc in remaining_processes:
+            proc.terminate()
+        for proc in remaining_processes:
+            if isinstance(proc, subprocess.Popen):
+                proc.wait()
+            else:
+                proc.join()
+
+        if expect_success:
+            assert not failed_processes
+        else:
+            assert failed_processes
 
 
 @pytest.fixture

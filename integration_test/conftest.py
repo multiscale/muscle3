@@ -170,8 +170,8 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
 
         # check results
         remaining_processes = set(native_processes + python_processes)
-        has_failed_processes = False
-        while remaining_processes and not has_failed_processes:
+        success = True
+        while remaining_processes and success:
             time.sleep(0.1)
             for proc in list(remaining_processes):
                 if isinstance(proc, subprocess.Popen):
@@ -181,7 +181,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
                 if returncode is not None:
                     remaining_processes.discard(proc)
                     if returncode != 0:
-                        has_failed_processes = True
+                        success = False
 
         for proc in remaining_processes:
             proc.terminate()
@@ -191,10 +191,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
             else:
                 proc.join()
 
-        if expect_success:
-            assert not has_failed_processes
-        else:
-            assert has_failed_processes
+        assert expect_success == success
 
 
 @pytest.fixture

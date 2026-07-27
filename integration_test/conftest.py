@@ -169,11 +169,11 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
             )
 
         # check results
-        remaining = native_processes + python_processes
-        failed = []
-        while remaining:
+        remaining_processes = native_processes + python_processes
+        failed_processes = []
+        while remaining_processes:
             still_running = []
-            for proc in remaining:
+            for proc in remaining_processes:
                 if isinstance(proc, subprocess.Popen):
                     returncode = proc.poll()
                 else:
@@ -181,25 +181,25 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
                 if returncode is None:
                     still_running.append(proc)
                 elif returncode != 0:
-                    failed.append(proc)
-            remaining = still_running
-            if failed:
+                    failed_processes.append(proc)
+            remaining_processes = still_running
+            if failed_processes:
                 break
-            if remaining:
+            if remaining_processes:
                 time.sleep(0.1)
 
-        for proc in remaining:
+        for proc in remaining_processes:
             proc.terminate()
-        for proc in remaining:
+        for proc in remaining_processes:
             if isinstance(proc, subprocess.Popen):
                 proc.wait()
             else:
                 proc.join()
 
         if expect_success:
-            assert not failed
+            assert not failed_processes
         else:
-            assert failed
+            assert failed_processes
 
 
 @pytest.fixture

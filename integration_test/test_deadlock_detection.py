@@ -1,6 +1,5 @@
 import functools
 import sys
-from unittest.mock import patch
 
 from ymmsl.v0_2 import Operator
 

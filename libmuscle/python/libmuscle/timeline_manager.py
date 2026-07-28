@@ -284,13 +284,13 @@ class TimelineManager:
         port = self._port_manager.get_port(port_name)
 
         if port.operator is Operator.O_F:
-            return self._check_send_o_f(port_name, slot)
+            return self._check_send_o_f(port, slot)
 
         return self._submanagers[port.timeline].check_send_message(
             port, slot, self._iteration
         )
 
-    def _check_send_o_f(self, port_name: str, slot: Optional[int]) -> IterationCount:
+    def _check_send_o_f(self, port: Port, slot: Optional[int]) -> IterationCount:
         """Check the O_F-specific send conditions, update state, and return
         the iteration to embed in the outgoing message.
 
@@ -299,7 +299,7 @@ class TimelineManager:
         all this iteration.
 
         Args:
-            port_name: Name of the O_F port that is about to send.
+            port: The O_F port that is about to send.
             slot: The slot being sent on, if this is a vector port.
 
         Returns:
@@ -307,8 +307,7 @@ class TimelineManager:
         """
         assert self._iteration is not None
         assert self._send is not None
-        port = self._port_manager.get_port(port_name)
-
+        port_name = str(port.name)
         # Sending on O_F is only allowed when all subtimelines have completed an
         # iteration:
         expected: ExpectedActions = []

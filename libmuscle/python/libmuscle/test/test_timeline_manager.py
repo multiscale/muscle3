@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pytest
 from ymmsl.v0_2 import Conduit, Operator, Port, Timeline
 from ymmsl.v0_2 import Identifier as Id
@@ -7,550 +5,571 @@ from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
-from libmuscle.timeline_manager import TimelineManager
+from libmuscle.timeline_manager import (
+    AlreadyParticipated,
+    MessageOutOfSync,
+    PortBlocked,
+    ReuseLoopIncomplete,
+    TimelineManager,
+    TimelinePorts,
+)
 
-INSTANCE_NAME = "component"
 
-
-def _build_port_manager(
-    ports: dict, subtimeline: Optional[Timeline] = None
+def _build_component_port_manager(
+    has_f_init: bool = True, include_settings: bool = True
 ) -> PortManager:
-    """Build a connected PortManager, each port wired to its own dummy peer.
-
-    F_INIT and O_F ports are on the (unnamed) main timeline; O_I and S ports
-    all share ``subtimeline``.
-    """
-    subtimeline = subtimeline if subtimeline is not None else Timeline(":main")
-    conduits = []
-    peer_dims = {}
-    ymmsl_ports = []
-    for operator, names in ports.items():
-        port_timeline = subtimeline if operator in (Operator.O_I, Operator.S) else None
-        for name in names:
-            peer = Ref(f"peer_{name}")
-            if operator in (Operator.F_INIT, Operator.S):
-                conduits.append(Conduit(f"{peer}.out", f"{INSTANCE_NAME}.{name}"))
-            else:
-                conduits.append(Conduit(f"{INSTANCE_NAME}.{name}", f"{peer}.in"))
-            peer_dims[peer] = []
-            ymmsl_ports.append(Port(Id(name), operator, port_timeline))
+    conduits = [
+        Conduit("component.out_f", "peer_f.in"),
+        Conduit("component.out_a1", "peer_a1.in"),
+        Conduit("peer_a1.out", "component.in_a1"),
+        Conduit("peer_a1_2.out", "component.in_a1_2"),
+        Conduit("component.out_a2", "peer_a2.in"),
+        Conduit("component.out_a2_2", "peer_a2_2.in"),
+        Conduit("peer_a2.out", "component.in_a2"),
+    ]
+    peer_dims = {
+        Ref("peer_f"): [],
+        Ref("peer_a1"): [],
+        Ref("peer_a1_2"): [],
+        Ref("peer_a2"): [],
+        Ref("peer_a2_2"): [],
+    }
+    ymmsl_ports = [
+        Port(Id("out_f"), Operator.O_F),
+        Port(Id("out_a1"), Operator.O_I, Timeline(":A1")),
+        Port(Id("in_a1"), Operator.S, Timeline(":A1")),
+        Port(Id("in_a1_2"), Operator.S, Timeline(":A1")),
+        Port(Id("out_a2"), Operator.O_I, Timeline(":A2")),
+        Port(Id("out_a2_2"), Operator.O_I, Timeline(":A2")),
+        Port(Id("in_a2"), Operator.S, Timeline(":A2")),
+    ]
+    if has_f_init:
+        conduits.append(Conduit("peer_init.out", "component.in_f"))
+        peer_dims[Ref("peer_init")] = []
+        ymmsl_ports.append(Port(Id("in_f"), Operator.F_INIT))
+    if include_settings:
+        conduits.append(Conduit("peer_settings.out", "component.muscle_settings_in"))
+        peer_dims[Ref("peer_settings")] = []
 
     pm = PortManager([], None)
-    peer_info = PeerInfo(Ref(INSTANCE_NAME), [], conduits, peer_dims, {}, ymmsl_ports)
+    peer_info = PeerInfo(Ref("component"), [], conduits, peer_dims, {}, ymmsl_ports)
     pm.connect_ports(peer_info)
     return pm
-
-
-def _make_timeline_manager(
-    ports: dict, subtimeline: Optional[Timeline] = None
-) -> TimelineManager:
-    """Build a fully connected TimelineManager for the given ports."""
-    pm = _build_port_manager(ports, subtimeline)
-    tm = TimelineManager(pm)
-    tm.on_ports_connected()
-    return tm
 
 
 @pytest.fixture
 def port_manager() -> PortManager:
-    """Port manager with all four operator types across named timelines.
-
-    Every port has a peer connected via a conduit, since the TimelineManager
-    only tracks connected ports (an unconnected port never sends or receives,
-    so it can't be required to participate in an iteration).
-    """
-    pm = PortManager([], None)
-    peer_info = PeerInfo(
-        Ref(INSTANCE_NAME),
-        [],
-        [
-            Conduit(f"{INSTANCE_NAME}.out_macro", "peer_macro.in"),
-            Conduit("peer_micro.out", f"{INSTANCE_NAME}.in_micro"),
-            Conduit(f"{INSTANCE_NAME}.out_f", "peer_f.in"),
-            Conduit("peer_init.out", f"{INSTANCE_NAME}.in_f"),
-        ],
-        {
-            Ref("peer_macro"): [],
-            Ref("peer_micro"): [],
-            Ref("peer_f"): [],
-            Ref("peer_init"): [],
-        },
-        {},
-        [
-            Port(Id("out_macro"), Operator.O_I, Timeline(":macro")),
-            Port(Id("in_micro"), Operator.S, Timeline(":micro")),
-            Port(Id("out_f"), Operator.O_F, Timeline(":output_tl")),
-            Port(Id("in_f"), Operator.F_INIT),
-        ],
-    )
-    pm.connect_ports(peer_info)
-    return pm
+    return _build_component_port_manager()
 
 
-def test_init(port_manager: PortManager) -> None:
-    tm = TimelineManager(port_manager)
-    assert tm._iteration is None
-    assert tm._send is None
-    assert tm._receive is None
-    assert tm._submanagers == {}
+@pytest.fixture
+def timeline_manager(port_manager: PortManager) -> TimelineManager:
+    return TimelineManager(port_manager)
 
 
-def test_on_ports_connected(port_manager: PortManager) -> None:
-    tm = TimelineManager(port_manager)
-    tm.on_ports_connected()
-    assert set(tm._submanagers.keys()) == {Timeline(":macro"), Timeline(":micro")}
+def test_init(timeline_manager: TimelineManager) -> None:
+    assert timeline_manager._iteration is None
+    assert timeline_manager._send is None
+    assert timeline_manager._receive is None
+    assert timeline_manager._submanagers == {}
 
 
-def test_on_ports_connected_main_ports(port_manager: PortManager) -> None:
-    tm = TimelineManager(port_manager)
-    tm.on_ports_connected()
-    assert {str(port.name) for port in tm._receive.ports} == {"in_f"}
-    assert {str(port.name) for port in tm._send.ports} == {"out_f"}
-    assert tm._receive.num_slots == 1
-    assert tm._send.num_slots == 1
-    assert tm._send.participated == set()
-    assert tm._receive.participated == set()
-
-
-def test_on_ports_connected_includes_muscle_settings_in() -> None:
-    """muscle_settings_in behaves as an F_INIT port (check_receive and
-    check_received_message treat it as such), but PortManager.list_ports()
-    doesn't return it since it isn't a declared port. TimelineManager must
-    track it separately so the "all F_INIT ports participated" counts stay
-    correct."""
-    pm = PortManager([], None)
-    peer_info = PeerInfo(
-        Ref(INSTANCE_NAME),
-        [],
-        [Conduit("peer_settings.out", f"{INSTANCE_NAME}.muscle_settings_in")],
-        {Ref("peer_settings"): []},
-        {},
-        [],
-    )
-    pm.connect_ports(peer_info)
-
+@pytest.mark.parametrize("settings_connected", [True, False])
+def test_on_ports_connected(settings_connected: bool) -> None:
+    pm = _build_component_port_manager(include_settings=settings_connected)
     tm = TimelineManager(pm)
     tm.on_ports_connected()
 
-    assert {str(port.name) for port in tm._receive.ports} == {"muscle_settings_in"}
-    assert tm._receive.num_slots == 1
+    assert isinstance(tm._send, TimelinePorts)
+    assert isinstance(tm._receive, TimelinePorts)
+
+    expected_receive = {("in_f", Operator.F_INIT)}
+    if settings_connected:
+        expected_receive.add(("muscle_settings_in", Operator.F_INIT))
+
+    assert {
+        (str(port.name), port.operator) for port in tm._receive.ports
+    } == expected_receive
+    assert {(str(port.name), port.operator) for port in tm._send.ports} == {
+        ("out_f", Operator.O_F)
+    }
 
 
-def test_subtimeline_manager_init(port_manager: PortManager) -> None:
-    tm = TimelineManager(port_manager)
+def test_on_ports_connected_timeline_ports(timeline_manager: TimelineManager) -> None:
+    timeline_manager.on_ports_connected()
+    assert timeline_manager._receive.num_slots == 2
+    assert timeline_manager._send.num_slots == 1
+    assert timeline_manager._send.participated == set()
+    assert timeline_manager._receive.participated == set()
+
+    assert set(timeline_manager._submanagers.keys()) == {
+        Timeline(":A1"),
+        Timeline(":A2"),
+    }
+
+
+@pytest.mark.parametrize("has_f_init", [True, False])
+def test_on_ports_connected_sets_initial_iteration(has_f_init: bool) -> None:
+    pm = _build_component_port_manager(has_f_init=has_f_init, include_settings=False)
+    tm = TimelineManager(pm)
     tm.on_ports_connected()
-    assert tm._submanagers[Timeline(":macro")]._iteration is None
-    assert tm._submanagers[Timeline(":micro")]._iteration is None
+    assert tm._iteration == (None if has_f_init else [])
 
 
-def test_subtimeline_manager_participation(port_manager: PortManager) -> None:
-    tm = TimelineManager(port_manager)
+def test_subtimeline_manager_initialization() -> None:
+    pm = _build_component_port_manager()
+    tm = TimelineManager(pm)
     tm.on_ports_connected()
-    for stm in tm._submanagers.values():
+
+    stm_a1 = tm._submanagers[Timeline(":A1")]
+    assert stm_a1._iteration is None
+    assert stm_a1._first_operator is None
+    assert {str(port.name) for port in stm_a1._send.ports} == {"out_a1"}
+    assert {str(port.name) for port in stm_a1._receive.ports} == {"in_a1", "in_a1_2"}
+
+    stm_a2 = tm._submanagers[Timeline(":A2")]
+    assert stm_a2._iteration is None
+    assert stm_a2._first_operator is None
+    assert {str(port.name) for port in stm_a2._send.ports} == {"out_a2", "out_a2_2"}
+    assert {str(port.name) for port in stm_a2._receive.ports} == {"in_a2"}
+
+
+def test_check_send_message_o_f_blocked_when_subtimeline_incomplete(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    # receive on the F_INIT ports
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    timeline_manager.check_send_message("out_a1")
+    # neither "in_a1" nor "in_a1_2" received, so the :A1 sub-timeline is incomplete
+
+    with pytest.raises(PortBlocked) as exc_info:
+        timeline_manager.check_send_message("out_f")
+
+    port_in_a1 = timeline_manager._port_manager.get_port("in_a1")
+    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
+    assert exc_info.value.expected == [
+        ("receive", port_in_a1, []),
+        ("receive", port_in_a1_2, []),
+    ]
+
+
+def test_check_send_message_o_f_raises_already_participated_when_sent_twice(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    # receive on the F_INIT ports
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    # skipping the subtimelines is allowed
+    timeline_manager.check_send_message("out_f")
+
+    with pytest.raises(AlreadyParticipated) as exc_info:
+        timeline_manager.check_send_message("out_f")
+
+    assert exc_info.value.port == timeline_manager._port_manager.get_port("out_f")
+    assert exc_info.value.slot is None
+    assert exc_info.value.action == "send"
+
+
+def test_check_send_message_o_f_marks_participated_and_returns_iteration(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+
+    assert not timeline_manager._send.has_participated("out_f", None)
+    iteration = timeline_manager.check_send_message("out_f")
+    assert iteration == []
+    assert iteration == timeline_manager._iteration
+    assert timeline_manager._send.has_participated("out_f", None)
+
+
+def test_check_send_message_o_i_starts_subtimeline_with_o_i_leading(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+
+    iteration = timeline_manager.check_send_message("out_a1")
+
+    stm = timeline_manager._submanagers[Timeline(":A1")]
+    assert stm._first_operator is Operator.O_I
+    assert stm._iteration == [0]
+    assert iteration == [0]
+    assert stm._send.has_participated("out_a1", None)
+
+
+def test_check_send_message_o_i_blocked_when_s_leads_and_not_all_s_received(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    timeline_manager.check_receive("in_a1")
+    timeline_manager.check_received_message("in_a1", None, [0])
+    # "in_a1_2" never received, so S hasn't fully led :A1 yet
+
+    with pytest.raises(PortBlocked) as exc_info:
+        timeline_manager.check_send_message("out_a1")
+
+    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
+    assert exc_info.value.expected == [("receive", port_in_a1_2, [])]
+
+
+def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    timeline_manager.check_receive("in_a1")
+    timeline_manager.check_received_message("in_a1", None, [0])
+    timeline_manager.check_receive("in_a1_2")
+    timeline_manager.check_received_message("in_a1_2", None, [0])
+
+    iteration = timeline_manager.check_send_message("out_a1")
+
+    stm = timeline_manager._submanagers[Timeline(":A1")]
+    assert stm._first_operator is Operator.S
+    assert stm._iteration == [0]
+    assert iteration == [0]
+    assert stm._send.has_participated("out_a1", None)
+
+    # A second send on out_a1 cannot advance the sub-iteration itself: with S
+    # leading, only a new S receive is allowed to do that.
+    with pytest.raises(PortBlocked) as exc_info:
+        timeline_manager.check_send_message("out_a1")
+
+    port_in_a1 = timeline_manager._port_manager.get_port("in_a1")
+    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
+    assert exc_info.value.expected == [
+        ("receive", port_in_a1, []),
+        ("receive", port_in_a1_2, []),
+    ]
+
+
+def test_check_send_message_o_i_when_o_i_leads_and_complete(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+
+    first_iteration = timeline_manager.check_send_message("out_a1")
+    timeline_manager.check_receive("in_a1")
+    timeline_manager.check_received_message("in_a1", None, first_iteration)
+    timeline_manager.check_receive("in_a1_2")
+    timeline_manager.check_received_message("in_a1_2", None, first_iteration)
+
+    second_iteration = timeline_manager.check_send_message("out_a1")
+
+    stm = timeline_manager._submanagers[Timeline(":A1")]
+    assert first_iteration == [0]
+    assert second_iteration == [1]
+    assert stm._iteration == [1]
+    assert stm._send.participated == {("out_a1", None)}
+    assert stm._receive.participated == set()
+
+
+def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    timeline_manager.check_send_message("out_a1")
+    # neither "in_a1" nor "in_a1_2" received, so the sub-iteration is incomplete
+
+    with pytest.raises(PortBlocked) as exc_info:
+        timeline_manager.check_send_message("out_a1")
+
+    port_in_a1 = timeline_manager._port_manager.get_port("in_a1")
+    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
+    assert exc_info.value.expected == [
+        ("receive", port_in_a1, []),
+        ("receive", port_in_a1_2, []),
+    ]
+
+
+def test_check_receive_f_init_allowed_when_not_yet_participated(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    assert not timeline_manager._receive.has_participated("in_f", None)
+
+    timeline_manager.check_received_message("in_f", None, [3])
+    assert timeline_manager._iteration == [3]
+    assert timeline_manager._receive.has_participated("in_f", None)
+
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [3])
+
+    assert timeline_manager._iteration == [3]
+    assert timeline_manager._receive.has_participated("muscle_settings_in", None)
+
+
+def test_check_receive_f_init_raises_already_participated_when_received_twice(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+
+    with pytest.raises(AlreadyParticipated) as exc_info:
+        timeline_manager.check_receive("in_f")
+
+    assert exc_info.value.port == timeline_manager._port_manager.get_port("in_f")
+    assert exc_info.value.slot is None
+    assert exc_info.value.action == "receive"
+
+
+def test_check_received_message_f_init_raises_when_iteration_differs(
+    timeline_manager: TimelineManager,
+) -> None:
+    """Once the main timeline has started, an F_INIT message for a different
+    iteration is rejected."""
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [3])
+    timeline_manager.check_receive("muscle_settings_in")
+
+    with pytest.raises(MessageOutOfSync) as exc_info:
+        timeline_manager.check_received_message("muscle_settings_in", None, [4])
+
+    assert exc_info.value.port == timeline_manager._port_manager.get_port(
+        "muscle_settings_in"
+    )
+    assert exc_info.value.slot is None
+
+
+def test_check_receive_message_s_starts_subtimeline_with_s_leading(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+
+    timeline_manager.check_receive("in_a2")
+    timeline_manager.check_received_message("in_a2", None, [0])
+
+    stm = timeline_manager._submanagers[Timeline(":A2")]
+    assert stm._first_operator is Operator.S
+    assert stm._iteration == [0]
+    assert stm._receive.has_participated("in_a2", None)
+
+
+def test_check_receive_message_s_blocked_when_o_i_leads_and_not_all_o_i_sent(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    timeline_manager.check_send_message("out_a2")
+    # "out_a2_2" never sent, so O_I hasn't fully led :A2 yet
+
+    with pytest.raises(PortBlocked) as exc_info:
+        timeline_manager.check_receive("in_a2")
+
+    port_out_a2_2 = timeline_manager._port_manager.get_port("out_a2_2")
+    assert exc_info.value.expected == [("send", port_out_a2_2, [])]
+
+
+def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    timeline_manager.check_send_message("out_a2")
+    timeline_manager.check_send_message("out_a2_2")
+
+    timeline_manager.check_receive("in_a2")
+    timeline_manager.check_received_message("in_a2", None, [0])
+
+    stm = timeline_manager._submanagers[Timeline(":A2")]
+    assert stm._first_operator is Operator.O_I
+    assert stm._iteration == [0]
+    assert stm._receive.has_participated("in_a2", None)
+
+    # A second receive on in_a2 cannot advance the sub-iteration itself: with O_I
+    # leading, only a new O_I send is allowed to do that.
+    with pytest.raises(PortBlocked) as exc_info:
+        timeline_manager.check_receive("in_a2")
+
+    port_out_a2 = timeline_manager._port_manager.get_port("out_a2")
+    port_out_a2_2 = timeline_manager._port_manager.get_port("out_a2_2")
+    assert exc_info.value.expected == [
+        ("send", port_out_a2, []),
+        ("send", port_out_a2_2, []),
+    ]
+
+
+def test_check_receive_message_s_when_s_leads_and_complete(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+
+    timeline_manager.check_receive("in_a2")
+    timeline_manager.check_received_message("in_a2", None, [1])
+
+    stm = timeline_manager._submanagers[Timeline(":A2")]
+    first_iteration = stm._iteration
+
+    timeline_manager.check_send_message("out_a2")
+    timeline_manager.check_send_message("out_a2_2")
+    timeline_manager.check_receive("in_a2")
+    timeline_manager.check_received_message("in_a2", None, [3])
+
+    second_iteration = stm._iteration
+
+    assert first_iteration == [1]
+    assert second_iteration == [3]
+    assert stm._send.participated == set()
+    assert stm._receive.participated == {("in_a2", None)}
+
+
+def test_check_receive_message_s_blocked_when_s_leads_and_incomplete(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    timeline_manager.check_receive("in_a2")
+    timeline_manager.check_received_message("in_a2", None, [1])
+    # neither "out_a2" nor "out_a2_2" received, so the sub-iteration is incomplete
+
+    with pytest.raises(PortBlocked) as exc_info:
+        timeline_manager.check_receive("in_a2")
+
+    port_out_a2 = timeline_manager._port_manager.get_port("out_a2")
+    port_out_a2_2 = timeline_manager._port_manager.get_port("out_a2_2")
+    assert exc_info.value.expected == [
+        ("send", port_out_a2, []),
+        ("send", port_out_a2_2, []),
+    ]
+
+
+def test_finish_reuse_iteration_resets_when_complete(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+
+    # Drive one full reuse loop iteration, using :A1's sub-timeline, to
+    # completion.
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [3])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [3])
+    timeline_manager.check_send_message("out_a1")
+    timeline_manager.check_receive("in_a1")
+    timeline_manager.check_received_message("in_a1", None, [3, 0])
+    timeline_manager.check_receive("in_a1_2")
+    timeline_manager.check_received_message("in_a1_2", None, [3, 0])
+    # :A2 is never touched this iteration, which is fine: an untouched
+    # sub-timeline is considered complete.
+    timeline_manager.check_send_message("out_f")
+
+    timeline_manager.finish_reuse_iteration()
+
+    assert timeline_manager._iteration is None
+    assert timeline_manager._send.participated == set()
+    assert timeline_manager._receive.participated == set()
+    for stm in timeline_manager._submanagers.values():
+        assert stm._iteration is None
+        assert stm._first_operator is None
         assert stm._send.participated == set()
         assert stm._receive.participated == set()
 
 
-def test_participation_helpers(port_manager: PortManager) -> None:
-    tm = TimelineManager(port_manager)
-    tm.on_ports_connected()
+def test_finish_reuse_iteration_raises_when_incomplete(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
 
-    assert not tm._receive.has_participated("in_f", None)
-    assert not tm._receive.all_participated()
-    assert not tm._send.all_participated()
+    # Start a reuse loop iteration but leave it incomplete: :A1's
+    # sub-timeline is started but never finishes, and O_F never sends.
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [4])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [4])
+    timeline_manager.check_send_message("out_a1")
+    # neither "in_a1" nor "in_a1_2" received, so :A1 is incomplete, and
+    # "out_f" is never sent either
 
-    tm._receive.participate("in_f", None)
+    with pytest.raises(ReuseLoopIncomplete) as exc_info:
+        timeline_manager.finish_reuse_iteration()
 
-    assert tm._receive.has_participated("in_f", None)
-    assert not tm._send.has_participated("out_f", None)
-    assert tm._receive.all_participated()
-    assert not tm._send.all_participated()
-
-    tm._send.participate("out_f", None)
-
-    assert tm._send.all_participated()
-
-    tm._send.reset()
-    tm._receive.reset()
-
-    assert tm._send.participated == set()
-    assert tm._receive.participated == set()
-
-
-@pytest.mark.parametrize("num_iterations", [1, 2])
-@pytest.mark.parametrize("num_reuse", [1, 5])
-def test_full_reuse_loop_correct(num_iterations: int, num_reuse: int) -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    for i in range(num_reuse):
-        tm.check_receive("f_i")
-        tm.check_received_message("f_i", None, [i])
-        for _ in range(num_iterations):
-            iteration = tm.check_send_message("o_i")
-            tm.check_receive("s")
-            tm.check_received_message("s", None, iteration)
-        tm.check_send_message("o_f")
-        tm.finish_reuse_iteration()
-
-
-def test_send_o_f_with_previously_used_subtimeline_skipped_ok() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    # First reuse loop iteration: use the sub-timeline once, establishing it.
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [0])
-    iteration = tm.check_send_message("o_i")
-    tm.check_receive("s")
-    tm.check_received_message("s", None, iteration)
-    tm.check_send_message("o_f")
-    tm.finish_reuse_iteration()
-
-    # Second reuse loop iteration: a cache-like component may skip the sub-timeline
-    # entirely, having already used it before.
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [1])
-    tm.check_send_message("o_f")
-    tm.finish_reuse_iteration()
-
-
-def test_send_o_f_with_never_used_subtimeline_ok() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    # A component may go straight from F_INIT to O_F, skipping the
-    # sub-timeline entirely, without ever having used it.
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [0])
-    tm.check_send_message("o_f")
-    tm.finish_reuse_iteration()
-
-
-def test_send_o_f_with_incomplete_subtimeline_raises() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [0])
-    tm.check_send_message("o_i")
-
-    with pytest.raises(RuntimeError, match="Not allowed to send a message"):
-        tm.check_send_message("o_f")
-
-
-def test_send_o_i_gated_by_muscle_settings_in() -> None:
-    """A component with no user-declared F_INIT ports, but with
-    muscle_settings_in connected, can send on O_I once muscle_settings_in has
-    been received. This is the scenario test_parameter_overlays.py's macro()
-    component exercises."""
-    conduits = [
-        Conduit("peer_settings.out", f"{INSTANCE_NAME}.muscle_settings_in"),
-        Conduit(f"{INSTANCE_NAME}.out", "peer_o_i.in"),
-        Conduit("peer_s.out", f"{INSTANCE_NAME}.in"),
+    port_out_f = timeline_manager._port_manager.get_port("out_f")
+    port_in_a1 = timeline_manager._port_manager.get_port("in_a1")
+    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
+    assert exc_info.value.expected == [
+        ("send", port_out_f, []),
+        ("receive", port_in_a1, []),
+        ("receive", port_in_a1_2, []),
     ]
-    peer_dims = {
-        Ref("peer_settings"): [],
-        Ref("peer_o_i"): [],
-        Ref("peer_s"): [],
-    }
-    ymmsl_ports = [
-        Port(Id("out"), Operator.O_I, Timeline(":sub")),
-        Port(Id("in"), Operator.S, Timeline(":sub")),
-    ]
-    pm = PortManager([], None)
-    peer_info = PeerInfo(Ref(INSTANCE_NAME), [], conduits, peer_dims, {}, ymmsl_ports)
-    pm.connect_ports(peer_info)
-
-    tm = TimelineManager(pm)
-    tm.on_ports_connected()
-
-    tm.check_receive("muscle_settings_in")
-    tm.check_received_message("muscle_settings_in", None, [0])
-
-    tm.check_send_message("out")
 
 
-def test_receive_f_init_twice_in_same_iteration_raises() -> None:
-    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [])
+def test_get_state_and_restore_state_round_trip(
+    timeline_manager: TimelineManager,
+) -> None:
+    timeline_manager.on_ports_connected()
+    timeline_manager.check_receive("in_f")
+    timeline_manager.check_received_message("in_f", None, [3])
+    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_received_message("muscle_settings_in", None, [3])
+    timeline_manager.check_send_message("out_a1")
+    timeline_manager.check_receive("in_a1")
+    timeline_manager.check_received_message("in_a1", None, [3, 0])
+    # "in_a1_2" not yet received, so :A1 is incomplete, and "out_f" not yet sent
 
-    with pytest.raises(RuntimeError, match="already received"):
-        tm.check_receive("f_i")
+    timeline_state = timeline_manager.get_state()
 
+    # Restore into a fresh TimelineManager, as would happen after loading a
+    # snapshot in a new process, from an independent but identically
+    # configured PortManager.
+    restored = TimelineManager(_build_component_port_manager())
+    restored.on_ports_connected()
+    restored.restore_state(timeline_state)
 
-def test_receive_s_with_only_some_o_i_sent_raises() -> None:
-    # S may receive before any O_I has sent (bridge exception) or once every O_I
-    # has sent, but not while only some O_I ports have sent.
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i1", "o_i2"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [])
-    tm.check_send_message("o_i1")
-
-    with pytest.raises(RuntimeError, match="Not allowed to receive a message"):
-        tm.check_receive("s")
-
-
-def test_send_o_i_twice_before_s_received_raises() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [])
-    tm.check_send_message("o_i")
-
-    with pytest.raises(RuntimeError, match="Not allowed to send a message"):
-        tm.check_send_message("o_i")
-
-
-@pytest.mark.parametrize("num_iterations", [1, 2])
-def test_full_reuse_loop_s_led_correct(num_iterations: int) -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [])
-
-    for i in range(num_iterations):
-        tm.check_receive("s")
-        tm.check_received_message("s", None, [i])
-        tm.check_send_message("o_i")
-
-    tm.check_send_message("o_f")
-
-
-def test_send_o_i_with_only_some_s_received_raises() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s1", "s2"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [])
-    tm.check_receive("s1")
-    tm.check_received_message("s1", None, [0])
-
-    with pytest.raises(RuntimeError, match="Not allowed to send a message"):
-        tm.check_send_message("o_i")
-
-
-def test_receive_s_twice_before_o_i_sent_raises() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [])
-    tm.check_receive("s")
-    tm.check_received_message("s", None, [0])
-
-    with pytest.raises(RuntimeError, match="Not allowed to receive a message"):
-        tm.check_receive("s")
-
-
-def test_send_o_f_with_unfinished_subtimeline_raises() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [])
-    tm.check_send_message("o_i")
-
-    with pytest.raises(RuntimeError, match="Not allowed to send a message"):
-        tm.check_send_message("o_f")
-
-
-def test_root_o_f_only_repeats_cleanly() -> None:
-    tm = _make_timeline_manager({Operator.O_F: ["o_f"]})
-    for _ in range(5):
-        tm.check_send_message("o_f")
-        tm.finish_reuse_iteration()
-
-
-def test_root_component_with_subtimeline_repeats_cleanly() -> None:
-    tm = _make_timeline_manager(
-        {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
-    )
-    for _ in range(3):
-        iteration = tm.check_send_message("o_i")
-        tm.check_receive("s")
-        tm.check_received_message("s", None, iteration)
-        tm.check_send_message("o_f")
-        tm.finish_reuse_iteration()
-
-
-def test_root_component_with_subtimeline_skipped_entirely_ok() -> None:
-    tm = _make_timeline_manager(
-        {Operator.O_I: ["o_i"], Operator.S: ["s"], Operator.O_F: ["o_f"]}
-    )
-    # A component may skip its sub-timeline entirely and just send on O_F.
-    tm.check_send_message("o_f")
-    tm.finish_reuse_iteration()
-
-
-def test_f_init_and_o_f_only_repeats_then_raises_on_double_receive() -> None:
-    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
-    for i in range(5):
-        tm.check_receive("f_i")
-        tm.check_received_message("f_i", None, [i])
-        tm.check_send_message("o_f")
-        tm.finish_reuse_iteration()
-
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [5])
-    with pytest.raises(RuntimeError, match="already received"):
-        tm.check_receive("f_i")
-
-
-def test_finish_reuse_loop_raises_if_subtimeline_restarts_after_o_f_sent() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [0])
-    iteration = tm.check_send_message("o_i")
-    tm.check_receive("s")
-    tm.check_received_message("s", None, iteration)
-    tm.check_send_message("o_f")
-
-    # Restarting the sub-timeline after O_F has already sent makes the reuse
-    # loop iteration incomplete again.
-    tm.check_send_message("o_i")
-    with pytest.raises(RuntimeError, match="Not allowed to call reuse_instance"):
-        tm.finish_reuse_iteration()
-
-
-def test_get_state_after_o_f_sent_reflects_state_before_reset() -> None:
-    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [3])
-    tm.check_send_message("o_f")
-
-    state = tm.get_state()
-    assert state.iteration == [3]
-
-
-def test_finish_reuse_loop_raises_on_an_untouched_timeline() -> None:
-    # finish_reuse_loop() must only be called once a reuse loop iteration has actually
-    # run; an untouched timeline looks just like an incomplete one to it.
-    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
-
-    with pytest.raises(RuntimeError, match="Not allowed to call reuse_instance"):
-        tm.finish_reuse_iteration()
-
-
-def test_finish_reuse_loop_resets_when_reuse_loop_complete() -> None:
-    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [3])
-    tm.check_send_message("o_f")
-
-    tm.finish_reuse_iteration()
-
-    assert tm._iteration is None
-    assert tm._send.participated == set()
-    assert tm._receive.participated == set()
-
-
-def test_finish_reuse_loop_raises_if_reuse_loop_incomplete() -> None:
-    tm = _make_timeline_manager({Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [0])
-    # o_f is never sent, so the reuse loop iteration never completes
-
-    with pytest.raises(RuntimeError, match="O_F port 'o_f'"):
-        tm.finish_reuse_iteration()
-
-
-def test_finish_reuse_loop_ok_when_subtimeline_skipped() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [0])
-    # the sub-timeline's ports are never touched this reuse loop iteration, which is
-    # fine: a component may go straight from F_INIT to O_F.
-    tm.check_send_message("o_f")
-
-    tm.finish_reuse_iteration()
-
-    assert tm._iteration is None
-
-
-def test_finish_reuse_loop_names_port_on_incomplete_subtimeline() -> None:
-    tm = _make_timeline_manager(
-        {
-            Operator.F_INIT: ["f_i"],
-            Operator.O_I: ["o_i"],
-            Operator.S: ["s"],
-            Operator.O_F: ["o_f"],
-        }
-    )
-    tm.check_receive("f_i")
-    tm.check_received_message("f_i", None, [0])
-    tm.check_send_message("o_i")
-    # "s" never receives, so o_i's message is never picked up, and o_f is
-    # never sent either
-
-    with pytest.raises(RuntimeError, match="S port 's'"):
-        tm.finish_reuse_iteration()
+    assert restored._iteration == timeline_manager._iteration
+    assert restored._send.participated == timeline_manager._send.participated
+    assert restored._receive.participated == timeline_manager._receive.participated
+    for tl, stm in timeline_manager._submanagers.items():
+        restored_stm = restored._submanagers[tl]
+        assert restored_stm._iteration == stm._iteration
+        assert restored_stm._first_operator == stm._first_operator
+        assert restored_stm._send.participated == stm._send.participated
+        assert restored_stm._receive.participated == stm._receive.participated

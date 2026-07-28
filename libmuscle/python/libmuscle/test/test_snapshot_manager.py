@@ -1,12 +1,14 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import msgpack
 import pytest
 from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.communicator import Message
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.snapshot_manager import SnapshotManager
+from libmuscle.timeline_manager import TimelineState
 
 
 def test_no_checkpointing(tmp_path: Path) -> None:
@@ -23,7 +25,7 @@ def test_no_checkpointing(tmp_path: Path) -> None:
     assert not snapshot_manager.resuming_from_final()
 
 
-def test_save_load_snapshot(tmp_path: Path) -> None:
+def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> None:
     manager = MagicMock()
     port_manager = MagicMock()
     port_message_counts = {"in": [1], "out": [2], "muscle_settings_in": [0]}
@@ -31,6 +33,7 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
 
     instance_id = Reference("test[1]")
     communicator = MagicMock()
+    communicator.get_timeline_state.return_value = timeline_state
     snapshot_manager = SnapshotManager(instance_id, manager, port_manager, communicator)
 
     snapshot_manager.prepare_resume(None, tmp_path)
@@ -96,7 +99,9 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert snapshot_path.name == "test-1_3.pack"
 
 
-def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
+def test_save_load_implicit_snapshot(
+    tmp_path: Path, timeline_state: TimelineState
+) -> None:
     manager = MagicMock()
     port_manager = MagicMock()
     port_message_counts = {"in": [1], "out": [2], "muscle_settings_in": [0]}
@@ -104,6 +109,7 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
 
     instance_id = Reference("test[1]")
     communicator = MagicMock()
+    communicator.get_timeline_state.return_value = timeline_state
     snapshot_manager = SnapshotManager(instance_id, manager, port_manager, communicator)
 
     snapshot_manager.prepare_resume(None, tmp_path)
@@ -140,3 +146,51 @@ def test_load_snapshot_from_file_with_unknown_version_raises(tmp_path: Path) -> 
 
     with pytest.raises(RuntimeError, match="unknown version"):
         SnapshotManager.load_snapshot_from_file(snapshot_path)
+
+
+def test_load_old_version_snapshot_raises(tmp_path: Path) -> None:
+    snapshot_path = tmp_path / "old_version.pack"
+    old_format_payload = msgpack.dumps(
+        {
+            "triggers": ["test"],
+            "wallclock_time": 1.0,
+            "port_message_counts": {},
+            "is_final_snapshot": False,
+            "message": b"",
+            "settings_overlay": {},
+        }
+    )
+    snapshot_path.write_bytes(b"1" + old_format_payload)
+
+    with pytest.raises(RuntimeError, match="unknown version"):
+        SnapshotManager.load_snapshot_from_file(snapshot_path)
+
+
+@pytest.mark.parametrize(("final", "should_restore"), [(False, True), (True, False)])
+def test_prepare_resume_restores_timeline_state(
+    tmp_path: Path, timeline_state: TimelineState, final: bool, should_restore: bool
+) -> None:
+    manager = MagicMock()
+    port_manager = MagicMock()
+    port_manager.get_message_counts.return_value = {}
+    communicator = MagicMock()
+    communicator.get_timeline_state.return_value = timeline_state
+
+    instance_id = Reference("test[1]")
+    snapshot_manager = SnapshotManager(instance_id, manager, port_manager, communicator)
+    snapshot_manager.prepare_resume(None, tmp_path)
+    snapshot_manager.save_snapshot(
+        Message(0.2, None, "test data"), final, ["test"], 13.0, None, Settings()
+    )
+    (metadata,) = manager.submit_snapshot_metadata.call_args[0]
+    snapshot_path = Path(metadata.snapshot_filename)
+
+    snapshot_manager2 = SnapshotManager(
+        instance_id, manager, port_manager, communicator
+    )
+    snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
+
+    if should_restore:
+        communicator.restore_timeline_state.assert_called_once_with(timeline_state)
+    else:
+        communicator.restore_timeline_state.assert_not_called()

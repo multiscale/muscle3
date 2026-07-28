@@ -12,6 +12,7 @@ from libmuscle.mmp_client import MMPClient
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
+from libmuscle.timeline_manager import TimelineState
 from libmuscle.timestamp import Timestamp
 
 
@@ -39,6 +40,16 @@ def guard() -> APIGuard:
 @pytest.fixture
 def profile_data() -> ProfileData:
     return Timestamp(0.0), Timestamp(0.0), Timestamp(0.0)
+
+
+@pytest.fixture
+def timeline_state() -> TimelineState:
+    return TimelineState(
+        iteration=[1],
+        send_participated=[],
+        receive_participated=[["in", None]],
+        subtimeline_states={},
+    )
 
 
 @pytest.fixture

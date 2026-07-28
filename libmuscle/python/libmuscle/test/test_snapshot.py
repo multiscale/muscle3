@@ -7,16 +7,6 @@ from libmuscle.timeline_manager import TimelineState
 
 
 @pytest.fixture
-def timeline_state() -> TimelineState:
-    return TimelineState(
-        iteration=[1],
-        send_participated=[],
-        receive_participated=[["in", None]],
-        subtimeline_states={},
-    )
-
-
-@pytest.fixture
 def snapshot(timeline_state: TimelineState) -> Snapshot:
     triggers = ["test triggers"]
     wallclock_time = 15.3

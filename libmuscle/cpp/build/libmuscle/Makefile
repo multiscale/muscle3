@@ -148,7 +148,7 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 # Dependencies
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
-MSGPACK_INCLUDE_DIR = $(CURDIR)/../msgpack/msgpack/include
+MSGPACK_INCLUDE_DIR = $(msgpack_ROOT)/include
 export MSGPACK_INCLUDE_DIR
 CXXFLAGS += -I$(MSGPACK_INCLUDE_DIR)
 

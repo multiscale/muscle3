@@ -31,6 +31,7 @@ dep_name := msgpack
 dep_version_constraint := >= 7.0.0
 dep_version := 7.0.0
 dep_pkgconfig_name := msgpack-cxx
+dep_header := include/msgpack.hpp
 dep_install := 1
 include $(TOOLDIR)/make_available.make
 

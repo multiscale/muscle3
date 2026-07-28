@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import msgpack
 import pytest
-from ymmsl.v0_2 import Conduit, Operator, Port, Reference
+from ymmsl.v0_2 import Conduit, Operator, Port, Reference, Timeline
 
 import libmuscle
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
@@ -140,7 +140,7 @@ def test_request_peers(mocked_mmp_client, profile_data) -> None:
     assert len(peer_info._ymmsl_ports) == 1
     assert peer_info._ymmsl_ports[0].name == "out"
     assert peer_info._ymmsl_ports[0].operator == Operator.O_F
-    assert peer_info._ymmsl_ports[0].timeline == ""
+    assert peer_info._ymmsl_ports[0].timeline == Timeline("")
 
 
 def test_request_peers_error(mocked_mmp_client, profile_data) -> None:

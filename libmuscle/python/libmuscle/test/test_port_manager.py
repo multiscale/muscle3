@@ -71,13 +71,52 @@ def test_connect_ports(index, port_manager) -> None:
     assert ports["out"]._length is None
 
 
-def test_has_f_init_connections(index) -> None:
-    declared_ports = {Operator.F_INIT: ["in"], Operator.O_F: ["out"]}
-    port_manager = PortManager(index, declared_ports)
+def test_get_port(index, port_manager) -> None:
+    component_id = Ref("component")
+    conduits = [Conduit("other.settings_out", "component.muscle_settings_in")]
+    peer_dims = {Ref("other"): []}
+    peer_locations = {Ref("other"): ["direct:test"]}
+    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations, [])
 
+    port_manager.connect_ports(peer_info)
+
+    assert port_manager.get_port("in") is port_manager._ports["in"]
+    assert port_manager.get_port("out") is port_manager._ports["out"]
+    assert (
+        port_manager.get_port("muscle_settings_in") is port_manager._muscle_settings_in
+    )
+    assert port_manager.get_port("muscle_settings_in").timeline == Timeline("")
+
+
+def test_declared_ports_timeline_from_ymmsl() -> None:
+    declared_ports = {
+        Operator.O_I: ["oi_a"],
+        Operator.S: ["s_a"],
+        Operator.F_INIT: ["fi"],
+    }
+    port_manager = PortManager([], declared_ports)
+
+    ymmsl_ports = [
+        Port(Id("oi_a"), Operator.O_I, Timeline(":a")),
+        Port(Id("s_a"), Operator.S, Timeline(":b")),
+    ]
+    peer_info = PeerInfo(Ref("component"), [], [], {}, {}, ymmsl_ports)
+
+    port_manager.connect_ports(peer_info)
+
+    ports = port_manager._ports
+    assert ports["oi_a"].timeline == Timeline(":a")
+    assert ports["s_a"].timeline == Timeline(":b")
+    assert ports["fi"].timeline == Timeline("")
+
+
+def test_has_f_init_connections(index) -> None:
     component_id = Ref("component")
     peer_dims = {Ref("other"): []}
     peer_locations = {Ref("other"): ["direct:test"]}
+
+    declared_ports = {Operator.F_INIT: ["in"], Operator.O_F: ["out"]}
+    port_manager = PortManager(index, declared_ports)
 
     peer_info = PeerInfo(component_id, index, [], peer_dims, peer_locations, [])
     port_manager.connect_ports(peer_info)
@@ -88,18 +127,14 @@ def test_has_f_init_connections(index) -> None:
     port_manager.connect_ports(peer_info)
     assert port_manager.has_f_init_connections() is True
 
-
-def test_has_f_init_connections_settings_in_only(index) -> None:
+    # A muscle_settings_in connection also counts, even without a declared
+    # F_INIT port.
     declared_ports = {Operator.O_F: ["out"]}
     port_manager = PortManager(index, declared_ports)
 
-    component_id = Ref("component")
     conduits = [Conduit("other.settings_out", "component.muscle_settings_in")]
-    peer_dims = {Ref("other"): []}
-    peer_locations = {Ref("other"): ["direct:test"]}
     peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations, [])
     port_manager.connect_ports(peer_info)
-
     assert port_manager.has_f_init_connections() is True
 
 
@@ -171,9 +206,8 @@ def test_connect_inferred_ports() -> None:
         Ref("other1"): ["direct:test1"],
         Ref("other2"): ["direct:test2"],
     }
-    timeline_in = Timeline(":t")
     ymmsl_ports = [
-        Port(Id("in"), Operator.F_INIT, timeline_in),
+        Port(Id("in"), Operator.F_INIT),
         Port(Id("out1"), Operator.O_F),
         Port(Id("out3"), Operator.O_F),
     ]
@@ -188,17 +222,14 @@ def test_connect_inferred_ports() -> None:
     assert ports["in"].operator == Operator.F_INIT
     assert ports["in"]._length == 7
     assert ports["in"]._is_resizable is False
-    assert ports["in"].timeline == timeline_in
 
     assert ports["out1"].name == Id("out1")
     assert ports["out1"].operator == Operator.O_F
     assert ports["out1"]._length is None
-    assert ports["out1"].timeline == Timeline("")
 
     assert ports["out3"].name == Id("out3")
     assert ports["out3"].operator == Operator.O_F
     assert ports["out3"]._length is None
-    assert ports["out3"].timeline == Timeline("")
 
 
 def test_connect_inferred_ports_oi_s() -> None:
@@ -286,6 +317,84 @@ def test_list_subtimelines() -> None:
     port_manager.connect_ports(peer_info)
 
     assert port_manager.list_subtimelines() == {Timeline(":a")}
+
+
+def test_list_ports() -> None:
+    declared_ports = {
+        Operator.O_I: ["oi_a", "oi_b"],
+        Operator.S: ["s_a"],
+        Operator.F_INIT: ["fi"],
+        Operator.O_F: ["of"],
+    }
+    port_manager = PortManager([], declared_ports)
+
+    component_id = Ref("component")
+    peer_dims = {Ref("other"): []}
+    peer_locations = {Ref("other"): ["direct:test"]}
+    ymmsl_ports = [
+        Port(Id("oi_a"), Operator.O_I, Timeline(":a")),
+        Port(Id("oi_b"), Operator.O_I, Timeline(":b")),
+        Port(Id("s_a"), Operator.S, Timeline(":a")),
+        Port(Id("fi"), Operator.F_INIT),
+        Port(Id("of"), Operator.O_F),
+    ]
+    peer_info = PeerInfo(component_id, [], [], peer_dims, peer_locations, ymmsl_ports)
+
+    port_manager.connect_ports(peer_info)
+
+    assert port_manager.list_ports() == {
+        Operator.O_I: ["oi_a", "oi_b"],
+        Operator.S: ["s_a"],
+        Operator.F_INIT: ["fi"],
+        Operator.O_F: ["of"],
+    }
+
+    assert port_manager.list_ports(Timeline(":a")) == {
+        Operator.O_I: ["oi_a"],
+        Operator.S: ["s_a"],
+    }
+    assert port_manager.list_ports(Timeline(":b")) == {Operator.O_I: ["oi_b"]}
+
+
+def test_get_connected_ports() -> None:
+    declared_ports = {
+        Operator.O_I: ["oi_a", "oi_b", "oi_unconn"],
+        Operator.F_INIT: ["fi_conn"],
+    }
+    port_manager = PortManager([], declared_ports)
+
+    component_id = Ref("component")
+    conduits = [
+        Conduit("component.oi_a", "other.in1"),
+        Conduit("component.oi_b", "other.in2"),
+        Conduit("other.out3", "component.fi_conn"),
+    ]
+    peer_dims = {Ref("other"): []}
+    peer_locations = {Ref("other"): ["direct:test"]}
+    ymmsl_ports = [
+        Port(Id("oi_a"), Operator.O_I, Timeline(":a")),
+        Port(Id("oi_b"), Operator.O_I, Timeline(":b")),
+        Port(Id("oi_unconn"), Operator.O_I, Timeline(":a")),
+        Port(Id("fi_conn"), Operator.F_INIT),
+    ]
+    peer_info = PeerInfo(
+        component_id, [], conduits, peer_dims, peer_locations, ymmsl_ports
+    )
+
+    port_manager.connect_ports(peer_info)
+
+    assert port_manager.get_connected_ports(Operator.O_I) == [
+        Port(Id("oi_a"), Operator.O_I, Timeline(":a")),
+        Port(Id("oi_b"), Operator.O_I, Timeline(":b")),
+    ]
+    assert port_manager.get_connected_ports(Operator.O_I, Timeline(":a")) == [
+        Port(Id("oi_a"), Operator.O_I, Timeline(":a"))
+    ]
+    assert port_manager.get_connected_ports(Operator.O_I, Timeline(":c")) == []
+
+    assert port_manager.get_connected_ports(Operator.F_INIT) == [
+        Port(Id("fi_conn"), Operator.F_INIT)
+    ]
 
 
 def test_vector_port_message_counts(port_manager2) -> None:

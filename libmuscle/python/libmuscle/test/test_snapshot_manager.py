@@ -7,14 +7,6 @@ from ymmsl.v0_2 import Reference, Settings
 from libmuscle.communicator import Message
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.snapshot_manager import SnapshotManager
-from libmuscle.timeline_manager import TimelineState
-
-TEST_TIMELINE_STATE = TimelineState(
-    iteration=[1],
-    send_participated=[],
-    receive_participated=[["in", None]],
-    subtimeline_states={},
-)
 
 
 def test_no_checkpointing(tmp_path: Path) -> None:
@@ -52,7 +44,6 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
         13.0,
         None,
         Settings(),
-        TEST_TIMELINE_STATE,
     )
 
     port_manager.get_message_counts.assert_called_with()
@@ -90,7 +81,6 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
         42.2,
         1.2,
         Settings(),
-        TEST_TIMELINE_STATE,
     )
 
     (metadata,) = manager.submit_snapshot_metadata.call_args[0]
@@ -121,9 +111,7 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     assert not snapshot_manager.resuming_from_intermediate()
     assert not snapshot_manager.resuming_from_final()
     # save implicit snapshot
-    snapshot_manager.save_snapshot(
-        None, True, ["implicit"], 1.0, 1.5, Settings(), TEST_TIMELINE_STATE
-    )
+    snapshot_manager.save_snapshot(None, True, ["implicit"], 1.0, 1.5, Settings())
 
     manager.submit_snapshot_metadata.assert_called_once()
     (metadata,) = manager.submit_snapshot_metadata.call_args[0]
@@ -142,9 +130,7 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
 
     assert not snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
-    snapshot_manager2.save_snapshot(
-        None, True, ["implicit"], 12.3, 2.5, Settings(), TEST_TIMELINE_STATE
-    )
+    snapshot_manager2.save_snapshot(None, True, ["implicit"], 12.3, 2.5, Settings())
     manager.submit_snapshot_metadata.assert_called_once()
 
 

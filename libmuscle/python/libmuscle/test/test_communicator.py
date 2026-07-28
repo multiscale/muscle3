@@ -91,9 +91,7 @@ def test_create_communicator_creates_timeline_manager(
     timeline_manager.return_value.on_ports_connected.assert_not_called()
 
 
-def test_set_peer_info_sets_up_timeline_manager(
-    communicator, connected_port_manager, timeline_manager
-):
+def test_set_peer_info_sets_up_timeline_manager(communicator, timeline_manager):
     peer_info = MagicMock()
 
     communicator.set_peer_info(peer_info)
@@ -208,6 +206,7 @@ def test_receive_close_port(connected_communicator, mpp_client, port_manager):
         0.1,
         ClosePort(),
     )
+    assert msg.iteration is None
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
@@ -228,6 +227,7 @@ def test_receive_close_port_vector(connected_communicator, mpp_client, port_mana
         3.5,
         ClosePort(),
     )
+    assert msg.iteration is None
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
@@ -406,6 +406,7 @@ def test_shutdown(
         assert call[0][0] in expected_receivers
         msg = MPPMessage.from_bytes(call[0][1])
         assert isinstance(msg.data, ClosePort)
+        assert msg.iteration is None
         expected_receivers.remove(call[0][0])
 
     assert not expected_receivers

@@ -107,6 +107,7 @@ def connected_port_manager(port_manager, declared_ports, mock_ports):
     port_manager.get_port = get_port
     port_manager.list_ports.return_value = declared_ports
     port_manager.port_exists = port_exists
+    port_manager.has_f_init_connections.return_value = True
     return port_manager
 
 

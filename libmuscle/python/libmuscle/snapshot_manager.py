@@ -8,7 +8,6 @@ from libmuscle.communicator import Communicator, Message
 from libmuscle.mmp_client import MMPClient
 from libmuscle.port_manager import PortManager
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
-from libmuscle.timeline_manager import TimelineState
 
 _logger = logging.getLogger(__name__)
 

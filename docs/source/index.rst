@@ -73,6 +73,7 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    distributed_execution
    nested_models
    models_as_software
+   yMMSL documentation <https://ymmsl-python.readthedocs.io/en/stable/>
    profiling
 
    coupling
@@ -93,7 +94,6 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    :maxdepth: 4
    :caption: API documentation
 
-   yMMSL configuration and Python API <https://ymmsl-python.readthedocs.io/en/stable/>
    python_api
    cpp_api
    fortran_api

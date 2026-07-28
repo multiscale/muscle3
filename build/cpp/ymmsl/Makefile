@@ -28,7 +28,7 @@ endif
 pkg_config_files := ymmsl.pc
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14 -O3 -I$(hdrdir)
+CXXFLAGS += -Wall -pedantic -std=c++17 -O3 -I$(hdrdir)
 export CXXFLAGS
 DEBUGFLAGS += -g -O0
 export DEBUGFLAGS

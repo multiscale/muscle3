@@ -75,7 +75,7 @@ endif
 
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14 -pthread -O3 -DMSGPACK_NO_BOOST
+CXXFLAGS += -Wall -pedantic -std=c++17 -pthread -O3 -DMSGPACK_NO_BOOST
 export CXXFLAGS
 
 MPIFLAGS := -DMUSCLE_ENABLE_MPI

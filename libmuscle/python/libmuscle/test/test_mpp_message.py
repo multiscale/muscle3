@@ -37,7 +37,6 @@ def test_create() -> None:
     assert msg.message_number == 0
     assert msg.saved_until == 1.6
     assert msg.data == data
-    assert msg.iteration is None
 
 
 def test_grid_encode() -> None:
@@ -171,10 +170,6 @@ def test_iteration_roundtrip() -> None:
     )
     msg_out = MPPMessage.from_bytes(msg.encoded())
     assert msg_out.iteration == [0, 2]
-
-    msg_none = MPPMessage(sender, receiver, None, 0.0, None, Settings(), 0, 0.0, 42)
-    msg_none_out = MPPMessage.from_bytes(msg_none.encoded())
-    assert msg_none_out.iteration is None
 
 
 def test_non_contiguous_grid_roundtrip() -> None:

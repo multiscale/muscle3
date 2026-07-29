@@ -65,14 +65,8 @@ class PortManager:
             if port.operator is Operator.F_INIT
         )
 
-    def list_ports(
-        self,
-        timeline: Optional[Timeline] = None,
-    ) -> dict[Operator, list[str]]:
+    def list_ports(self) -> dict[Operator, list[str]]:
         """Returns a description of the ports this PortManager has.
-
-        Args:
-            timeline: Pass a specific Timeline to return only ports on that timeline.
 
         Returns:
             A dictionary, indexed by Operator, containing lists of
@@ -81,8 +75,6 @@ class PortManager:
         """
         result: dict[Operator, list[str]] = {}
         for port_name, port in self._ports.items():
-            if timeline is not None and port.timeline != timeline:
-                continue
             if port.operator not in result:
                 result[port.operator] = list()
             result[port.operator].append(port_name)

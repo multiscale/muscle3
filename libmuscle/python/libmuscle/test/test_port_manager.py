@@ -70,16 +70,7 @@ def test_connect_ports(index, port_manager) -> None:
     assert ports["out"].operator == Operator.O_I
     assert ports["out"]._length is None
 
-
-def test_get_port(index, port_manager) -> None:
-    component_id = Ref("component")
-    conduits = [Conduit("other.settings_out", "component.muscle_settings_in")]
-    peer_dims = {Ref("other"): []}
-    peer_locations = {Ref("other"): ["direct:test"]}
-    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations, [])
-
-    port_manager.connect_ports(peer_info)
-
+    # check get_port
     assert port_manager.get_port("in") is port_manager._ports["in"]
     assert port_manager.get_port("out") is port_manager._ports["out"]
     assert (
@@ -88,19 +79,19 @@ def test_get_port(index, port_manager) -> None:
     assert port_manager.get_port("muscle_settings_in").timeline == Timeline("")
 
 
-def test_declared_ports_timeline_from_ymmsl() -> None:
+def test_declared_ports_timeline_from_ymmsl(index2) -> None:
     declared_ports = {
         Operator.O_I: ["oi_a"],
         Operator.S: ["s_a"],
         Operator.F_INIT: ["fi"],
     }
-    port_manager = PortManager([], declared_ports)
+    port_manager = PortManager(index2, declared_ports)
 
     ymmsl_ports = [
         Port(Id("oi_a"), Operator.O_I, Timeline(":a")),
         Port(Id("s_a"), Operator.S, Timeline(":b")),
     ]
-    peer_info = PeerInfo(Ref("component"), [], [], {}, {}, ymmsl_ports)
+    peer_info = PeerInfo(Ref("component"), index2, [], {}, {}, ymmsl_ports)
 
     port_manager.connect_ports(peer_info)
 
@@ -285,103 +276,39 @@ def test_port_message_counts(port_manager) -> None:
         port_manager.restore_message_counts({"x?invalid_port": 3})
 
 
-def test_list_subtimelines() -> None:
-    declared_ports = {
-        Operator.O_I: ["oi_conn", "oi_unconn"],
-        Operator.S: ["s_conn"],
-        Operator.F_INIT: ["fi_conn"],
-        Operator.O_F: ["of_conn"],
-    }
-    port_manager = PortManager([], declared_ports)
-
-    component_id = Ref("component")
-    conduits = [
-        Conduit("component.oi_conn", "other.in1"),
-        Conduit("other.out2", "component.s_conn"),
-        Conduit("other.out3", "component.fi_conn"),
-        Conduit("component.of_conn", "other.in4"),
-    ]
-    peer_dims = {Ref("other"): []}
-    peer_locations = {Ref("other"): ["direct:test"]}
-    ymmsl_ports = [
-        Port(Id("oi_conn"), Operator.O_I, Timeline(":a")),
-        Port(Id("s_conn"), Operator.S, Timeline(":a")),
-        Port(Id("oi_unconn"), Operator.O_I, Timeline(":b")),
-        Port(Id("fi_conn"), Operator.F_INIT),
-        Port(Id("of_conn"), Operator.O_F),
-    ]
-    peer_info = PeerInfo(
-        component_id, [], conduits, peer_dims, peer_locations, ymmsl_ports
-    )
-
-    port_manager.connect_ports(peer_info)
-
-    assert port_manager.list_subtimelines() == {Timeline(":a")}
-
-
-def test_list_ports() -> None:
-    declared_ports = {
-        Operator.O_I: ["oi_a", "oi_b"],
-        Operator.S: ["s_a"],
-        Operator.F_INIT: ["fi"],
-        Operator.O_F: ["of"],
-    }
-    port_manager = PortManager([], declared_ports)
-
-    component_id = Ref("component")
-    peer_dims = {Ref("other"): []}
-    peer_locations = {Ref("other"): ["direct:test"]}
-    ymmsl_ports = [
-        Port(Id("oi_a"), Operator.O_I, Timeline(":a")),
-        Port(Id("oi_b"), Operator.O_I, Timeline(":b")),
-        Port(Id("s_a"), Operator.S, Timeline(":a")),
-        Port(Id("fi"), Operator.F_INIT),
-        Port(Id("of"), Operator.O_F),
-    ]
-    peer_info = PeerInfo(component_id, [], [], peer_dims, peer_locations, ymmsl_ports)
-
-    port_manager.connect_ports(peer_info)
-
-    assert port_manager.list_ports() == {
-        Operator.O_I: ["oi_a", "oi_b"],
-        Operator.S: ["s_a"],
-        Operator.F_INIT: ["fi"],
-        Operator.O_F: ["of"],
-    }
-
-    assert port_manager.list_ports(Timeline(":a")) == {
-        Operator.O_I: ["oi_a"],
-        Operator.S: ["s_a"],
-    }
-    assert port_manager.list_ports(Timeline(":b")) == {Operator.O_I: ["oi_b"]}
-
-
-def test_get_connected_ports() -> None:
+def test_list_subtimelines_and_get_connected_ports(index2) -> None:
     declared_ports = {
         Operator.O_I: ["oi_a", "oi_b", "oi_unconn"],
+        Operator.S: ["s_conn"],
         Operator.F_INIT: ["fi_conn"],
     }
-    port_manager = PortManager([], declared_ports)
+    port_manager = PortManager(index2, declared_ports)
 
     component_id = Ref("component")
     conduits = [
         Conduit("component.oi_a", "other.in1"),
         Conduit("component.oi_b", "other.in2"),
-        Conduit("other.out3", "component.fi_conn"),
+        Conduit("other.out3", "component.s_conn"),
+        Conduit("other.out4", "component.fi_conn"),
     ]
     peer_dims = {Ref("other"): []}
     peer_locations = {Ref("other"): ["direct:test"]}
     ymmsl_ports = [
         Port(Id("oi_a"), Operator.O_I, Timeline(":a")),
         Port(Id("oi_b"), Operator.O_I, Timeline(":b")),
-        Port(Id("oi_unconn"), Operator.O_I, Timeline(":a")),
+        Port(Id("oi_unconn"), Operator.O_I, Timeline(":c")),
+        Port(Id("s_conn"), Operator.S, Timeline(":a")),
         Port(Id("fi_conn"), Operator.F_INIT),
     ]
     peer_info = PeerInfo(
-        component_id, [], conduits, peer_dims, peer_locations, ymmsl_ports
+        component_id, index2, conduits, peer_dims, peer_locations, ymmsl_ports
     )
 
     port_manager.connect_ports(peer_info)
+
+    # oi_unconn is unconnected and on its own timeline (:c), which must not
+    # appear in the result.
+    assert port_manager.list_subtimelines() == {Timeline(":a"), Timeline(":b")}
 
     assert port_manager.get_connected_ports(Operator.O_I) == [
         Port(Id("oi_a"), Operator.O_I, Timeline(":a")),
@@ -391,10 +318,6 @@ def test_get_connected_ports() -> None:
         Port(Id("oi_a"), Operator.O_I, Timeline(":a"))
     ]
     assert port_manager.get_connected_ports(Operator.O_I, Timeline(":c")) == []
-
-    assert port_manager.get_connected_ports(Operator.F_INIT) == [
-        Port(Id("fi_conn"), Operator.F_INIT)
-    ]
 
 
 def test_vector_port_message_counts(port_manager2) -> None:

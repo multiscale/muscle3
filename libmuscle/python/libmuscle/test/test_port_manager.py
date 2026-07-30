@@ -59,6 +59,7 @@ def test_connect_ports(index, port_manager) -> None:
     assert port_manager._muscle_settings_in.name == Id("muscle_settings_in")
     assert port_manager._muscle_settings_in.operator == Operator.F_INIT
     assert port_manager._muscle_settings_in._length is None
+    assert port_manager._muscle_settings_in.timeline == Timeline("")
 
     # check declared ports
     ports = port_manager._ports
@@ -95,10 +96,9 @@ def test_declared_ports_timeline_from_ymmsl(index2) -> None:
 
     port_manager.connect_ports(peer_info)
 
-    ports = port_manager._ports
-    assert ports["oi_a"].timeline == Timeline(":a")
-    assert ports["s_a"].timeline == Timeline(":b")
-    assert ports["fi"].timeline == Timeline("")
+    assert port_manager.get_port("oi_a").timeline == Timeline(":a")
+    assert port_manager.get_port("s_a").timeline == Timeline(":b")
+    assert port_manager.get_port("fi").timeline == Timeline("")
 
 
 def test_has_f_init_connections(index) -> None:
@@ -106,7 +106,7 @@ def test_has_f_init_connections(index) -> None:
     peer_dims = {Ref("other"): []}
     peer_locations = {Ref("other"): ["direct:test"]}
 
-    declared_ports = {Operator.F_INIT: ["in"], Operator.O_F: ["out"]}
+    declared_ports = {Operator.F_INIT: ["in"]}
     port_manager = PortManager(index, declared_ports)
 
     peer_info = PeerInfo(component_id, index, [], peer_dims, peer_locations, [])
@@ -118,8 +118,7 @@ def test_has_f_init_connections(index) -> None:
     port_manager.connect_ports(peer_info)
     assert port_manager.has_f_init_connections() is True
 
-    # A muscle_settings_in connection also counts, even without a declared
-    # F_INIT port.
+    # A muscle_settings_in connection also counts, even without a declared F_INIT port.
     declared_ports = {Operator.O_F: ["out"]}
     port_manager = PortManager(index, declared_ports)
 

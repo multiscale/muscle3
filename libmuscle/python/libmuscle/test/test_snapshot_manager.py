@@ -72,6 +72,7 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
 
     assert snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
+    communicator.restore_timeline_state.assert_called_once_with(timeline_state)
     msg = snapshot_manager2.load_snapshot()
     assert msg.timestamp == 0.2
     assert msg.next_timestamp is None
@@ -97,6 +98,14 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
     snapshot_path = Path(metadata.snapshot_filename)
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == "test-1_3.pack"
+
+    communicator.restore_timeline_state.reset_mock()
+    snapshot_manager3 = SnapshotManager(
+        instance_id, manager, port_manager, communicator
+    )
+    snapshot_manager3.prepare_resume(snapshot_path, tmp_path)
+    assert snapshot_manager3.resuming_from_final()
+    communicator.restore_timeline_state.assert_not_called()
 
 
 def test_save_load_implicit_snapshot(
@@ -136,6 +145,8 @@ def test_save_load_implicit_snapshot(
 
     assert not snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
+
+    communicator.restore_timeline_state.assert_not_called()
     snapshot_manager2.save_snapshot(None, True, ["implicit"], 12.3, 2.5, Settings())
     manager.submit_snapshot_metadata.assert_called_once()
 
@@ -164,33 +175,3 @@ def test_load_old_version_snapshot_raises(tmp_path: Path) -> None:
 
     with pytest.raises(RuntimeError, match="unknown version"):
         SnapshotManager.load_snapshot_from_file(snapshot_path)
-
-
-@pytest.mark.parametrize(("final", "should_restore"), [(False, True), (True, False)])
-def test_prepare_resume_restores_timeline_state(
-    tmp_path: Path, timeline_state: TimelineState, final: bool, should_restore: bool
-) -> None:
-    manager = MagicMock()
-    port_manager = MagicMock()
-    port_manager.get_message_counts.return_value = {}
-    communicator = MagicMock()
-    communicator.get_timeline_state.return_value = timeline_state
-
-    instance_id = Reference("test[1]")
-    snapshot_manager = SnapshotManager(instance_id, manager, port_manager, communicator)
-    snapshot_manager.prepare_resume(None, tmp_path)
-    snapshot_manager.save_snapshot(
-        Message(0.2, None, "test data"), final, ["test"], 13.0, None, Settings()
-    )
-    (metadata,) = manager.submit_snapshot_metadata.call_args[0]
-    snapshot_path = Path(metadata.snapshot_filename)
-
-    snapshot_manager2 = SnapshotManager(
-        instance_id, manager, port_manager, communicator
-    )
-    snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
-
-    if should_restore:
-        communicator.restore_timeline_state.assert_called_once_with(timeline_state)
-    else:
-        communicator.restore_timeline_state.assert_not_called()

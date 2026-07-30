@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pytest
 from ymmsl.v0_2 import Conduit, Operator, Port, Timeline
 from ymmsl.v0_2 import Identifier as Id
@@ -7,17 +9,27 @@ from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 from libmuscle.timeline_manager import (
     AlreadyParticipated,
+    ExpectedActions,
+    IterationCount,
     MessageOutOfSync,
     PortBlocked,
     ReuseLoopIncomplete,
     TimelineManager,
-    TimelinePorts,
 )
 
 
-def _build_component_port_manager(
-    has_f_init: bool = True, include_settings: bool = True
-) -> PortManager:
+@pytest.fixture
+def has_f_init(request: pytest.FixtureRequest) -> bool:
+    return getattr(request, "param", True)
+
+
+@pytest.fixture
+def include_settings(request: pytest.FixtureRequest) -> bool:
+    return getattr(request, "param", True)
+
+
+@pytest.fixture
+def timeline_manager(has_f_init: bool, include_settings: bool) -> TimelineManager:
     conduits = [
         Conduit("component.out_f", "peer_f.in"),
         Conduit("component.out_a1", "peer_a1.in"),
@@ -54,118 +66,100 @@ def _build_component_port_manager(
     pm = PortManager([], None)
     peer_info = PeerInfo(Ref("component"), [], conduits, peer_dims, {}, ymmsl_ports)
     pm.connect_ports(peer_info)
-    return pm
+
+    tm = TimelineManager(pm)
+    tm.on_ports_connected()
+    return tm
 
 
 @pytest.fixture
-def port_manager() -> PortManager:
-    return _build_component_port_manager()
+def vector_timeline_manager() -> TimelineManager:
+    declared_ports = {Operator.O_F: ["out_v[]"]}
+    pm = PortManager([], declared_ports)
+    conduits = [Conduit("component.out_v", "peer.in")]
+    peer_info = PeerInfo(Ref("component"), [], conduits, {Ref("peer"): [3]}, {}, [])
+    pm.connect_ports(peer_info)
 
-
-@pytest.fixture
-def timeline_manager(port_manager: PortManager) -> TimelineManager:
-    return TimelineManager(port_manager)
-
-
-def test_init(timeline_manager: TimelineManager) -> None:
-    assert timeline_manager._iteration is None
-    assert timeline_manager._send is None
-    assert timeline_manager._receive is None
-    assert timeline_manager._submanagers == {}
-
-
-@pytest.mark.parametrize("settings_connected", [True, False])
-def test_on_ports_connected(settings_connected: bool) -> None:
-    pm = _build_component_port_manager(include_settings=settings_connected)
     tm = TimelineManager(pm)
     tm.on_ports_connected()
-
-    assert isinstance(tm._send, TimelinePorts)
-    assert isinstance(tm._receive, TimelinePorts)
-
-    expected_receive = {("in_f", Operator.F_INIT)}
-    if settings_connected:
-        expected_receive.add(("muscle_settings_in", Operator.F_INIT))
-
-    assert {
-        (str(port.name), port.operator) for port in tm._receive.ports
-    } == expected_receive
-    assert {(str(port.name), port.operator) for port in tm._send.ports} == {
-        ("out_f", Operator.O_F)
-    }
+    return tm
 
 
-def test_on_ports_connected_timeline_ports(timeline_manager: TimelineManager) -> None:
-    timeline_manager.on_ports_connected()
-    assert timeline_manager._receive.num_slots == 2
-    assert timeline_manager._send.num_slots == 1
-    assert timeline_manager._send.participated == set()
-    assert timeline_manager._receive.participated == set()
-
-    assert set(timeline_manager._submanagers.keys()) == {
-        Timeline(":A1"),
-        Timeline(":A2"),
-    }
+def expected(
+    timeline_manager: TimelineManager, *actions: tuple[str, str, list[int]]
+) -> ExpectedActions:
+    return [
+        (action, timeline_manager._port_manager.get_port(port_name), slots)
+        for action, port_name, slots in actions
+    ]
 
 
-@pytest.mark.parametrize("has_f_init", [True, False])
-def test_on_ports_connected_sets_initial_iteration(has_f_init: bool) -> None:
-    pm = _build_component_port_manager(has_f_init=has_f_init, include_settings=False)
-    tm = TimelineManager(pm)
-    tm.on_ports_connected()
-    assert tm._iteration == (None if has_f_init else [])
+def check_received(
+    timeline_manager: TimelineManager,
+    port: str,
+    slot: Optional[int],
+    iteration: IterationCount,
+) -> None:
+    timeline_manager.check_receive(port, slot)
+    timeline_manager.check_received_message(port, slot, iteration)
 
 
-def test_subtimeline_manager_initialization() -> None:
-    pm = _build_component_port_manager()
-    tm = TimelineManager(pm)
-    tm.on_ports_connected()
+def test_finish_reuse_iteration_blocked_when_muscle_settings_in_not_received(
+    timeline_manager: TimelineManager,
+) -> None:
+    check_received(timeline_manager, "in_f", None, [])
+    timeline_manager.check_send_message("out_f")
+    # muscle_settings_in is never received this iteration
 
-    stm_a1 = tm._submanagers[Timeline(":A1")]
-    assert stm_a1._iteration is None
-    assert stm_a1._first_operator is None
-    assert {str(port.name) for port in stm_a1._send.ports} == {"out_a1"}
-    assert {str(port.name) for port in stm_a1._receive.ports} == {"in_a1", "in_a1_2"}
+    with pytest.raises(ReuseLoopIncomplete) as exc_info:
+        timeline_manager.finish_reuse_iteration()
 
-    stm_a2 = tm._submanagers[Timeline(":A2")]
-    assert stm_a2._iteration is None
-    assert stm_a2._first_operator is None
-    assert {str(port.name) for port in stm_a2._send.ports} == {"out_a2", "out_a2_2"}
-    assert {str(port.name) for port in stm_a2._receive.ports} == {"in_a2"}
+    assert exc_info.value.expected == expected(
+        timeline_manager, ("receive", "muscle_settings_in", [])
+    )
+
+
+@pytest.mark.parametrize("include_settings", [False], indirect=True)
+def test_finish_reuse_iteration_ignores_muscle_settings_in_when_disconnected(
+    timeline_manager: TimelineManager,
+) -> None:
+    check_received(timeline_manager, "in_f", None, [])
+    timeline_manager.check_send_message("out_f")
+
+    timeline_manager.finish_reuse_iteration()
+
+
+@pytest.mark.parametrize("has_f_init", [False], indirect=True)
+@pytest.mark.parametrize("include_settings", [False], indirect=True)
+def test_o_f_can_send_immediately_when_no_f_init_connections(
+    timeline_manager: TimelineManager,
+) -> None:
+    assert timeline_manager.check_send_message("out_f") == []
 
 
 def test_check_send_message_o_f_blocked_when_subtimeline_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
     # receive on the F_INIT ports
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so the :A1 sub-timeline is incomplete
 
     with pytest.raises(PortBlocked) as exc_info:
         timeline_manager.check_send_message("out_f")
 
-    port_in_a1 = timeline_manager._port_manager.get_port("in_a1")
-    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
-    assert exc_info.value.expected == [
-        ("receive", port_in_a1, []),
-        ("receive", port_in_a1_2, []),
-    ]
+    assert exc_info.value.expected == expected(
+        timeline_manager, ("receive", "in_a1", []), ("receive", "in_a1_2", [])
+    )
 
 
 def test_check_send_message_o_f_raises_already_participated_when_sent_twice(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
     # receive on the F_INIT ports
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
     # skipping the subtimelines is allowed
     timeline_manager.check_send_message("out_f")
 
@@ -180,11 +174,8 @@ def test_check_send_message_o_f_raises_already_participated_when_sent_twice(
 def test_check_send_message_o_f_marks_participated_and_returns_iteration(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
 
     assert not timeline_manager._send.has_participated("out_f", None)
     iteration = timeline_manager.check_send_message("out_f")
@@ -196,11 +187,8 @@ def test_check_send_message_o_f_marks_participated_and_returns_iteration(
 def test_check_send_message_o_i_starts_subtimeline_with_o_i_leading(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
 
     iteration = timeline_manager.check_send_message("out_a1")
 
@@ -214,34 +202,33 @@ def test_check_send_message_o_i_starts_subtimeline_with_o_i_leading(
 def test_check_send_message_o_i_blocked_when_s_leads_and_not_all_s_received(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
-    timeline_manager.check_receive("in_a1")
-    timeline_manager.check_received_message("in_a1", None, [0])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_a1", None, [0])
     # "in_a1_2" never received, so S hasn't fully led :A1 yet
 
     with pytest.raises(PortBlocked) as exc_info:
         timeline_manager.check_send_message("out_a1")
 
-    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
-    assert exc_info.value.expected == [("receive", port_in_a1_2, [])]
+    assert exc_info.value.expected == expected(
+        timeline_manager, ("receive", "in_a1_2", [])
+    )
 
 
 def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
-    timeline_manager.check_receive("in_a1")
-    timeline_manager.check_received_message("in_a1", None, [0])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_a1", None, [0])
+
     timeline_manager.check_receive("in_a1_2")
-    timeline_manager.check_received_message("in_a1_2", None, [0])
+    with pytest.raises(MessageOutOfSync) as exc_info:
+        timeline_manager.check_received_message("in_a1_2", None, [7])
+    assert exc_info.value.port == timeline_manager._port_manager.get_port("in_a1_2")
+    assert exc_info.value.slot is None
+
+    check_received(timeline_manager, "in_a1_2", None, [0])
 
     iteration = timeline_manager.check_send_message("out_a1")
 
@@ -256,22 +243,16 @@ def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
     with pytest.raises(PortBlocked) as exc_info:
         timeline_manager.check_send_message("out_a1")
 
-    port_in_a1 = timeline_manager._port_manager.get_port("in_a1")
-    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
-    assert exc_info.value.expected == [
-        ("receive", port_in_a1, []),
-        ("receive", port_in_a1_2, []),
-    ]
+    assert exc_info.value.expected == expected(
+        timeline_manager, ("receive", "in_a1", []), ("receive", "in_a1_2", [])
+    )
 
 
 def test_check_send_message_o_i_when_o_i_leads_and_complete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
 
     first_iteration = timeline_manager.check_send_message("out_a1")
     timeline_manager.check_receive("in_a1")
@@ -292,29 +273,22 @@ def test_check_send_message_o_i_when_o_i_leads_and_complete(
 def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so the sub-iteration is incomplete
 
     with pytest.raises(PortBlocked) as exc_info:
         timeline_manager.check_send_message("out_a1")
 
-    port_in_a1 = timeline_manager._port_manager.get_port("in_a1")
-    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
-    assert exc_info.value.expected == [
-        ("receive", port_in_a1, []),
-        ("receive", port_in_a1_2, []),
-    ]
+    assert exc_info.value.expected == expected(
+        timeline_manager, ("receive", "in_a1", []), ("receive", "in_a1_2", [])
+    )
 
 
 def test_check_receive_f_init_allowed_when_not_yet_participated(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
     timeline_manager.check_receive("in_f")
     assert not timeline_manager._receive.has_participated("in_f", None)
 
@@ -322,8 +296,7 @@ def test_check_receive_f_init_allowed_when_not_yet_participated(
     assert timeline_manager._iteration == [3]
     assert timeline_manager._receive.has_participated("in_f", None)
 
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [3])
+    check_received(timeline_manager, "muscle_settings_in", None, [3])
 
     assert timeline_manager._iteration == [3]
     assert timeline_manager._receive.has_participated("muscle_settings_in", None)
@@ -332,9 +305,7 @@ def test_check_receive_f_init_allowed_when_not_yet_participated(
 def test_check_receive_f_init_raises_already_participated_when_received_twice(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
+    check_received(timeline_manager, "in_f", None, [])
 
     with pytest.raises(AlreadyParticipated) as exc_info:
         timeline_manager.check_receive("in_f")
@@ -349,9 +320,7 @@ def test_check_received_message_f_init_raises_when_iteration_differs(
 ) -> None:
     """Once the main timeline has started, an F_INIT message for a different
     iteration is rejected."""
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [3])
+    check_received(timeline_manager, "in_f", None, [3])
     timeline_manager.check_receive("muscle_settings_in")
 
     with pytest.raises(MessageOutOfSync) as exc_info:
@@ -366,14 +335,10 @@ def test_check_received_message_f_init_raises_when_iteration_differs(
 def test_check_receive_message_s_starts_subtimeline_with_s_leading(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
 
-    timeline_manager.check_receive("in_a2")
-    timeline_manager.check_received_message("in_a2", None, [0])
+    check_received(timeline_manager, "in_a2", None, [0])
 
     stm = timeline_manager._submanagers[Timeline(":A2")]
     assert stm._first_operator is Operator.S
@@ -384,34 +349,28 @@ def test_check_receive_message_s_starts_subtimeline_with_s_leading(
 def test_check_receive_message_s_blocked_when_o_i_leads_and_not_all_o_i_sent(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
     timeline_manager.check_send_message("out_a2")
     # "out_a2_2" never sent, so O_I hasn't fully led :A2 yet
 
     with pytest.raises(PortBlocked) as exc_info:
         timeline_manager.check_receive("in_a2")
 
-    port_out_a2_2 = timeline_manager._port_manager.get_port("out_a2_2")
-    assert exc_info.value.expected == [("send", port_out_a2_2, [])]
+    assert exc_info.value.expected == expected(
+        timeline_manager, ("send", "out_a2_2", [])
+    )
 
 
 def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
     timeline_manager.check_send_message("out_a2")
     timeline_manager.check_send_message("out_a2_2")
 
-    timeline_manager.check_receive("in_a2")
-    timeline_manager.check_received_message("in_a2", None, [0])
+    check_received(timeline_manager, "in_a2", None, [0])
 
     stm = timeline_manager._submanagers[Timeline(":A2")]
     assert stm._first_operator is Operator.O_I
@@ -423,33 +382,32 @@ def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
     with pytest.raises(PortBlocked) as exc_info:
         timeline_manager.check_receive("in_a2")
 
-    port_out_a2 = timeline_manager._port_manager.get_port("out_a2")
-    port_out_a2_2 = timeline_manager._port_manager.get_port("out_a2_2")
-    assert exc_info.value.expected == [
-        ("send", port_out_a2, []),
-        ("send", port_out_a2_2, []),
-    ]
+    assert exc_info.value.expected == expected(
+        timeline_manager, ("send", "out_a2", []), ("send", "out_a2_2", [])
+    )
 
 
 def test_check_receive_message_s_when_s_leads_and_complete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
 
-    timeline_manager.check_receive("in_a2")
-    timeline_manager.check_received_message("in_a2", None, [1])
+    check_received(timeline_manager, "in_a2", None, [1])
 
     stm = timeline_manager._submanagers[Timeline(":A2")]
     first_iteration = stm._iteration
 
     timeline_manager.check_send_message("out_a2")
     timeline_manager.check_send_message("out_a2_2")
+
     timeline_manager.check_receive("in_a2")
-    timeline_manager.check_received_message("in_a2", None, [3])
+    with pytest.raises(MessageOutOfSync) as exc_info:
+        timeline_manager.check_received_message("in_a2", None, first_iteration)
+    assert exc_info.value.port == timeline_manager._port_manager.get_port("in_a2")
+    assert exc_info.value.slot is None
+
+    check_received(timeline_manager, "in_a2", None, [3])
 
     second_iteration = stm._iteration
 
@@ -462,69 +420,49 @@ def test_check_receive_message_s_when_s_leads_and_complete(
 def test_check_receive_message_s_blocked_when_s_leads_and_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [])
-    timeline_manager.check_receive("in_a2")
-    timeline_manager.check_received_message("in_a2", None, [1])
+    check_received(timeline_manager, "in_f", None, [])
+    check_received(timeline_manager, "muscle_settings_in", None, [])
+    check_received(timeline_manager, "in_a2", None, [1])
     # neither "out_a2" nor "out_a2_2" received, so the sub-iteration is incomplete
 
     with pytest.raises(PortBlocked) as exc_info:
         timeline_manager.check_receive("in_a2")
 
-    port_out_a2 = timeline_manager._port_manager.get_port("out_a2")
-    port_out_a2_2 = timeline_manager._port_manager.get_port("out_a2_2")
-    assert exc_info.value.expected == [
-        ("send", port_out_a2, []),
-        ("send", port_out_a2_2, []),
-    ]
+    assert exc_info.value.expected == expected(
+        timeline_manager, ("send", "out_a2", []), ("send", "out_a2_2", [])
+    )
 
 
 def test_finish_reuse_iteration_resets_when_complete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-
     # Drive one full reuse loop iteration, using :A1's sub-timeline, to
     # completion.
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [3])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [3])
+    check_received(timeline_manager, "in_f", None, [3])
+    check_received(timeline_manager, "muscle_settings_in", None, [3])
     timeline_manager.check_send_message("out_a1")
-    timeline_manager.check_receive("in_a1")
-    timeline_manager.check_received_message("in_a1", None, [3, 0])
-    timeline_manager.check_receive("in_a1_2")
-    timeline_manager.check_received_message("in_a1_2", None, [3, 0])
+    check_received(timeline_manager, "in_a1", None, [3, 0])
+    check_received(timeline_manager, "in_a1_2", None, [3, 0])
     # :A2 is never touched this iteration, which is fine: an untouched
     # sub-timeline is considered complete.
     timeline_manager.check_send_message("out_f")
 
     timeline_manager.finish_reuse_iteration()
 
-    assert timeline_manager._iteration is None
-    assert timeline_manager._send.participated == set()
-    assert timeline_manager._receive.participated == set()
-    for stm in timeline_manager._submanagers.values():
-        assert stm._iteration is None
-        assert stm._first_operator is None
-        assert stm._send.participated == set()
-        assert stm._receive.participated == set()
+    # A fresh, just-connected TimelineManager has never participated in
+    # anything, so comparing against its state confirms everything was reset.
+    fresh = TimelineManager(timeline_manager._port_manager)
+    fresh.on_ports_connected()
+    assert timeline_manager.get_state() == fresh.get_state()
 
 
 def test_finish_reuse_iteration_raises_when_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-
     # Start a reuse loop iteration but leave it incomplete: :A1's
     # sub-timeline is started but never finishes, and O_F never sends.
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [4])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [4])
+    check_received(timeline_manager, "in_f", None, [4])
+    check_received(timeline_manager, "muscle_settings_in", None, [4])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so :A1 is incomplete, and
     # "out_f" is never sent either
@@ -532,27 +470,21 @@ def test_finish_reuse_iteration_raises_when_incomplete(
     with pytest.raises(ReuseLoopIncomplete) as exc_info:
         timeline_manager.finish_reuse_iteration()
 
-    port_out_f = timeline_manager._port_manager.get_port("out_f")
-    port_in_a1 = timeline_manager._port_manager.get_port("in_a1")
-    port_in_a1_2 = timeline_manager._port_manager.get_port("in_a1_2")
-    assert exc_info.value.expected == [
-        ("send", port_out_f, []),
-        ("receive", port_in_a1, []),
-        ("receive", port_in_a1_2, []),
-    ]
+    assert exc_info.value.expected == expected(
+        timeline_manager,
+        ("send", "out_f", []),
+        ("receive", "in_a1", []),
+        ("receive", "in_a1_2", []),
+    )
 
 
 def test_get_state_and_restore_state_round_trip(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.on_ports_connected()
-    timeline_manager.check_receive("in_f")
-    timeline_manager.check_received_message("in_f", None, [3])
-    timeline_manager.check_receive("muscle_settings_in")
-    timeline_manager.check_received_message("muscle_settings_in", None, [3])
+    check_received(timeline_manager, "in_f", None, [3])
+    check_received(timeline_manager, "muscle_settings_in", None, [3])
     timeline_manager.check_send_message("out_a1")
-    timeline_manager.check_receive("in_a1")
-    timeline_manager.check_received_message("in_a1", None, [3, 0])
+    check_received(timeline_manager, "in_a1", None, [3, 0])
     # "in_a1_2" not yet received, so :A1 is incomplete, and "out_f" not yet sent
 
     timeline_state = timeline_manager.get_state()
@@ -560,16 +492,36 @@ def test_get_state_and_restore_state_round_trip(
     # Restore into a fresh TimelineManager, as would happen after loading a
     # snapshot in a new process, from an independent but identically
     # configured PortManager.
-    restored = TimelineManager(_build_component_port_manager())
+    restored = TimelineManager(timeline_manager._port_manager)
     restored.on_ports_connected()
     restored.restore_state(timeline_state)
 
-    assert restored._iteration == timeline_manager._iteration
-    assert restored._send.participated == timeline_manager._send.participated
-    assert restored._receive.participated == timeline_manager._receive.participated
-    for tl, stm in timeline_manager._submanagers.items():
-        restored_stm = restored._submanagers[tl]
-        assert restored_stm._iteration == stm._iteration
-        assert restored_stm._first_operator == stm._first_operator
-        assert restored_stm._send.participated == stm._send.participated
-        assert restored_stm._receive.participated == stm._receive.participated
+    assert restored.get_state() == timeline_state
+
+
+def test_vector_port_slots_participate_independently(
+    vector_timeline_manager: TimelineManager,
+) -> None:
+    tm = vector_timeline_manager
+    assert tm.check_send_message("out_v", 0) == []
+    assert tm.check_send_message("out_v", 1) == []
+
+    with pytest.raises(AlreadyParticipated) as exc_info:
+        tm.check_send_message("out_v", 0)
+
+    assert exc_info.value.port == tm._port_manager.get_port("out_v")
+    assert exc_info.value.slot == 0
+
+
+def test_vector_port_reuse_iteration_incomplete_lists_missing_slots(
+    vector_timeline_manager: TimelineManager,
+) -> None:
+    tm = vector_timeline_manager
+    tm.check_send_message("out_v", 0)
+
+    with pytest.raises(ReuseLoopIncomplete) as exc_info:
+        tm.finish_reuse_iteration()
+
+    port_out_v = tm._port_manager.get_port("out_v")
+    assert exc_info.value.expected == [("send", port_out_v, [1, 2])]
+    assert "out_v" in str(exc_info.value)

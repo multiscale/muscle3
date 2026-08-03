@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ymmsl/identity.hpp>
+#include <string>
 
 
 /** @file component.hpp
@@ -17,7 +17,6 @@ namespace ymmsl { namespace impl {
  * and operators for other components such as mappers.
  */
 enum class Operator {
-    NONE = 0,
     F_INIT = 1,
     O_I = 2,
     S = 3,
@@ -41,7 +40,7 @@ bool allows_receiving(Operator op);
 /** Return the name of the given operator
  * 
  * @param op The operator
- * @return The name: "NONE", "F_INIT", "O_I", "S" or "O_F"
+ * @return The name: "F_INIT", "O_I", "S" or "O_F"
  */
 std::string operator_name(Operator op);
 
@@ -51,23 +50,6 @@ std::string operator_name(Operator op);
  * @return The operator enum instance
  */
 Operator operator_for_name(std::string const & name);
-
-/** A port on a component.
- *
- * Ports are used by components to send or receive messages on. They are
- * connected by conduits to enable communication between components.
- */
-struct Port {
-    Identifier name;    /// The name of the port.
-    Operator oper;      /// The MMSL operator in which this port is used.
-
-    /** Create a Port.
-     *
-     * @param name The name of the port.
-     * @param oper The MMSL operator in which this port is used.
-     */
-    Port(Identifier const & name, Operator oper);
-};
 
 } }
 

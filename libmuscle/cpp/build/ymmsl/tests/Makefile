@@ -29,7 +29,7 @@ CXXFLAGS += -isystem $(googletest_ROOT)/include -pthread
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-test_objects := main.o test_component.o test_identity.o test_settings.o test_model.o
+test_objects := main.o test_component.o test_identity.o test_settings.o test_model.o test_ports.o
 
 test_ymmsl: $(test_objects) ../libymmsl.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(test_objects) $(googletest_LIB) ../libymmsl_d.a -o $@

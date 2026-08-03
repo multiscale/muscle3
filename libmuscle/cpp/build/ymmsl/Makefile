@@ -15,7 +15,7 @@ dlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.dlo)
 deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 
 public_headers := ymmsl/component.hpp ymmsl/identity.hpp ymmsl/model.hpp
-public_headers += ymmsl/settings.hpp ymmsl/settings.tpp ymmsl/ymmsl.hpp
+public_headers += ymmsl/settings.hpp ymmsl/settings.tpp ymmsl/ports.hpp ymmsl/ymmsl.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 libs := libymmsl.a libymmsl_d.a

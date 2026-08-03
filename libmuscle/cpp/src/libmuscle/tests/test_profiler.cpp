@@ -1,5 +1,6 @@
 // Inject mocks
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
+#define LIBMUSCLE_MOCK_PORT_MANAGER <mocks/mock_port_manager.hpp>
 #define LIBMUSCLE_PATCH_PROFILER_COMMUNICATION_INTERVAL \
     std::chrono::steady_clock::duration communication_interval_();
 

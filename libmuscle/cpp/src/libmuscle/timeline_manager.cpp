@@ -81,6 +81,17 @@ SubTimelineState SubTimelineState::from_data(DataConstRef const & data) {
     return state;
 }
 
+bool SubTimelineState::operator==(SubTimelineState const & rhs) const {
+    return iteration == rhs.iteration
+        && first_operator == rhs.first_operator
+        && send_participated == rhs.send_participated
+        && receive_participated == rhs.receive_participated;
+}
+
+bool SubTimelineState::operator!=(SubTimelineState const & rhs) const {
+    return !(*this == rhs);
+}
+
 Data TimelineState::to_data() const {
     Data subtimelines = Data::dict();
     for (auto const & kv : subtimeline_states)
@@ -104,6 +115,17 @@ TimelineState TimelineState::from_data(DataConstRef const & data) {
         state.subtimeline_states[subtimelines.key(i)] =
                 SubTimelineState::from_data(subtimelines.value(i));
     return state;
+}
+
+bool TimelineState::operator==(TimelineState const & rhs) const {
+    return iteration == rhs.iteration
+        && send_participated == rhs.send_participated
+        && receive_participated == rhs.receive_participated
+        && subtimeline_states == rhs.subtimeline_states;
+}
+
+bool TimelineState::operator!=(TimelineState const & rhs) const {
+    return !(*this == rhs);
 }
 
 
@@ -371,6 +393,8 @@ void SubTimelineManager::restore_state(SubTimelineState const & state) {
 }
 
 
+#ifndef LIBMUSCLE_MOCK_TIMELINE_MANAGER
+
 TimelineManager::TimelineManager(PortManager const & port_manager)
     : port_manager_(port_manager)
     , receive_([&port_manager] {
@@ -512,5 +536,7 @@ void TimelineManager::restore_state(TimelineState const & state) {
             item.second.restore_state(it->second);
     }
 }
+
+#endif
 
 } }

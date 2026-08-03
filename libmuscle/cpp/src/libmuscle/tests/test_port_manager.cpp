@@ -13,6 +13,8 @@
 #include <numeric>
 #include <stdexcept>
 #include <map>
+#include <unordered_map>
+#include <unordered_set>
 #include <gtest/gtest.h>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/port.hpp>
@@ -35,6 +37,7 @@ using ymmsl::Conduit;
 using ymmsl::Identifier;
 using ymmsl::Operator;
 using ymmsl::Reference;
+using ymmsl::Timeline;
 
 
 struct libmuscle_port_manager : ::testing::Test {
@@ -78,7 +81,12 @@ TEST_F(libmuscle_port_manager, test_connect_ports) {
     PeerDims peer_dims({{Reference("other"), {}}});
     PeerLocations peer_locations({
             {Reference("other"), {"direct:test"}}});
-    PeerInfo peer_info(component_id, index_, conduits, peer_dims, peer_locations, {});
+    // "in" carries an explicit timeline to confirm that declared ports still
+    // resolve their timeline from the yMMSL config, not from the declaration.
+    std::vector<::ymmsl::Port> ymmsl_ports({
+            ::ymmsl::Port("in", Operator::S, Timeline(":a"))});
+    PeerInfo peer_info(
+            component_id, index_, conduits, peer_dims, peer_locations, ymmsl_ports);
 
     port_manager_.connect_ports(peer_info);
 
@@ -94,10 +102,30 @@ TEST_F(libmuscle_port_manager, test_connect_ports) {
     ASSERT_EQ(ports.at("in").name, "in");
     ASSERT_EQ(ports.at("in").oper, Operator::S);
     ASSERT_EQ(ports.at("in").length_, -1);
+    ASSERT_EQ(ports.at("in").timeline, Timeline(":a"));
 
     ASSERT_EQ(ports.at("out").name, "out");
     ASSERT_EQ(ports.at("out").oper, Operator::O_I);
     ASSERT_EQ(ports.at("out").length_, -1);
+}
+
+TEST_F(libmuscle_port_manager, test_has_f_init_connections) {
+    PortsDescription declared_ports({{Operator::F_INIT, {"in"}}});
+    PortManager port_manager(index_, declared_ports);
+
+    Reference component_id("component");
+    PeerDims peer_dims({{Reference("other"), {}}});
+    PeerLocations peer_locations({{Reference("other"), {"direct:test"}}});
+
+    PeerInfo peer_info(component_id, index_, {}, peer_dims, peer_locations, {});
+    port_manager.connect_ports(peer_info);
+    ASSERT_FALSE(port_manager.has_f_init_connections());
+
+    std::vector<Conduit> conduits({Conduit("other.out", "component.in")});
+    PeerInfo peer_info2(
+            component_id, index_, conduits, peer_dims, peer_locations, {});
+    port_manager.connect_ports(peer_info2);
+    ASSERT_TRUE(port_manager.has_f_init_connections());
 }
 
 TEST_F(libmuscle_port_manager, test_connect_vector_ports) {
@@ -234,6 +262,55 @@ TEST_F(libmuscle_port_manager, test_connect_inferred_ports_oi_s) {
     ASSERT_EQ(ports.at("s").name, "s");
     ASSERT_EQ(ports.at("s").oper, Operator::S);
     ASSERT_EQ(ports.at("s").length_, -1);
+}
+
+TEST_F(libmuscle_port_manager, test_list_subtimelines_and_get_connected_ports) {
+    PortsDescription declared_ports({
+            {Operator::O_I, {"oi_a", "oi_b", "oi_unconn"}},
+            {Operator::S, {"s_conn"}},
+            {Operator::F_INIT, {"fi_conn"}}});
+    PortManager port_manager(index2_, declared_ports);
+
+    Reference component_id("component");
+    std::vector<Conduit> conduits({
+            Conduit("component.oi_a", "other.in1"),
+            Conduit("component.oi_b", "other.in2"),
+            Conduit("other.out3", "component.s_conn"),
+            Conduit("other.out4", "component.fi_conn")});
+    PeerDims peer_dims({{Reference("other"), {}}});
+    PeerLocations peer_locations({{Reference("other"), {"direct:test"}}});
+    std::vector<::ymmsl::Port> ymmsl_ports({
+            ::ymmsl::Port("oi_a", Operator::O_I, Timeline(":a")),
+            ::ymmsl::Port("oi_b", Operator::O_I, Timeline(":b")),
+            ::ymmsl::Port("oi_unconn", Operator::O_I, Timeline(":c")),
+            ::ymmsl::Port("s_conn", Operator::S, Timeline(":a")),
+            ::ymmsl::Port("fi_conn", Operator::F_INIT)});
+    PeerInfo peer_info(
+            component_id, index2_, conduits, peer_dims, peer_locations, ymmsl_ports);
+
+    port_manager.connect_ports(peer_info);
+
+    // oi_unconn is unconnected and on its own timeline (:c), which must not
+    // appear in the result.
+    auto subtimelines = port_manager.list_subtimelines();
+    std::unordered_set<Timeline> subtimelines_set(
+            subtimelines.begin(), subtimelines.end());
+    ASSERT_EQ(
+            subtimelines_set,
+            std::unordered_set<Timeline>({Timeline(":a"), Timeline(":b")}));
+
+    auto oi_ports = port_manager.get_connected_ports(Operator::O_I);
+    ASSERT_EQ(oi_ports.size(), 2u);
+    std::unordered_map<std::string, Timeline> oi_timeline_by_name;
+    for (auto const & port : oi_ports)
+        oi_timeline_by_name.emplace(port.name, port.timeline);
+    ASSERT_EQ(oi_timeline_by_name.at("oi_a"), Timeline(":a"));
+    ASSERT_EQ(oi_timeline_by_name.at("oi_b"), Timeline(":b"));
+
+    auto oi_a_ports = port_manager.get_connected_ports(Operator::O_I, Timeline(":a"));
+    ASSERT_EQ(oi_a_ports.size(), 1u);
+    ASSERT_EQ(oi_a_ports[0].name, "oi_a");
+    ASSERT_EQ(oi_a_ports[0].timeline, Timeline(":a"));
 }
 
 TEST_F(libmuscle_port_manager, test_port_message_counts) {

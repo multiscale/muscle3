@@ -17,9 +17,76 @@
 #include <unistd.h>
 #include <ftw.h>
 
+#include <libmuscle/message.hpp>
 #include <libmuscle/port.hpp>
+#include <libmuscle/timeline_manager.hpp>
 #include <libmuscle/tests/mocks/mock_port_manager.hpp>
 #include <ymmsl/ymmsl.hpp>
+
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
+// These need to be in the namespace to use argument-dependent lookup (ADL).
+// Several mocks (e.g. MockCommunicator's receive_message) need these to be
+// comparable, whether or not a given test actually compares them.
+
+bool operator!=(DataConstRef const &, DataConstRef const &);
+
+bool operator==(DataConstRef const & lhs, DataConstRef const & rhs) {
+    if (lhs.is_a_dict()) {
+        if (!rhs.is_a_dict()) return false;
+        if (lhs.size() != rhs.size()) return false;
+        try {
+            for (std::size_t i = 0u; i < lhs.size(); ++i)
+                if (lhs.value(i) != rhs[lhs.key(i)]) return false;
+        }
+        catch (std::domain_error const &) {
+            return false;
+        }
+        return true;
+    }
+
+    if (lhs.is_a_list()) {
+        if (!rhs.is_a_list()) return false;
+        if (lhs.size() != rhs.size()) return false;
+        for (std::size_t i = 0u; i < lhs.size(); ++i)
+            if (lhs[i] != rhs[i]) return false;
+        return true;
+    }
+
+    if (lhs.is_a<::ymmsl::Settings>()) {
+        if (!rhs.is_a<::ymmsl::Settings>()) return false;
+        return lhs.as<::ymmsl::Settings>() == rhs.as<::ymmsl::Settings>();
+    }
+
+    if (lhs.is_a<bool>()) return rhs.is_a<bool>() && lhs.as<bool>() == rhs.as<bool>();
+
+    if (lhs.is_a<double>())
+        return rhs.is_a<double>() && lhs.as<double>() == rhs.as<double>();
+
+    if (lhs.is_a<std::string>()) {
+        if (!rhs.is_a<std::string>()) return false;
+        return lhs.as<std::string>() == rhs.as<std::string>();
+    }
+
+    if (lhs.is_nil()) return rhs.is_nil();
+
+    throw std::runtime_error("Not implemented");
+}
+
+bool operator!=(DataConstRef const & lhs, DataConstRef const & rhs) {
+    return !(lhs == rhs);
+}
+
+bool operator==(Message const & lhs, Message const & rhs) {
+    if (lhs.timestamp_ != rhs.timestamp_) return false;
+    if (lhs.next_timestamp_ != rhs.next_timestamp_) return false;
+    if (lhs.data_ != rhs.data_) return false;
+    if (lhs.settings_ != rhs.settings_) return false;
+    return true;
+}
+
+} }
 
 
 // callback for nftw() to delete all contents of a folder
@@ -63,6 +130,7 @@ struct ConnectedPortManagerFixture {
     public:
         typedef ::libmuscle::_MUSCLE_IMPL_NS::Port Port;
         typedef ::ymmsl::Operator Operator;
+        typedef ::ymmsl::Timeline Timeline;
 
         std::unordered_map<ymmsl::Operator, std::vector<std::string>> declared_ports_;
 
@@ -80,14 +148,14 @@ struct ConnectedPortManagerFixture {
         {
             // Can't do this in the initializer list because you can't move from one,
             // and you can't copy a unique_ptr.
-            mock_ports_["in"] = std::make_unique<Port>("in", Operator::F_INIT, false, true, 0, std::vector<int>());
-            mock_ports_["not_connected"] = std::make_unique<Port>("not_connected", Operator::F_INIT, false, false, 0, std::vector<int>());
-            mock_ports_["out_v"] = std::make_unique<Port>("out_v", Operator::O_I, true, true, 0, std::vector<int>({13}));
-            mock_ports_["out_r"] = std::make_unique<Port>("out_r", Operator::O_I, true, true, 0, std::vector<int>());
-            mock_ports_["in_v"] = std::make_unique<Port>("in_v", Operator::S, true, true, 0, std::vector<int>({13}));
-            mock_ports_["in_r"] = std::make_unique<Port>("in_r", Operator::S, true, true, 0, std::vector<int>());
-            mock_ports_["not_connected_v"] = std::make_unique<Port>("not_connected_v", Operator::S, true, false, 0, std::vector<int>());
-            mock_ports_["out"] = std::make_unique<Port>("out", Operator::O_F, false, true, 0, std::vector<int>());
+            mock_ports_["in"] = std::make_unique<Port>("in", Operator::F_INIT, Timeline(""), false, true, 0, std::vector<int>());
+            mock_ports_["not_connected"] = std::make_unique<Port>("not_connected", Operator::F_INIT, Timeline(""), false, false, 0, std::vector<int>());
+            mock_ports_["out_v"] = std::make_unique<Port>("out_v", Operator::O_I, Timeline(""), true, true, 0, std::vector<int>({13}));
+            mock_ports_["out_r"] = std::make_unique<Port>("out_r", Operator::O_I, Timeline(""), true, true, 0, std::vector<int>());
+            mock_ports_["in_v"] = std::make_unique<Port>("in_v", Operator::S, Timeline(""), true, true, 0, std::vector<int>({13}));
+            mock_ports_["in_r"] = std::make_unique<Port>("in_r", Operator::S, Timeline(""), true, true, 0, std::vector<int>());
+            mock_ports_["not_connected_v"] = std::make_unique<Port>("not_connected_v", Operator::S, Timeline(""), true, false, 0, std::vector<int>());
+            mock_ports_["out"] = std::make_unique<Port>("out", Operator::O_F, Timeline(""), false, true, 0, std::vector<int>());
 
             connected_port_manager_.get_port.side_effect = [this]
                 (std::string const & name) -> Port &  {
@@ -98,6 +166,26 @@ struct ConnectedPortManagerFixture {
                 (std::string const & name) -> bool {
                     return mock_ports_.count(name) != 0;
                 };
+            connected_port_manager_.has_f_init_connections.return_value = true;
+        }
+};
+
+
+struct TimelineStateFixture {
+    public:
+        typedef ::libmuscle::_MUSCLE_IMPL_NS::TimelineState TimelineState;
+        typedef ::libmuscle::_MUSCLE_IMPL_NS::PortAndSlot PortAndSlot;
+        typedef ::libmuscle::_MUSCLE_IMPL_NS::IterationCount IterationCount;
+        typedef ::libmuscle::_MUSCLE_IMPL_NS::Optional<int> OptionalSlot;
+
+        TimelineState timeline_state_;
+
+        TimelineStateFixture() {
+            timeline_state_.iteration = IterationCount({1});
+            timeline_state_.send_participated = {};
+            timeline_state_.receive_participated = {
+                    PortAndSlot("in", OptionalSlot())};
+            timeline_state_.subtimeline_states = {};
         }
 };
 

@@ -43,6 +43,9 @@ struct SubTimelineState {
 
     Data to_data() const;
     static SubTimelineState from_data(DataConstRef const & data);
+
+    bool operator==(SubTimelineState const & rhs) const;
+    bool operator!=(SubTimelineState const & rhs) const;
 };
 
 
@@ -62,6 +65,9 @@ struct TimelineState {
 
     Data to_data() const;
     static TimelineState from_data(DataConstRef const & data);
+
+    bool operator==(TimelineState const & rhs) const;
+    bool operator!=(TimelineState const & rhs) const;
 };
 
 /** A single expected next action: send or receive on the given port, and if
@@ -166,7 +172,9 @@ class TimelinePorts {
 
 /** Tracks iteration state for a single sub-timeline. */
 class SubTimelineManager {
+#ifndef LIBMUSCLE_MOCK_TIMELINE_MANAGER
     friend class TimelineManager;
+#endif
 
     public:
         /** Create a SubTimelineManager.
@@ -250,6 +258,10 @@ class SubTimelineManager {
  * direction: one set for the ports that send (O_F or O_I) and one for the
  * ports that receive (F_INIT or S).
  */
+#ifdef LIBMUSCLE_MOCK_TIMELINE_MANAGER
+#include LIBMUSCLE_MOCK_TIMELINE_MANAGER
+#else
+
 class TimelineManager {
     public:
         /** Create a TimelineManager.
@@ -342,5 +354,7 @@ class TimelineManager {
         std::unordered_map<::ymmsl::Timeline, SubTimelineManager> submanagers_;
         Optional<IterationCount> iteration_;
 };
+
+#endif
 
 } }

@@ -18,7 +18,6 @@
 #include <libmuscle/logging.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/message.cpp>
-#include <libmuscle/mmsf_validator.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/timestamp.cpp>
 
@@ -79,55 +78,8 @@ int main(int argc, char *argv[]) {
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-// These need to be in the namespace to use argument-dependent lookup (ADL)
-
-bool operator!=(DataConstRef const &, DataConstRef const &);
-
-bool operator==(DataConstRef const & lhs, DataConstRef const & rhs) {
-    if (lhs.is_a_dict()) {
-        if (!rhs.is_a_dict()) return false;
-        if (lhs.size() != rhs.size()) return false;
-        try {
-            for (std::size_t i = 0u; i < lhs.size(); ++i)
-                if (lhs.value(i) != rhs[lhs.key(i)]) return false;
-        }
-        catch (std::domain_error const &) {
-            return false;
-        }
-        return true;
-    }
-
-    if (lhs.is_a_list()) {
-        if (!rhs.is_a_list()) return false;
-        if (lhs.size() != rhs.size()) return false;
-        for (std::size_t i = 0u; i < lhs.size(); ++i)
-            if (lhs[i] != rhs[i]) return false;
-        return true;
-    }
-
-    if (lhs.is_a<Settings>()) {
-        if (!rhs.is_a<Settings>()) return false;
-        return lhs.as<Settings>() == rhs.as<Settings>();
-    }
-
-    if (lhs.is_a<bool>()) return rhs.is_a<bool>() && lhs.as<bool>() == rhs.as<bool>();
-
-    if (lhs.is_a<double>())
-        return rhs.is_a<double>() && lhs.as<double>() == rhs.as<double>();
-
-    if (lhs.is_a<std::string>()) {
-        if (!rhs.is_a<std::string>()) return false;
-        return lhs.as<std::string>() == rhs.as<std::string>();
-    }
-
-    if (lhs.is_nil()) return rhs.is_nil();
-
-    throw std::runtime_error("Not implemented");
-}
-
-bool operator!=(DataConstRef const & lhs, DataConstRef const & rhs) {
-    return !(lhs == rhs);
-}
+// This needs to be in the namespace to use argument-dependent lookup (ADL).
+// DataConstRef/Message equality live in fixtures.hpp.
 
 bool operator==(PeerInfo const & lhs, PeerInfo const & rhs) {
     if (lhs.kernel_ != rhs.kernel_) return false;
@@ -137,14 +89,6 @@ bool operator==(PeerInfo const & lhs, PeerInfo const & rhs) {
     if (lhs.peers_ != rhs.peers_) return false;
     if (lhs.peer_dims_ != rhs.peer_dims_) return false;
     if (lhs.peer_locations_ != rhs.peer_locations_) return false;
-    return true;
-}
-
-bool operator==(Message const & lhs, Message const & rhs) {
-    if (lhs.timestamp_ != rhs.timestamp_) return false;
-    if (lhs.next_timestamp_ != rhs.next_timestamp_) return false;
-    if (lhs.data_ != rhs.data_) return false;
-    if (lhs.settings_ != rhs.settings_) return false;
     return true;
 }
 
@@ -414,8 +358,6 @@ TEST_F(libmuscle_instance, get_setting) {
 }
 
 TEST_F(libmuscle_instance, list_ports) {
-    ASSERT_TRUE(port_manager_.list_ports.called_once_with());
-    port_manager_.list_ports.call_args_list.clear();
     instance_.list_ports();
     ASSERT_TRUE(port_manager_.list_ports.called_once_with());
 }
@@ -512,9 +454,19 @@ TEST_F(libmuscle_instance, reuse_f_init_vector_port) {
 
 TEST_F(libmuscle_instance, reuse_no_f_init_ports) {
     port_manager_.list_ports.return_value = PortsDescription();
+    port_manager_.has_f_init_connections.return_value = false;
 
     ASSERT_TRUE(instance_.reuse_instance());
     ASSERT_FALSE(instance_.reuse_instance());
+}
+
+TEST_F(libmuscle_instance, reuse_subsequent_iteration_finishes_reuse_iteration) {
+    port_manager_.has_f_init_connections.return_value = false;
+
+    instance_.reuse_instance();
+    ASSERT_FALSE(communicator_.finish_reuse_iteration.called());
+    instance_.reuse_instance();
+    ASSERT_TRUE(communicator_.finish_reuse_iteration.called_once());
 }
 
 TEST_F(libmuscle_instance, send_message) {

@@ -13,6 +13,7 @@
 
 
 using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::IterationCount;
 using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using ymmsl::Reference;
 
@@ -75,7 +76,8 @@ TEST(test_mcp_message, from_bytes) {
             "settings_overlay", Data(),
             "message_number", 0,
             "saved_until", 3.0,
-            "data", Data()
+            "data", Data(),
+            "iteration", Data()
             );
 
     msgpack::sbuffer sbuf;
@@ -96,3 +98,17 @@ TEST(test_mcp_message, from_bytes) {
     ASSERT_TRUE(m.data.is_nil());
 }
 
+TEST(test_mcp_message, iteration_roundtrip) {
+    Data settings, data(42);
+
+    MPPMessage m(
+            Reference("sender.port"), Reference("receiver.port"),
+            {},
+            0.0, {},
+            settings, 0, 0.0, data,
+            IterationCount({0, 2})
+            );
+
+    auto m_out = MPPMessage::from_bytes(m.encoded());
+    ASSERT_EQ(m_out.iteration.get(), IterationCount({0, 2}));
+}

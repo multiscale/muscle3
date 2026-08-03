@@ -97,7 +97,9 @@ Optional<double> SnapshotManager::prepare_resume(
         resume_overlay_ = snapshot.settings_overlay;
 
         port_manager_.restore_message_counts(snapshot.port_message_counts);
-        communicator_.restore_state(snapshot.timeline_state);
+        if (!snapshot.is_final_snapshot) {
+            communicator_.restore_state(snapshot.timeline_state);
+        }
         // Store a copy of the snapshot in the current run directory
         auto path = store_snapshot_(snapshot);
         auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);

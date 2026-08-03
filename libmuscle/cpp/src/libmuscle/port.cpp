@@ -28,9 +28,10 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Port::Port(
         std::string const & name, Operator oper,
+        ::ymmsl::Timeline const & timeline,
         bool is_vector, bool is_connected,
         int our_ndims, std::vector<int> peer_dims)
-    : ::ymmsl::Port(Identifier(name), oper)
+    : ::ymmsl::Port(Identifier(name), oper, timeline)
 {
     is_connected_ = is_connected;
     if (is_vector) {

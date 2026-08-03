@@ -24,6 +24,7 @@ class Port : public ::ymmsl::Port {
          *
          * @param name Name of this port.
          * @param oper Corresponding operator.
+         * @param timeline The timeline this port is on.
          * @param is_vector Whether this is a vector port.
          * @param is_connected Whether this port is connected to a peer.
          * @param our_ndims Number of dimensions of our instance set.
@@ -31,6 +32,7 @@ class Port : public ::ymmsl::Port {
          */
         Port(
                 std::string const & name, ::ymmsl::Operator oper,
+                ::ymmsl::Timeline const & timeline,
                 bool is_vector, bool is_connected,
                 int our_ndims, std::vector<int> peer_dims);
 

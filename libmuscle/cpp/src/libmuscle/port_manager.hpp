@@ -60,6 +60,25 @@ class PortManager {
          */
         bool settings_in_connected() const;
 
+        /** Returns whether this instance has any connected F_INIT ports,
+         * including muscle_settings_in.
+         */
+        bool has_f_init_connections() const;
+
+        /** Returns the connected ports for the given operator.
+         *
+         * @param oper The operator to select ports for.
+         * @param timeline If set, only return ports on this timeline.
+         */
+        std::vector<Port> get_connected_ports(
+                ::ymmsl::Operator oper,
+                Optional<::ymmsl::Timeline> const & timeline = {}) const;
+
+        /** Returns the distinct timelines of this instance's connected
+         * O_I/S ports.
+         */
+        std::vector<::ymmsl::Timeline> list_subtimelines() const;
+
         /** Returns the muscle_settings_in port.
          */
         Port const & muscle_settings_in() const;
@@ -85,6 +104,9 @@ class PortManager {
 
         /** Returns a Port object describing a port with the given name.
          *
+         * "muscle_settings_in" is handled specially, since it isn't a
+         * declared port.
+         *
          * @param port_name Name of the port to retrieve.
          *
          * @return A Port object for the port
@@ -92,6 +114,9 @@ class PortManager {
         Port const & get_port(std::string const & port_name) const;
 
         /** Returns a Port object describing a port with the given name.
+         *
+         * "muscle_settings_in" is handled specially, since it isn't a
+         * declared port.
          *
          * @param port_name Name of the port to retrieve.
          *

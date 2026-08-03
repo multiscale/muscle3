@@ -67,9 +67,7 @@ def timeline_manager(has_f_init: bool, include_settings: bool) -> TimelineManage
     peer_info = PeerInfo(Ref("component"), [], conduits, peer_dims, {}, ymmsl_ports)
     pm.connect_ports(peer_info)
 
-    tm = TimelineManager(pm)
-    tm.on_ports_connected()
-    return tm
+    return TimelineManager(pm)
 
 
 @pytest.fixture
@@ -81,7 +79,6 @@ def vector_timeline_manager() -> TimelineManager:
     pm.connect_ports(peer_info)
 
     tm = TimelineManager(pm)
-    tm.on_ports_connected()
     return tm
 
 
@@ -101,7 +98,7 @@ def check_received(
     iteration: IterationCount,
 ) -> None:
     timeline_manager.check_receive(port, slot)
-    timeline_manager.check_received_message(port, slot, iteration)
+    timeline_manager.record_received_message(port, slot, iteration)
 
 
 def test_finish_reuse_iteration_blocked_when_muscle_settings_in_not_received(
@@ -224,7 +221,7 @@ def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
 
     timeline_manager.check_receive("in_a1_2")
     with pytest.raises(MessageOutOfSync) as exc_info:
-        timeline_manager.check_received_message("in_a1_2", None, [7])
+        timeline_manager.record_received_message("in_a1_2", None, [7])
     assert exc_info.value.port == timeline_manager._port_manager.get_port("in_a1_2")
     assert exc_info.value.slot is None
 
@@ -256,9 +253,9 @@ def test_check_send_message_o_i_when_o_i_leads_and_complete(
 
     first_iteration = timeline_manager.check_send_message("out_a1")
     timeline_manager.check_receive("in_a1")
-    timeline_manager.check_received_message("in_a1", None, first_iteration)
+    timeline_manager.record_received_message("in_a1", None, first_iteration)
     timeline_manager.check_receive("in_a1_2")
-    timeline_manager.check_received_message("in_a1_2", None, first_iteration)
+    timeline_manager.record_received_message("in_a1_2", None, first_iteration)
 
     second_iteration = timeline_manager.check_send_message("out_a1")
 
@@ -292,7 +289,7 @@ def test_check_receive_f_init_allowed_when_not_yet_participated(
     timeline_manager.check_receive("in_f")
     assert not timeline_manager._receive.has_participated("in_f", None)
 
-    timeline_manager.check_received_message("in_f", None, [3])
+    timeline_manager.record_received_message("in_f", None, [3])
     assert timeline_manager._iteration == [3]
     assert timeline_manager._receive.has_participated("in_f", None)
 
@@ -315,7 +312,7 @@ def test_check_receive_f_init_raises_already_participated_when_received_twice(
     assert exc_info.value.action == "receive"
 
 
-def test_check_received_message_f_init_raises_when_iteration_differs(
+def test_record_received_message_f_init_raises_when_iteration_differs(
     timeline_manager: TimelineManager,
 ) -> None:
     """Once the main timeline has started, an F_INIT message for a different
@@ -324,7 +321,7 @@ def test_check_received_message_f_init_raises_when_iteration_differs(
     timeline_manager.check_receive("muscle_settings_in")
 
     with pytest.raises(MessageOutOfSync) as exc_info:
-        timeline_manager.check_received_message("muscle_settings_in", None, [4])
+        timeline_manager.record_received_message("muscle_settings_in", None, [4])
 
     assert exc_info.value.port == timeline_manager._port_manager.get_port(
         "muscle_settings_in"
@@ -403,7 +400,7 @@ def test_check_receive_message_s_when_s_leads_and_complete(
 
     timeline_manager.check_receive("in_a2")
     with pytest.raises(MessageOutOfSync) as exc_info:
-        timeline_manager.check_received_message("in_a2", None, first_iteration)
+        timeline_manager.record_received_message("in_a2", None, first_iteration)
     assert exc_info.value.port == timeline_manager._port_manager.get_port("in_a2")
     assert exc_info.value.slot is None
 
@@ -452,7 +449,6 @@ def test_finish_reuse_iteration_resets_when_complete(
     # A fresh, just-connected TimelineManager has never participated in
     # anything, so comparing against its state confirms everything was reset.
     fresh = TimelineManager(timeline_manager._port_manager)
-    fresh.on_ports_connected()
     assert timeline_manager.get_state() == fresh.get_state()
 
 
@@ -493,7 +489,6 @@ def test_get_state_and_restore_state_round_trip(
     # snapshot in a new process, from an independent but identically
     # configured PortManager.
     restored = TimelineManager(timeline_manager._port_manager)
-    restored.on_ports_connected()
     restored.restore_state(timeline_state)
 
     assert restored.get_state() == timeline_state

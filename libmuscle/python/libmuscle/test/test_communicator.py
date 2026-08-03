@@ -83,21 +83,16 @@ def test_create_communicator(communicator, mpp_server):
     pass
 
 
-def test_create_communicator_creates_timeline_manager(
+def test_set_peer_info_creates_timeline_manager(
     communicator, connected_port_manager, timeline_manager
 ):
-    timeline_manager.assert_called_once_with(connected_port_manager)
-    assert communicator._timeline_manager == timeline_manager.return_value
-    timeline_manager.return_value.on_ports_connected.assert_not_called()
-
-
-def test_set_peer_info_sets_up_timeline_manager(communicator, timeline_manager):
     peer_info = MagicMock()
 
     communicator.set_peer_info(peer_info)
 
     assert communicator._peer_info == peer_info
-    timeline_manager.return_value.on_ports_connected.assert_called_once_with()
+    timeline_manager.assert_called_once_with(connected_port_manager)
+    assert communicator._timeline_manager == timeline_manager.return_value
 
 
 def test_send_message(connected_communicator, mpp_server, timeline_manager):

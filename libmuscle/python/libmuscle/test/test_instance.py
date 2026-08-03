@@ -250,6 +250,7 @@ def test_create_instance_connecting(
     manager_location_argv,
     instance_argv,
     mmp_client,
+    port_manager,
     communicator,
     settings_manager,
     declared_ports,
@@ -261,6 +262,7 @@ def test_create_instance_connecting(
     mmp_client.get_settings.return_value = settings
 
     instance = Instance(declared_ports)
+    port_manager.connect_ports.assert_called_once_with(peer_info)
     communicator.set_peer_info.assert_called_once_with(peer_info)
 
     assert settings_manager.base == settings

@@ -33,7 +33,7 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
 
     instance_id = Reference("test[1]")
     communicator = MagicMock()
-    communicator.get_timeline_state.return_value = timeline_state
+    communicator.get_state.return_value = timeline_state
     snapshot_manager = SnapshotManager(instance_id, manager, port_manager, communicator)
 
     snapshot_manager.prepare_resume(None, tmp_path)
@@ -72,7 +72,7 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
 
     assert snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
-    communicator.restore_timeline_state.assert_called_once_with(timeline_state)
+    communicator.restore_state.assert_called_once_with(timeline_state)
     msg = snapshot_manager2.load_snapshot()
     assert msg.timestamp == 0.2
     assert msg.next_timestamp is None
@@ -99,13 +99,13 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == "test-1_3.pack"
 
-    communicator.restore_timeline_state.reset_mock()
+    communicator.restore_state.reset_mock()
     snapshot_manager3 = SnapshotManager(
         instance_id, manager, port_manager, communicator
     )
     snapshot_manager3.prepare_resume(snapshot_path, tmp_path)
     assert snapshot_manager3.resuming_from_final()
-    communicator.restore_timeline_state.assert_not_called()
+    communicator.restore_state.assert_not_called()
 
 
 def test_save_load_implicit_snapshot(
@@ -118,7 +118,7 @@ def test_save_load_implicit_snapshot(
 
     instance_id = Reference("test[1]")
     communicator = MagicMock()
-    communicator.get_timeline_state.return_value = timeline_state
+    communicator.get_state.return_value = timeline_state
     snapshot_manager = SnapshotManager(instance_id, manager, port_manager, communicator)
 
     snapshot_manager.prepare_resume(None, tmp_path)
@@ -146,7 +146,7 @@ def test_save_load_implicit_snapshot(
     assert not snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
 
-    communicator.restore_timeline_state.assert_not_called()
+    communicator.restore_state.assert_not_called()
     snapshot_manager2.save_snapshot(None, True, ["implicit"], 12.3, 2.5, Settings())
     manager.submit_snapshot_metadata.assert_called_once()
 

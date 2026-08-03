@@ -110,8 +110,6 @@ class Communicator:
         # indexed by remote instance id
         self._clients: dict[Reference, MPPClient] = {}
 
-        self._timeline_manager = TimelineManager(port_manager)
-
     def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.
 
@@ -128,14 +126,14 @@ class Communicator:
         """Inform this Communicator about its peers.
 
         This tells the Communicator about its peers, so that it can route
-        messages accordingly. This also completes the TimelineManager's
-        initialization.
+        messages accordingly. The TimelineManager is also created here, since it
+        needs the port manager's ports to already be connected to their peers.
 
         Args:
             peer_info: Information about the peers.
         """
         self._peer_info = peer_info
-        self._timeline_manager.on_ports_connected()
+        self._timeline_manager = TimelineManager(self._port_manager)
 
     def set_receive_timeout(self, receive_timeout: float) -> None:
         """Update the timeout after which the manager is notified that we are waiting
@@ -147,17 +145,17 @@ class Communicator:
         """
         self._receive_timeout = receive_timeout
 
-    def get_timeline_state(self) -> TimelineState:
+    def get_state(self) -> TimelineState:
         """Return the current state of the timeline manager, for saving in a
         snapshot.
         """
         return self._timeline_manager.get_state()
 
-    def restore_timeline_state(self, state: TimelineState) -> None:
+    def restore_state(self, state: TimelineState) -> None:
         """Restore the timeline manager to a previously saved state.
 
         Args:
-            state: The state to restore, as returned by get_timeline_state().
+            state: The state to restore, as returned by get_state().
         """
         self._timeline_manager.restore_state(state)
 
@@ -418,7 +416,7 @@ class Communicator:
             _logger.debug(f"Port {port_and_slot} is now closed")
         else:
             assert mpp_message.iteration is not None
-            self._timeline_manager.check_received_message(
+            self._timeline_manager.record_received_message(
                 port_name, slot, mpp_message.iteration
             )
 

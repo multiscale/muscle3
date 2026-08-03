@@ -6,6 +6,7 @@
 
 #include <libmuscle/message.hpp>
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/timeline_manager.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -17,7 +18,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 class Snapshot {
     public:
         enum class VersionByte : char {
-            MESSAGEPACK = '1'
+            MESSAGEPACK = '2'
         };
 
         Snapshot(
@@ -26,7 +27,8 @@ class Snapshot {
                 std::unordered_map<std::string, std::vector<int>> const & port_message_counts,
                 bool is_final_snapshot,
                 Optional<Message> const & message,
-                ::ymmsl::Settings const & settings_overlay);
+                ::ymmsl::Settings const & settings_overlay,
+                TimelineState const & timeline_state = TimelineState());
 
         /** Create a snapshot object from binary data.
          *
@@ -48,6 +50,7 @@ class Snapshot {
         bool is_final_snapshot;
         Optional<Message> message;
         ::ymmsl::Settings settings_overlay;
+        TimelineState timeline_state;
 };
 
 /** Metadata of a snapshot for sending to the muscle_manager.

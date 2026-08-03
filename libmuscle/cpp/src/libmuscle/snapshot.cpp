@@ -16,7 +16,8 @@ Snapshot::Snapshot(
             std::unordered_map<std::string, std::vector<int>> const & port_message_counts,
             bool is_final_snapshot,
             Optional<Message> const & message,
-            ::ymmsl::Settings const & settings_overlay
+            ::ymmsl::Settings const & settings_overlay,
+            TimelineState const & timeline_state
             )
         : triggers(triggers)
         , wallclock_time(wallclock_time)
@@ -24,6 +25,7 @@ Snapshot::Snapshot(
         , is_final_snapshot(is_final_snapshot)
         , message(message)
         , settings_overlay(settings_overlay)
+        , timeline_state(timeline_state)
     {}
 
 Snapshot Snapshot::from_bytes(std::vector<char> const & data) {
@@ -67,7 +69,8 @@ Snapshot Snapshot::from_bytes(std::vector<char> const & data) {
             port_message_counts,
             dict["is_final_snapshot"].as<bool>(),
             message,
-            dict["settings_overlay"].as<::ymmsl::Settings>()
+            dict["settings_overlay"].as<::ymmsl::Settings>(),
+            TimelineState::from_data(dict["timeline_state"])
             );
 }
 
@@ -107,7 +110,8 @@ std::vector<char> Snapshot::to_bytes() const {
             "port_message_counts", pmc,
             "is_final_snapshot", is_final_snapshot,
             "message", mpp_msg.encoded_as_dcr(),
-            "settings_overlay", Data(settings_overlay));
+            "settings_overlay", Data(settings_overlay),
+            "timeline_state", timeline_state.to_data());
 
         msgpack::pack(sbuf, dict);
 
@@ -118,7 +122,8 @@ std::vector<char> Snapshot::to_bytes() const {
             "port_message_counts", pmc,
             "is_final_snapshot", is_final_snapshot,
             "message", Data(),
-            "settings_overlay", Data(settings_overlay));
+            "settings_overlay", Data(settings_overlay),
+            "timeline_state", timeline_state.to_data());
 
         msgpack::pack(sbuf, dict);
     }

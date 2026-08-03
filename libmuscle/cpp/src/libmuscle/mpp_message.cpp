@@ -18,7 +18,8 @@ MPPMessage::MPPMessage(
             double timestamp, ::libmuscle::_MUSCLE_IMPL_NS::Optional<double> next_timestamp,
             DataConstRef const & settings_overlay,
             int message_number, double saved_until,
-            DataConstRef const & data
+            DataConstRef const & data,
+            ::libmuscle::_MUSCLE_IMPL_NS::Optional<IterationCount> const & iteration
             )
         : sender(sender)
         , receiver(receiver)
@@ -29,6 +30,7 @@ MPPMessage::MPPMessage(
         , message_number(message_number)
         , saved_until(saved_until)
         , data(data)
+        , iteration(iteration)
     {}
 
 MPPMessage MPPMessage::from_bytes(DataConstRef const & data) {
@@ -83,7 +85,8 @@ MPPMessage MPPMessage::from_dict_(DataConstRef const & dict) {
             dict["settings_overlay"],
             dict["message_number"].as<int>(),
             dict["saved_until"].as<double>(),
-            dict["data"]);
+            dict["data"],
+            decode_iteration(dict["iteration"]));
 }
 
 DataConstRef MPPMessage::as_dict_() const {
@@ -104,7 +107,8 @@ DataConstRef MPPMessage::as_dict_() const {
             "settings_overlay", settings_overlay,
             "message_number", message_number,
             "saved_until", saved_until,
-            "data", data
+            "data", data,
+            "iteration", encode_iteration(iteration)
             );
 }
 

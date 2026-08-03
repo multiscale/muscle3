@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include <libmuscle/communicator.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/port_manager.hpp>
@@ -28,11 +29,14 @@ class SnapshotManager {
          * @param instance_id The id of this instance.
          * @param manager The client used to submit data to the manager.
          * @param port_manager The port manager belonging to this instance.
+         * @param communicator The communicator belonging to this instance,
+         *      whose timeline state is saved/restored along with the snapshot.
          */
         SnapshotManager(
                 ymmsl::Reference const & instance_id,
                 MMPClient & manager,
-                PortManager & port_manager);
+                PortManager & port_manager,
+                Communicator & communicator);
 
         /** Apply checkpoint info received from the manager.
          *
@@ -99,6 +103,7 @@ class SnapshotManager {
         ymmsl::Reference const & instance_id_;
         MMPClient & manager_;
         PortManager & port_manager_;
+        Communicator & communicator_;
         Optional<Snapshot> resume_from_snapshot_;
         ::ymmsl::Settings resume_overlay_;
         int next_snapshot_num_;

@@ -25,10 +25,12 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 SnapshotManager::SnapshotManager(
             ymmsl::Reference const & instance_id,
             MMPClient & manager,
-            PortManager & port_manager)
+            PortManager & port_manager,
+            Communicator & communicator)
         : instance_id_(instance_id)
         , manager_(manager)
         , port_manager_(port_manager)
+        , communicator_(communicator)
         , resume_from_snapshot_()
         , resume_overlay_()
         , next_snapshot_num_(1)
@@ -95,6 +97,7 @@ Optional<double> SnapshotManager::prepare_resume(
         resume_overlay_ = snapshot.settings_overlay;
 
         port_manager_.restore_message_counts(snapshot.port_message_counts);
+        communicator_.restore_state(snapshot.timeline_state);
         // Store a copy of the snapshot in the current run directory
         auto path = store_snapshot_(snapshot);
         auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);
@@ -147,9 +150,13 @@ double SnapshotManager::save_snapshot(
         }
     }
 
+    TimelineState timeline_state = communicator_.get_state();
+    if (is_final)
+        timeline_state.receive_participated.clear();
+
     Snapshot snapshot(
             triggers, wallclock_time, port_message_counts, is_final, message,
-            settings_overlay);
+            settings_overlay, timeline_state);
 
     auto path = store_snapshot_(snapshot);
     auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);

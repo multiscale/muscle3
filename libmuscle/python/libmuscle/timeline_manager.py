@@ -335,7 +335,6 @@ class TimelineManager:
         if port.operator is Operator.F_INIT:
             if self._receive.has_participated(port_name, slot):
                 raise AlreadyParticipated(port, slot)
-            return
         elif port.operator is Operator.S:
             self._submanagers[port.timeline].check_receive(port, slot)
 

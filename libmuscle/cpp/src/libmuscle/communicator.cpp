@@ -11,6 +11,7 @@
 
 #include <ymmsl/ymmsl.hpp>
 
+#include <cassert>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -58,14 +59,17 @@ void Communicator::set_peer_info(PeerInfo const & peer_info) {
 }
 
 void Communicator::finish_reuse_iteration() {
+    assert(timeline_manager_);
     timeline_manager_->finish_reuse_iteration();
 }
 
 TimelineState Communicator::get_state() const {
+    assert(timeline_manager_);
     return timeline_manager_->get_state();
 }
 
 void Communicator::restore_state(TimelineState const & state) {
+    assert(timeline_manager_);
     timeline_manager_->restore_state(state);
 }
 
@@ -134,12 +138,11 @@ std::tuple<Message, double> Communicator::receive_message(
         Optional<int> slot,
         Optional<Message> const & default_msg)
 {
-    Port & port = (port_name == "muscle_settings_in") ?
-        port_manager_.muscle_settings_in() : port_manager_.get_port(port_name);
+    Port & port = port_manager_.get_port(port_name);
 
+    timeline_manager_->check_receive(port_name, slot);
     std::string port_and_slot = port_desc(port_name, slot);
     log_debug("Waiting for message on ", port_and_slot);
-    timeline_manager_->check_receive(port_name, slot);
 
     std::vector<int> slot_list;
     if (slot.is_set())

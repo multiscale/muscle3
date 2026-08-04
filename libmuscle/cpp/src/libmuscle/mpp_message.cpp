@@ -14,12 +14,12 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 MPPMessage::MPPMessage(
             ::ymmsl::Reference const & sender,
             ::ymmsl::Reference const & receiver,
-            ::libmuscle::_MUSCLE_IMPL_NS::Optional<int> port_length,
-            double timestamp, ::libmuscle::_MUSCLE_IMPL_NS::Optional<double> next_timestamp,
+            Optional<int> port_length,
+            double timestamp, Optional<double> next_timestamp,
             DataConstRef const & settings_overlay,
             int message_number, double saved_until,
             DataConstRef const & data,
-            ::libmuscle::_MUSCLE_IMPL_NS::Optional<IterationCount> const & iteration
+            Optional<IterationCount> const & iteration
             )
         : sender(sender)
         , receiver(receiver)

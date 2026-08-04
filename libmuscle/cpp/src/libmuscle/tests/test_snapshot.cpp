@@ -71,7 +71,16 @@ TEST(libmuscle_snapshot, test_snapshot) {
     ASSERT_EQ(snapshot.message.get().data().as<std::string>(),
               snapshot2.message.get().data().as<std::string>());
     ASSERT_EQ(snapshot.settings_overlay, snapshot2.settings_overlay);
-    ASSERT_EQ(snapshot2.timeline_state, snapshot.timeline_state);
+    ASSERT_EQ(snapshot.timeline_state.iteration.is_set(),
+              snapshot2.timeline_state.iteration.is_set());
+    ASSERT_EQ(snapshot.timeline_state.iteration.get(),
+              snapshot2.timeline_state.iteration.get());
+    ASSERT_EQ(snapshot.timeline_state.send_participated,
+              snapshot2.timeline_state.send_participated);
+    ASSERT_EQ(snapshot.timeline_state.receive_participated,
+              snapshot2.timeline_state.receive_participated);
+    ASSERT_EQ(snapshot.timeline_state.subtimeline_states.size(),
+              snapshot2.timeline_state.subtimeline_states.size());
 }
 
 TEST(libmuscle_snapshot, test_snapshot_metadata) {

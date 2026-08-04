@@ -18,22 +18,22 @@ Data encode_port_and_slot(PortAndSlot const & port_and_slot) {
 
 PortAndSlot decode_port_and_slot(DataConstRef const & data) {
     Optional<int> slot;
-    if (!data[1u].is_nil())
-        slot = data[1u].as<int>();
-    return PortAndSlot(data[0u].as<std::string>(), slot);
+    if (!data[1].is_nil())
+        slot = data[1].as<int>();
+    return PortAndSlot(data[0].as<std::string>(), slot);
 }
 
 
 Data encode_participated(std::vector<PortAndSlot> const & participated) {
     Data result = Data::nils(participated.size());
-    for (std::size_t i = 0u; i < participated.size(); ++i)
+    for (std::size_t i = 0; i < participated.size(); ++i)
         result[i] = encode_port_and_slot(participated[i]);
     return result;
 }
 
 std::vector<PortAndSlot> decode_participated(DataConstRef const & data) {
     std::vector<PortAndSlot> result;
-    for (std::size_t i = 0u; i < data.size(); ++i)
+    for (std::size_t i = 0; i < data.size(); ++i)
         result.push_back(decode_port_and_slot(data[i]));
     return result;
 }
@@ -43,7 +43,7 @@ Data encode_iteration(Optional<IterationCount> const & iteration) {
     if (!iteration.is_set())
         return Data();
     Data result = Data::nils(iteration.get().size());
-    for (std::size_t i = 0u; i < iteration.get().size(); ++i)
+    for (std::size_t i = 0; i < iteration.get().size(); ++i)
         result[i] = iteration.get()[i];
     return result;
 }
@@ -52,7 +52,7 @@ Optional<IterationCount> decode_iteration(DataConstRef const & data) {
     if (data.is_nil())
         return {};
     IterationCount result;
-    for (std::size_t i = 0u; i < data.size(); ++i)
+    for (std::size_t i = 0; i < data.size(); ++i)
         result.push_back(data[i].as<int>());
     return result;
 }
@@ -81,17 +81,6 @@ SubTimelineState SubTimelineState::from_data(DataConstRef const & data) {
     return state;
 }
 
-bool SubTimelineState::operator==(SubTimelineState const & rhs) const {
-    return iteration == rhs.iteration
-        && first_operator == rhs.first_operator
-        && send_participated == rhs.send_participated
-        && receive_participated == rhs.receive_participated;
-}
-
-bool SubTimelineState::operator!=(SubTimelineState const & rhs) const {
-    return !(*this == rhs);
-}
-
 Data TimelineState::to_data() const {
     Data subtimelines = Data::dict();
     for (auto const & kv : subtimeline_states)
@@ -111,21 +100,10 @@ TimelineState TimelineState::from_data(DataConstRef const & data) {
     state.receive_participated = decode_participated(data["receive_participated"]);
 
     auto subtimelines = data["subtimeline_states"];
-    for (std::size_t i = 0u; i < subtimelines.size(); ++i)
+    for (std::size_t i = 0; i < subtimelines.size(); ++i)
         state.subtimeline_states[subtimelines.key(i)] =
                 SubTimelineState::from_data(subtimelines.value(i));
     return state;
-}
-
-bool TimelineState::operator==(TimelineState const & rhs) const {
-    return iteration == rhs.iteration
-        && send_participated == rhs.send_participated
-        && receive_participated == rhs.receive_participated
-        && subtimeline_states == rhs.subtimeline_states;
-}
-
-bool TimelineState::operator!=(TimelineState const & rhs) const {
-    return !(*this == rhs);
 }
 
 
@@ -139,14 +117,14 @@ std::string port_ref(Port const & port, Optional<int> const & slot) {
 }
 
 std::string port_ref(Port const & port, std::vector<int> const & slots) {
-    if (slots.size() <= 1u)
+    if (slots.size() <= 1)
         return port_ref(port, slots.empty() ? Optional<int>() : slots[0]);
 
     std::string name(port.name);
     std::ostringstream oss;
     oss << ::ymmsl::operator_name(port.oper) << " port '" << name << "' (slots ";
-    for (std::size_t i = 0u; i < slots.size(); ++i) {
-        if (i != 0u)
+    for (std::size_t i = 0; i < slots.size(); ++i) {
+        if (i != 0)
             oss << ", ";
         oss << slots[i];
     }
@@ -165,19 +143,25 @@ std::string expected_message(std::string const & subject, ExpectedActions const 
     return oss.str();
 }
 
-ExpectedActions expected_actions(
-        TimelinePorts const & ports, std::string const & action, bool missing_only = true) {
-    ExpectedActions result;
-    auto pr_list = missing_only ? ports.missing_ports() : ports.all_ports();
-    for (auto const & pr : pr_list)
-        result.emplace_back(action, pr.first, pr.second);
-    return result;
+void expected_actions(
+        TimelinePorts const * send, TimelinePorts const * receive, ExpectedActions & result,
+        bool missing_only = true) {
+    if (send) {
+        auto pr_list = missing_only ? send->missing_ports() : send->all_ports();
+        for (auto const & pr : pr_list)
+            result.emplace_back("send", pr.first, pr.second);
+    }
+    if (receive) {
+        auto pr_list = missing_only ? receive->missing_ports() : receive->all_ports();
+        for (auto const & pr : pr_list)
+            result.emplace_back("receive", pr.first, pr.second);
+    }
 }
 
 }   // anonymous namespace
 
 
-PortBlocked::PortBlocked(Port const & port, Optional<int> slot, ExpectedActions const & expected)
+PortBlocked::PortBlocked(Port const & port, Optional<int> slot, ExpectedActions expected)
     : TimelineError(expected_message(
             std::string(::ymmsl::allows_sending(port.oper) ? "send" : "receive")
                     + " a message on " + port_ref(port, slot),
@@ -185,12 +169,12 @@ PortBlocked::PortBlocked(Port const & port, Optional<int> slot, ExpectedActions 
     , action(::ymmsl::allows_sending(port.oper) ? "send" : "receive")
     , port(port)
     , slot(slot)
-    , expected(expected)
+    , expected(std::move(expected))
 {}
 
-ReuseLoopIncomplete::ReuseLoopIncomplete(ExpectedActions const & expected)
+ReuseLoopIncomplete::ReuseLoopIncomplete(ExpectedActions expected)
     : TimelineError(expected_message("call reuse_instance()", expected))
-    , expected(expected)
+    , expected(std::move(expected))
 {}
 
 AlreadyParticipated::AlreadyParticipated(Port const & port, Optional<int> slot)
@@ -218,11 +202,11 @@ MessageOutOfSync::MessageOutOfSync(Port const & port, Optional<int> slot)
 
 TimelinePorts::TimelinePorts(std::vector<Port> const & ports_in)
     : ports(ports_in)
-    , num_slots(0u)
+    , num_slots(0)
     , participated()
 {
     for (auto const & port : ports)
-        num_slots += port.is_vector() ? static_cast<std::size_t>(port.get_length()) : 1u;
+        num_slots += port.is_vector() ? static_cast<std::size_t>(port.get_length()) : 1;
 }
 
 void TimelinePorts::participate(std::string const & port_name, Optional<int> slot) {
@@ -302,19 +286,20 @@ IterationCount SubTimelineManager::check_send_message(
         iteration_ = it;
         first_operator_ = Operator::O_I;
     } else if (!send_.has_participated(port_name, slot)) {
-        if (first_operator_.is_set() && first_operator_.get() == Operator::S
-                && !receive_.all_participated()) {
-            throw PortBlocked(port, slot, expected_actions(receive_, "receive"));
+        if (first_operator_.get() == Operator::S && !receive_.all_participated()) {
+            ExpectedActions expected;
+            expected_actions(nullptr, &receive_, expected);
+            throw PortBlocked(port, slot, expected);
         }
     } else {
-        if (!(first_operator_.is_set() && first_operator_.get() == Operator::O_I)) {
-            throw PortBlocked(port, slot, expected_actions(receive_, "receive", false));
+        if (!(first_operator_.get() == Operator::O_I)) {
+            ExpectedActions expected;
+            expected_actions(nullptr, &receive_, expected, false);
+            throw PortBlocked(port, slot, expected);
         }
         if (!is_complete()) {
-            ExpectedActions expected_send = expected_actions(send_, "send");
-            ExpectedActions expected_receive = expected_actions(receive_, "receive");
-            ExpectedActions expected = std::move(expected_send);
-            expected.insert(expected.end(), expected_receive.begin(), expected_receive.end());
+            ExpectedActions expected;
+            expected_actions(&send_, &receive_, expected);
             throw PortBlocked(port, slot, expected);
         }
         iteration_.get().back() += 1;
@@ -332,17 +317,19 @@ void SubTimelineManager::check_receive(Port const & port, Optional<int> slot) {
     if (!receive_.has_participated(port_name, slot)) {
         if (first_operator_.is_set() && first_operator_.get() == Operator::O_I
                 && !send_.all_participated()) {
-            throw PortBlocked(port, slot, expected_actions(send_, "send"));
+            ExpectedActions expected;
+            expected_actions(&send_, nullptr, expected);
+            throw PortBlocked(port, slot, expected);
         }
     } else {
-        if (!(first_operator_.is_set() && first_operator_.get() == Operator::S)) {
-            throw PortBlocked(port, slot, expected_actions(send_, "send", false));
+        if (!(first_operator_.get() == Operator::S)) {
+            ExpectedActions expected;
+            expected_actions(&send_, nullptr, expected, false);
+            throw PortBlocked(port, slot, expected);
         }
         if (!(send_.all_participated() && receive_.all_participated())) {
-            ExpectedActions expected_send = expected_actions(send_, "send");
-            ExpectedActions expected_receive = expected_actions(receive_, "receive");
-            ExpectedActions expected = std::move(expected_send);
-            expected.insert(expected.end(), expected_receive.begin(), expected_receive.end());
+            ExpectedActions expected;
+            expected_actions(&send_, &receive_, expected);
             throw PortBlocked(port, slot, expected);
         }
     }
@@ -392,21 +379,28 @@ void SubTimelineManager::restore_state(SubTimelineState const & state) {
     receive_.participated = state.receive_participated;
 }
 
+void SubTimelineManager::missing_actions(ExpectedActions & result) const {
+    expected_actions(&send_, &receive_, result);
+}
 
+
+// Unlike Communicator/PortManager, this file also holds SubTimelineManager and
+// the (Sub)TimelineState code, which are never mocked and must stay compiled even
+// when a test mocks TimelineManager but still includes this file for them.
 #ifndef LIBMUSCLE_MOCK_TIMELINE_MANAGER
 
 TimelineManager::TimelineManager(PortManager const & port_manager)
     : port_manager_(port_manager)
-    , receive_([&port_manager] {
-            auto ports = port_manager.get_connected_ports(Operator::F_INIT, Optional<Timeline>());
-            if (port_manager.settings_in_connected())
-                ports.push_back(port_manager.get_port("muscle_settings_in"));
-            return ports;
-        }())
+    , receive_(std::vector<Port>())
     , send_(port_manager.get_connected_ports(Operator::O_F, Optional<Timeline>()))
     , submanagers_()
     , iteration_()
 {
+    auto receive_ports = port_manager_.get_connected_ports(Operator::F_INIT, Optional<Timeline>());
+    if (port_manager_.settings_in_connected())
+        receive_ports.push_back(port_manager_.get_port("muscle_settings_in"));
+    receive_ = TimelinePorts(receive_ports);
+
     for (auto const & tl : port_manager_.list_subtimelines())
         submanagers_.emplace(tl, SubTimelineManager(tl, port_manager_));
 
@@ -429,12 +423,8 @@ IterationCount TimelineManager::check_send_o_f_(Port const & port, Optional<int>
 
     ExpectedActions expected;
     for (auto const & item : submanagers_) {
-        if (!item.second.is_complete()) {
-            ExpectedActions expected_send = expected_actions(item.second.send_, "send");
-            ExpectedActions expected_receive = expected_actions(item.second.receive_, "receive");
-            expected.insert(expected.end(), expected_send.begin(), expected_send.end());
-            expected.insert(expected.end(), expected_receive.begin(), expected_receive.end());
-        }
+        if (!item.second.is_complete())
+            item.second.missing_actions(expected);
     }
     if (!expected.empty())
         throw PortBlocked(port, slot, expected);
@@ -452,9 +442,7 @@ void TimelineManager::check_receive(std::string const & port_name, Optional<int>
     if (port.oper == Operator::F_INIT) {
         if (receive_.has_participated(port_name, slot))
             throw AlreadyParticipated(port, slot);
-        return;
-    }
-    if (port.oper == Operator::S)
+    } else if (port.oper == Operator::S)
         submanagers_.at(port.timeline).check_receive(port, slot);
 }
 
@@ -497,19 +485,11 @@ void TimelineManager::finish_reuse_iteration() {
         return;
     }
 
-    ExpectedActions expected_send = expected_actions(send_, "send");
-    ExpectedActions expected_receive = expected_actions(receive_, "receive");
-    ExpectedActions expected = std::move(expected_send);
-    expected.insert(expected.end(), expected_receive.begin(), expected_receive.end());
+    ExpectedActions expected;
+    expected_actions(&send_, &receive_, expected);
     for (auto const & item : submanagers_) {
-        if (!item.second.is_complete()) {
-            ExpectedActions sub_expected_send = expected_actions(item.second.send_, "send");
-            ExpectedActions sub_expected_receive =
-                    expected_actions(item.second.receive_, "receive");
-            expected.insert(expected.end(), sub_expected_send.begin(), sub_expected_send.end());
-            expected.insert(
-                    expected.end(), sub_expected_receive.begin(), sub_expected_receive.end());
-        }
+        if (!item.second.is_complete())
+            item.second.missing_actions(expected);
     }
 
     throw ReuseLoopIncomplete(expected);

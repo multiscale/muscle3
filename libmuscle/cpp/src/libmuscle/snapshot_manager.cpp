@@ -153,9 +153,6 @@ double SnapshotManager::save_snapshot(
     }
 
     TimelineState timeline_state = communicator_.get_state();
-    if (is_final)
-        timeline_state.receive_participated.clear();
-
     Snapshot snapshot(
             triggers, wallclock_time, port_message_counts, is_final, message,
             settings_overlay, timeline_state);

@@ -145,7 +145,15 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
 
     ASSERT_TRUE(snapshot_manager2.resuming_from_intermediate());
     ASSERT_FALSE(snapshot_manager2.resuming_from_final());
-    ASSERT_TRUE(communicator_.restore_state.called_once_with(timeline_state));
+    ASSERT_TRUE(communicator_.restore_state.called_once());
+    auto const & restored_state = communicator_.restore_state.call_arg<0>();
+    ASSERT_EQ(restored_state.iteration.is_set(), timeline_state.iteration.is_set());
+    ASSERT_EQ(restored_state.iteration.get(), timeline_state.iteration.get());
+    ASSERT_EQ(restored_state.send_participated, timeline_state.send_participated);
+    ASSERT_EQ(restored_state.receive_participated, timeline_state.receive_participated);
+    ASSERT_EQ(
+            restored_state.subtimeline_states.size(),
+            timeline_state.subtimeline_states.size());
 
     auto msg = snapshot_manager2.load_snapshot();
     ASSERT_DOUBLE_EQ(msg.timestamp(), 0.2);

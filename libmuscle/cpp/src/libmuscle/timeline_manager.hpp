@@ -33,6 +33,12 @@ using IterationCount = std::vector<int>;
 Data encode_iteration(Optional<IterationCount> const & iteration);
 Optional<IterationCount> decode_iteration(DataConstRef const & data);
 
+/** A single expected next action: send or receive on the given port, and if
+ * the port is a vector port, the slots that are still expected ([] for a
+ * scalar port). */
+using ExpectedAction = std::tuple<std::string, Port, std::vector<int>>;
+using ExpectedActions = std::vector<ExpectedAction>;
+
 /** A single sub-timeline's state, as returned by SubTimelineManager::get_state()
  * for saving in a snapshot. */
 struct SubTimelineState {
@@ -43,9 +49,6 @@ struct SubTimelineState {
 
     Data to_data() const;
     static SubTimelineState from_data(DataConstRef const & data);
-
-    bool operator==(SubTimelineState const & rhs) const;
-    bool operator!=(SubTimelineState const & rhs) const;
 };
 
 
@@ -65,16 +68,7 @@ struct TimelineState {
 
     Data to_data() const;
     static TimelineState from_data(DataConstRef const & data);
-
-    bool operator==(TimelineState const & rhs) const;
-    bool operator!=(TimelineState const & rhs) const;
 };
-
-/** A single expected next action: send or receive on the given port, and if
- * the port is a vector port, the slots that are still expected ([] for a
- * scalar port). */
-using ExpectedAction = std::tuple<std::string, Port, std::vector<int>>;
-using ExpectedActions = std::vector<ExpectedAction>;
 
 
 /** Base class for exceptions raised when Instance's send/receive calls
@@ -89,7 +83,7 @@ class TimelineError : public std::runtime_error {
  * a message first. */
 class PortBlocked : public TimelineError {
     public:
-        PortBlocked(Port const & port, Optional<int> slot, ExpectedActions const & expected);
+        PortBlocked(Port const & port, Optional<int> slot, ExpectedActions expected);
 
         std::string action;
         Port port;
@@ -102,7 +96,7 @@ class PortBlocked : public TimelineError {
  * finished. */
 class ReuseLoopIncomplete : public TimelineError {
     public:
-        explicit ReuseLoopIncomplete(ExpectedActions const & expected);
+        explicit ReuseLoopIncomplete(ExpectedActions expected);
 
         ExpectedActions expected;
 };
@@ -172,10 +166,6 @@ class TimelinePorts {
 
 /** Tracks iteration state for a single sub-timeline. */
 class SubTimelineManager {
-#ifndef LIBMUSCLE_MOCK_TIMELINE_MANAGER
-    friend class TimelineManager;
-#endif
-
     public:
         /** Create a SubTimelineManager.
          *
@@ -235,6 +225,11 @@ class SubTimelineManager {
         /** Restore this sub-timeline's state from a snapshot, for snapshot
          * resume. */
         void restore_state(SubTimelineState const & state);
+
+        /** Append the send and receive actions this sub-timeline is still missing
+         * this reuse loop iteration to result, for use in blocked-port error
+         * messages. */
+        void missing_actions(ExpectedActions & result) const;
 
     private:
         ::ymmsl::Timeline timeline_;

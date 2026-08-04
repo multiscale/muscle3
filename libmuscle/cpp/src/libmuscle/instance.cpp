@@ -1039,7 +1039,11 @@ Optional<double> Instance::Impl::f_init_max_timestamp_() {
  * should_save_final_snapshot.
  */
 bool Instance::Impl::decide_reuse_instance_() {
-    if (first_run_.is_set())
+    if (first_run_.is_set()
+#ifdef MUSCLE_ENABLE_MPI
+            && mpi_barrier_.is_root()
+#endif
+       )
         communicator_->finish_reuse_iteration();
 
     if (!first_run_.is_set())

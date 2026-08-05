@@ -414,10 +414,11 @@ class TimelineManager:
         """Return the main timeline's iteration and participation, and every
         sub-timeline's state, for saving in a snapshot.
         """
+        # N.B. we only sort send/receive participated to test equality.
         return TimelineState(
             iteration=self._iteration,
-            send_participated=list(self._send.participated),
-            receive_participated=list(self._receive.participated),
+            send_participated=sorted(self._send.participated),
+            receive_participated=sorted(self._receive.participated),
             subtimeline_states={
                 str(tl): stm.get_state() for tl, stm in self._submanagers.items()
             },
@@ -619,13 +620,14 @@ class SubTimelineManager:
             sub-timeline's iteration, leading operator, and per-port
             participation.
         """
+        # N.B. we only sort send/receive participated to test equality.
         return {
             "iteration": self._iteration,
             "first_operator": (
                 self._first_operator.name if self._first_operator is not None else None
             ),
-            "send_participated": list(self._send.participated),
-            "receive_participated": list(self._receive.participated),
+            "send_participated": sorted(self._send.participated),
+            "receive_participated": sorted(self._receive.participated),
         }
 
     def restore_state(self, state: SubTimelineState) -> None:

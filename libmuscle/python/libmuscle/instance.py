@@ -885,13 +885,13 @@ class Instance:
         the reuse loop, and it gets called by reuse_instance and
         should_save_final_snapshot.
         """
-        if self._first_run is not None:
-            self._communicator.finish_reuse_iteration()
-
         if self._first_run is None:
             self._first_run = True
         elif self._first_run:
             self._first_run = False
+
+        if not self._first_run:
+            self._communicator.finish_reuse_iteration()
 
         # resume from intermediate
         if self._first_run and self._snapshot_manager.resuming_from_intermediate():

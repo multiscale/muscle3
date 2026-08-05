@@ -1039,13 +1039,6 @@ Optional<double> Instance::Impl::f_init_max_timestamp_() {
  * should_save_final_snapshot.
  */
 bool Instance::Impl::decide_reuse_instance_() {
-    if (first_run_.is_set()
-#ifdef MUSCLE_ENABLE_MPI
-            && mpi_barrier_.is_root()
-#endif
-       )
-        communicator_->finish_reuse_iteration();
-
     if (!first_run_.is_set())
         first_run_ = true;
     else
@@ -1062,6 +1055,9 @@ bool Instance::Impl::decide_reuse_instance_() {
     if (mpi_barrier_.is_root()) {
         try {
 #endif
+            if (!first_run_.get())
+                communicator_->finish_reuse_iteration();
+
             bool f_init_connected = port_manager_->has_f_init_connections();
             if (first_run_.get() && snapshot_manager_->resuming_from_intermediate()) {
                 // resume from intermediate

@@ -7,6 +7,7 @@
 #include <libmuscle/port.hpp>
 #include <libmuscle/port_manager.hpp>
 #include <libmuscle/profiler.hpp>
+#include <libmuscle/timeline_manager.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -104,6 +105,9 @@ class MockCommunicator : public MockClass<MockCommunicator> {
             NAME_MOCK_MEM_FUN(MockCommunicator, shutdown);
             NAME_MOCK_MEM_FUN(MockCommunicator, set_receive_timeout);
             NAME_MOCK_MEM_FUN(MockCommunicator, get_receive_timeout);
+            NAME_MOCK_MEM_FUN(MockCommunicator, finish_reuse_iteration);
+            NAME_MOCK_MEM_FUN(MockCommunicator, get_state);
+            NAME_MOCK_MEM_FUN(MockCommunicator, restore_state);
         }
 
         MockCommunicator() {
@@ -143,6 +147,12 @@ class MockCommunicator : public MockClass<MockCommunicator> {
         MockFun<Void, Val<double>> set_receive_timeout;
 
         MockFun<Val<double>> get_receive_timeout;
+
+        MockFun<Void> finish_reuse_iteration;
+
+        MockFun<Val<TimelineState>> get_state;
+
+        MockFun<Void, Val<TimelineState const &>> restore_state;
 };
 
 using Communicator = MockCommunicator;

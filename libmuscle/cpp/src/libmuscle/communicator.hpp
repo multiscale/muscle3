@@ -16,6 +16,7 @@
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/receive_timeout_handler.hpp>
 #include <libmuscle/test_support.hpp>
+#include <libmuscle/timeline_manager.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -129,6 +130,19 @@ class Communicator {
          */
         void shutdown();
 
+        /** Prepare the timeline manager for the next reuse loop.
+         */
+        void finish_reuse_iteration();
+
+        /** Return the current state of the timeline manager, for saving in a
+         * snapshot.
+         */
+        TimelineState get_state() const;
+
+        /** Restore the timeline manager to a previously saved state.
+         */
+        void restore_state(TimelineState const & state);
+
         /** Update the timeout after which the manager is notified that we are
          * waiting for a message.
          *
@@ -206,6 +220,7 @@ class Communicator {
         std::unordered_map<ymmsl::Reference, std::unique_ptr<MPPClient>> clients_;
         Optional<PeerInfo> peer_info_;
         double receive_timeout_;
+        std::unique_ptr<TimelineManager> timeline_manager_;
 };
 
 } }

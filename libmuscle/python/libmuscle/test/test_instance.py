@@ -373,8 +373,6 @@ def test_get_setting_with_default_and_type(instance, settings_manager):
 
 
 def test_list_ports(instance, port_manager):
-    port_manager.list_ports.assert_called_once_with()
-    port_manager.list_ports.reset_mock()
     instance.list_ports()
     port_manager.list_ports.assert_called_once_with()
 
@@ -473,9 +471,22 @@ def test_reuse_f_init_vector_port(instance, port_manager, communicator):
 
 def test_reuse_no_f_init_ports(instance, connected_port_manager, communicator):
     connected_port_manager.list_ports.return_value = {}
+    connected_port_manager.has_f_init_connections.return_value = False
 
     assert instance.reuse_instance() is True
     assert instance.reuse_instance() is False
+
+
+def test_reuse_subsequent_iteration_finishes_reuse_iteration(
+    instance, connected_port_manager, communicator
+):
+    connected_port_manager.has_f_init_connections.return_value = False
+
+    instance.reuse_instance()
+    communicator.finish_reuse_iteration.assert_not_called()
+
+    instance.reuse_instance()
+    communicator.finish_reuse_iteration.assert_called_once()
 
 
 def test_send_message(instance, settings_manager, communicator):

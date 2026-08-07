@@ -1,5 +1,6 @@
 // Inject mocks
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
+#define LIBMUSCLE_MOCK_PORT_MANAGER <mocks/mock_port_manager.hpp>
 
 // into the real implementation,
 #include <libmuscle/logger.cpp>

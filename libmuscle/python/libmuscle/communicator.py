@@ -14,6 +14,8 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
+from libmuscle.timeline_manager import TimelineManager, TimelineState
+from libmuscle.util import port_desc
 
 _logger = logging.getLogger(__name__)
 
@@ -124,12 +126,14 @@ class Communicator:
         """Inform this Communicator about its peers.
 
         This tells the Communicator about its peers, so that it can route
-        messages accordingly.
+        messages accordingly. The TimelineManager is also created here, since it
+        needs the port manager's ports to already be connected to their peers.
 
         Args:
             peer_info: Information about the peers.
         """
         self._peer_info = peer_info
+        self._timeline_manager = TimelineManager(self._port_manager)
 
     def set_receive_timeout(self, receive_timeout: float) -> None:
         """Update the timeout after which the manager is notified that we are waiting
@@ -140,6 +144,24 @@ class Communicator:
                 notification mechanism.
         """
         self._receive_timeout = receive_timeout
+
+    def get_state(self) -> TimelineState:
+        """Return the current state of the timeline manager, for saving in a
+        snapshot.
+        """
+        return self._timeline_manager.get_state()
+
+    def restore_state(self, state: TimelineState) -> None:
+        """Restore the timeline manager to a previously saved state.
+
+        Args:
+            state: The state to restore, as returned by get_state().
+        """
+        self._timeline_manager.restore_state(state)
+
+    def finish_reuse_iteration(self) -> None:
+        """Prepare the timeline manager for the next reuse loop."""
+        self._timeline_manager.finish_reuse_iteration()
 
     def send_message(
         self,
@@ -160,17 +182,20 @@ class Communicator:
             checkpoints_considered_until: When we last checked if we
                 should save a snapshot (wallclock time).
         """
-        if slot is None:
-            _logger.debug(f"Sending message on {port_name}")
-            slot_list: list[int] = []
-        else:
-            _logger.debug(f"Sending message on {port_name}[{slot}]")
-            slot_list = [slot]
+        _logger.debug(f"Sending message on {port_desc(port_name, slot)}")
+        slot_list: list[int] = [] if slot is None else [slot]
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
         if not self._port_manager.get_port(str(snd_endpoint.port)).is_connected():
             # log sending on disconnected port
             return
+
+        # TODO: ClosePort will be replaced with milestones, and then we do need an
+        # iteration count.
+        if isinstance(message.data, ClosePort):
+            iteration = None
+        else:
+            iteration = self._timeline_manager.check_send_message(port_name, slot)
 
         port = self._port_manager.get_port(port_name)
         profile_event = ProfileEvent(
@@ -204,6 +229,7 @@ class Communicator:
                 port.get_num_messages(slot),
                 checkpoints_considered_until,
                 message.data,
+                iteration,
             )
             encoded_message = mpp_message.encoded()
             self._server.deposit(recv_endpoint.ref(), encoded_message)
@@ -245,17 +271,11 @@ class Communicator:
             RuntimeError: If the network connection had an error, or the
                     message number was incorrect.
         """
-        if port_name == "muscle_settings_in":
-            port = self._port_manager._muscle_settings_in
-        else:
-            port = self._port_manager.get_port(port_name)
+        port = self._port_manager.get_port(port_name)
+        self._timeline_manager.check_receive(port_name, slot)
 
-        if slot is None:
-            port_and_slot = port_name
-            slot_list: list[int] = []
-        else:
-            port_and_slot = f"{port_name}[{slot}]"
-            slot_list = [slot]
+        port_and_slot = port_desc(port_name, slot)
+        slot_list: list[int] = [] if slot is None else [slot]
         _logger.debug(f"Waiting for message on {port_and_slot}")
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
@@ -394,6 +414,11 @@ class Communicator:
         _logger.debug(f"Received message on {port_and_slot}")
         if isinstance(mpp_message.data, ClosePort):
             _logger.debug(f"Port {port_and_slot} is now closed")
+        else:
+            assert mpp_message.iteration is not None
+            self._timeline_manager.record_received_message(
+                port_name, slot, mpp_message.iteration
+            )
 
         return message, mpp_message.saved_until
 
@@ -457,10 +482,7 @@ class Communicator:
             port_name: The name of the port to close.
         """
         message = Message(float("inf"), None, ClosePort(), Settings())
-        if slot is None:
-            _logger.debug(f"Closing port {port_name}")
-        else:
-            _logger.debug(f"Closing port {port_name}[{slot}]")
+        _logger.debug(f"Closing port {port_desc(port_name, slot)}")
         self.send_message(port_name, message, slot)
 
     def _close_outgoing_ports(self) -> None:

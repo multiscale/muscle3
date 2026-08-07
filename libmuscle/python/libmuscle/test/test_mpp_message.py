@@ -161,6 +161,17 @@ def test_grid_roundtrip() -> None:
         assert grid_out.array[0, 0, 2] == 3.0
 
 
+def test_iteration_roundtrip() -> None:
+    sender = Reference("sender.port")
+    receiver = Reference("receiver.port")
+
+    msg = MPPMessage(
+        sender, receiver, None, 0.0, None, Settings(), 0, 0.0, 42, iteration=[0, 2]
+    )
+    msg_out = MPPMessage.from_bytes(msg.encoded())
+    assert msg_out.iteration == [0, 2]
+
+
 def test_non_contiguous_grid_roundtrip() -> None:
     sender = Reference("sender.port")
     receiver = Reference("receiver.port")

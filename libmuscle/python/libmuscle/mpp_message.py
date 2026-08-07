@@ -7,6 +7,7 @@ from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.grid import Grid
+from libmuscle.timeline_manager import IterationCount
 
 
 class ExtTypeId(IntEnum):
@@ -160,6 +161,7 @@ class MPPMessage:
         message_number: int,
         saved_until: float,
         data: Any,
+        iteration: Optional[IterationCount] = None,
     ) -> None:
         """Create an MPPMessage.
 
@@ -181,6 +183,9 @@ class MPPMessage:
             saved_until: Elapsed time until which the sender has
                 processed checkpoints.
             data: The serialised contents of the message.
+            iteration: The iteration of the sending port, or None.
+                TODO: When replacing ClosePort with Milestones we shouldn't allow a None
+                anymore here
         """
         # make sure timestamp and next_timestamp are floats
         timestamp = float(timestamp)
@@ -195,6 +200,7 @@ class MPPMessage:
         self.settings_overlay = settings_overlay
         self.message_number = message_number
         self.saved_until = saved_until
+        self.iteration = iteration
         if isinstance(data, np.ndarray):
             self.data = Grid(data)
         else:
@@ -218,6 +224,7 @@ class MPPMessage:
         saved_until = message_dict["saved_until"]
 
         data = message_dict["data"]
+        iteration = message_dict.get("iteration")
         return MPPMessage(
             sender,
             receiver,
@@ -228,6 +235,7 @@ class MPPMessage:
             message_number,
             saved_until,
             data,
+            iteration,
         )
 
     def encoded(self) -> Buffer:
@@ -242,6 +250,7 @@ class MPPMessage:
             "message_number": self.message_number,
             "saved_until": self.saved_until,
             "data": self.data,
+            "iteration": self.iteration,
         }
 
         return cast(

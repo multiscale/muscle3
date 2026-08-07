@@ -5,6 +5,7 @@
 #define LIBMUSCLE_MOCK_MPP_SERVER <mocks/mock_mpp_server.hpp>
 #define LIBMUSCLE_MOCK_PORT_MANAGER <mocks/mock_port_manager.hpp>
 #define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
+#define LIBMUSCLE_MOCK_TIMELINE_MANAGER <mocks/mock_timeline_manager.hpp>
 
 // into the real implementation under test.
 #include <ymmsl/ymmsl.hpp>
@@ -23,6 +24,7 @@
 #include <libmuscle/port.cpp>
 #include <libmuscle/profiling.cpp>
 #include <libmuscle/receive_timeout_handler.cpp>
+#include <libmuscle/timeline_manager.cpp>
 #include <libmuscle/timestamp.cpp>
 #include <libmuscle/util.cpp>
 
@@ -51,6 +53,7 @@ using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::Endpoint;
 using libmuscle::_MUSCLE_IMPL_NS::is_close_port;
+using libmuscle::_MUSCLE_IMPL_NS::IterationCount;
 using libmuscle::_MUSCLE_IMPL_NS::Message;
 using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
 using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
@@ -135,6 +138,8 @@ struct libmuscle_communicator2 : libmuscle_communicator {
 TEST_F(libmuscle_communicator, create_communicator) {}
 
 TEST_F(libmuscle_communicator2, send_message) {
+    connected_communicator_.timeline_manager_->check_send_message.return_value =
+        IterationCount({2, 0});
     Message msg(0.0, 1.0, "test", Settings({{"s0", 0}, {"s1", "1"}}));
 
     connected_communicator_.send_message("out_v", msg, 7, -1.0);
@@ -153,6 +158,8 @@ TEST_F(libmuscle_communicator2, send_message) {
     ASSERT_EQ(overlay["s1"].as<std::string>(), "1");
     ASSERT_EQ(encoded_msg.saved_until, -1.0);
     ASSERT_EQ(encoded_msg.data.as<std::string>(), "test");
+    ASSERT_TRUE(encoded_msg.iteration.is_set());
+    ASSERT_EQ(encoded_msg.iteration.get(), IterationCount({2, 0}));
 }
 
 TEST_F(libmuscle_communicator2, send_message_disconnected) {
@@ -166,7 +173,8 @@ TEST_F(libmuscle_communicator2, send_message_disconnected) {
 TEST_F(libmuscle_communicator2, receive_message) {
     MPPMessage msg(
             "peer.out", "component.in", {}, 2.0, 3.0,
-            Settings({{"s0", "0"}, {"s1", true}}), 0, 1.0, "Testing");
+            Settings({{"s0", "0"}, {"s1", true}}), 0, 1.0, "Testing",
+            IterationCount({0}));
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
@@ -189,7 +197,8 @@ TEST_F(libmuscle_communicator2, receive_message) {
 TEST_F(libmuscle_communicator2, receive_message_vector) {
     MPPMessage msg(
             "peer2.out_v", "component.in_v", 5, 4.0, 6.0,
-            Settings({{"s0", {0.0}}, {"s1", 1.0}}), 0, 3.5, "Testing2");
+            Settings({{"s0", {0.0}}, {"s1", 1.0}}), 0, 3.5, "Testing2",
+            IterationCount({0}));
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
@@ -238,7 +247,8 @@ TEST_F(libmuscle_communicator2, receive_close_port_vector) {
 TEST_F(libmuscle_communicator2, port_count_validation) {
     MPPMessage msg(
             "peer.out", "component.in",
-            {}, 0.0, {}, Settings({{"test1", 12}}), 0, 7.6, "test");
+            {}, 0.0, {}, Settings({{"test1", 12}}), 0, 7.6, "test",
+            IterationCount({0}));
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
@@ -256,7 +266,8 @@ TEST_F(libmuscle_communicator2, port_count_validation) {
 TEST_F(libmuscle_communicator2, port_discard_error_on_resume) {
     MPPMessage msg(
             "other.out[13]", "kernel[13].in",
-            {}, 0.0, {}, Settings({{"test1", 12}}), 1, 2.3, "test");
+            {}, 0.0, {}, Settings({{"test1", 12}}), 1, 2.3, "test",
+            IterationCount({0}));
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
@@ -294,7 +305,8 @@ TEST_F(libmuscle_communicator2, port_discard_success_on_resume) {
         side_effect.push_back(MPPMessage(
                 "other.out[13]", "kernel[13].in",
                 {}, 0.0, {}, Settings({{"test1", 12}}), message_number, 1.0,
-                Data::dict("this is message", message_number)));
+                Data::dict("this is message", message_number),
+                IterationCount({0})));
     }
 
     int count = 0;

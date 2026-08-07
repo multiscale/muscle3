@@ -27,12 +27,23 @@ class MockPortManager : public MockClass<MockPortManager> {
             NAME_MOCK_MEM_FUN(MockPortManager, constructor);
             NAME_MOCK_MEM_FUN(MockPortManager, connect_ports);
             NAME_MOCK_MEM_FUN(MockPortManager, settings_in_connected);
+            NAME_MOCK_MEM_FUN(MockPortManager, has_f_init_connections);
+            NAME_MOCK_MEM_FUN(MockPortManager, get_connected_ports);
+            NAME_MOCK_MEM_FUN(MockPortManager, list_subtimelines);
             NAME_MOCK_MEM_FUN(MockPortManager, muscle_settings_in);
             NAME_MOCK_MEM_FUN(MockPortManager, list_ports);
             NAME_MOCK_MEM_FUN(MockPortManager, port_exists);
             NAME_MOCK_MEM_FUN(MockPortManager, get_port);
             NAME_MOCK_MEM_FUN(MockPortManager, get_message_counts);
             NAME_MOCK_MEM_FUN(MockPortManager, restore_message_counts);
+
+            // Sensible defaults so that a freshly-constructed, unconfigured
+            // mock can still be used to build a (real) TimelineManager,
+            // which queries these at construction time.
+            settings_in_connected.return_value = false;
+            has_f_init_connections.return_value = false;
+            get_connected_ports.return_value = std::vector<Port>();
+            list_subtimelines.return_value = std::vector<::ymmsl::Timeline>();
         }
 
         MockPortManager() {
@@ -53,6 +64,14 @@ class MockPortManager : public MockClass<MockPortManager> {
         MockFun<Void, Val<PeerInfo const &>> connect_ports;
 
         MockFun<Val<bool>> settings_in_connected;
+
+        MockFun<Val<bool>> has_f_init_connections;
+
+        MockFun<
+            Val<std::vector<Port>>, Val<::ymmsl::Operator>,
+            Val<Optional<::ymmsl::Timeline> const &>> get_connected_ports;
+
+        MockFun<Val<std::vector<::ymmsl::Timeline>>> list_subtimelines;
 
         MockFun<Obj<Port &>> muscle_settings_in;
 

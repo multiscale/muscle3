@@ -46,7 +46,13 @@ def mpp_client(MPPClient):
 
 
 @pytest.fixture
-def communicator(connected_port_manager, profiler):
+def timeline_manager():
+    with patch("libmuscle.communicator.TimelineManager") as MockTimelineManager:
+        yield MockTimelineManager
+
+
+@pytest.fixture
+def communicator(connected_port_manager, profiler, timeline_manager):
     return Communicator(Ref("component"), [], connected_port_manager, profiler, Mock())
 
 
@@ -77,7 +83,20 @@ def test_create_communicator(communicator, mpp_server):
     pass
 
 
-def test_send_message(connected_communicator, mpp_server):
+def test_set_peer_info_creates_timeline_manager(
+    communicator, connected_port_manager, timeline_manager
+):
+    peer_info = MagicMock()
+
+    communicator.set_peer_info(peer_info)
+
+    assert communicator._peer_info == peer_info
+    timeline_manager.assert_called_once_with(connected_port_manager)
+    assert communicator._timeline_manager == timeline_manager.return_value
+
+
+def test_send_message(connected_communicator, mpp_server, timeline_manager):
+    timeline_manager.return_value.check_send_message.return_value = [2, 0]
     msg = Message(0.0, 1.0, "Testing", Settings({"s0": 0, "s1": "1"}))
 
     connected_communicator.send_message("out_v", msg, 7, -1.0)
@@ -98,6 +117,8 @@ def test_send_message(connected_communicator, mpp_server):
     assert encoded_msg.message_number == 0
     assert encoded_msg.saved_until == -1.0
     assert encoded_msg.data == "Testing"
+    assert encoded_msg.iteration == [2, 0]
+    timeline_manager.return_value.check_send_message.assert_called_with("out_v", 7)
 
 
 def test_send_message_disconnected(connected_communicator, mpp_server):
@@ -119,6 +140,7 @@ def test_receive_message(connected_communicator, mpp_client):
         0,
         1.0,
         "Testing",
+        [0],
     )
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
@@ -148,6 +170,7 @@ def test_receive_message_vector(connected_communicator, mpp_client):
         0,
         3.5,
         "Testing2",
+        [0],
     )
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
@@ -178,6 +201,7 @@ def test_receive_close_port(connected_communicator, mpp_client, port_manager):
         0.1,
         ClosePort(),
     )
+    assert msg.iteration is None
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
@@ -198,6 +222,7 @@ def test_receive_close_port_vector(connected_communicator, mpp_client, port_mana
         3.5,
         ClosePort(),
     )
+    assert msg.iteration is None
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
@@ -220,6 +245,7 @@ def test_port_count_validation(
         0,
         7.6,
         b"test",
+        [0],
     )
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
@@ -285,6 +311,7 @@ def test_port_discard_success_on_resume(
                 message_number,
                 1.0,
                 {"this is message": message_number},
+                [0],
             ).encoded(),
             MagicMock(),
         )
@@ -374,6 +401,7 @@ def test_shutdown(
         assert call[0][0] in expected_receivers
         msg = MPPMessage.from_bytes(call[0][1])
         assert isinstance(msg.data, ClosePort)
+        assert msg.iteration is None
         expected_receivers.remove(call[0][0])
 
     assert not expected_receivers

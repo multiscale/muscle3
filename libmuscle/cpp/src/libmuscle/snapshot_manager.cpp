@@ -25,10 +25,12 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 SnapshotManager::SnapshotManager(
             ymmsl::Reference const & instance_id,
             MMPClient & manager,
-            PortManager & port_manager)
+            PortManager & port_manager,
+            Communicator & communicator)
         : instance_id_(instance_id)
         , manager_(manager)
         , port_manager_(port_manager)
+        , communicator_(communicator)
         , resume_from_snapshot_()
         , resume_overlay_()
         , next_snapshot_num_(1)
@@ -95,6 +97,13 @@ Optional<double> SnapshotManager::prepare_resume(
         resume_overlay_ = snapshot.settings_overlay;
 
         port_manager_.restore_message_counts(snapshot.port_message_counts);
+        if (!snapshot.is_final_snapshot) {
+            // A final snapshot's timeline state includes a look-ahead
+            // F_INIT receive done to determine whether the instance would
+            // be reused. Resuming always redoes that receive, so restoring
+            // it here would make it look like it already happened.
+            communicator_.restore_state(snapshot.timeline_state);
+        }
         // Store a copy of the snapshot in the current run directory
         auto path = store_snapshot_(snapshot);
         auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);
@@ -147,9 +156,10 @@ double SnapshotManager::save_snapshot(
         }
     }
 
+    TimelineState timeline_state = communicator_.get_state();
     Snapshot snapshot(
             triggers, wallclock_time, port_message_counts, is_final, message,
-            settings_overlay);
+            settings_overlay, timeline_state);
 
     auto path = store_snapshot_(snapshot);
     auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);
@@ -195,15 +205,13 @@ Snapshot SnapshotManager::load_snapshot_from_file(
                 ". I/O error while reading file.");
     }
 
-    switch (static_cast<Snapshot::VersionByte>(version)) {
-        case Snapshot::VersionByte::MESSAGEPACK:
-            return Snapshot::from_bytes(data);
-        default:
-            throw std::runtime_error(
-                    "Unable to load snapshot file " + snapshot_location +
-                    ": unknown version of snapshot file. Was the file saved with a"
-                    " different version of libmuscle or edited?");
+    if (version != Snapshot::version_byte) {
+        throw std::runtime_error(
+                "Unable to load snapshot file " + snapshot_location +
+                ": unknown version of snapshot file. Was the file saved with a"
+                " different version of libmuscle or edited?");
     }
+    return Snapshot::from_bytes(data);
 }
 
 std::string SnapshotManager::store_snapshot_(Snapshot const & snapshot) {
@@ -241,7 +249,7 @@ std::string SnapshotManager::store_snapshot_(Snapshot const & snapshot) {
                 "Could not find an available filename for storing the next"
                 " snapshot: " + fpath + " cannot be opened for writing.");
     }
-    snapshot_file << static_cast<char>(Snapshot::VersionByte::MESSAGEPACK);
+    snapshot_file << Snapshot::version_byte;
     auto data = snapshot.to_bytes();
     snapshot_file.write(data.data(), data.size());
     snapshot_file.close();

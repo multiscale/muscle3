@@ -3,6 +3,7 @@
 #include <ymmsl/component.hpp>
 #include <ymmsl/identity.hpp>
 #include <ymmsl/model.hpp>
+#include <ymmsl/ports.hpp>
 #include <ymmsl/settings.hpp>
 
 
@@ -21,6 +22,7 @@ namespace ymmsl {
     using impl::ReferencePart;
     using impl::Settings;
     using impl::SettingValue;
+    using impl::Timeline;
 
 }
 

@@ -18,6 +18,7 @@ from ymmsl.v0_2 import (
     Port,
     Reference,
     Settings,
+    Timeline,
 )
 
 import libmuscle
@@ -311,7 +312,10 @@ class MMPClient:
             Reference(instance): locs for instance, locs in response[3].items()
         }
 
-        ports = [Port(Identifier(name), Operator[op]) for name, op in response[4]]
+        ports = [
+            Port(Identifier(name), Operator[op], Timeline(tl))
+            for name, op, tl in response[4]
+        ]
         name = instance_to_kernel(self._instance_id)
         index = instance_indices(self._instance_id)
         return PeerInfo(name, index, conduits, peer_dimensions, peer_locations, ports)

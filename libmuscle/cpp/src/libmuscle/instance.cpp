@@ -5,7 +5,6 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/logger.hpp>
-#include <libmuscle/mmsf_validator.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/peer_info.hpp>
 #include <libmuscle/port_manager.hpp>
@@ -134,7 +133,6 @@ class Instance::Impl {
         SettingsManager settings_manager_;
         std::unique_ptr<SnapshotManager> snapshot_manager_;
         std::unique_ptr<TriggerManager> trigger_manager_;
-        std::unique_ptr<MMSFValidator> mmsf_validator_;
         Optional<bool> first_run_;
         Optional<bool> do_reuse_;
         bool do_resume_;
@@ -159,7 +157,6 @@ class Instance::Impl {
                 bool is_send, bool allow_slot_out_of_range = false);
 
         bool receive_settings_();
-        bool have_f_init_connections_();
         bool pre_receive_();
         void pre_receive_(std::string const & port_name, Optional<int> slot);
         void pre_receive_f_init_();
@@ -235,7 +232,7 @@ Instance::Impl::Impl(
                 new Communicator(
                     name, index, *port_manager_, *profiler_, *manager_));
         snapshot_manager_.reset(new SnapshotManager(
-                instance_name_, *manager_, *port_manager_));
+                instance_name_, *manager_, *port_manager_, *communicator_));
         trigger_manager_.reset(new TriggerManager());
 
         register_();
@@ -247,10 +244,6 @@ Instance::Impl::Impl(
         set_remote_log_level_();
         setup_profiling_();
         setup_receive_timeout_();
-        // MMSFValidator needs a connected port manager, and does some logging
-        if (! (InstanceFlags::SKIP_MMSF_SEQUENCE_CHECKS & flags_)) {
-            mmsf_validator_.reset(new MMSFValidator(*port_manager_));
-        }
 #ifdef MUSCLE_ENABLE_MPI
         auto sbase_data = Data(settings_manager_.base);
         msgpack::sbuffer sbuf;
@@ -281,7 +274,6 @@ Instance::Impl::~Impl() {
 
 bool Instance::Impl::reuse_instance() {
     api_guard_->verify_reuse_instance();
-    if (mmsf_validator_) mmsf_validator_->reuse_instance();
 
     bool do_reuse;
     if (do_reuse_.is_set()) {
@@ -291,9 +283,6 @@ bool Instance::Impl::reuse_instance() {
     } else {
         do_reuse = decide_reuse_instance_();
     }
-
-    if (do_resume_ && !do_init_ && mmsf_validator_)
-        mmsf_validator_->skip_f_init();
 
     // now first_run_, do_resume_ and do_init_ are also set correctly
 #ifdef MUSCLE_ENABLE_MPI
@@ -447,7 +436,6 @@ void Instance::Impl::send(std::string const & port_name, Message const & message
 #endif
 
         check_port_(port_name, {}, true);
-        if (mmsf_validator_) mmsf_validator_->check_send(port_name, {});
         if (!message.has_settings()) {
             Message msg(message);
             msg.set_settings(settings_manager_.overlay);
@@ -471,7 +459,6 @@ void Instance::Impl::send(
 #endif
 
     check_port_(port_name, slot, true);
-    if (mmsf_validator_) mmsf_validator_->check_send(port_name, slot);
     if (!message.has_settings()) {
         Message msg(message);
         msg.set_settings(settings_manager_.overlay);
@@ -628,7 +615,6 @@ Message Instance::Impl::receive_message(
 #endif
 
     check_port_(port_name, slot, false, true);
-    if (mmsf_validator_) mmsf_validator_->check_receive(port_name, slot);
 
     Reference port_ref(port_name);
     auto const & port = port_manager_->get_port(port_name);
@@ -954,19 +940,6 @@ bool Instance::Impl::receive_settings_() {
     return true;
 }
 
-/** Checks whether we have connected F_INIT ports.
- *
- * This includes muscle_settings_in, and any user-defined ports.
- */
-bool Instance::Impl::have_f_init_connections_() {
-    auto ports = port_manager_->list_ports();
-    if (ports.count(Operator::F_INIT) != 0)
-        for (auto const & port : ports.at(Operator::F_INIT))
-            if (port_manager_->get_port(port).is_connected())
-                return true;
-    return port_manager_->settings_in_connected();
-}
-
 /** Pre-receives on all ports.
  *
  * This includes muscle_settings_in and all user-defined ports.
@@ -1082,7 +1055,10 @@ bool Instance::Impl::decide_reuse_instance_() {
     if (mpi_barrier_.is_root()) {
         try {
 #endif
-            bool f_init_connected = have_f_init_connections_();
+            if (!first_run_.get())
+                communicator_->finish_reuse_iteration();
+
+            bool f_init_connected = port_manager_->has_f_init_connections();
             if (first_run_.get() && snapshot_manager_->resuming_from_intermediate()) {
                 // resume from intermediate
                 do_resume_ = true;

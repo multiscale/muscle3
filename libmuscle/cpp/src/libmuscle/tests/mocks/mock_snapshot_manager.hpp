@@ -1,5 +1,6 @@
 #pragma once
 
+#include <libmuscle/communicator.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/namespace.hpp>
@@ -30,15 +31,16 @@ class MockSnapshotManager : public MockClass<MockSnapshotManager> {
         MockSnapshotManager(
                 ymmsl::Reference const & instance_id,
                 MMPClient & manager,
-                PortManager & port_manager)
+                PortManager & port_manager,
+                Communicator & communicator)
         {
             init_from_return_value();
-            constructor(instance_id, manager, port_manager);
+            constructor(instance_id, manager, port_manager, communicator);
         }
 
         MockFun<
             Void, Val<ymmsl::Reference const &>, Obj<MMPClient &>,
-            Obj<PortManager &>> constructor;
+            Obj<PortManager &>, Obj<Communicator &>> constructor;
 
         MockFun<
             Val<Optional<double>>, Val<Optional<std::string> const &>,

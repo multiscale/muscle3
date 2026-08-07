@@ -50,8 +50,6 @@ namespace {
 
     Data encode_operator(ymmsl::Operator op) {
         switch (op) {
-            case ymmsl::Operator::NONE:
-                return Data("NONE");
             case ymmsl::Operator::F_INIT:
                 return Data("F_INIT");
             case ymmsl::Operator::O_I:
@@ -308,7 +306,9 @@ auto MMPClient::request_peers() -> PeerInfo
         auto recv_port = recv_ports[i];
         std::string name = recv_port[0].as<std::string>();
         std::string oper = recv_port[1].as<std::string>();
-        ports.emplace_back(name, ::ymmsl::operator_for_name(oper));
+        std::string timeline = recv_port[2].as<std::string>();
+        ports.emplace_back(
+                name, ::ymmsl::operator_for_name(oper), ::ymmsl::Timeline(timeline));
     }
 
     return PeerInfo(

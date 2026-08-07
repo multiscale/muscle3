@@ -266,7 +266,7 @@ def test_request_peers_fanout(registered_mmp_request_handler):
         assert name == f"micro[{i // 10}][{i % 10}]"
         assert locs == [f"direct:{name}"]
 
-    assert ports == [["out", "O_I"], ["in", "S"]]
+    assert ports == [["out", "O_I", ""], ["in", "S", ""]]
 
 
 def test_request_peers_fanin(registered_mmp_request_handler):
@@ -288,7 +288,7 @@ def test_request_peers_fanin(registered_mmp_request_handler):
 
     assert locations["macro"] == ["direct:macro"]
 
-    assert ports == [["in", "F_INIT"], ["out", "O_F"]]
+    assert ports == [["in", "F_INIT", ""], ["out", "O_F", ""]]
 
 
 def test_request_peers_bidir(registered_mmp_request_handler2):
@@ -319,7 +319,12 @@ def test_request_peers_bidir(registered_mmp_request_handler2):
     for i in range(10):
         assert locations[f"micro[2][{i}]"] == [f"direct:micro[2][{i}]"]
 
-    assert ports == [["init", "F_INIT"], ["out", "O_I"], ["in", "S"], ["final", "O_F"]]
+    assert ports == [
+        ["init", "F_INIT", ""],
+        ["out", "O_I", ""],
+        ["in", "S", ""],
+        ["final", "O_F", ""],
+    ]
 
 
 def test_request_peers_own_conduits(registered_mmp_request_handler2):
@@ -337,7 +342,7 @@ def test_request_peers_own_conduits(registered_mmp_request_handler2):
     assert conduits[1][0] == "meso.final"
     assert conduits[1][1] == "macro.in"
 
-    assert ports == [["out", "O_I"], ["in", "S"]]
+    assert ports == [["out", "O_I", ""], ["in", "S", ""]]
 
 
 def test_request_peers_unknown(registered_mmp_request_handler2):

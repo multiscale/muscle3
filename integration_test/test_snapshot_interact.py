@@ -145,10 +145,10 @@ models:
       implementation: component
     coupler:
       ports:
-        +timeline_a:
+        timeline timeline_a:
           o_i: a_in
           s: a_out
-        +timeline_b:
+        timeline timeline_b:
           o_i: b_in
           s: b_out
       description: >

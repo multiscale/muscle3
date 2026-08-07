@@ -1,12 +1,9 @@
 #include <gtest/gtest.h>
 
 #include "ymmsl/component.hpp"
-#include "ymmsl/identity.hpp"
 
 
-using ymmsl::impl::Identifier;
 using ymmsl::impl::Operator;
-using ymmsl::impl::Port;
 
 
 TEST(ymmsl_component, operator_allows_sending) {
@@ -23,12 +20,5 @@ TEST(ymmsl_component, operator_allows_receiving) {
 
     ASSERT_EQ(allows_receiving(s), true);
     ASSERT_EQ(allows_receiving(o_f), false);
-}
-
-TEST(ymmsl_component, test_port) {
-    auto ep1 = Port(Identifier("test_in"), Operator::F_INIT);
-
-    ASSERT_EQ(ep1.name, "test_in");
-    ASSERT_EQ(ep1.oper, Operator::F_INIT);
 }
 

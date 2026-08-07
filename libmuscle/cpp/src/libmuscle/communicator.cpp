@@ -11,7 +11,9 @@
 
 #include <ymmsl/ymmsl.hpp>
 
+#include <cassert>
 #include <limits>
+#include <memory>
 #include <sstream>
 
 
@@ -53,6 +55,22 @@ std::vector<std::string> Communicator::get_locations() const {
 
 void Communicator::set_peer_info(PeerInfo const & peer_info) {
     peer_info_ = peer_info;
+    timeline_manager_ = std::make_unique<TimelineManager>(port_manager_);
+}
+
+void Communicator::finish_reuse_iteration() {
+    assert(timeline_manager_);
+    timeline_manager_->finish_reuse_iteration();
+}
+
+TimelineState Communicator::get_state() const {
+    assert(timeline_manager_);
+    return timeline_manager_->get_state();
+}
+
+void Communicator::restore_state(TimelineState const & state) {
+    assert(timeline_manager_);
+    timeline_manager_->restore_state(state);
 }
 
 void Communicator::send_message(
@@ -62,12 +80,9 @@ void Communicator::send_message(
         double checkpoints_considered_until)
 {
     std::vector<int> slot_list;
-    if (slot.is_set()) {
-        log_debug("Sending message on ", port_name, "[", slot.get(), "]");
+    if (slot.is_set())
         slot_list.push_back(slot.get());
-    }
-    else
-        log_debug("Sending message on ", port_name);
+    log_debug("Sending message on ", port_desc(port_name, slot));
 
     Endpoint snd_endpoint = get_endpoint_(port_name, slot_list);
     if (!port_manager_.get_port(snd_endpoint.port).is_connected())
@@ -89,13 +104,17 @@ void Communicator::send_message(
     if (port.is_resizable())
         port_length = port.get_length();
 
+    Optional<IterationCount> iteration;
+    if (!is_close_port(message.data()))
+        iteration = timeline_manager_->check_send_message(port_name, slot);
+
     for (auto recv_endpoint : recv_endpoints) {
         MPPMessage mpp_message(
                 snd_endpoint.ref(), recv_endpoint.ref(),
                 port_length, message.timestamp(), Optional<double>(),
                 settings_overlay, port.get_num_messages(slot),
                 checkpoints_considered_until,
-                message.data());
+                message.data(), iteration);
 
         if (message.has_next_timestamp())
             mpp_message.next_timestamp = message.next_timestamp();
@@ -119,13 +138,12 @@ std::tuple<Message, double> Communicator::receive_message(
         Optional<int> slot,
         Optional<Message> const & default_msg)
 {
-    Port & port = (port_name == "muscle_settings_in") ?
-        port_manager_.muscle_settings_in() : port_manager_.get_port(port_name);
+    Port & port = port_manager_.get_port(port_name);
 
-    std::string port_and_slot = port_name;
-    if (slot.is_set())
-        port_and_slot = port_name + "[" + std::to_string(slot.get()) + "]";
+    timeline_manager_->check_receive(port_name, slot);
+    std::string port_and_slot = port_desc(port_name, slot);
     log_debug("Waiting for message on ", port_and_slot);
+
     std::vector<int> slot_list;
     if (slot.is_set())
         slot_list.emplace_back(slot.get());
@@ -227,6 +245,9 @@ std::tuple<Message, double> Communicator::receive_message(
 
     if (is_close_port(message.data())) {
         log_debug("Port ", port_and_slot, " is now closed");
+    } else {
+        timeline_manager_->record_received_message(
+                port_name, slot, mpp_message.iteration.get());
     }
     return std::make_tuple(message, mpp_message.saved_until);
 }
@@ -304,10 +325,7 @@ void Communicator::close_port_(
     Message message(
             std::numeric_limits<double>::infinity(),
             ClosePort(), Settings());
-    if (slot.is_set())
-        log_debug("Closing port ", port_name, "[", slot.get(), "]");
-    else
-        log_debug("Closing port ", port_name);
+    log_debug("Closing port ", port_desc(port_name, slot));
     send_message(port_name, message, slot);
 }
 

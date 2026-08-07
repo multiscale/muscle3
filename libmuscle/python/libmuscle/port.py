@@ -1,7 +1,7 @@
 from typing import Optional, TypeVar
 
 import ymmsl
-from ymmsl.v0_2 import Identifier, Operator
+from ymmsl.v0_2 import Identifier, Operator, Timeline
 
 _T = TypeVar("_T")
 
@@ -33,6 +33,7 @@ class Port(ymmsl.v0_2.Port):
         self,
         name: str,
         operator: Operator,
+        timeline: Optional[Timeline],
         is_vector: bool,
         is_connected: bool,
         our_ndims: int,
@@ -43,12 +44,13 @@ class Port(ymmsl.v0_2.Port):
         Args:
             name: Name of this port.
             operator: Corresponding operator.
+            timeline: The timeline this port is on.
             is_vector: Whether this is a vector port.
             is_connected: Whether this port is connected to a peer.
             our_ndims: Number of dimensions of our instance set.
             peer_dims: Dimensions of the peer instance set of this port.
         """
-        super().__init__(Identifier(name), operator)
+        super().__init__(Identifier(name), operator, timeline)
 
         self._is_connected = is_connected
 

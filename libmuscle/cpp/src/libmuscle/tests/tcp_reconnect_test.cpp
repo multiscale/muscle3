@@ -43,7 +43,6 @@ void inject_fault(int socket_fd);
 #include <libmuscle/mcp/tcp_transport_client.cpp>
 #include <libmuscle/mcp/tcp_transport_server.cpp>
 #include <libmuscle/message.cpp>
-#include <libmuscle/mmsf_validator.cpp>
 #include <libmuscle/outbox.cpp>
 #include <libmuscle/peer_info.cpp>
 #include <libmuscle/port.cpp>
@@ -55,6 +54,7 @@ void inject_fault(int socket_fd);
 #include <libmuscle/snapshot.cpp>
 #include <libmuscle/snapshot_manager.cpp>
 #include <libmuscle/receive_timeout_handler.cpp>
+#include <libmuscle/timeline_manager.cpp>
 #include <libmuscle/timestamp.cpp>
 #include <libmuscle/util.cpp>
 

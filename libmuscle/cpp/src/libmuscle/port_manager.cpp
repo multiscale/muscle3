@@ -4,12 +4,14 @@
 #include <limits>
 #include <sstream>
 #include <tuple>
+#include <unordered_set>
 
 
 using ymmsl::Conduit;
 using ymmsl::Identifier;
 using ymmsl::Operator;
 using ymmsl::Reference;
+using ymmsl::Timeline;
 
 using std::get;
 using std::prev;
@@ -38,6 +40,43 @@ bool PortManager::settings_in_connected() const {
     return muscle_settings_in_.get().is_connected();
 }
 
+bool PortManager::has_f_init_connections() const {
+    if (settings_in_connected())
+        return true;
+    for (auto const & port : ports_)
+        if (port.second.oper == Operator::F_INIT && port.second.is_connected())
+            return true;
+    return false;
+}
+
+std::vector<Port> PortManager::get_connected_ports(
+        Operator oper, Optional<Timeline> const & timeline) const {
+    std::vector<Port> result;
+    for (auto const & port : ports_) {
+        if (port.second.oper != oper)
+            continue;
+        if (timeline.is_set() && !(port.second.timeline == timeline.get()))
+            continue;
+        if (!port.second.is_connected())
+            continue;
+        result.push_back(port.second);
+    }
+    return result;
+}
+
+std::vector<Timeline> PortManager::list_subtimelines() const {
+    std::vector<Timeline> result;
+    std::unordered_set<Timeline> seen;
+    for (auto const & port : ports_) {
+        bool is_subtimeline_port =
+                port.second.oper == Operator::O_I || port.second.oper == Operator::S;
+        if (is_subtimeline_port && port.second.is_connected() &&
+                seen.insert(port.second.timeline).second)
+            result.push_back(port.second.timeline);
+    }
+    return result;
+}
+
 Port const & PortManager::muscle_settings_in() const {
     return muscle_settings_in_.get();
 }
@@ -58,10 +97,14 @@ bool PortManager::port_exists(std::string const & port_name) const {
 }
 
 Port const & PortManager::get_port(std::string const & port_name) const {
+    if (port_name == "muscle_settings_in")
+        return muscle_settings_in_.get();
     return ports_.at(port_name);
 }
 
 Port & PortManager::get_port(std::string const & port_name) {
+    if (port_name == "muscle_settings_in")
+        return muscle_settings_in_.get();
     return ports_.at(port_name);
 }
 
@@ -99,6 +142,10 @@ void PortManager::restore_message_counts(
 
 
 PortManager::Ports_ PortManager::ports_from_declared_(PeerInfo const & peer_info) const {
+    std::unordered_map<std::string, Timeline> timelines_by_name;
+    for (auto const & port : peer_info.list_ymmsl_ports())
+        timelines_by_name.emplace(std::string(port.name), port.timeline);
+
     Ports_ ports;
     for (auto const & ppo : declared_ports_.get()) {
         for (auto const & port_desc : ppo.second) {
@@ -113,8 +160,11 @@ PortManager::Ports_ PortManager::ports_from_declared_(PeerInfo const & peer_info
             }
             bool is_connected = peer_info.is_connected(port_name);
             auto port_peer_dims = peer_info.check_peer_dimensions(port_name);
+            auto timeline_it = timelines_by_name.find(port_name);
+            Timeline timeline = (timeline_it != timelines_by_name.end()) ?
+                    timeline_it->second : Timeline("");
             ports.emplace(port_name, Port(
-                    port_name, ppo.first, is_vector, is_connected,
+                    port_name, ppo.first, timeline, is_vector, is_connected,
                     index_.size(), port_peer_dims));
         }
     }
@@ -128,7 +178,7 @@ PortManager::Ports_ PortManager::ports_from_conduits_(PeerInfo const & peer_info
         auto peer_dims = peer_info.check_peer_dimensions(port.name);
         bool is_vector = (peer_dims.size() == index_.size() + 1);
         ports.emplace(port.name, Port(
-                port.name, port.oper, is_vector, is_connected,
+                port.name, port.oper, port.timeline, is_vector, is_connected,
                 index_.size(), peer_dims));
     }
     return ports;
@@ -141,9 +191,12 @@ Port PortManager::settings_in_port_(PeerInfo const & peer_info) const {
             Reference sender_component(
                     sender_port.cbegin(), std::prev(sender_port.cend()));
             return Port(
-                    std::string(msi), Operator::F_INIT, false, true, index_.size(), {});
+                    std::string(msi), Operator::F_INIT, Timeline(""), false, true,
+                    index_.size(), {});
     }
-    return Port(std::string(msi), Operator::F_INIT, false, false, index_.size(), {});
+    return Port(
+            std::string(msi), Operator::F_INIT, Timeline(""), false, false,
+            index_.size(), {});
 }
 
 std::tuple<std::string, bool> PortManager::split_port_desc_(

@@ -115,6 +115,12 @@ const double Retrier::default_base_delay_ = 0.5;
 const double Retrier::default_timeout_ = 30.0;
 const double Retrier::factor_ = std::pow(2.0, 1.0 / 3.0);
 
+std::string port_desc(std::string const & port_name, Optional<int> slot) {
+    if (!slot.is_set())
+        return port_name;
+    return port_name + "[" + std::to_string(slot.get()) + "]";
+}
+
 ::ymmsl::Reference instance_to_component(::ymmsl::Reference const & instance_name) {
     auto it = instance_name.cbegin();
     while (it != instance_name.cend() && it->is_identifier())

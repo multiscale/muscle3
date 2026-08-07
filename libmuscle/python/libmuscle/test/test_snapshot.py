@@ -3,10 +3,11 @@ from ymmsl.v0_2 import Settings
 
 from libmuscle.communicator import Message
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
+from libmuscle.timeline_manager import TimelineState
 
 
 @pytest.fixture
-def snapshot() -> Snapshot:
+def snapshot(timeline_state: TimelineState) -> Snapshot:
     triggers = ["test triggers"]
     wallclock_time = 15.3
     port_message_counts = {"in": [1], "out": [4], "muscle_settings_in": [0]}
@@ -19,6 +20,7 @@ def snapshot() -> Snapshot:
         is_final,
         message,
         Settings({"test": 1}),
+        timeline_state,
     )
     assert snapshot.triggers == triggers
     assert snapshot.wallclock_time == wallclock_time
@@ -45,6 +47,7 @@ def test_snapshot(snapshot: Snapshot) -> None:
     assert snapshot2.message.timestamp == snapshot.message.timestamp
     assert snapshot2.message.next_timestamp == snapshot.message.next_timestamp
     assert snapshot2.message.data == snapshot.message.data
+    assert snapshot2.timeline_state == snapshot.timeline_state
 
 
 def test_snapshot_metadata(snapshot: Snapshot) -> None:
@@ -59,9 +62,9 @@ def test_snapshot_metadata(snapshot: Snapshot) -> None:
     assert metadata.snapshot_filename == "test"
 
 
-def test_message_with_settings() -> None:
+def test_message_with_settings(timeline_state: TimelineState) -> None:
     message = Message(1.0, 2.0, "test_data", Settings({"setting": True}))
-    snapshot = MsgPackSnapshot([], 0, {}, False, message, Settings())
+    snapshot = MsgPackSnapshot([], 0, {}, False, message, Settings(), timeline_state)
     assert snapshot.message.settings.get("setting") is True
 
     binary_snapshot = snapshot.to_bytes()
@@ -71,9 +74,9 @@ def test_message_with_settings() -> None:
     assert snapshot2.message.settings.get("setting") is True
 
 
-def test_implicit_snapshot() -> None:
+def test_implicit_snapshot(timeline_state: TimelineState) -> None:
     message = None
-    snapshot = MsgPackSnapshot([], 0, {}, True, message, Settings())
+    snapshot = MsgPackSnapshot([], 0, {}, True, message, Settings(), timeline_state)
     assert snapshot.message is None
 
     binary_snapshot = snapshot.to_bytes()

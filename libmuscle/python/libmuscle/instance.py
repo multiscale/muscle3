@@ -13,7 +13,6 @@ from libmuscle.communicator import Communicator, Message
 from libmuscle.logging import LogLevel
 from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mmp_client import MMPClient
-from libmuscle.mmsf_validator import MMSFValidator
 from libmuscle.mpp_message import ClosePort
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
@@ -82,14 +81,6 @@ class InstanceFlags(Flag):
     :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are provided), the instance is assumed
     to keep state between reuses, and to require that state (equivalent to
     :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
-    """
-
-    SKIP_MMSF_SEQUENCE_CHECKS = auto()
-    """Disable the checks whether the MMSF is strictly followed when sending/receiving
-    messages.
-
-    See :class:`~libmuscle.mmsf_validator.MMSFValidator` for a detailed description of
-    the checks.
     """
 
 
@@ -162,7 +153,7 @@ class Instance:
         """Settings for this instance."""
 
         self._snapshot_manager = SnapshotManager(
-            self._instance_id, self.__manager, self._port_manager
+            self._instance_id, self.__manager, self._port_manager, self._communicator
         )
         """Resumes, loads and saves snapshots."""
 
@@ -205,12 +196,6 @@ class Instance:
         self._set_remote_log_level()
         self._setup_profiling()
         self._setup_receive_timeout()
-        # MMSFValidator needs a connected port manager, and does some logging
-        self._mmsf_validator = (
-            None
-            if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
-            else MMSFValidator(self._port_manager)
-        )
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
@@ -247,8 +232,6 @@ class Instance:
                 :meth:`save_final_snapshot`, or the checkpointing tutorial.
         """
         self._api_guard.verify_reuse_instance()
-        if self._mmsf_validator:
-            self._mmsf_validator.reuse_instance()
 
         if self._do_reuse is not None:
             # thank you, should_save_final_snapshot, for running this already
@@ -256,9 +239,6 @@ class Instance:
             self._do_reuse = None
         else:
             do_reuse = self._decide_reuse_instance()
-
-        if self._do_resume and not self._do_init and self._mmsf_validator:
-            self._mmsf_validator.skip_f_init()
 
         # now _first_run, _do_resume and _do_init are also set correctly
 
@@ -500,8 +480,6 @@ class Instance:
             slot: The slot to send the message on, if any.
         """
         self.__check_port(port_name, slot, True)
-        if self._mmsf_validator:
-            self._mmsf_validator.check_send(port_name, slot)
         if message.settings is None:
             message = copy(message)
             message.settings = self._settings_manager.overlay
@@ -912,13 +890,16 @@ class Instance:
         elif self._first_run:
             self._first_run = False
 
+        if not self._first_run:
+            self._communicator.finish_reuse_iteration()
+
         # resume from intermediate
         if self._first_run and self._snapshot_manager.resuming_from_intermediate():
             self._do_resume = True
             self._do_init = False
             return True
 
-        f_init_connected = self._have_f_init_connections()
+        f_init_connected = self._port_manager.has_f_init_connections()
 
         # resume from final
         if self._first_run and self._snapshot_manager.resuming_from_final():
@@ -984,11 +965,9 @@ class Instance:
         description of those.
         """
         self.__check_port(port_name, slot, False, True)
-        if self._mmsf_validator:
-            self._mmsf_validator.check_receive(port_name, slot)
 
         port = self._port_manager.get_port(port_name)
-        if port.operator == Operator.F_INIT:
+        if port.operator is Operator.F_INIT:
             if (port_name, slot) in self._f_init_cache:
                 msg = self._f_init_cache[(port_name, slot)]
                 del self._f_init_cache[(port_name, slot)]
@@ -1164,17 +1143,6 @@ class Instance:
                         )
                         self.__shutdown(err_msg)
                         raise RuntimeError(err_msg)
-
-    def _have_f_init_connections(self) -> bool:
-        """Checks whether we have connected F_INIT ports.
-
-        This includes muscle_settings_in, and any user-defined ports.
-        """
-        ports = self._port_manager.list_ports()
-        f_init_connected = any(
-            [self.is_connected(port) for port in ports.get(Operator.F_INIT, [])]
-        )
-        return f_init_connected or self._port_manager.settings_in_connected()
 
     def _pre_receive(self) -> bool:
         """Pre-receives on all ports.

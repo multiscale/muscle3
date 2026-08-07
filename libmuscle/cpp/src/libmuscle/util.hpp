@@ -265,6 +265,10 @@ class Retrier {
         int tries_;
 };
 
+/* Return a human-readable label for a port, including its slot if given.
+ */
+std::string port_desc(std::string const & port_name, Optional<int> slot);
+
 /* Returns the component name of this instance, i.e. without the index.
  */
 ::ymmsl::Reference instance_to_component(::ymmsl::Reference const & instance_name);

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ymmsl.v0_2 import Identifier, Operator
+from ymmsl.v0_2 import Identifier, Operator, Timeline
 
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port import Port
@@ -54,6 +54,17 @@ class PortManager:
         """Returns whether muscle_settings_in is connected."""
         return self._muscle_settings_in.is_connected()
 
+    def has_f_init_connections(self) -> bool:
+        """Return whether this instance has any connected F_INIT ports,
+        including muscle_settings_in."""
+        if self.settings_in_connected():
+            return True
+        return any(
+            port.is_connected()
+            for port in self._ports.values()
+            if port.operator is Operator.F_INIT
+        )
+
     def list_ports(self) -> dict[Operator, list[str]]:
         """Returns a description of the ports this PortManager has.
 
@@ -68,6 +79,40 @@ class PortManager:
                 result[port.operator] = list()
             result[port.operator].append(port_name)
         return result
+
+    def get_connected_ports(
+        self,
+        operator: Operator,
+        timeline: Optional[Timeline] = None,
+    ) -> list[Port]:
+        """Returns the connected ports for the given operator.
+
+        Args:
+            operator: The operator to select ports for.
+            timeline: Pass a specific Timeline to only consider ports on that timeline.
+
+        Returns:
+            The Port objects for this operator's connected ports.
+        """
+        return [
+            port
+            for port in self._ports.values()
+            if port.operator is operator
+            and (timeline is None or port.timeline == timeline)
+            and port.is_connected()
+        ]
+
+    def list_subtimelines(self) -> set[Timeline]:
+        """Returns the timelines of this instance's connected O_I/S ports.
+
+        Returns:
+            The set of distinct timelines of all connected O_I and S ports.
+        """
+        return {
+            port.timeline
+            for port in self._ports.values()
+            if port.operator in (Operator.O_I, Operator.S) and port.is_connected()
+        }
 
     def port_exists(self, port_name: str) -> bool:
         """Returns whether a port with the given name exists.
@@ -89,6 +134,8 @@ class PortManager:
         Returns:
             A Port object for the port
         """
+        if port_name == "muscle_settings_in":
+            return self._muscle_settings_in
         return self._ports[port_name]
 
     def restore_message_counts(self, port_message_counts: dict[str, list[int]]) -> None:
@@ -138,13 +185,14 @@ class PortManager:
             return Port(
                 str(msi),
                 Operator.F_INIT,
+                None,
                 False,
                 True,
                 len(self._index),
                 peer_info.get_peer_dims(sender_component),
             )
 
-        return Port(str(msi), Operator.F_INIT, False, False, len(self._index), [])
+        return Port(str(msi), Operator.F_INIT, None, False, False, len(self._index), [])
 
     def _ports_from_declared(self, peer_info: PeerInfo) -> dict[str, Port]:
         """Derives port definitions from supplied declaration.
@@ -157,6 +205,13 @@ class PortManager:
                     objects.
         """
         assert self._declared_ports is not None
+
+        # NOTE: timeline is not something component code can currently declare (the
+        # ports dict in Instance() only carries operator + name), so we always resolve
+        # it from the yMMSL config.
+        timelines_by_name = {
+            str(port.name): port.timeline for port in peer_info.list_ymmsl_ports()
+        }
 
         ports = dict()
         for operator, port_list in self._declared_ports.items():
@@ -173,6 +228,7 @@ class PortManager:
                 ports[port_name] = Port(
                     port_name,
                     operator,
+                    timelines_by_name.get(port_name),
                     is_vector,
                     is_connected,
                     len(self._index),
@@ -196,6 +252,7 @@ class PortManager:
             ports[port_name] = Port(
                 port_name,
                 port.operator,
+                port.timeline,
                 is_vector,
                 is_connected,
                 len(self._index),

@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 from ymmsl.v0_2 import Operator, Reference, Settings
 
-from libmuscle.communicator import Message
+from libmuscle.communicator import Communicator, Message
 from libmuscle.mmp_client import MMPClient
 from libmuscle.port_manager import PortManager
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
@@ -27,7 +27,11 @@ class SnapshotManager:
     """
 
     def __init__(
-        self, instance_id: Reference, manager: MMPClient, port_manager: PortManager
+        self,
+        instance_id: Reference,
+        manager: MMPClient,
+        port_manager: PortManager,
+        communicator: Communicator,
     ) -> None:
         """Create a new snapshot manager
 
@@ -35,12 +39,14 @@ class SnapshotManager:
             instance_id: The id of this instance.
             manager: The client used to submit data to the manager.
             port_manager: The port manager belonging to this instance.
+            communicator: The communicator belonging to this instance.
         """
         self._instance_id = instance_id
         # replace identifier[i] by identifier-i to use in snapshot file name
         # using a dash (-) because that is not allowed in Identifiers
         self._safe_id = str(instance_id).replace("[", "-").replace("]", "")
         self._port_manager = port_manager
+        self._communicator = communicator
         self._manager = manager
 
         self._resume_from_snapshot: Optional[Snapshot] = None
@@ -54,8 +60,8 @@ class SnapshotManager:
 
         If there is a snapshot to resume from, this loads it and does
         any resume work that libmuscle should do, including restoring
-        message counts and storing the resumed-from snapshot again as
-        our first snapshot.
+        message counts, restoring the timeline state, and storing the
+        resumed-from snapshot again as our first snapshot.
 
         Args:
             resume_snapshot: Snapshot to resume from (or None if not
@@ -77,6 +83,12 @@ class SnapshotManager:
             self.resume_overlay = snapshot.settings_overlay
 
             self._port_manager.restore_message_counts(snapshot.port_message_counts)
+            if not snapshot.is_final_snapshot:
+                # A final snapshot's timeline state includes a look-ahead
+                # F_INIT receive done to determine whether the instance would
+                # be reused. Resuming always redoes that receive, so restoring
+                # it here would make it look like it already happened.
+                self._communicator.restore_state(snapshot.timeline_state)
             # Store a copy of the snapshot in the current run directory
             path = self.__store_snapshot(snapshot)
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
@@ -147,7 +159,13 @@ class SnapshotManager:
                 port_message_counts[port_name] = new_counts
 
         snapshot = MsgPackSnapshot(
-            triggers, wallclock_time, port_message_counts, final, msg, settings_overlay
+            triggers,
+            wallclock_time,
+            port_message_counts,
+            final,
+            msg,
+            settings_overlay,
+            self._communicator.get_state(),
         )
 
         path = self.__store_snapshot(snapshot)

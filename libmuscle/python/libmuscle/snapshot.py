@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Optional, cast
 
 import msgpack
@@ -8,6 +8,7 @@ from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle import communicator
 from libmuscle.mpp_message import MPPMessage
+from libmuscle.timeline_manager import TimelineState
 
 
 class Snapshot(ABC):
@@ -26,6 +27,7 @@ class Snapshot(ABC):
         is_final_snapshot: bool,
         message: Optional["communicator.Message"],
         settings_overlay: Settings,
+        timeline_state: TimelineState,
     ) -> None:
         self.triggers = triggers
         self.wallclock_time = wallclock_time
@@ -35,6 +37,7 @@ class Snapshot(ABC):
         # self.message is None for implicit snapshots, so we cannot store the
         # Settings overlay in that message object.
         self.settings_overlay = settings_overlay
+        self.timeline_state = timeline_state
 
     @classmethod
     @abstractmethod
@@ -61,7 +64,7 @@ class Snapshot(ABC):
 class MsgPackSnapshot(Snapshot):
     """Snapshot stored in messagepack format"""
 
-    SNAPSHOT_VERSION_BYTE = b"1"
+    SNAPSHOT_VERSION_BYTE = b"2"
 
     @classmethod
     def from_bytes(cls, data: bytes) -> "Snapshot":
@@ -73,6 +76,7 @@ class MsgPackSnapshot(Snapshot):
             dct["is_final_snapshot"],
             cls.bytes_to_message(dct["message"]),
             Settings(dct["settings_overlay"]),
+            TimelineState(**dct["timeline_state"]),
         )
 
     def to_bytes(self) -> bytes:
@@ -86,6 +90,7 @@ class MsgPackSnapshot(Snapshot):
                     "is_final_snapshot": self.is_final_snapshot,
                     "message": self.message_to_bytes(self.message),
                     "settings_overlay": self.settings_overlay.as_ordered_dict(),
+                    "timeline_state": asdict(self.timeline_state),
                 }
             ),
         )

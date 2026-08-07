@@ -4,7 +4,7 @@ from typing import Optional
 
 from ymmsl.v0_2 import Configuration, Operator, Reference
 
-from libmuscle import Instance, InstanceFlags, Message
+from libmuscle import Instance, Message
 
 _logger = logging.getLogger(__name__)
 
@@ -39,9 +39,7 @@ class ImplementationTester:
             Operator.O_I: [str(p) for p in test_model.ports.sending_port_names()],
             Operator.S: [str(p) for p in test_model.ports.receiving_port_names()],
         }
-        self._instance = Instance(
-            ports=instance_ports, flags=InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS
-        )
+        self._instance = Instance(ports=instance_ports)
         # Configure the deadlock-detection timeout to match the default receive
         # timeout: after `default_timeout` seconds of waiting the manager is
         # notified, and if a deadlock is detected the simulation is aborted.

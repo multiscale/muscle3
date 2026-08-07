@@ -21,7 +21,7 @@ _rootpath = pathlib.Path(__file__).parents[2]
 print(f"Project root path: {_rootpath}")
 
 sys.path.insert(0, str(_rootpath))
-sys.path.insert(0, str(_rootpath / "libmuscle/python/"))
+sys.path.insert(0, str(_rootpath / "src/python/"))
 sys.path.append(str(_rootpath / "docs/ext/breathe"))
 
 # -- General configuration ------------------------------------------------
@@ -142,7 +142,7 @@ for p in pathlib.Path("..", "doxygen", "xml").iterdir():
 def run_apidoc(_):
     here = os.path.dirname(__file__)
     out = os.path.abspath(os.path.join(here, "apidocs"))
-    src = os.path.abspath(os.path.join(here, "..", "..", "libmuscle", "python"))
+    src = os.path.abspath(os.path.join(here, "..", "..", "src", "python"))
 
     ignore_paths = [
         "*/test",

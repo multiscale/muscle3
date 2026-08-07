@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 import yatiml
 import ymmsl
+
 from libmuscle.manager.manager import Manager
 from libmuscle.pytest.muscle_tester import make_server_process
 

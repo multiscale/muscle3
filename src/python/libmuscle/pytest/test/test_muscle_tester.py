@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-from libmuscle.pytest.muscle_tester import MuscleTester
 from ymmsl.v0_2 import (
     Conduit,
     Configuration,
@@ -12,6 +11,8 @@ from ymmsl.v0_2 import (
     Program,
     Reference,
 )
+
+from libmuscle.pytest.muscle_tester import MuscleTester
 
 
 @pytest.fixture

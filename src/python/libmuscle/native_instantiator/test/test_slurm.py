@@ -1,4 +1,5 @@
 import pytest
+
 from libmuscle.native_instantiator.slurm import (
     parse_slurm_nodelist,
     parse_slurm_nodes_cores,

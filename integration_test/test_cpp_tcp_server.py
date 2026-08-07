@@ -2,10 +2,11 @@ import os
 import subprocess
 from pathlib import Path
 
+from ymmsl.v0_2 import Reference, Settings
+
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.mpp_client import MPPClient
 from libmuscle.mpp_message import MPPMessage
-from ymmsl.v0_2 import Reference, Settings
 
 from .conftest import skip_if_python_only
 

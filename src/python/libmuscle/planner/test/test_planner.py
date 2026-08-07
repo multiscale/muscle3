@@ -1,14 +1,4 @@
 import pytest
-from libmuscle.planner.planner import (
-    InsufficientResourcesAvailable,
-    ModelGraph,
-    Planner,
-    ResourceAssignment,
-)
-from libmuscle.planner.resources import Resources
-from libmuscle.test.conftest import core as c
-from libmuscle.test.conftest import on_node_resources as onr
-from libmuscle.test.conftest import resources
 from ymmsl.v0_2 import (
     Component,
     Conduit,
@@ -21,6 +11,17 @@ from ymmsl.v0_2 import (
     ResourceRequirements,
     ThreadedResReq,
 )
+
+from libmuscle.planner.planner import (
+    InsufficientResourcesAvailable,
+    ModelGraph,
+    Planner,
+    ResourceAssignment,
+)
+from libmuscle.planner.resources import Resources
+from libmuscle.test.conftest import core as c
+from libmuscle.test.conftest import on_node_resources as onr
+from libmuscle.test.conftest import resources
 
 Ref = Reference
 

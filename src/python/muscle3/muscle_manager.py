@@ -12,13 +12,14 @@ import click
 import ymmsl
 import ymmsl.v0_1 as v0_1
 import ymmsl.v0_2 as v0_2
+from yatiml import RecognitionError
+from ymmsl import Document
+from ymmsl.v0_2 import ExecutionModel
+
 from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
-from yatiml import RecognitionError
-from ymmsl import Document
-from ymmsl.v0_2 import ExecutionModel
 
 
 @click.command(no_args_is_help=True)

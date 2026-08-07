@@ -4,10 +4,11 @@ import subprocess
 from pathlib import Path
 
 import ymmsl
+from ymmsl.v0_2 import Operator, Port, Reference
+
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.timestamp import Timestamp
-from ymmsl.v0_2 import Operator, Port, Reference
 
 from .conftest import skip_if_python_only
 

@@ -5,11 +5,11 @@ from pathlib import Path
 
 import click
 import ymmsl
+from ymmsl.v0_2 import Configuration
+
 from libmuscle.planner.planner import InsufficientResourcesAvailable, Planner
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 from libmuscle.snapshot_manager import SnapshotManager
-from ymmsl.v0_2 import Configuration
-
 from muscle3.profiling import plot_instances, plot_resources, plot_timeline, show_plots
 
 _RESOURCES_INCOMPLETE_MODEL = """

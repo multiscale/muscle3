@@ -133,7 +133,6 @@ clean: docsclean
 	cd docs/source/examples && $(MAKE) clean
 	rm -rf ./build
 	rm -rf $(CURDIR)/libmuscle/build/test_install/*
-	rm -rf libmuscle/python/libmuscle/version.py
 
 .PHONY: distclean
 distclean: docsclean

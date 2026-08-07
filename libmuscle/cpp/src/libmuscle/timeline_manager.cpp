@@ -1,6 +1,7 @@
 #include <libmuscle/timeline_manager.hpp>
 
 #include <sstream>
+#include <algorithm>
 
 
 using ymmsl::Operator;
@@ -216,10 +217,7 @@ void TimelinePorts::participate(std::string const & port_name, Optional<int> slo
 
 bool TimelinePorts::has_participated(std::string const & port_name, Optional<int> slot) const {
     PortAndSlot key(port_name, slot);
-    for (auto const & p : participated)
-        if (p == key)
-            return true;
-    return false;
+    return std::find(participated.begin(), participated.end(), key) != participated.end();
 }
 
 bool TimelinePorts::all_participated() const {

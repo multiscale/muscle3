@@ -17,9 +17,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
  */
 class Snapshot {
     public:
-        enum class VersionByte : char {
-            MESSAGEPACK = '2'
-        };
+        static const char version_byte = '2';
 
         Snapshot(
                 std::vector<std::string> const & triggers,

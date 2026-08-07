@@ -70,7 +70,7 @@ def do_mmp_client_test(tmpdir, caplog):
     # create C++ client
     # it runs through the various RPC calls
     # see libmuscle/cpp/src/libmuscle/tests/mmp_client_test.cpp
-    cpp_build_dir = Path(__file__).parents[1] / "libmuscle" / "cpp" / "build"
+    cpp_build_dir = Path(__file__).parents[1] / "build" / "cpp"
     env = os.environ.copy()
     lib_paths = [cpp_build_dir / "msgpack" / "msgpack" / "lib"]
     if "LD_LIBRARY_PATH" in env:

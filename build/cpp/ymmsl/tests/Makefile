@@ -20,7 +20,7 @@ else
     googletest_LIB := $(googletest_ROOT)/lib64/libgtest.a
 endif
 
-src_dir := $(CURDIR)/../../../src
+src_dir := $(realpath $(CURDIR)/../../../../src/cpp)
 ymmsl_testdir := $(src_dir)/ymmsl/tests
 VPATH := $(ymmsl_testdir)
 

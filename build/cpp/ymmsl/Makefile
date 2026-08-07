@@ -1,8 +1,8 @@
 PREFIX ?= /usr/local
 
 # Get source paths
-hdrdir := $(CURDIR)/../../src
-srcdir := $(CURDIR)/../../src/ymmsl
+hdrdir := $(realpath $(CURDIR)/../../../src/cpp)
+srcdir := $(realpath $(CURDIR)/../../../src/cpp/ymmsl)
 srcdirs := $(srcdir) $(srcdir)/bindings
 objdir := $(CURDIR)/objs
 

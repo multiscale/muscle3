@@ -1,4 +1,4 @@
-src_dir := $(CURDIR)/../../../src
+src_dir := $(realpath $(CURDIR)/../../../../src/fortran)
 libmuscle_testdir := $(src_dir)/libmuscle/tests
 VPATH := $(libmuscle_testdir)
 
@@ -47,7 +47,7 @@ else ifdef MUSCLE_FC_CRAY
 endif
 
 
-CPP_BUILD_DIR := $(CURDIR)/../../../../cpp/build
+CPP_BUILD_DIR := $(realpath $(CURDIR)/../../../cpp)
 
 LDFLAGS2 := $(LDFLAGS)
 

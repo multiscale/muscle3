@@ -15,7 +15,7 @@ def test_cpp_tcp_server(log_file_in_tmpdir):
     # create C++ server
     # it serves a message for us to receive
     # see libmuscle/cpp/src/libmuscle/tests/mpp_server_test.cpp
-    cpp_build_dir = Path(__file__).parents[1] / "libmuscle" / "cpp" / "build"
+    cpp_build_dir = Path(__file__).parents[1] / "build" / "cpp"
     env = os.environ.copy()
     lib_paths = [cpp_build_dir / "msgpack" / "msgpack" / "lib"]
     if "LD_LIBRARY_PATH" in env:

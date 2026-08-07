@@ -1,6 +1,6 @@
 # Get source paths
-hdrdir := $(CURDIR)/../../src
-srcdir := $(CURDIR)/../../src/libmuscle
+hdrdir := $(realpath $(CURDIR)/../../../src/cpp)
+srcdir := $(realpath $(CURDIR)/../../../src/cpp/libmuscle)
 srcdirs := $(srcdir) $(srcdir)/mcp
 objdir := $(CURDIR)/objs
 
@@ -58,8 +58,7 @@ ifdef MUSCLE_ENABLE_DEBUG
 all_libs += $(debug_libs)
 endif
 
-header_root := $(CURDIR)/../../src
-CXXFLAGS += -I$(header_root)
+CXXFLAGS += -I$(hdrdir)
 
 public_headers := libmuscle/data.hpp libmuscle/data.tpp libmuscle/instance.hpp
 public_headers += libmuscle/libmuscle.hpp libmuscle/message.hpp

@@ -13,7 +13,7 @@ def test_start_nested(tmpdir):
     tmppath = Path(str(tmpdir))
 
     # find our test component and its requirements
-    cpp_build_dir = Path(__file__).parents[1] / "libmuscle" / "cpp" / "build"
+    cpp_build_dir = Path(__file__).parents[1] / "build" / "cpp"
     lib_paths = [cpp_build_dir / "msgpack" / "msgpack" / "lib"]
     ld_lib_path = ":".join(map(str, lib_paths))
 

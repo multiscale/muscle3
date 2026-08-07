@@ -34,11 +34,11 @@ test_python: cpp_tests fortran_tests
 
 .PHONY: test_cpp
 test_cpp: cpp
-	cd libmuscle/cpp && $(MAKE) test
+	cd build/cpp && $(MAKE) test
 
 .PHONY: test_fortran
 test_fortran: fortran_tests
-	cd libmuscle/fortran && $(MAKE) test
+	cd build/fortran && $(MAKE) test
 
 .PHONY: test_cluster
 test_cluster:
@@ -50,21 +50,21 @@ test_scripts:
 
 .PHONY: test_install
 test_install:
-	PREFIX=$(CURDIR)/libmuscle/build/test_install $(MAKE) install
+	PREFIX=$(CURDIR)/build/test_install $(MAKE) install
 
 .PHONY: test_examples
 test_examples: test_install
-	. $(CURDIR)/libmuscle/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples test
+	. $(CURDIR)/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples test
 
 .PHONY: benchmark
 benchmark: test_install
-	. $(CURDIR)/libmuscle/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples benchmark
+	. $(CURDIR)/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples benchmark
 
 
 .PHONY: install
 install: all
-	cd libmuscle/cpp && $(MAKE) install
-	cd libmuscle/fortran && $(MAKE) install
+	cd build/cpp && $(MAKE) install
+	cd build/fortran && $(MAKE) install
 	@echo
 	@echo '********************************************************************'
 	@echo '*                                                                  *'
@@ -127,46 +127,44 @@ docsclean:
 
 .PHONY: clean
 clean: docsclean
-	cd libmuscle/cpp && $(MAKE) clean
-	cd libmuscle/fortran && $(MAKE) clean
+	cd build/cpp && $(MAKE) clean
+	cd build/fortran && $(MAKE) clean
 	cd scripts && $(MAKE) clean
 	cd docs/source/examples && $(MAKE) clean
-	rm -rf ./build
-	rm -rf $(CURDIR)/libmuscle/build/test_install/*
+	rm -rf $(CURDIR)/build/test_install/* $(CURDIR)/build/lib/*
 
 .PHONY: distclean
 distclean: docsclean
-	cd libmuscle/cpp && $(MAKE) distclean
-	cd libmuscle/fortran && $(MAKE) distclean
+	cd build/cpp && $(MAKE) distclean
+	cd build/fortran && $(MAKE) distclean
 	cd scripts && $(MAKE) distclean
 	cd docs/source/examples && $(MAKE) clean
 	rm -rf __pycache__
-	- find docs scripts integration_test muscle3 libmuscle/python -name __pycache__ -type d -depth -exec rm -rf \{\} \;
-	rm -rf ./build
-	rm -rf $(CURDIR)/libmuscle/build/test_install/*
+	- find docs scripts integration_test src/python -name __pycache__ -type d -depth -exec rm -rf \{\} \;
+	rm -rf $(CURDIR)/build/test_install/* $(CURDIR)/build/lib/*
 
 .PHONY: fortran
 fortran: cpp
-	cd libmuscle/fortran && $(MAKE)
+	cd build/fortran && $(MAKE)
 
 .PHONY: cpp
 cpp:
-	cd libmuscle/cpp && $(MAKE)
+	cd build/cpp && $(MAKE)
 
 .PHONY: cpp_tests
 cpp_tests: cpp
-	cd libmuscle/cpp && $(MAKE) tests
+	cd build/cpp && $(MAKE) tests
 
 .PHONY: fortran_tests
 fortran_tests: fortran cpp_tests
-	cd libmuscle/fortran && $(MAKE) tests
+	cd build/fortran && $(MAKE) tests
 
 # This rebuilds the auto-generated native bindings; for development only.
 .PHONY: bindings
 bindings:
-	scripts/make_ymmsl_api.py --fortran-c-wrappers >libmuscle/cpp/src/ymmsl/bindings/ymmsl_fortran_c.cpp
-	scripts/make_ymmsl_api.py --fortran-module >libmuscle/fortran/src/ymmsl/ymmsl.f90
-	scripts/make_libmuscle_api.py --fortran-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_fortran_c.cpp
-	scripts/make_libmuscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle/libmuscle.f90
-	scripts/make_libmuscle_api.py --fortran-mpi-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_mpi_fortran_c.cpp
-	scripts/make_libmuscle_api.py --fortran-mpi-module >libmuscle/fortran/src/libmuscle/libmuscle_mpi.f90
+	scripts/make_ymmsl_api.py --fortran-c-wrappers >src/cpp/ymmsl/bindings/ymmsl_fortran_c.cpp
+	scripts/make_ymmsl_api.py --fortran-module >src/fortran/ymmsl/ymmsl.f90
+	scripts/make_libmuscle_api.py --fortran-c-wrappers >src/cpp/libmuscle/bindings/libmuscle_fortran_c.cpp
+	scripts/make_libmuscle_api.py --fortran-module >src/fortran/libmuscle/libmuscle.f90
+	scripts/make_libmuscle_api.py --fortran-mpi-c-wrappers >src/cpp/libmuscle/bindings/libmuscle_mpi_fortran_c.cpp
+	scripts/make_libmuscle_api.py --fortran-mpi-module >src/fortran/libmuscle/libmuscle_mpi.f90

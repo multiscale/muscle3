@@ -1,5 +1,5 @@
 # Get source paths
-srcdir := $(CURDIR)/../../src/libmuscle
+srcdir := $(realpath $(CURDIR)/../../../src/fortran/libmuscle)
 
 sources := $(srcdir)/libmuscle.f90
 mpi_sources := $(srcdir)/libmuscle_mpi.f90
@@ -38,13 +38,13 @@ installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
 LDFLAGS2 := $(LDFLAGS)
 LDFLAGS2 += -L../ymmsl -lymmsl_fortran
-LDFLAGS2 += -L../../../cpp/build/libmuscle -lmuscle
-LDFLAGS2 += -L../../../cpp/build/ymmsl -lymmsl
+LDFLAGS2 += -L../../cpp/libmuscle -lmuscle
+LDFLAGS2 += -L../../cpp/ymmsl -lymmsl
 
 LDFLAGS2_MPI := $(LDFLAGS_MPI)
 LDFLAGS2_MPI += -L../ymmsl -lymmsl_fortran
-LDFLAGS2_MPI += -L../../../cpp/build/libmuscle -lmuscle_mpi
-LDFLAGS2_MPI += -L../../../cpp/build/ymmsl -lymmsl
+LDFLAGS2_MPI += -L../../cpp/libmuscle -lmuscle_mpi
+LDFLAGS2_MPI += -L../../cpp/ymmsl -lymmsl
 
 FFLAGS := -O3 -I../ymmsl
 ifdef MUSCLE_FC_INTEL

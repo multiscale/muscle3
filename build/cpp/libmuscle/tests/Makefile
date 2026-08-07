@@ -1,4 +1,4 @@
-src_dir := $(CURDIR)/../../../src
+src_dir := $(realpath $(CURDIR)/../../../../src/cpp)
 libmuscle_testdir := $(src_dir)/libmuscle/tests
 VPATH := $(libmuscle_testdir)
 

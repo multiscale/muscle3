@@ -1,5 +1,5 @@
 # Get source paths
-srcdir := $(CURDIR)/../../src/ymmsl
+srcdir := $(realpath $(CURDIR)/../../../src/fortran/ymmsl)
 
 sources := $(srcdir)/ymmsl.f90
 objects := $(sources:$(srcdir)/%.f90=%.o)
@@ -23,7 +23,7 @@ installed_modules := $(modules:%=$(PREFIX)/include/%)
 installed_libs := $(libs:%=$(PREFIX)/lib/%)
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
-LDFLAGS := -L../../../cpp/build/ymmsl -lymmsl
+LDFLAGS := -L../../cpp/ymmsl -lymmsl
 
 FFLAGS := -O3
 ifdef MUSCLE_FC_INTEL

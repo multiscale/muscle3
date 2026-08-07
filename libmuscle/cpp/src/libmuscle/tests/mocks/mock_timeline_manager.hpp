@@ -11,9 +11,7 @@
 #include <string>
 
 
-// Note: this header is only ever pulled in via the LIBMUSCLE_MOCK_TIMELINE_MANAGER
-// swap point inside timeline_manager.hpp, which is already inside the
-// libmuscle::_MUSCLE_IMPL_NS namespace at that point, so it isn't opened here again.
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 class MockTimelineManager : public MockClass<MockTimelineManager> {
     public:
@@ -59,3 +57,5 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
 };
 
 using TimelineManager = MockTimelineManager;
+
+} }

@@ -1,5 +1,8 @@
 #pragma once
 
+// N.B. We need to '#include LIBMUSCLE_MOCK_TIMELINE_MANAGER' after defining
+// all non-mocked data types
+
 #include <libmuscle/data.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/port.hpp>
@@ -240,6 +243,14 @@ class SubTimelineManager {
 };
 
 
+} }
+
+#ifdef LIBMUSCLE_MOCK_TIMELINE_MANAGER
+#include LIBMUSCLE_MOCK_TIMELINE_MANAGER
+#else
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
 /** Tracks the main timeline's iteration and participation, and manages its
  * sub-timelines.
  *
@@ -253,10 +264,6 @@ class SubTimelineManager {
  * direction: one set for the ports that send (O_F or O_I) and one for the
  * ports that receive (F_INIT or S).
  */
-#ifdef LIBMUSCLE_MOCK_TIMELINE_MANAGER
-#include LIBMUSCLE_MOCK_TIMELINE_MANAGER
-#else
-
 class TimelineManager {
     public:
         /** Create a TimelineManager.
@@ -350,6 +357,6 @@ class TimelineManager {
         Optional<IterationCount> iteration_;
 };
 
-#endif
-
 } }
+
+#endif

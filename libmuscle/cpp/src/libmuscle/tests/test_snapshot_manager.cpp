@@ -64,7 +64,8 @@ int main(int argc, char *argv[]) {
 }
 
 
-struct libmuscle_snapshot_manager : ::testing::Test, TempDirFixture {
+struct libmuscle_snapshot_manager :
+        ::testing::Test, TempDirFixture, TimelineStateFixture {
     RESET_MOCKS(
             ::libmuscle::_MUSCLE_IMPL_NS::MockCommunicator,
             ::libmuscle::_MUSCLE_IMPL_NS::MockMMPClient,
@@ -81,9 +82,7 @@ struct libmuscle_snapshot_manager : ::testing::Test, TempDirFixture {
             "test", {}, mock_port_manager_, mock_profiler_, mock_mmp_client_};
 
     libmuscle_snapshot_manager() {
-        // save_snapshot() always reads the communicator's timeline state;
-        // give it a sensible default that tests can override.
-        communicator_.get_state.return_value = TimelineState();
+        communicator_.get_state.return_value = timeline_state_;
     }
 };
 
@@ -106,10 +105,6 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
             {"muscle_settings_in", {0}}};
     mock_port_manager_.get_message_counts.return_value = port_message_counts;
     mock_port_manager_.settings_in_connected.return_value = false;
-
-    TimelineStateFixture timeline_state_fixture;
-    auto const & timeline_state = timeline_state_fixture.timeline_state_;
-    communicator_.get_state.return_value = timeline_state;
 
     Reference instance_id("test[1]");
 
@@ -147,13 +142,13 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     ASSERT_FALSE(snapshot_manager2.resuming_from_final());
     ASSERT_TRUE(communicator_.restore_state.called_once());
     auto const & restored_state = communicator_.restore_state.call_arg<0>();
-    ASSERT_EQ(restored_state.iteration.is_set(), timeline_state.iteration.is_set());
-    ASSERT_EQ(restored_state.iteration.get(), timeline_state.iteration.get());
-    ASSERT_EQ(restored_state.send_participated, timeline_state.send_participated);
-    ASSERT_EQ(restored_state.receive_participated, timeline_state.receive_participated);
+    ASSERT_EQ(restored_state.iteration.is_set(), timeline_state_.iteration.is_set());
+    ASSERT_EQ(restored_state.iteration.get(), timeline_state_.iteration.get());
+    ASSERT_EQ(restored_state.send_participated, timeline_state_.send_participated);
+    ASSERT_EQ(restored_state.receive_participated, timeline_state_.receive_participated);
     ASSERT_EQ(
             restored_state.subtimeline_states.size(),
-            timeline_state.subtimeline_states.size());
+            timeline_state_.subtimeline_states.size());
 
     auto msg = snapshot_manager2.load_snapshot();
     ASSERT_DOUBLE_EQ(msg.timestamp(), 0.2);

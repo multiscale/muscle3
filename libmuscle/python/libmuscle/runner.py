@@ -30,7 +30,10 @@ __all__ = ["run_simulation"]
 _logger = logging.getLogger(__name__)
 
 
-Pipe = tuple[mpc.Connection, mpc.Connection]
+if sys.platform == "win32":
+    Pipe = tuple[mpc.PipeConnection, mpc.PipeConnection]
+else:
+    Pipe = tuple[mpc.Connection, mpc.Connection]
 
 
 class MMPServerController:

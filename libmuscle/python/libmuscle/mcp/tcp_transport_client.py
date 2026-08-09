@@ -1,6 +1,7 @@
 import logging
 import select
 import socket
+import sys
 import time
 from typing import Optional
 
@@ -233,7 +234,7 @@ class TcpTransportClient(TransportClient):
             sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
         self._socket = sock
 
-        if hasattr(select, "poll"):
+        if sys.platform != "win32":
             self._poll_obj: Optional[select.poll] = select.poll()
             self._poll_obj.register(self._socket, select.POLLIN)
         else:

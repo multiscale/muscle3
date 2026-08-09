@@ -1,4 +1,5 @@
 import dataclasses
+import time
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -152,7 +153,9 @@ def test_register_instance_version_mismatch(mmp_request_handler):
 
 
 def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
-    resume_path = Path("/path/to/resume.pack")
+    # ensure elapsed time below is at least one tick on windows
+    time.sleep(0.1)
+    resume_path = Path("path") / "to" / "resume.pack"
     mmp_configuration.resume = {Reference("test_instance"): resume_path}
     mmp_configuration.checkpoints = Checkpoints(
         True, [CheckpointRangeRule(every=10), CheckpointAtRule([1, 2, 3.0])]
@@ -197,7 +200,9 @@ def test_get_checkpoint_info2(registered_mmp_request_handler2, tmp_path):
 
     assert decoded_result[0] == ResponseType.SUCCESS.value
     snapshot_directory = decoded_result[4]
-    assert snapshot_directory == (str(tmp_path) + "/instances/test_instance/snapshots")
+    assert snapshot_directory == (
+        str(tmp_path / "instances" / "test_instance" / "snapshots")
+    )
 
 
 def test_double_register_instance(mmp_request_handler):

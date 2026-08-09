@@ -15,9 +15,9 @@ def test_request(tcp_transport_server):
 
     tcp_transport_server._handler.handle_request.return_value = response
 
-    location = tcp_transport_server._server.server_address
+    port = tcp_transport_server._server.server_address[1]
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect(location)
+        sock.connect(("127.0.0.1", port))
 
         # request a session
         req_session = (0).to_bytes(8, byteorder="little")

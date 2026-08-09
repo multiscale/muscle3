@@ -1,0 +1,37 @@
+# Run Continuous Integration when a PR is updated and for pushes to main/develop
+name: python_compatibility_windows
+on:
+  push:
+    branches: [main, develop, python_windows_support]
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+    - name: Check out the source code
+      uses: actions/checkout@v7
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache Tox
+      uses: actions/cache@v5
+      with:
+        path: ${{ github.workspace }}/.tox
+        key: python-windows-${{ matrix.python-version }}-tox
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh
+
+    - name: Run the test suite
+      run: make test_python_only

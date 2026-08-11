@@ -8,6 +8,10 @@ on:
     branches:
       - 'release-*'
       - fix_native_compatibility_ci
+      - main
+      - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
 jobs:
   build:
     runs-on: ubuntu-latest

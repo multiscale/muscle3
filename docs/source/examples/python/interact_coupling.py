@@ -3,8 +3,8 @@ from typing import Any, Optional, Tuple, Dict
 
 from libmuscle import Instance, InstanceFlags, Message
 from libmuscle.runner import run_simulation
-from ymmsl.v0_2 import (
-        Component, Conduit, Configuration, Model, Operator, Ports, Settings)
+from ymmsl.v0_2 import Configuration, Operator
+from ymmsl import load_as
 
 
 def submodel() -> None:
@@ -317,38 +317,47 @@ if __name__ == '__main__':
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
 
-    components = [
-            Component(
-                'left', Ports(o_i=['boundary_out'], s=['boundary_in']),
-                'One of the interacting components', 'model'),
-            Component(
-                'right', Ports(o_i=['boundary_out'], s=['boundary_in']),
-                'The other interacting component', 'model'),
-            Component(
-                'coupler', Ports(o_i=['a_out', 'b_out'], s=['a_in', 'b_in']),
-                'This connects the two and interpolates', 'temporal_coupler')]
+    config = """
+ymmsl_version: v0.2
 
-    conduits = [
-            Conduit('left.boundary_out', 'coupler.a_in'),
-            Conduit('right.boundary_out', 'coupler.b_in'),
-            Conduit('coupler.a_out', 'left.boundary_in'),
-            Conduit('coupler.b_out', 'right.boundary_in')]
+models:
+  interact_coupling:
+    description: |
+      A model demonstrating a time scale overlapping coupling, using a time bridge.
+    components:
+      left:
+        description: One of the interacting components
+        ports:
+          o_i: boundary_out
+          s: boundary_in
+        implementation: model
+      right:
+        description: The other interacting component
+        ports:
+          o_i: boundary_out
+          s: boundary_in
+        implementation: model
+      coupler:
+        description: This connects the two and interpolates
+        ports:
+          timeline left:
+            o_i: a_out
+            s: a_in
+          timeline right:
+            o_i: b_out
+            s: b_in
+        implementation: temporal_coupler
+    conduits:
+      left.boundary_out: coupler.a_in
+      right.boundary_out: coupler.b_in
+      coupler.a_out: left.boundary_in
+      coupler.b_out: right.boundary_in
+settings:
+  t_max: 100.0
+  left.dt: 5.0
+  right.dt: 13.0
+"""
 
-    model = Model(
-            'interact_coupling', description='A model demonstrating a time scale'
-            ' overlapping coupling, using a time bridge.', components=components,
-            conduits=conduits)
-
-    settings = Settings({
-        't_max': 100.0,
-        'left.dt': 5.0,
-        'right.dt': 13.0,
-        })
-
-    configuration = Configuration(
-            'This demonstrates two models running with different timesteps while'
-            ' communicating with each other via a time bridge', models=[model],
-            settings=settings)
-
+    configuration = load_as(Configuration, config)
     implementations = {'model': submodel, 'temporal_coupler': temporal_coupler}
     run_simulation(configuration, implementations)

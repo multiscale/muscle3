@@ -15,6 +15,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <functional>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -24,6 +25,8 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 class PortManager {
     public:
         using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+        /* Memory safety: PortReferences is only valid while PortManager is alive! */
+        using PortReferences = std::vector<std::reference_wrapper<const Port>>;
 
         /** Create a PortManager.
          *
@@ -70,7 +73,7 @@ class PortManager {
          * @param oper The operator to select ports for.
          * @param timeline If set, only return ports on this timeline.
          */
-        std::vector<Port> get_connected_ports(
+        PortReferences get_connected_ports(
                 ::ymmsl::Operator oper,
                 Optional<::ymmsl::Timeline> const & timeline = {}) const;
 

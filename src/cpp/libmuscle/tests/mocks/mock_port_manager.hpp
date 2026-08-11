@@ -12,6 +12,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <functional>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -22,6 +23,7 @@ using PortsDescription = std::unordered_map<ymmsl::Operator, std::vector<std::st
 class MockPortManager : public MockClass<MockPortManager> {
     public:
         using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+        using PortReferences = std::vector<std::reference_wrapper<const Port>>;
 
         MockPortManager(ReturnValue) {
             NAME_MOCK_MEM_FUN(MockPortManager, constructor);
@@ -42,7 +44,7 @@ class MockPortManager : public MockClass<MockPortManager> {
             // which queries these at construction time.
             settings_in_connected.return_value = false;
             has_f_init_connections.return_value = false;
-            get_connected_ports.return_value = std::vector<Port>();
+            get_connected_ports.return_value = PortReferences();
             list_subtimelines.return_value = std::vector<::ymmsl::Timeline>();
         }
 
@@ -68,7 +70,7 @@ class MockPortManager : public MockClass<MockPortManager> {
         MockFun<Val<bool>> has_f_init_connections;
 
         MockFun<
-            Val<std::vector<Port>>, Val<::ymmsl::Operator>,
+            Val<PortReferences>, Val<::ymmsl::Operator>,
             Val<Optional<::ymmsl::Timeline> const &>> get_connected_ports;
 
         MockFun<Val<std::vector<::ymmsl::Timeline>>> list_subtimelines;

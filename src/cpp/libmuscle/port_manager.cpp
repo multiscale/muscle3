@@ -49,9 +49,9 @@ bool PortManager::has_f_init_connections() const {
     return false;
 }
 
-std::vector<Port> PortManager::get_connected_ports(
+PortManager::PortReferences PortManager::get_connected_ports(
         Operator oper, Optional<Timeline> const & timeline) const {
-    std::vector<Port> result;
+    PortManager::PortReferences result;
     for (auto const & port : ports_) {
         if (port.second.oper != oper)
             continue;

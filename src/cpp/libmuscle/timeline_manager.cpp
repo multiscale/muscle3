@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include "timeline_manager.hpp"
 
 
 using ymmsl::Operator;
@@ -201,14 +202,10 @@ MessageOutOfSync::MessageOutOfSync(Port const & port, Optional<int> slot)
 {}
 
 
-TimelinePorts::TimelinePorts(std::vector<Port> const & ports_in)
+TimelinePorts::TimelinePorts(PortManager::PortReferences ports_in)
     : ports(ports_in)
-    , num_slots(0)
     , participated()
-{
-    for (auto const & port : ports)
-        num_slots += port.is_vector() ? static_cast<std::size_t>(port.get_length()) : 1;
-}
+{}
 
 void TimelinePorts::participate(std::string const & port_name, Optional<int> slot) {
     if (!has_participated(port_name, slot))
@@ -221,12 +218,15 @@ bool TimelinePorts::has_participated(std::string const & port_name, Optional<int
 }
 
 bool TimelinePorts::all_participated() const {
+    std::size_t num_slots = 0;
+    for (Port const & port : ports) // ports is a copy, not a reference!!!!!!!!!!!
+        num_slots += port.is_vector() ? static_cast<std::size_t>(port.get_length()) : 1;
     return participated.size() == num_slots;
 }
 
 std::vector<std::pair<Port, std::vector<int>>> TimelinePorts::missing_ports() const {
     std::vector<std::pair<Port, std::vector<int>>> result;
-    for (auto const & port : ports) {
+    for (Port const & port : ports) {
         std::string name = std::string(port.name);
         if (port.is_vector()) {
             std::vector<int> slots;
@@ -246,8 +246,8 @@ std::vector<std::pair<Port, std::vector<int>>> TimelinePorts::all_ports() const 
     std::vector<std::pair<Port, std::vector<int>>> result;
     for (auto const & port : ports) {
         std::vector<int> slots;
-        if (port.is_vector())
-            for (int slot = 0; slot < port.get_length(); ++slot)
+        if (port.get().is_vector())
+            for (int slot = 0; slot < port.get().get_length(); ++slot)
                 slots.push_back(slot);
         result.emplace_back(port, slots);
     }
@@ -389,7 +389,7 @@ void SubTimelineManager::missing_actions(ExpectedActions & result) const {
 
 TimelineManager::TimelineManager(PortManager const & port_manager)
     : port_manager_(port_manager)
-    , receive_(std::vector<Port>())
+    , receive_({})
     , send_(port_manager.get_connected_ports(Operator::O_F, Optional<Timeline>()))
     , submanagers_()
     , iteration_()

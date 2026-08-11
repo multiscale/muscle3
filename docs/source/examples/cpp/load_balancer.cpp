@@ -34,22 +34,28 @@ void load_balancer(int argc, char * argv[]) {
     while (instance.reuse_instance()) {
         // F_INIT
         int started = 0;
-        int done = 0;
+        std::vector<Message> result;
 
         int num_calls = instance.get_port_length("front_in");
         int num_workers = instance.get_port_length("back_out");
 
         instance.set_port_length("front_out", num_calls);
 
-        while (done < num_calls) {
-            while ((started - done < num_workers) && (started < num_calls)) {
-                auto msg = instance.receive_with_settings("front_in", started);
-                instance.send("back_out", msg, started % num_workers);
+        while (result.size() < num_calls) {
+            for (int i = 0; i < num_workers; ++i) {
+                auto msg = (started < num_calls) ? 
+                    instance.receive_with_settings("front_in", started)
+                    : Message(-INFINITY);
+                instance.send("back_out", msg, i);
                 ++started;
             }
-            auto msg = instance.receive_with_settings("back_in", done % num_workers);
-            instance.send("front_out", msg, done);
-            ++done;
+            for (int i = 0; i < num_workers; ++i) {
+                result.push_back(instance.receive_with_settings("back_in", i));
+            }
+        }
+
+        for (int i = 0; i < num_calls; ++i) {
+            instance.send("front_out", result[i], i);
         }
     }
 }

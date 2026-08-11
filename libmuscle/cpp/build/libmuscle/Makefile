@@ -75,7 +75,7 @@ endif
 
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14 -pthread -O3 -DMSGPACK_NO_BOOST
+CXXFLAGS += -Wall -pedantic -std=c++17 -pthread -O3 -DMSGPACK_NO_BOOST
 export CXXFLAGS
 
 MPIFLAGS := -DMUSCLE_ENABLE_MPI
@@ -148,7 +148,7 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 # Dependencies
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
-MSGPACK_INCLUDE_DIR = $(CURDIR)/../msgpack/msgpack/include
+MSGPACK_INCLUDE_DIR = $(msgpack_ROOT)/include
 export MSGPACK_INCLUDE_DIR
 CXXFLAGS += -I$(MSGPACK_INCLUDE_DIR)
 

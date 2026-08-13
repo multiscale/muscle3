@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Optional, cast
 
-from ymmsl.v0_2 import Identifier, Reference, Settings
+from ymmsl.v0_2 import Identifier, Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.tcp_util import SocketClosed
@@ -21,6 +21,11 @@ _logger = logging.getLogger(__name__)
 
 
 MessageObject = Any
+FInitCacheType = dict[tuple[str, Optional[int]], "Message"]
+
+
+class PortClosed(Exception):
+    """Exception raised when a port was closed during the F_INIT prereceive"""
 
 
 class Message:
@@ -242,6 +247,32 @@ class Communicator:
         profile_event.message_size = len(memoryview(encoded_message))
         if not isinstance(message.data, ClosePort):
             self._profiler.record_event(profile_event)
+
+    def pre_receive_f_init(self) -> tuple[FInitCacheType, float]:
+        """Receive on all connected F_INIT port (including muscle_settings_in)."""
+        cache: FInitCacheType = {}
+        saved_until_list: list[float] = []
+
+        def pre_receive(port_name: str, slot: Optional[int]) -> None:
+            msg, saved_until = self.receive_message(port_name, slot)
+            if isinstance(msg.data, ClosePort):
+                raise PortClosed()
+            cache[(port_name, slot)] = msg
+            saved_until_list.append(saved_until)
+
+        for port in self._port_manager.get_connected_ports(Operator.F_INIT):
+            port_name = str(port.name)
+            _logger.debug("Pre-receiving on port %s", port_name)
+            if not port.is_vector():
+                pre_receive(port_name, None)
+            else:
+                pre_receive(port_name, 0)
+                # The above receives the length, if needed, so now we can
+                # get the rest.
+                for slot in range(1, port.get_length()):
+                    pre_receive(port_name, slot)
+
+        return cache, max(saved_until_list)
 
     def receive_message(
         self, port_name: str, slot: Optional[int] = None

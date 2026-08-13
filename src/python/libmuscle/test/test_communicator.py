@@ -5,7 +5,7 @@ import pytest
 from ymmsl.v0_2 import Conduit, Settings
 from ymmsl.v0_2 import Reference as Ref
 
-from libmuscle.communicator import Communicator, Message
+from libmuscle.communicator import Communicator, Message, PortClosed
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.peer_info import PeerInfo
 
@@ -229,6 +229,45 @@ def test_receive_close_port_vector(connected_communicator, mpp_client, port_mana
     recv_msg, saved_until = connected_communicator.receive_message("in_v", 5)
 
     assert port_manager.get_port("in_v").is_open(5) is False
+
+
+def test_pre_receive_f_init(connected_communicator):
+    msg = MagicMock()
+    connected_communicator.receive_message = MagicMock(return_value=(msg, 0.0))
+
+    cache, saved_until = connected_communicator.pre_receive_f_init()
+    assert saved_until == 0.0
+    assert cache == {("in", None): msg}
+
+
+def test_pre_receive_f_init_with_settings(
+    connected_communicator, connected_port_manager
+):
+    msg = MagicMock()
+    connected_communicator.receive_message = MagicMock(return_value=(msg, 0.0))
+    connected_port_manager.settings_in_connected.return_value = True
+
+    cache, saved_until = connected_communicator.pre_receive_f_init()
+    assert saved_until == 0.0
+    assert cache == {("in", None): msg, ("muscle_settings_in", None): msg}
+
+
+def test_pre_receive_close_port(connected_communicator):
+    msg = MagicMock(data=ClosePort())
+    connected_communicator.receive_message = MagicMock(return_value=(msg, 0.0))
+
+    with pytest.raises(PortClosed):
+        connected_communicator.pre_receive_f_init()
+
+
+def test_pre_receive_vector(connected_communicator, mock_ports):
+    msg = MagicMock()
+    connected_communicator.receive_message = MagicMock(return_value=(msg, 0.0))
+    mock_ports["in"]._length = 4
+
+    cache, saved_until = connected_communicator.pre_receive_f_init()
+    assert saved_until == 0.0
+    assert cache == {("in", slot): msg for slot in range(4)}
 
 
 def test_port_count_validation(

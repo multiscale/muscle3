@@ -11,6 +11,7 @@ from libmuscle.mcp.transport_client import ProfileData
 from libmuscle.mmp_client import MMPClient
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 from libmuscle.port import Port
+from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.timeline_manager import TimelineState
 from libmuscle.timestamp import Timestamp
@@ -115,7 +116,16 @@ def connected_port_manager(port_manager, declared_ports, mock_ports):
     def port_exists(name):
         return name in mock_ports
 
+    def get_connected_ports(operator, timeline=None):
+        # Delegate to actual implementation
+        return PortManager.get_connected_ports(port_manager, operator, timeline)
+
+    port_manager._ports = mock_ports
+    port_manager._muscle_settings_in = Port(
+        "muscle_settings_in", Operator.F_INIT, None, False, True, 0, []
+    )
     port_manager.get_port = get_port
+    port_manager.get_connected_ports = get_connected_ports
     port_manager.list_ports.return_value = declared_ports
     port_manager.port_exists = port_exists
     port_manager.has_f_init_connections.return_value = True

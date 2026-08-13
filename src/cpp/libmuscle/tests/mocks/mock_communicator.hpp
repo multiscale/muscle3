@@ -91,10 +91,15 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 using PortsDescription = std::unordered_map<ymmsl::Operator, std::vector<std::string>>;
 
+class PortClosed : public std::runtime_error {
+    public:
+        PortClosed() : std::runtime_error("Port closed") {};
+};
 
 class MockCommunicator : public MockClass<MockCommunicator> {
     public:
         using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+        using FInitCacheType = std::unordered_map<::ymmsl::Reference, Message>;
 
         MockCommunicator(ReturnValue) {
             NAME_MOCK_MEM_FUN(MockCommunicator, constructor);
@@ -139,6 +144,10 @@ class MockCommunicator : public MockClass<MockCommunicator> {
             Val<PeerLocations const &>> connect;
 
         ::mock_communicator::CommunicatorSendMessageMock send_message;
+
+        MockFun<Val<
+            std::tuple<std::unordered_map<::ymmsl::Reference, Message>, double>
+            >> pre_receive_f_init;
 
         ::mock_communicator::CommunicatorReceiveMessageMock receive_message;
 

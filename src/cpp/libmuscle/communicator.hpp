@@ -29,6 +29,11 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+class PortClosed : public std::runtime_error {
+    public:
+        PortClosed() : std::runtime_error("Port closed") {};
+};
+
 /** Communication engine for MUSCLE3.
  *
  * This class is the mailroom for an instance that uses MUSCLE3. It manages
@@ -38,6 +43,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 class Communicator {
     public:
         using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+        using FInitCacheType = std::unordered_map<::ymmsl::Reference, Message>;
 
         /** Create a Communicator.
          *
@@ -95,6 +101,13 @@ class Communicator {
                 Message const & message,
                 Optional<int> slot = {},
                 double checkpoints_considered_until = -std::numeric_limits<double>::infinity());
+
+        /** Receive on all connected F_INIT port (including muscle_settings_in).
+         * 
+         * @return The received messages, as well as the maximum value of all
+         *      saved_until metadata from the received messages.
+         */
+        std::tuple<FInitCacheType, double> pre_receive_f_init();
 
         /** Receive a message and attached settings overlay.
          *

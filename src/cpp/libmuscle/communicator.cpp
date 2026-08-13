@@ -133,6 +133,42 @@ void Communicator::send_message(
         profiler_.record_event(std::move(profile_event));
 }
 
+std::tuple<Communicator::FInitCacheType, double> Communicator::pre_receive_f_init() {
+    FInitCacheType cache;
+    double max_saved_until = -std::numeric_limits<double>::infinity();
+
+    auto pre_receive = [&](std::string & port_name, Optional<int> slot) {
+        Reference port_ref(port_name);
+        if (slot.is_set())
+            port_ref += slot.get();
+        
+        auto msg_saved_until = receive_message(port_name, slot);
+        auto & msg = std::get<0>(msg_saved_until);
+        if (is_close_port(msg.data()))
+            throw PortClosed();
+        cache.emplace(port_ref, msg);
+
+        auto & saved_until = std::get<1>(msg_saved_until);
+        if (saved_until > max_saved_until)
+            max_saved_until = saved_until;
+    };
+
+    for (Port const & port : port_manager_.get_connected_ports(Operator::F_INIT, {})) {
+        std::string port_name(port.name);
+        log_debug("Pre-receiving on port ", port_name);
+        if (!port.is_vector())
+            pre_receive(port_name, {});
+        else {
+            pre_receive(port_name, 0);
+            // The above receives the length, if needed, so now we can get the rest.
+            for (int slot = 1; slot < port.get_length(); ++slot)
+                pre_receive(port_name, slot);
+        }
+    }
+
+    return {cache, max_saved_until};
+}
+
 std::tuple<Message, double> Communicator::receive_message(
         std::string const & port_name,
         Optional<int> slot,

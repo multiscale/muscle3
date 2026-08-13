@@ -1166,7 +1166,8 @@ class Instance:
         else:
             self._settings_manager.overlay = Settings()
         # Overlay settings from received messages
-        if InstanceFlags.DONT_APPLY_OVERLAY not in self._flags:
+        apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
+        if apply_overlay:
             for (port_name, _), msg in self._f_init_cache.items():
                 self.__apply_overlay(msg)
                 self.__check_compatibility(port_name, msg.settings)
@@ -1174,7 +1175,7 @@ class Instance:
         return True
 
     def __handle_receive_settings(self) -> None:
-        """Handle received settings on muscle_settings_in."""
+        """Handle received settings on pre-received muscle_settings_in."""
         message = self._f_init_cache.pop(("muscle_settings_in", None))
         if not isinstance(message.data, Settings):
             err_msg = (

@@ -62,6 +62,7 @@ using libmuscle::_MUSCLE_IMPL_NS::MockTriggerManager;
 using libmuscle::_MUSCLE_IMPL_NS::Optional;
 using libmuscle::_MUSCLE_IMPL_NS::PeerInfo;
 using libmuscle::_MUSCLE_IMPL_NS::Port;
+using libmuscle::_MUSCLE_IMPL_NS::PortClosed;
 using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
 
 using ymmsl::Operator;
@@ -411,49 +412,25 @@ TEST_F(libmuscle_instance, reuse_set_overlay) {
 
     Message mock_msg(
             0.0, {}, Settings({{"s1", 1}, {"s2", 2}}), Settings({{"s0", 0}}));
-    communicator_.receive_message.return_value = std::make_tuple(mock_msg, 0.0);
+    MockCommunicator::FInitCacheType cache = {{"muscle_settings_in", mock_msg}};
+    communicator_.pre_receive_f_init.return_value = std::make_tuple(cache, 0.0);
 
     instance_.reuse_instance();
 
-    ASSERT_TRUE(communicator_.receive_message.called_with("muscle_settings_in"));
     ASSERT_EQ(settings_manager_.overlay["s0"], 0);
     ASSERT_EQ(settings_manager_.overlay["s1"], 1);
     ASSERT_EQ(settings_manager_.overlay["s2"], 2);
 }
 
 TEST_F(libmuscle_instance, reuse_closed_port) {
-    for (auto const & closed_port : {"muscle_settings_in", "in"}) {
-        port_manager_.settings_in_connected.return_value = true;
-        communicator_.receive_message.side_effect = [&closed_port](
-                std::string const & port_name, Optional<int> slot = {},
-                Optional<Message> const & default_msg = {}) -> std::tuple<Message, double>
-            {
-                if (port_name == closed_port)
-                    return std::make_tuple(Message(0.0, ClosePort(), Settings()), 0.0);
-                else
-                    return std::make_tuple(Message(0.0, Settings(), Settings()), 0.0);
-            };
-
-        ASSERT_FALSE(instance_.reuse_instance());
-    }
-}
-
-TEST_F(libmuscle_instance, reuse_f_init_vector_port) {
-    port_manager_.get_port("in").length_ = 10;
-
-    communicator_.receive_message.side_effect = [](
-            std::string const & port_name, Optional<int> slot = {},
-            Optional<Message> const & default_msg = {}) -> std::tuple<Message, double>
-        {
-            Message mock_msg(0.0, Settings());
-            return std::make_tuple(mock_msg, 0.0);
+    communicator_.pre_receive_f_init.side_effect = [](
+        ) -> std::tuple<MockCommunicator::FInitCacheType, double> {
+            throw PortClosed();
         };
-
-    ASSERT_TRUE(instance_.reuse_instance());
+    ASSERT_FALSE(instance_.reuse_instance());
 }
 
 TEST_F(libmuscle_instance, reuse_no_f_init_ports) {
-    port_manager_.list_ports.return_value = PortsDescription();
     port_manager_.has_f_init_connections.return_value = false;
 
     ASSERT_TRUE(instance_.reuse_instance());
@@ -511,7 +488,8 @@ TEST_F(libmuscle_instance, receive_on_sending_port) {
 
 TEST_F(libmuscle_instance, receive_f_init) {
     Message mock_msg(0.0, Settings());
-    communicator_.receive_message.return_value = std::make_tuple(mock_msg, 0.0);
+    MockCommunicator::FInitCacheType cache = {{"in", mock_msg}};
+    communicator_.pre_receive_f_init.return_value = std::make_tuple(cache, 0.0);
 
     instance_.reuse_instance();
 
@@ -542,19 +520,10 @@ TEST_F(libmuscle_instance, receive_no_default) {
 }
 
 TEST_F(libmuscle_instance, receive_inconsistent_settings) {
-    communicator_.receive_message.side_effect = [](
-            std::string const & port_name, Optional<int> const & slot,
-            Optional<Message> const & default_msg)
-        {
-            if (port_name == "muscle_settings_in")
-                return std::make_tuple(
-                        Message(0.0, Settings({{"s1", 1}}), Settings()),
-                        0.0);
-            return std::make_tuple(
-                    Message(0.0, DataConstRef(), Settings({{"s0", 0}})),
-                    0.0);
-        };
-
+    MockCommunicator::FInitCacheType cache = {
+        {"muscle_settings_in", Message(0.0, Settings({{"s1", 1}}), Settings())},
+        {"in", Message(0.0, DataConstRef(), Settings({{"s0", 0}}))}};
+    communicator_.pre_receive_f_init.return_value = std::make_tuple(cache, 0.0);
     port_manager_.settings_in_connected.return_value = true;
 
     ASSERT_THROW(instance_.reuse_instance(), std::logic_error);
@@ -563,7 +532,8 @@ TEST_F(libmuscle_instance, receive_inconsistent_settings) {
 TEST_F(libmuscle_instance_dont_apply_overlay, receive_with_settings) {
     Message mock_msg(0.0);
     mock_msg.settings_ = Settings({{"s0", 0}, {"s1", 1}});
-    communicator_.receive_message.return_value = std::make_tuple(mock_msg, 0.0);
+    MockCommunicator::FInitCacheType cache = {{"in", mock_msg}};
+    communicator_.pre_receive_f_init.return_value = std::make_tuple(cache, 0.0);
 
     instance_dont_apply_overlay_.reuse_instance();
     auto msg = instance_dont_apply_overlay_.receive("in");
@@ -576,6 +546,7 @@ TEST_F(libmuscle_instance_dont_apply_overlay, receive_with_settings) {
 
 TEST_F(libmuscle_instance_dont_apply_overlay, receive_with_settings_default) {
     port_manager_.get_port("in").is_connected_ = false;
+    communicator_.pre_receive_f_init.return_value = std::make_tuple(MockCommunicator::FInitCacheType(), 0.0);
 
     instance_dont_apply_overlay_.reuse_instance();
 

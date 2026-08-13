@@ -249,7 +249,13 @@ class Communicator:
             self._profiler.record_event(profile_event)
 
     def pre_receive_f_init(self) -> tuple[FInitCacheType, float]:
-        """Receive on all connected F_INIT port (including muscle_settings_in)."""
+        """Receive on all connected F_INIT port (including muscle_settings_in).
+
+        Returns:
+            f_init_cache: The received messages.
+            max_saved_until: Maximum value of all saved_until metadata from the received
+                messages.
+        """
         cache: FInitCacheType = {}
         saved_until_list: list[float] = []
 
@@ -267,8 +273,7 @@ class Communicator:
                 pre_receive(port_name, None)
             else:
                 pre_receive(port_name, 0)
-                # The above receives the length, if needed, so now we can
-                # get the rest.
+                # The above receives the length, if needed, so now we can get the rest.
                 for slot in range(1, port.get_length()):
                     pre_receive(port_name, slot)
 

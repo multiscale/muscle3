@@ -231,6 +231,10 @@ TEST_F(libmuscle_communicator2, receive_close_port) {
     ASSERT_FALSE(mock_ports_.at("in")->is_open());
 }
 
+// Testing pre_receive_f_init is too difficult to set up correctly without the ability
+// to mock Communicator::receive_message (like the Python tests can)
+// TODO: review after implementing conduit filters.
+
 TEST_F(libmuscle_communicator2, receive_close_port_vector) {
     MPPMessage msg(
             "peer2.out_v", "component.in_v", 5, std::numeric_limits<double>::infinity(),

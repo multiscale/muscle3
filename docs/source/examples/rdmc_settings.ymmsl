@@ -14,4 +14,4 @@ settings:
   k_max: -3.645e4
   d_min: 0.03645
   d_max: 0.04455
-  n_samples: 10
+  n_samples: 15

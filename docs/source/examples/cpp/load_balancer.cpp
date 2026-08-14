@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <cinttypes>
+#include <limits>
 #include <random>
 
 #include <libmuscle/libmuscle.hpp>
@@ -45,7 +46,8 @@ void load_balancer(int argc, char * argv[]) {
             for (int i = 0; i < num_workers; ++i) {
                 auto msg = (started < num_calls) ? 
                     instance.receive_with_settings("front_in", started)
-                    : Message(-INFINITY);
+                    // Send a message indicating nothing left to do:
+                    : Message(-std::numeric_limits<double>::infinity(), Settings({{"skip", true}}));
                 instance.send("back_out", msg, i);
                 ++started;
             }

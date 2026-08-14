@@ -40,6 +40,11 @@ void diffusion(int argc, char * argv[]) {
             {Operator::O_F, {"final_state_out"}}});
 
     while (instance.reuse_instance()) {
+        if (instance.get_setting_as<bool>("skip", false)) {
+            // The load balancer has no work for us this iteration
+            instance.send("final_state_out", Message(-1));
+            continue;
+        }
         // F_INIT
         double t_max = instance.get_setting_as<double>("t_max");
         double dt = instance.get_setting_as<double>("dt");

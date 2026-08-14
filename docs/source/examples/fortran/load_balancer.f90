@@ -17,7 +17,8 @@ program load_balancer
 
     type(LIBMUSCLE_Message) :: rmsg
     type(LIBMUSCLE_Message), allocatable :: result(:)
-    type(LIBMUSCLE_DataConstRef) :: rdata
+    type(LIBMUSCLE_Data) :: rdata
+    type(YMMSL_Settings) :: settings
 
     integer :: started, done, num_calls, num_workers, i
 
@@ -46,16 +47,25 @@ program load_balancer
                 if (started < num_calls) then
                     rmsg = instance%receive_with_settings_on_slot('front_in', started)
                 else
-                    rmsg = LIBMUSCLE_Message(-1d40)
+                    ! Send a message indicating nothing left to do:
+                    settings = YMMSL_Settings()
+                    call settings%set('skip', .true.)
+                    rdata = LIBMUSCLE_Data(settings)
+                    rmsg = LIBMUSCLE_Message(-1d40, rdata)
+                    call LIBMUSCLE_Data_free(rdata)
+                    call YMMSL_Settings_free(settings)
                 end if
                 call instance%send('back_out', rmsg, i)
                 call LIBMUSCLE_Message_free(rmsg)
                 started = started + 1
             end do
             do i = 0, num_workers-1
+                rmsg = instance%receive_with_settings_on_slot('back_in', i)
                 if (done < num_calls) then
                     done = done + 1
-                    result(done) = instance%receive_with_settings_on_slot('back_in', mod(done, num_workers))
+                    result(done) = rmsg
+                else
+                    call LIBMUSCLE_Message_free(rmsg)
                 end if
             end do
         end do

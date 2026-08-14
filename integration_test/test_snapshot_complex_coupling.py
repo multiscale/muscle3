@@ -2,7 +2,6 @@ import random
 import time
 
 import pytest
-from libmuscle.manager.run_dir import RunDir
 from ymmsl import dump, load
 from ymmsl.v0_2 import Operator
 
@@ -12,6 +11,7 @@ from libmuscle import (
     Instance,
     Message,
 )
+from libmuscle.manager.run_dir import RunDir
 
 from .conftest import ls_snapshots, run_manager_with_actors
 

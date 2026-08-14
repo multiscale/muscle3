@@ -5,10 +5,11 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import msgpack
+from ymmsl.v0_2 import Reference, Settings
+
 from libmuscle.mcp.protocol import RequestType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mpp_message import MPPMessage
-from ymmsl.v0_2 import Reference, Settings
 
 from .conftest import skip_if_python_only
 
@@ -59,7 +60,7 @@ def test_cpp_tcp_client(log_file_in_tmpdir):
     # create C++ client
     # it receives and checks settings, and sends a log message
     # see libmuscle/cpp/src/libmuscle/tests/mpp_client_test.cpp
-    cpp_build_dir = Path(__file__).parents[1] / "libmuscle" / "cpp" / "build"
+    cpp_build_dir = Path(__file__).parents[1] / "build" / "cpp"
     env = os.environ.copy()
     lib_paths = [cpp_build_dir / "msgpack" / "msgpack" / "lib"]
     if "LD_LIBRARY_PATH" in env:

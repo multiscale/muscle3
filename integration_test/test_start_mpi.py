@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import ymmsl
+
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 
@@ -13,7 +14,7 @@ def test_start_mpi(tmpdir, mpi_exec_model):
     tmppath = Path(str(tmpdir))
 
     # find our test components and their requirements
-    cpp_build_dir = Path(__file__).parents[1] / "libmuscle" / "cpp" / "build"
+    cpp_build_dir = Path(__file__).parents[1] / "build" / "cpp"
     lib_paths = [cpp_build_dir / "msgpack" / "msgpack" / "lib"]
     ld_lib_path = ":".join(map(str, lib_paths))
 

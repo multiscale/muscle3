@@ -2,7 +2,6 @@ import sqlite3
 from collections import OrderedDict
 
 import numpy as np
-from libmuscle.runner import run_simulation
 from ymmsl.v0_2 import (
     Component,
     Conduit,
@@ -14,6 +13,7 @@ from ymmsl.v0_2 import (
 )
 
 from libmuscle import Grid, Instance, Message
+from libmuscle.runner import run_simulation
 
 NUM_MICROS = 10
 

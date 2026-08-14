@@ -1,4 +1,3 @@
-from libmuscle.runner import run_simulation
 from ymmsl.v0_2 import (
     Component,
     Conduit,
@@ -10,6 +9,7 @@ from ymmsl.v0_2 import (
 )
 
 from libmuscle import Instance, Message
+from libmuscle.runner import run_simulation
 
 
 def multicaster():

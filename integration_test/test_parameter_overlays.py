@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-from libmuscle.runner import run_simulation
 from ymmsl.v0_2 import (
     Component,
     Conduit,
@@ -12,6 +11,7 @@ from ymmsl.v0_2 import (
 )
 
 from libmuscle import DONT_APPLY_OVERLAY, Instance, Message
+from libmuscle.runner import run_simulation
 
 _ENSEMBLE_SIZE = 2
 

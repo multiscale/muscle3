@@ -1,7 +1,7 @@
-from libmuscle.runner import run_simulation
 from ymmsl import load
 
 from integration_test.test_all import NUM_MICROS, macro, micro
+from libmuscle.runner import run_simulation
 
 
 def test_nested(log_file_in_tmpdir, tmp_path):

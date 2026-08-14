@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 import yatiml
 import ymmsl
+
 from libmuscle.manager.manager import Manager
 from libmuscle.pytest.muscle_tester import make_server_process
 
@@ -92,13 +93,13 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
 
             For cpp actors, details is an executable path with optional arguments.
             The executable paths are assumed to be relative to
-            ``../libmuscle/cpp/build/libmuscle/tests``.
+            ``../build/cpp/libmuscle/tests``.
 
             For mpi cpp actors, details is an executable path (see cpp), then number of
             processes and optionally arguments passed to the executable.
 
             For fortran actors, details is an executable path. Executable paths are
-            assumed to be relative to ``../libmuscle/fortran/build/libmuscle/tests``.
+            assumed to be relative to ``../build/fortran/libmuscle/tests``.
 
             For both cpp and Fortran actors, LD_LIBRARY_PATH is automatically updated
             to include the msgpack library path.
@@ -106,9 +107,9 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
     """
     env = os.environ.copy()
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    libmuscle_dir = Path(__file__).parents[1] / "libmuscle"
-    cpp_build_dir = libmuscle_dir / "cpp" / "build" / "libmuscle" / "tests"
-    fortran_build_dir = libmuscle_dir / "fortran" / "build" / "libmuscle" / "tests"
+    build_dir = Path(__file__).parents[1] / "build"
+    cpp_build_dir = build_dir / "cpp" / "libmuscle" / "tests"
+    fortran_build_dir = build_dir / "fortran" / "libmuscle" / "tests"
 
     with ExitStack() as stack:
         ctx = make_server_process(ymmsl_doc, Path(tmpdir), False)

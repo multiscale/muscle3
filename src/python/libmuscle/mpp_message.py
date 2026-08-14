@@ -159,7 +159,6 @@ class MPPMessage:
         next_timestamp: Optional[float],
         settings_overlay: Settings,
         message_number: int,
-        saved_until: float,
         data: Any,
         iteration: Optional[IterationCount] = None,
     ) -> None:
@@ -180,8 +179,6 @@ class MPPMessage:
             port_length: Length of the slot, where applicable.
             settings_overlay: The serialised overlay settings.
             message_number: Sequence number on this conduit.
-            saved_until: Elapsed time until which the sender has
-                processed checkpoints.
             data: The serialised contents of the message.
             iteration: The iteration of the sending port, or None.
                 TODO: When replacing ClosePort with Milestones we shouldn't allow a None
@@ -199,7 +196,6 @@ class MPPMessage:
         self.next_timestamp = next_timestamp
         self.settings_overlay = settings_overlay
         self.message_number = message_number
-        self.saved_until = saved_until
         self.iteration = iteration
         if isinstance(data, np.ndarray):
             self.data = Grid(data)
@@ -221,7 +217,6 @@ class MPPMessage:
         next_timestamp = message_dict["next_timestamp"]
         settings_overlay = message_dict["settings_overlay"]
         message_number = message_dict["message_number"]
-        saved_until = message_dict["saved_until"]
 
         data = message_dict["data"]
         iteration = message_dict.get("iteration")
@@ -233,7 +228,6 @@ class MPPMessage:
             next_timestamp,
             settings_overlay,
             message_number,
-            saved_until,
             data,
             iteration,
         )
@@ -248,7 +242,6 @@ class MPPMessage:
             "next_timestamp": self.next_timestamp,
             "settings_overlay": self.settings_overlay,
             "message_number": self.message_number,
-            "saved_until": self.saved_until,
             "data": self.data,
             "iteration": self.iteration,
         }

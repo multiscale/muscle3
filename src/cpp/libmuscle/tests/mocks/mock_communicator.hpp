@@ -41,12 +41,12 @@ struct CommunicatorSendMessageMock : CommunicatorSendMessageBase {
 
 
 using CommunicatorReceiveMessageBase = MockFun<
-    Val<std::tuple<Message, double>>, Val<std::string const &>,
+    Val<Message>, Val<std::string const &>,
     Val<Optional<int>>,
     Val<Optional<Message>>>;
 
 struct CommunicatorReceiveMessageMock : CommunicatorReceiveMessageBase {
-    std::tuple<Message, double> operator()(
+    Message operator()(
             std::string const & port_name,
             Optional<int> slot = {},
             Optional<Message> const & default_msg = {})
@@ -145,9 +145,7 @@ class MockCommunicator : public MockClass<MockCommunicator> {
 
         ::mock_communicator::CommunicatorSendMessageMock send_message;
 
-        MockFun<Val<
-            std::tuple<std::unordered_map<::ymmsl::Reference, Message>, double>
-            >> pre_receive_f_init;
+        MockFun<Val<FInitCacheType>> pre_receive_f_init;
 
         ::mock_communicator::CommunicatorReceiveMessageMock receive_message;
 

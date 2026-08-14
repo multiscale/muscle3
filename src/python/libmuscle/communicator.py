@@ -173,7 +173,6 @@ class Communicator:
         port_name: str,
         message: Message,
         slot: Optional[int] = None,
-        checkpoints_considered_until: float = float("-inf"),
     ) -> None:
         """Send a message and settings to the outside world.
 
@@ -184,8 +183,6 @@ class Communicator:
             port_name: The port on which this message is to be sent.
             message: The message to be sent.
             slot: The slot to send the message on, if any.
-            checkpoints_considered_until: When we last checked if we
-                should save a snapshot (wallclock time).
         """
         _logger.debug(f"Sending message on {port_desc(port_name, slot)}")
         slot_list: list[int] = [] if slot is None else [slot]
@@ -232,7 +229,6 @@ class Communicator:
                 message.next_timestamp,
                 cast(Settings, message.settings),
                 port.get_num_messages(slot),
-                checkpoints_considered_until,
                 message.data,
                 iteration,
             )
@@ -248,23 +244,19 @@ class Communicator:
         if not isinstance(message.data, ClosePort):
             self._profiler.record_event(profile_event)
 
-    def pre_receive_f_init(self) -> tuple[FInitCacheType, float]:
+    def pre_receive_f_init(self) -> FInitCacheType:
         """Receive on all connected F_INIT port (including muscle_settings_in).
 
         Returns:
             f_init_cache: The received messages.
-            max_saved_until: Maximum value of all saved_until metadata from the received
-                messages.
         """
         cache: FInitCacheType = {}
-        saved_until_list: list[float] = []
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg, saved_until = self.receive_message(port_name, slot)
+            msg = self.receive_message(port_name, slot)
             if isinstance(msg.data, ClosePort):
                 raise PortClosed()
             cache[(port_name, slot)] = msg
-            saved_until_list.append(saved_until)
 
         for port in self._port_manager.get_connected_ports(Operator.F_INIT):
             port_name = str(port.name)
@@ -277,11 +269,9 @@ class Communicator:
                 for slot in range(1, port.get_length()):
                     pre_receive(port_name, slot)
 
-        return cache, max(saved_until_list)
+        return cache
 
-    def receive_message(
-        self, port_name: str, slot: Optional[int] = None
-    ) -> tuple[Message, float]:
+    def receive_message(self, port_name: str, slot: Optional[int] = None) -> Message:
         """Receive a message and attached settings overlay.
 
         Receiving is a blocking operation. This function will contact
@@ -300,8 +290,7 @@ class Communicator:
         Returns:
             The received message, with message.settings holding
             the settings overlay. The settings attribute is
-            guaranteed to not be None. Secondly, the saved_until
-            metadata field from the received message.
+            guaranteed to not be None.
 
         Raises:
             RuntimeError: If the network connection had an error, or the
@@ -456,7 +445,7 @@ class Communicator:
                 port_name, slot, mpp_message.iteration
             )
 
-        return message, mpp_message.saved_until
+        return message
 
     def shutdown(self) -> None:
         """Shuts down the Communicator, closing connections."""

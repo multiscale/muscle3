@@ -63,7 +63,7 @@ def port_manager():
 def communicator():
     with patch("libmuscle.instance.Communicator") as Communicator:
         communicator = Communicator.return_value
-        communicator.pre_receive_f_init.return_value = {}, 0.0
+        communicator.pre_receive_f_init.return_value = {}
         yield communicator
 
 
@@ -431,10 +431,9 @@ def test_reuse_set_overlay(
     mock_msg = MagicMock()
     mock_msg.data = Settings({"s1": 1, "s2": 2})
     mock_msg.settings = Settings({"s0": 0})
-    communicator.pre_receive_f_init.return_value = (
-        {("muscle_settings_in", None): mock_msg},
-        0.0,
-    )
+    communicator.pre_receive_f_init.return_value = {
+        ("muscle_settings_in", None): mock_msg
+    }
 
     instance.reuse_instance()
     assert settings_manager.overlay["s0"] == 0
@@ -519,7 +518,7 @@ def test_receive_on_sending_port(instance):
 def test_receive_f_init(instance, port_manager, communicator):
     mock_msg = MagicMock()
     mock_msg.data = Settings()
-    communicator.pre_receive_f_init.return_value = {("in", None): mock_msg}, 0.0
+    communicator.pre_receive_f_init.return_value = {("in", None): mock_msg}
 
     instance.reuse_instance()
 
@@ -561,7 +560,7 @@ def test_receive_inconsistent_settings(
         ),
         ("in", None): MagicMock(settings=Settings({"s0": 0})),
     }
-    communicator.pre_receive_f_init.return_value = msgs, 0.0
+    communicator.pre_receive_f_init.return_value = msgs
     port_manager.settings_in_connected.return_value = True
 
     with pytest.raises(RuntimeError):
@@ -574,7 +573,7 @@ def test_receive_with_settings(
 
     mock_msg = MagicMock()
     mock_msg.settings = Settings({"s0": 0, "s1": 1})
-    communicator.pre_receive_f_init.return_value = {("in", None): mock_msg}, 0.0
+    communicator.pre_receive_f_init.return_value = {("in", None): mock_msg}
 
     instance_dont_apply_overlay.reuse_instance()
     msg = instance_dont_apply_overlay.receive("in")

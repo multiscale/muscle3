@@ -99,7 +99,7 @@ def test_send_message(connected_communicator, mpp_server, timeline_manager):
     timeline_manager.return_value.check_send_message.return_value = [2, 0]
     msg = Message(0.0, 1.0, "Testing", Settings({"s0": 0, "s1": "1"}))
 
-    connected_communicator.send_message("out_v", msg, 7, -1.0)
+    connected_communicator.send_message("out_v", msg, 7)
 
     mpp_server.deposit.assert_called_once()
     args = mpp_server.deposit.call_args[0]
@@ -115,7 +115,6 @@ def test_send_message(connected_communicator, mpp_server, timeline_manager):
     assert encoded_msg.settings_overlay["s0"] == 0
     assert encoded_msg.settings_overlay["s1"] == "1"
     assert encoded_msg.message_number == 0
-    assert encoded_msg.saved_until == -1.0
     assert encoded_msg.data == "Testing"
     assert encoded_msg.iteration == [2, 0]
     timeline_manager.return_value.check_send_message.assert_called_with("out_v", 7)
@@ -138,7 +137,6 @@ def test_receive_message(connected_communicator, mpp_client):
         3.0,
         Settings({"s0": "0", "s1": True}),
         0,
-        1.0,
         "Testing",
         [0],
     )
@@ -146,7 +144,7 @@ def test_receive_message(connected_communicator, mpp_client):
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
     connected_communicator.set_receive_timeout(-1)
-    recv_msg, saved_until = connected_communicator.receive_message("in")
+    recv_msg = connected_communicator.receive_message("in")
 
     mpp_client.receive.assert_called_with(Ref("component.in"), None)
 
@@ -156,7 +154,6 @@ def test_receive_message(connected_communicator, mpp_client):
     assert len(recv_msg.settings) == 2
     assert recv_msg.settings["s0"] == "0"
     assert recv_msg.settings["s1"] is True
-    assert saved_until == 1.0
 
 
 def test_receive_message_vector(connected_communicator, mpp_client):
@@ -168,7 +165,6 @@ def test_receive_message_vector(connected_communicator, mpp_client):
         6.0,
         Settings({"s0": [0.0], "s1": 1.0}),
         0,
-        3.5,
         "Testing2",
         [0],
     )
@@ -176,7 +172,7 @@ def test_receive_message_vector(connected_communicator, mpp_client):
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
     connected_communicator.set_receive_timeout(-1)
-    recv_msg, saved_until = connected_communicator.receive_message("in_v", 5)
+    recv_msg = connected_communicator.receive_message("in_v", 5)
 
     mpp_client.receive.assert_called_with(Ref("component.in_v[5]"), None)
 
@@ -186,7 +182,6 @@ def test_receive_message_vector(connected_communicator, mpp_client):
     assert len(recv_msg.settings) == 2
     assert recv_msg.settings["s0"] == [0.0]
     assert recv_msg.settings["s1"] == 1.0
-    assert saved_until == 3.5
 
 
 def test_receive_close_port(connected_communicator, mpp_client, port_manager):
@@ -198,14 +193,13 @@ def test_receive_close_port(connected_communicator, mpp_client, port_manager):
         None,
         Settings(),
         0,
-        0.1,
         ClosePort(),
     )
     assert msg.iteration is None
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    recv_msg, saved_until = connected_communicator.receive_message("in")
+    connected_communicator.receive_message("in")
 
     assert port_manager.get_port("in").is_open() is False
 
@@ -219,24 +213,22 @@ def test_receive_close_port_vector(connected_communicator, mpp_client, port_mana
         None,
         Settings(),
         0,
-        3.5,
         ClosePort(),
     )
     assert msg.iteration is None
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    recv_msg, saved_until = connected_communicator.receive_message("in_v", 5)
+    connected_communicator.receive_message("in_v", 5)
 
     assert port_manager.get_port("in_v").is_open(5) is False
 
 
 def test_pre_receive_f_init(connected_communicator):
     msg = MagicMock()
-    connected_communicator.receive_message = MagicMock(return_value=(msg, 0.0))
+    connected_communicator.receive_message = MagicMock(return_value=msg)
 
-    cache, saved_until = connected_communicator.pre_receive_f_init()
-    assert saved_until == 0.0
+    cache = connected_communicator.pre_receive_f_init()
     assert cache == {("in", None): msg}
 
 
@@ -244,17 +236,16 @@ def test_pre_receive_f_init_with_settings(
     connected_communicator, connected_port_manager
 ):
     msg = MagicMock()
-    connected_communicator.receive_message = MagicMock(return_value=(msg, 0.0))
+    connected_communicator.receive_message = MagicMock(return_value=msg)
     connected_port_manager.settings_in_connected.return_value = True
 
-    cache, saved_until = connected_communicator.pre_receive_f_init()
-    assert saved_until == 0.0
+    cache = connected_communicator.pre_receive_f_init()
     assert cache == {("in", None): msg, ("muscle_settings_in", None): msg}
 
 
 def test_pre_receive_close_port(connected_communicator):
     msg = MagicMock(data=ClosePort())
-    connected_communicator.receive_message = MagicMock(return_value=(msg, 0.0))
+    connected_communicator.receive_message = MagicMock(return_value=msg)
 
     with pytest.raises(PortClosed):
         connected_communicator.pre_receive_f_init()
@@ -262,11 +253,10 @@ def test_pre_receive_close_port(connected_communicator):
 
 def test_pre_receive_vector(connected_communicator, mock_ports):
     msg = MagicMock()
-    connected_communicator.receive_message = MagicMock(return_value=(msg, 0.0))
+    connected_communicator.receive_message = MagicMock(return_value=msg)
     mock_ports["in"]._length = 4
 
-    cache, saved_until = connected_communicator.pre_receive_f_init()
-    assert saved_until == 0.0
+    cache = connected_communicator.pre_receive_f_init()
     assert cache == {("in", slot): msg for slot in range(4)}
 
 
@@ -282,7 +272,6 @@ def test_port_count_validation(
         None,
         Settings({"test1": 12}),
         0,
-        7.6,
         b"test",
         [0],
     )
@@ -309,7 +298,6 @@ def test_port_discard_error_on_resume(
         None,
         Settings({"test1": 12}),
         1,
-        2.3,
         b"test",
     )
 
@@ -348,7 +336,6 @@ def test_port_discard_success_on_resume(
                 None,
                 Settings({"test1": 12}),
                 message_number,
-                1.0,
                 {"this is message": message_number},
                 [0],
             ).encoded(),
@@ -367,7 +354,7 @@ def test_port_discard_success_on_resume(
         assert connected_port_manager.get_port(port).is_resuming(None)
 
     with caplog.at_level(logging.DEBUG, "libmuscle.communicator"):
-        msg, _ = connected_communicator.receive_message("in")
+        msg = connected_communicator.receive_message("in")
         assert any(
             ["Discarding received message" in rec.message for rec in caplog.records]
         )
@@ -391,7 +378,6 @@ def test_shutdown(
         None,
         Settings(),
         0,
-        0.0,
         ClosePort(),
     )
 
@@ -413,7 +399,6 @@ def test_shutdown(
                 None,
                 Settings(),
                 0,
-                3.5,
                 ClosePort(),
             )
 

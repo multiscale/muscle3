@@ -674,21 +674,16 @@ Message Instance::Impl::receive_message(
             }
         }
         else {
-            double saved_until;
-            std::tie(result, saved_until) = communicator_->receive_message(
-                    port_name, slot);
+            result = communicator_->receive_message(port_name, slot);
             if (!port.is_open(slot)) {
                 std::ostringstream oss;
                 oss << "Port \"" << port_ref << "\" is closed, but we're trying";
                 oss << " to receive on it. Did the peer crash?";
                 error = Error(std::runtime_error(oss.str()));
             }
-            else {
-                if (!with_settings) {
-                    check_compatibility_(port_name, result.settings());
-                    result.unset_settings();
-                }
-                trigger_manager_->harmonise_wall_time(saved_until);
+            else if (!with_settings) {
+                check_compatibility_(port_name, result.settings());
+                result.unset_settings();
             }
         }
     }
@@ -941,9 +936,7 @@ bool Instance::Impl::pre_receive_() {
     ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
 
     try {
-        auto cache_saved_until = communicator_->pre_receive_f_init();
-        f_init_cache_ = std::get<0>(cache_saved_until);
-        trigger_manager_->harmonise_wall_time(std::get<1>(cache_saved_until));
+        f_init_cache_ = communicator_->pre_receive_f_init();
     } catch (PortClosed &err) {
         profiler_->record_event(std::move(sw_event));
         return false;

@@ -111,7 +111,6 @@ class MsgPackSnapshot(Snapshot):
             message.next_timestamp,
             settings,
             0,
-            -1.0,
             message.data,
         ).encoded()
 

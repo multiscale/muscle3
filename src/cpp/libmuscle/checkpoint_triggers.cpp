@@ -174,19 +174,6 @@ double TriggerManager::elapsed_walltime() {
     return std::chrono::duration<double>(duration).count();
 }
 
-double TriggerManager::checkpoints_considered_until() {
-    return cpts_considered_until_;
-}
-
-void TriggerManager::harmonise_wall_time(double at_least) {
-    double cur = elapsed_walltime();
-    if (cur < at_least) {
-        auto duration = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-            std::chrono::duration<double>(at_least - cur));
-        simulation_epoch_ -= duration;
-    }
-}
-
 bool TriggerManager::should_save_snapshot(double timestamp) {
     if (!has_checkpoints_) return false;
 

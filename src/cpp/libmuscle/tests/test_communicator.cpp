@@ -142,7 +142,7 @@ TEST_F(libmuscle_communicator2, send_message) {
         IterationCount({2, 0});
     Message msg(0.0, 1.0, "test", Settings({{"s0", 0}, {"s1", "1"}}));
 
-    connected_communicator_.send_message("out_v", msg, 7, -1.0);
+    connected_communicator_.send_message("out_v", msg, 7);
 
     auto & server = communicator_.server_;
     ASSERT_EQ(server.deposit.call_arg<0>(), "peer2[7].in");
@@ -156,7 +156,6 @@ TEST_F(libmuscle_communicator2, send_message) {
     auto overlay = encoded_msg.settings_overlay.as<Settings>();
     ASSERT_EQ(overlay["s0"].as<int64_t>(), 0);
     ASSERT_EQ(overlay["s1"].as<std::string>(), "1");
-    ASSERT_EQ(encoded_msg.saved_until, -1.0);
     ASSERT_EQ(encoded_msg.data.as<std::string>(), "test");
     ASSERT_TRUE(encoded_msg.iteration.is_set());
     ASSERT_EQ(encoded_msg.iteration.get(), IterationCount({2, 0}));
@@ -173,15 +172,13 @@ TEST_F(libmuscle_communicator2, send_message_disconnected) {
 TEST_F(libmuscle_communicator2, receive_message) {
     MPPMessage msg(
             "peer.out", "component.in", {}, 2.0, 3.0,
-            Settings({{"s0", "0"}, {"s1", true}}), 0, 1.0, "Testing",
+            Settings({{"s0", "0"}, {"s1", true}}), 0, "Testing",
             IterationCount({0}));
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
 
-    auto recv_msg_saved_until = connected_communicator_.receive_message("in");
-    auto const & recv_msg = std::get<0>(recv_msg_saved_until);
-    double saved_until = std::get<1>(recv_msg_saved_until);
+    auto recv_msg = connected_communicator_.receive_message("in");
 
     auto & mpp_client = connected_communicator_.clients_.at("peer");
     ASSERT_TRUE(mpp_client->receive.called_with("component.in", nullptr));
@@ -191,21 +188,18 @@ TEST_F(libmuscle_communicator2, receive_message) {
     ASSERT_EQ(recv_msg.data().as<std::string>(), "Testing");
     ASSERT_EQ(recv_msg.settings().at("s0"), "0");
     ASSERT_TRUE(recv_msg.settings().at("s1").as<bool>());
-    ASSERT_EQ(saved_until, 1.0);
 }
 
 TEST_F(libmuscle_communicator2, receive_message_vector) {
     MPPMessage msg(
             "peer2.out_v", "component.in_v", 5, 4.0, 6.0,
-            Settings({{"s0", {0.0}}, {"s1", 1.0}}), 0, 3.5, "Testing2",
+            Settings({{"s0", {0.0}}, {"s1", 1.0}}), 0, "Testing2",
             IterationCount({0}));
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
 
-    auto recv_msg_saved_until = connected_communicator_.receive_message("in_v", 5);
-    auto const & recv_msg = std::get<0>(recv_msg_saved_until);
-    double saved_until = std::get<1>(recv_msg_saved_until);
+    auto recv_msg = connected_communicator_.receive_message("in_v", 5);
 
     auto mpp_client = connected_communicator_.clients_.at("peer2[5]").get();
     ASSERT_TRUE(mpp_client->receive.called_with("component.in_v[5]", nullptr));
@@ -215,13 +209,12 @@ TEST_F(libmuscle_communicator2, receive_message_vector) {
     ASSERT_EQ(recv_msg.data().as<std::string>(), "Testing2");
     ASSERT_EQ(recv_msg.settings().at("s0"), std::vector<double>{0.0});
     ASSERT_EQ(recv_msg.settings().at("s1"), 1.0);
-    ASSERT_EQ(saved_until, 3.5);
 }
 
 TEST_F(libmuscle_communicator2, receive_close_port) {
     MPPMessage msg(
             "peer.out", "component.in", {}, std::numeric_limits<double>::infinity(), {},
-            Settings(), 0, 0.1, ClosePort());
+            Settings(), 0, ClosePort());
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
@@ -238,7 +231,7 @@ TEST_F(libmuscle_communicator2, receive_close_port) {
 TEST_F(libmuscle_communicator2, receive_close_port_vector) {
     MPPMessage msg(
             "peer2.out_v", "component.in_v", 5, std::numeric_limits<double>::infinity(),
-            {}, Settings(), 0, 3.5, ClosePort());
+            {}, Settings(), 0, ClosePort());
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
@@ -251,7 +244,7 @@ TEST_F(libmuscle_communicator2, receive_close_port_vector) {
 TEST_F(libmuscle_communicator2, port_count_validation) {
     MPPMessage msg(
             "peer.out", "component.in",
-            {}, 0.0, {}, Settings({{"test1", 12}}), 0, 7.6, "test",
+            {}, 0.0, {}, Settings({{"test1", 12}}), 0, "test",
             IterationCount({0}));
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
@@ -270,7 +263,7 @@ TEST_F(libmuscle_communicator2, port_count_validation) {
 TEST_F(libmuscle_communicator2, port_discard_error_on_resume) {
     MPPMessage msg(
             "other.out[13]", "kernel[13].in",
-            {}, 0.0, {}, Settings({{"test1", 12}}), 1, 2.3, "test",
+            {}, 0.0, {}, Settings({{"test1", 12}}), 1, "test",
             IterationCount({0}));
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
@@ -308,7 +301,7 @@ TEST_F(libmuscle_communicator2, port_discard_success_on_resume) {
     for (int message_number : {1, 2}) {
         side_effect.push_back(MPPMessage(
                 "other.out[13]", "kernel[13].in",
-                {}, 0.0, {}, Settings({{"test1", 12}}), message_number, 1.0,
+                {}, 0.0, {}, Settings({{"test1", 12}}), message_number,
                 Data::dict("this is message", message_number),
                 IterationCount({0})));
     }
@@ -330,8 +323,7 @@ TEST_F(libmuscle_communicator2, port_discard_success_on_resume) {
         ASSERT_TRUE(connected_port_manager_.get_port(port).is_resuming());
     }
 
-    auto recv_msg_saved_until = connected_communicator_.receive_message("in");
-    auto const & recv_msg = std::get<0>(recv_msg_saved_until);
+    auto recv_msg = connected_communicator_.receive_message("in");
 
     bool message_logged = false;
     for (auto const & log_args : MockLogger::instance().caplog.call_args_list) {
@@ -356,7 +348,7 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
     messages["component.in"] = std::make_unique<MPPMessage>(
             "peer.out", "component.in", Optional<int>(),
             std::numeric_limits<double>::infinity(), Optional<double>(), Settings(),
-            0, 0.0, ClosePort());
+            0, ClosePort());
 
     std::vector<std::tuple<std::string, std::string, std::string>> port_sender({
             {"in_v", "peer2[", "].out_v"},
@@ -373,7 +365,7 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
             Reference receiver("component." + port_name + "[" + std::to_string(slot) + "]");
             messages[receiver] = std::make_unique<MPPMessage>(
                     sender, receiver, slot, std::numeric_limits<double>::infinity(),
-                    Optional<double>(), Settings(), 0, 3.5,
+                    Optional<double>(), Settings(), 0,
                     ClosePort());
         }
     }

@@ -480,12 +480,7 @@ class Instance:
             message = copy(message)
             message.settings = self._settings_manager.overlay
 
-        self._communicator.send_message(
-            port_name,
-            message,
-            slot,
-            self._trigger_manager.checkpoints_considered_until(),
-        )
+        self._communicator.send_message(port_name, message, slot)
 
     def receive(
         self,
@@ -1018,7 +1013,7 @@ class Instance:
                     return default
 
             else:
-                msg, saved_until = self._communicator.receive_message(port_name, slot)
+                msg = self._communicator.receive_message(port_name, slot)
                 if not port.is_open(slot):
                     err_msg = (
                         f"Port {port_name} was closed while trying to"
@@ -1029,7 +1024,6 @@ class Instance:
                 if not with_settings:
                     self.__check_compatibility(port_name, msg.settings)
                     msg.settings = None
-                self._trigger_manager.harmonise_wall_time(saved_until)
         return msg
 
     def __make_full_name(self) -> tuple[Reference, list[int]]:
@@ -1151,14 +1145,13 @@ class Instance:
         sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
 
         try:
-            self._f_init_cache, saved_until = self._communicator.pre_receive_f_init()
+            self._f_init_cache = self._communicator.pre_receive_f_init()
         except PortClosed:
             self._profiler.record_event(sw_event)
             return False
         except RuntimeError as exc:
             self.__shutdown(str(exc))
             raise
-        self._trigger_manager.harmonise_wall_time(saved_until)
 
         # Handle received settings
         if self._port_manager.settings_in_connected():

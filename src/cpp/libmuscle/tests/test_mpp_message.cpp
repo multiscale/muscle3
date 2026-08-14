@@ -31,7 +31,7 @@ TEST(test_mcp_message, create_mcp_message) {
             Reference("sender.port"), Reference("receiver.port"),
             10,
             100.1, 101.0,
-            test, 0, 1.0, abc
+            test, 0, abc
             );
 
     ASSERT_EQ(m.sender, "sender.port");
@@ -41,7 +41,6 @@ TEST(test_mcp_message, create_mcp_message) {
     ASSERT_EQ(m.next_timestamp, 101.0);
     ASSERT_EQ(m.settings_overlay.as<std::string>(), "test");
     ASSERT_EQ(m.message_number, 0);
-    ASSERT_EQ(m.saved_until, 1.0);
     ASSERT_EQ(m.data.as<std::string>(), "abc");
 }
 
@@ -52,7 +51,7 @@ TEST(test_mcp_message, create_mcp_message_minimal) {
             Reference("sender.port"), Reference("receiver.port"),
             {},
             100.1, {},
-            test, 0, 2.0, abc
+            test, 0, abc
             );
 
     ASSERT_EQ(m.sender, "sender.port");
@@ -62,7 +61,6 @@ TEST(test_mcp_message, create_mcp_message_minimal) {
     ASSERT_FALSE(m.next_timestamp.is_set());
     ASSERT_TRUE(m.settings_overlay.is_nil());
     ASSERT_EQ(m.message_number, 0);
-    ASSERT_EQ(m.saved_until, 2.0);
     ASSERT_TRUE(m.data.is_nil());
 }
 
@@ -75,7 +73,6 @@ TEST(test_mcp_message, from_bytes) {
             "next_timestamp", Data(),
             "settings_overlay", Data(),
             "message_number", 0,
-            "saved_until", 3.0,
             "data", Data(),
             "iteration", Data()
             );
@@ -94,7 +91,6 @@ TEST(test_mcp_message, from_bytes) {
     ASSERT_FALSE(m.next_timestamp.is_set());
     ASSERT_TRUE(m.settings_overlay.is_nil());
     ASSERT_EQ(m.message_number, 0);
-    ASSERT_EQ(m.saved_until, 3.0);
     ASSERT_TRUE(m.data.is_nil());
 }
 
@@ -105,7 +101,7 @@ TEST(test_mcp_message, iteration_roundtrip) {
             Reference("sender.port"), Reference("receiver.port"),
             {},
             0.0, {},
-            settings, 0, 0.0, data,
+            settings, 0, data,
             IterationCount({0, 2})
             );
 

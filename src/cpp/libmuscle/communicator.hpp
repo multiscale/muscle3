@@ -93,21 +93,17 @@ class Communicator {
          * @param port_name The port on which this message is to be sent.
          * @param message The message to send.
          * @param slot The slot to send the message on.
-         * @param checkpoints_considered_until When we last checked if we
-         *      should save a snapshot (wallclock time).
          */
         void send_message(
                 std::string const & port_name,
                 Message const & message,
-                Optional<int> slot = {},
-                double checkpoints_considered_until = -std::numeric_limits<double>::infinity());
+                Optional<int> slot = {});
 
         /** Receive on all connected F_INIT port (including muscle_settings_in).
          * 
-         * @return The received messages, as well as the maximum value of all
-         *      saved_until metadata from the received messages.
+         * @return The received messages.
          */
-        std::tuple<FInitCacheType, double> pre_receive_f_init();
+        FInitCacheType pre_receive_f_init();
 
         /** Receive a message and attached settings overlay.
          *
@@ -128,12 +124,11 @@ class Communicator {
          *
          * @return The received message, with message.settings holding the
          *      settings overlay. The setings attribute is guaranteed to be set.
-         *      Second, the saved_until metadata field from the received message.
          *
          * @throws std::runtime_error if no default was given and the port is
          *      not connected.
          */
-        std::tuple<Message, double> receive_message(
+        Message receive_message(
                 std::string const & port_name,
                 Optional<int> slot = {},
                 Optional<Message> const & default_msg = {}

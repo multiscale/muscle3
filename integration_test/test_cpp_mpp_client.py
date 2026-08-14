@@ -27,7 +27,6 @@ def tcp_server_process(control_pipe):
         2.0,
         settings,
         0,
-        1.0,
         data,
     ).encoded()
 

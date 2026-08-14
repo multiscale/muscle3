@@ -76,8 +76,7 @@ void Communicator::restore_state(TimelineState const & state) {
 void Communicator::send_message(
         std::string const & port_name,
         Message const & message,
-        Optional<int> slot,
-        double checkpoints_considered_until)
+        Optional<int> slot)
 {
     std::vector<int> slot_list;
     if (slot.is_set())
@@ -113,7 +112,6 @@ void Communicator::send_message(
                 snd_endpoint.ref(), recv_endpoint.ref(),
                 port_length, message.timestamp(), Optional<double>(),
                 settings_overlay, port.get_num_messages(slot),
-                checkpoints_considered_until,
                 message.data(), iteration);
 
         if (message.has_next_timestamp())
@@ -133,24 +131,18 @@ void Communicator::send_message(
         profiler_.record_event(std::move(profile_event));
 }
 
-std::tuple<Communicator::FInitCacheType, double> Communicator::pre_receive_f_init() {
+Communicator::FInitCacheType Communicator::pre_receive_f_init() {
     FInitCacheType cache;
-    double max_saved_until = -std::numeric_limits<double>::infinity();
 
     auto pre_receive = [&](std::string & port_name, Optional<int> slot) {
         Reference port_ref(port_name);
         if (slot.is_set())
             port_ref += slot.get();
         
-        auto msg_saved_until = receive_message(port_name, slot);
-        auto & msg = std::get<0>(msg_saved_until);
+        auto msg = receive_message(port_name, slot);
         if (is_close_port(msg.data()))
             throw PortClosed();
         cache.emplace(port_ref, msg);
-
-        auto & saved_until = std::get<1>(msg_saved_until);
-        if (saved_until > max_saved_until)
-            max_saved_until = saved_until;
     };
 
     for (Port const & port : port_manager_.get_connected_ports(Operator::F_INIT, {})) {
@@ -166,10 +158,10 @@ std::tuple<Communicator::FInitCacheType, double> Communicator::pre_receive_f_ini
         }
     }
 
-    return {cache, max_saved_until};
+    return cache;
 }
 
-std::tuple<Message, double> Communicator::receive_message(
+Message Communicator::receive_message(
         std::string const & port_name,
         Optional<int> slot,
         Optional<Message> const & default_msg)
@@ -285,7 +277,7 @@ std::tuple<Message, double> Communicator::receive_message(
         timeline_manager_->record_received_message(
                 port_name, slot, mpp_message.iteration.get());
     }
-    return std::make_tuple(message, mpp_message.saved_until);
+    return message;
 }
 
 void Communicator::shutdown() {

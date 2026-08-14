@@ -18,7 +18,7 @@ class ExtTypeId(IntEnum):
     This class is our registry of extension type ids.
     """
 
-    CLOSE_PORT = 0
+    MILESTONE = 0
     SETTINGS = 1
     GRID_INT32 = 2
     GRID_INT64 = 3
@@ -36,17 +36,25 @@ _grid_types = {
 }
 
 
-class ClosePort:
-    """Sentinel value to send when closing a port.
+class Milestone:
+    """Sentinel value to send when a timeline iteration is finished.
 
     Sending an object of this class on a port/conduit conveys to the
     receiver the message that no further messages will be sent on this
-    port during the simulation.
-
-    All information is carried by the type, this has no attributes.
+    port for that timeline iteration.
+    A Milestone for the root timeline indicates that no further messages will be sent
+    on this port during the simulation.
     """
 
-    pass
+    def __init__(self, iteration: IterationCount) -> None:
+        self.iteration = iteration
+
+    def is_final_milestone(self) -> bool:
+        """Check whether this is the final milestone."""
+        return not self.iteration
+
+    def __repr__(self) -> str:
+        return f"Milestone({self.iteration})"
 
 
 def _encode_grid(grid: Grid) -> msgpack.ExtType:
@@ -119,8 +127,9 @@ def _data_encoder(obj: Any) -> Any:
     In particular, this takes care of any Settings, Grid and
     numpy.ndarray objects the user may want to send.
     """
-    if isinstance(obj, ClosePort):
-        return msgpack.ExtType(ExtTypeId.CLOSE_PORT, b"")
+    if isinstance(obj, Milestone):
+        packed_data = msgpack.packb(obj.iteration, use_bin_type=True)
+        return msgpack.ExtType(ExtTypeId.MILESTONE, packed_data)
     elif isinstance(obj, Settings):
         packed_data = msgpack.packb(obj.as_ordered_dict(), use_bin_type=True)
         return msgpack.ExtType(ExtTypeId.SETTINGS, packed_data)
@@ -132,8 +141,9 @@ def _data_encoder(obj: Any) -> Any:
 
 
 def _ext_decoder(code: int, data: Buffer) -> msgpack.ExtType:
-    if code == ExtTypeId.CLOSE_PORT:
-        return ClosePort()
+    if code == ExtTypeId.MILESTONE:
+        iteration_list = msgpack.unpackb(data, raw=False)
+        return Milestone(iteration_list)
     elif code == ExtTypeId.SETTINGS:
         plain_dict = msgpack.unpackb(data, raw=False)
         return Settings(plain_dict)
@@ -160,7 +170,7 @@ class MPPMessage:
         settings_overlay: Settings,
         message_number: int,
         data: Any,
-        iteration: Optional[IterationCount] = None,
+        iteration: IterationCount,
     ) -> None:
         """Create an MPPMessage.
 
@@ -180,9 +190,7 @@ class MPPMessage:
             settings_overlay: The serialised overlay settings.
             message_number: Sequence number on this conduit.
             data: The serialised contents of the message.
-            iteration: The iteration of the sending port, or None.
-                TODO: When replacing ClosePort with Milestones we shouldn't allow a None
-                anymore here
+            iteration: The iteration of the sending port.
         """
         # make sure timestamp and next_timestamp are floats
         timestamp = float(timestamp)
@@ -219,7 +227,7 @@ class MPPMessage:
         message_number = message_dict["message_number"]
 
         data = message_dict["data"]
-        iteration = message_dict.get("iteration")
+        iteration = message_dict["iteration"]
         return MPPMessage(
             sender,
             receiver,

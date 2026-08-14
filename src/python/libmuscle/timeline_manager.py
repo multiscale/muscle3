@@ -377,7 +377,7 @@ class TimelineManager:
         for stm in self._submanagers.values():
             stm.reset()
 
-    def finish_reuse_iteration(self) -> None:
+    def finish_reuse_iteration(self) -> IterationCount:
         """Check if the current reuse loop iteration has finished and reset for the
         next one.
 
@@ -385,13 +385,15 @@ class TimelineManager:
         participated and every sub-timeline has either completed a sub-iteration or
         wasn't used at all this reuse loop iteration.
         """
+        assert self._iteration is not None
+        iteration = self._iteration
         if (
             self._receive.all_participated()
             and self._send.all_participated()
             and all(stm.is_complete() for stm in self._submanagers.values())
         ):
             self.reset()
-            return
+            return iteration
 
         expected = _expected_actions(self._send, self._receive)
         for stm in self._submanagers.values():

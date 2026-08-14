@@ -1013,14 +1013,15 @@ class Instance:
                     return default
 
             else:
-                msg = self._communicator.receive_message(port_name, slot)
-                if not port.is_open(slot):
+                try:
+                    msg = self._communicator.receive_message(port_name, slot)
+                except PortClosed:
                     err_msg = (
                         f"Port {port_name} was closed while trying to"
                         " receive on it, did the peer crash?"
                     )
                     self.__shutdown(err_msg)
-                    raise RuntimeError(err_msg)
+                    raise RuntimeError(err_msg) from None
                 if not with_settings:
                     self.__check_compatibility(port_name, msg.settings)
                     msg.settings = None
@@ -1137,10 +1138,8 @@ class Instance:
     def _pre_receive(self) -> bool:
         """Pre-receives on all ports.
 
-        This includes muscle_settings_in and all user-defined ports.
-
         Returns:
-            True iff no ClosePort messages were received.
+            True iff no ports were closed.
         """
         sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
 

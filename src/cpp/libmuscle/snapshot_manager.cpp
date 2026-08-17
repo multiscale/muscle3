@@ -136,10 +136,13 @@ double SnapshotManager::save_snapshot(
         ::ymmsl::Settings settings_overlay) {
     auto port_message_counts = port_manager_.get_message_counts();
 
-    if (is_final) {
+    if (is_final &&
+            std::find(triggers.begin(), triggers.end(), "at_end") == triggers.end()) {
         // Decrease F_INIT port counts by one: F_INIT messages are already
         // pre-received, but not yet processed by the user code. Therefore,
         // the snapshot state should treat these as not-received.
+        // N.B. For a snapshot at the end of the simulation, there were no F_INIT
+        // messages, so we do not decrease.
         auto all_ports = port_manager_.list_ports();
         auto ports = all_ports.find(::ymmsl::Operator::F_INIT);
         if (ports != all_ports.end()) {

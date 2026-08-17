@@ -384,6 +384,9 @@ class TimelineManager:
         The reuse loop iteration is complete once every main-timeline port has
         participated and every sub-timeline has either completed a sub-iteration or
         wasn't used at all this reuse loop iteration.
+
+        Returns:
+            Iteration count of the finished reuse loop.
         """
         assert self._iteration is not None
         iteration = self._iteration

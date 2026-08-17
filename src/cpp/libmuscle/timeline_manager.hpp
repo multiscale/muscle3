@@ -332,8 +332,10 @@ class TimelineManager {
          * The reuse loop iteration is complete once every main-timeline port
          * has participated and every sub-timeline has either completed a
          * sub-iteration or wasn't used at all this reuse loop iteration.
+         * 
+         * @return Iteration count of the finished reuse loop. 
          */
-        void finish_reuse_iteration();
+        IterationCount finish_reuse_iteration();
 
         /** Return the main timeline's iteration and participation, and every
          * sub-timeline's state, for saving in a snapshot. */

@@ -31,7 +31,7 @@ TEST(test_mcp_message, create_mcp_message) {
             Reference("sender.port"), Reference("receiver.port"),
             10,
             100.1, 101.0,
-            test, 0, abc
+            test, 0, abc, {}
             );
 
     ASSERT_EQ(m.sender, "sender.port");
@@ -51,7 +51,7 @@ TEST(test_mcp_message, create_mcp_message_minimal) {
             Reference("sender.port"), Reference("receiver.port"),
             {},
             100.1, {},
-            test, 0, abc
+            test, 0, abc, {}
             );
 
     ASSERT_EQ(m.sender, "sender.port");
@@ -74,7 +74,7 @@ TEST(test_mcp_message, from_bytes) {
             "settings_overlay", Data(),
             "message_number", 0,
             "data", Data(),
-            "iteration", Data()
+            "iteration", Data::list()
             );
 
     msgpack::sbuffer sbuf;

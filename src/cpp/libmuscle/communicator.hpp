@@ -5,6 +5,7 @@
 #else
 
 #include <libmuscle/message.hpp>
+#include <libmuscle/milestone.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/mpp_client.hpp>
 #include <libmuscle/mpp_server.hpp>
@@ -111,16 +112,11 @@ class Communicator {
          * sender, wait for a message to be available, and receive and return
          * it.
          *
-         * If the port is not connected, then the default value will be
-         * returned if one was given, exactly as it was given. If no default
-         * was given then a std::runtime_error will be raised.
-         *
          * This is non-const, because receiving a message may cause an update
          * to the dimensions of the port.
          *
          * @param port_name The endpoint on which a message is to be received.
          * @param slot The slot to receive the message on, if any.
-         * @param default_msg A message to return if the port is not connected.
          *
          * @return The received message, with message.settings holding the
          *      settings overlay. The setings attribute is guaranteed to be set.
@@ -130,8 +126,7 @@ class Communicator {
          */
         Message receive_message(
                 std::string const & port_name,
-                Optional<int> slot = {},
-                Optional<Message> const & default_msg = {}
+                Optional<int> slot = {}
                 );
 
         /** Shuts down the Communicator, closing connections.
@@ -167,6 +162,13 @@ class Communicator {
     PRIVATE:
         using Ports_ = std::unordered_map<std::string, Port>;
 
+        /** Implementation for receive_message.
+         */
+        Message receive_message_(
+                std::string const & port_name,
+                Optional<int> slot = {}
+                );
+
         ymmsl::Reference instance_id_() const;
         MPPClient & get_client_(ymmsl::Reference const & instance);
 
@@ -180,25 +182,21 @@ class Communicator {
                 ymmsl::Reference const & peer, std::string const & port_and_slot,
                 ReceiveTimeoutHandler *handler);
 
-        void close_port_(std::string const & port_name, Optional<int> slot = {});
+        void broadcast_milestone_(Milestone const & milestone, bool only_o_i);
 
         /* Closes outgoing ports.
          *
-         * This sends a close port message on all slots of all outgoing ports.
+         * This broadcasts the root Milestone message on all slots of all outgoing ports.
          */
         void close_outgoing_ports_();
 
-        /* Receives messages until a ClosePort is received.
-         *
-         * Receives at least once.
+        /* Receives messages until the scalar port is closed.
          *
          * @param port_name Port to drain.
          */
         void drain_incoming_port_(std::string const & port_name);
 
-        /* Receives messages until a ClosePort is received.
-         *
-         * Works with (resizable) vector ports.
+        /* Receives messages until the vector port is closed.
          *
          * @param port_name Port to drain.
          */
@@ -206,8 +204,8 @@ class Communicator {
 
         /* Closes incoming ports.
          *
-         * This receives on all incoming ports until a ClosePort is received on them,
-         * signaling that there will be no more messages, and allowing the sending
+         * This receives on all incoming ports until the port is closed. This signals
+         * that there will be no more messages, and allows the sending
          * instance to shut down cleanly.
          */
         void close_incoming_ports_();

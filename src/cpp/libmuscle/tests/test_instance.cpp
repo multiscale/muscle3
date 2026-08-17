@@ -12,12 +12,12 @@
 // into the real implementation to test.
 #include <ymmsl/ymmsl.hpp>
 
-#include <libmuscle/close_port.cpp>
 #include <libmuscle/data.cpp>
 #include <libmuscle/instance.cpp>
 #include <libmuscle/logging.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/message.cpp>
+#include <libmuscle/milestone.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/timestamp.cpp>
 
@@ -45,12 +45,12 @@
 
 
 using libmuscle::_MUSCLE_IMPL_NS::APIGuard;
-using libmuscle::_MUSCLE_IMPL_NS::ClosePort;
 using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::Instance;
 using libmuscle::_MUSCLE_IMPL_NS::InstanceFlags;
 using libmuscle::_MUSCLE_IMPL_NS::Message;
+using libmuscle::_MUSCLE_IMPL_NS::Milestone;
 using libmuscle::_MUSCLE_IMPL_NS::MockCommunicator;
 using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
 using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;

@@ -49,7 +49,7 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
 
         MockFun<Void> reset;
 
-        MockFun<Void> finish_reuse_iteration;
+        MockFun<Val<IterationCount>> finish_reuse_iteration;
 
         MockFun<Val<TimelineState>> get_state;
 

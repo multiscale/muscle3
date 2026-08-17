@@ -674,14 +674,15 @@ Message Instance::Impl::receive_message(
             }
         }
         else {
-            result = communicator_->receive_message(port_name, slot);
-            if (!port.is_open(slot)) {
+            try {
+                result = communicator_->receive_message(port_name, slot);
+            } catch (PortClosed &err) {
                 std::ostringstream oss;
                 oss << "Port \"" << port_ref << "\" is closed, but we're trying";
                 oss << " to receive on it. Did the peer crash?";
                 error = Error(std::runtime_error(oss.str()));
             }
-            else if (!with_settings) {
+            if (!error.is_error() && !with_settings) {
                 check_compatibility_(port_name, result.settings());
                 result.unset_settings();
             }
@@ -930,7 +931,7 @@ void Instance::Impl::handle_receive_settings_() {
  *
  * This includes muscle_settings_in and all user-defined ports.
  *
- * @return true iff no ClosePort messages were received.
+ * @return true iff no ports were closed.
  */
 bool Instance::Impl::pre_receive_() {
     ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());

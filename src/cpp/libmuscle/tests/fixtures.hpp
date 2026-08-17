@@ -131,6 +131,7 @@ struct ConnectedPortManagerFixture {
         typedef ::libmuscle::_MUSCLE_IMPL_NS::Port Port;
         typedef ::ymmsl::Operator Operator;
         typedef ::ymmsl::Timeline Timeline;
+        using PortReferences = std::vector<std::reference_wrapper<const Port>>;
 
         std::unordered_map<ymmsl::Operator, std::vector<std::string>> declared_ports_;
 
@@ -167,6 +168,18 @@ struct ConnectedPortManagerFixture {
                     return mock_ports_.count(name) != 0;
                 };
             connected_port_manager_.has_f_init_connections.return_value = true;
+            connected_port_manager_.get_connected_ports.side_effect = [&] (
+                    ::ymmsl::Operator op, ::libmuscle::_MUSCLE_IMPL_NS::Optional<::ymmsl::Timeline> tl
+                    ) -> PortReferences {
+                assert(!tl.is_set());  // This mock doesn't support filtering on timeline
+                PortReferences result;
+                for (auto & port_name : declared_ports_.at(op)) {
+                    Port & port = *mock_ports_.at(port_name);
+                    if (port.is_connected())
+                        result.push_back(port);
+                }
+                return result;
+            };
         }
 };
 

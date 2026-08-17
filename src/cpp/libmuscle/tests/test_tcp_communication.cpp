@@ -41,7 +41,7 @@ TEST(test_tcp_communication, send_receive) {
             "test_sender.port", receiver, 10,
             0.0, 1.0,
             Data::dict("par1", 13), 1,
-            Data::dict("var1", 1, "var2", 2.0, "var3", "3"));
+            Data::dict("var1", 1, "var2", 2.0, "var3", "3"), {});
     post_office.deposit(receiver, msg.encoded());
 
     TcpTransportServer server(handler);

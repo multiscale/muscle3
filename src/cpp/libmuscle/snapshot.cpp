@@ -101,7 +101,8 @@ std::vector<char> Snapshot::to_bytes() const {
                 msg.has_next_timestamp() ? msg.next_timestamp() : Optional<double>(),
                 msg.has_settings() ? msg.settings() : Data(),
                 0,
-                msg.data());
+                msg.data(),
+                {});
 
         DataConstRef dict = DataConstRef::dict(
             "triggers", d_triggers,

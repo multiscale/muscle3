@@ -8,7 +8,7 @@
 namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 enum class ExtTypeId : int8_t {
-    close_port = 0,
+    milestone = 0,
     settings = 1,
     grid_int32 = 2,
     grid_int64 = 3,

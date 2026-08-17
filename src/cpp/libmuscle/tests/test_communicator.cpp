@@ -10,8 +10,7 @@
 // into the real implementation under test.
 #include <ymmsl/ymmsl.hpp>
 
-#include <libmuscle/data.cpp>   // needs to be above close_port.cpp
-#include <libmuscle/close_port.cpp>
+#include <libmuscle/data.cpp>   // needs to be above milestone.cpp
 #include <libmuscle/communicator.cpp>
 #include <libmuscle/endpoint.cpp>
 #include <libmuscle/mark.cpp>
@@ -20,6 +19,7 @@
 #include <libmuscle/mcp/tcp_util.cpp>
 #include <libmuscle/mcp/transport_client.cpp>
 #include <libmuscle/message.cpp>
+#include <libmuscle/milestone.cpp>
 #include <libmuscle/peer_info.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/profiling.cpp>
@@ -52,7 +52,7 @@ using libmuscle::_MUSCLE_IMPL_NS::Communicator;
 using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::Endpoint;
-using libmuscle::_MUSCLE_IMPL_NS::is_close_port;
+using libmuscle::_MUSCLE_IMPL_NS::is_milestone;
 using libmuscle::_MUSCLE_IMPL_NS::IterationCount;
 using libmuscle::_MUSCLE_IMPL_NS::Message;
 using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
@@ -67,6 +67,7 @@ using libmuscle::_MUSCLE_IMPL_NS::PeerDims;
 using libmuscle::_MUSCLE_IMPL_NS::PeerInfo;
 using libmuscle::_MUSCLE_IMPL_NS::PeerLocations;
 using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
+using libmuscle::_MUSCLE_IMPL_NS::PortClosed;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::ProfileData;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::TimeoutHandler;
 using libmuscle::_MUSCLE_IMPL_NS::ProfileTimestamp;
@@ -214,12 +215,12 @@ TEST_F(libmuscle_communicator2, receive_message_vector) {
 TEST_F(libmuscle_communicator2, receive_close_port) {
     MPPMessage msg(
             "peer.out", "component.in", {}, std::numeric_limits<double>::infinity(), {},
-            Settings(), 0, ClosePort());
+            Settings(), 0, Milestone(IterationCount({})), {});
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
 
-    connected_communicator_.receive_message("in");
+    ASSERT_THROW(connected_communicator_.receive_message("in"), PortClosed);
 
     ASSERT_FALSE(mock_ports_.at("in")->is_open());
 }
@@ -231,12 +232,12 @@ TEST_F(libmuscle_communicator2, receive_close_port) {
 TEST_F(libmuscle_communicator2, receive_close_port_vector) {
     MPPMessage msg(
             "peer2.out_v", "component.in_v", 5, std::numeric_limits<double>::infinity(),
-            {}, Settings(), 0, ClosePort());
+            {}, Settings(), 0, Milestone(IterationCount({})), {});
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
 
-    connected_communicator_.receive_message("in_v", 5);
+    ASSERT_THROW(connected_communicator_.receive_message("in_v", 5), PortClosed);
 
     ASSERT_FALSE(mock_ports_["in_v"]->is_open(5));
 }
@@ -348,7 +349,7 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
     messages["component.in"] = std::make_unique<MPPMessage>(
             "peer.out", "component.in", Optional<int>(),
             std::numeric_limits<double>::infinity(), Optional<double>(), Settings(),
-            0, ClosePort());
+            0, Milestone(IterationCount({})), IterationCount({}));
 
     std::vector<std::tuple<std::string, std::string, std::string>> port_sender({
             {"in_v", "peer2[", "].out_v"},
@@ -366,7 +367,7 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
             messages[receiver] = std::make_unique<MPPMessage>(
                     sender, receiver, slot, std::numeric_limits<double>::infinity(),
                     Optional<double>(), Settings(), 0,
-                    ClosePort());
+                    Milestone(IterationCount({})), IterationCount({}));
         }
     }
 
@@ -387,7 +388,7 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
     for (auto const & args: srv.deposit.call_args_list) {
         ASSERT_TRUE(expected_receivers.count(std::get<0>(args)));
         std::shared_ptr<MPPMessage> msg = std::get<1>(args);
-        ASSERT_TRUE(is_close_port(msg->data));
+        ASSERT_TRUE(is_milestone(msg->data));
         expected_receivers.erase(std::get<0>(args));
     }
 

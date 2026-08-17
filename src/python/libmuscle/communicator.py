@@ -168,7 +168,7 @@ class Communicator:
     def finish_reuse_iteration(self) -> None:
         """Finish the reuse iteration and send milestones."""
         finished_iteration = self._timeline_manager.finish_reuse_iteration()
-        self.broadcast_milestone(Milestone(finished_iteration), True)
+        self._broadcast_milestone(Milestone(finished_iteration), True)
 
     def send_message(
         self,
@@ -193,7 +193,12 @@ class Communicator:
             )
             return
         if not port.is_open(slot):
-            raise RuntimeError(f"Port {port_desc(port_name, slot)} is already closed")
+            if (
+                isinstance(message.data, Milestone)
+                and message.data.is_final_milestone()
+            ):
+                return  # Ignore closing an already closed port
+            raise RuntimeError(f"Port {port_desc(port_name, slot)} is already closed.")
         _logger.debug("Sending message on %s", port_desc(port_name, slot))
 
         if isinstance(message.data, Milestone):
@@ -243,30 +248,6 @@ class Communicator:
         elif message.data.is_final_milestone():
             port.set_closed(slot)
 
-    def broadcast_milestone(self, milestone: Milestone, only_o_i: bool) -> None:
-        """Send a Milestone to all O_I (and optionally O_F) ports/slots.
-
-        Args:
-            milestone: The Milestone to send.
-            only_o_i: Set to True to only send to connected O_I ports.
-        """
-        _logger.debug(
-            "Sending Milestone for %s to all %s ports.",
-            milestone.iteration,
-            "O_I" if only_o_i else "outgoing",
-        )
-        message = Message(float("-inf"), data=milestone)
-        ports = self._port_manager.get_connected_ports(Operator.O_I)
-        if not only_o_i:
-            ports += self._port_manager.get_connected_ports(Operator.O_F)
-        for port in ports:
-            port_name = str(port.name)
-            if port.is_vector():
-                for slot in range(port.get_length()):
-                    self.send_message(port_name, message, slot)
-            else:
-                self.send_message(port_name, message)
-
     def pre_receive_f_init(self) -> FInitCacheType:
         """Receive on all connected F_INIT port (including muscle_settings_in).
 
@@ -276,10 +257,7 @@ class Communicator:
         cache: FInitCacheType = {}
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg = self._receive_message(port_name, slot)
-            if isinstance(msg.data, Milestone) and msg.data.is_final_milestone():
-                raise PortClosed()
-            cache[(port_name, slot)] = msg
+            cache[(port_name, slot)] = self._receive_message(port_name, slot)
 
         for port in self._port_manager.get_connected_ports(Operator.F_INIT):
             port_name = str(port.name)
@@ -301,9 +279,9 @@ class Communicator:
                 milestone_iterations.append(it)
             if it == []:
                 closed_ports.add(port_name)
-        # Milestones should be consistent, or we have a problem
+        # Milestones should be consistent, or something went wrong
         if len(milestone_iterations) > 1:
-            if any(i == [] for i in milestone_iterations):
+            if closed_ports:
                 raise RuntimeError(
                     "Some ports were unexpectedly closed while trying to receive, did "
                     "the peers crash? Closed ports: " + ", ".join(sorted(closed_ports))
@@ -316,7 +294,7 @@ class Communicator:
         if milestone_iterations[0] is not None:
             # Propagate milestone
             milestone = Milestone(milestone_iterations[0])
-            self.broadcast_milestone(milestone, False)
+            self._broadcast_milestone(milestone, False)
             if milestone.is_final_milestone():
                 raise PortClosed()
             # Pre-receive again to receive the actual messages
@@ -551,15 +529,34 @@ class Communicator:
             self._peer_info.get_peer_endpoints(port.name, slot),
         )
 
+    def _broadcast_milestone(self, milestone: Milestone, only_o_i: bool) -> None:
+        """Send a Milestone to all O_I (and optionally O_F) ports/slots.
+
+        Args:
+            milestone: The Milestone to send.
+            only_o_i: Set to True to only send to connected O_I ports.
+        """
+        _logger.debug(
+            "Sending %s to all %s ports.", milestone, "O_I" if only_o_i else "outgoing"
+        )
+        message = Message(float("-inf"), data=milestone, settings=Settings())
+        ports = self._port_manager.get_connected_ports(Operator.O_I)
+        if not only_o_i:
+            ports += self._port_manager.get_connected_ports(Operator.O_F)
+        for port in ports:
+            port_name = str(port.name)
+            if port.is_vector():
+                for slot in range(port.get_length()):
+                    self.send_message(port_name, message, slot)
+            else:
+                self.send_message(port_name, message)
+
     def _close_outgoing_ports(self) -> None:
         """Closes outgoing ports.
 
         This broadcasts the root Milestone message on all slots of all outgoing ports.
         """
-        try:
-            self.broadcast_milestone(Milestone([]), False)
-        except RuntimeError:
-            pass  # Ports were already closed
+        self._broadcast_milestone(Milestone([]), False)
 
     def _drain_incoming_port(self, port_name: str) -> None:
         """Receives messages until the scalar port is closed."""

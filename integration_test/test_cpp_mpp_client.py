@@ -28,6 +28,7 @@ def tcp_server_process(control_pipe):
         settings,
         0,
         data,
+        [],
     ).encoded()
 
     def handle_request(request_bytes):

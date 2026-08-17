@@ -98,19 +98,13 @@ class Port : public ::ymmsl::Port {
          */
         void set_length(int length);
 
-        /** Marks this port as closed.
-         *
-         * After calling this, is_open() will return false.
-         */
-        void set_closed();
-
-        /** Marks this slot as closed.
+        /** Marks this port / slot as closed.
          *
          * After calling this, is_open(slot) will return false.
          *
          * @param slot The slot to mark as closed.
          */
-        void set_closed(int slot);
+        void set_closed(Optional<int> slot = {});
 
         /** Restore message counts from a snapshot.
          *

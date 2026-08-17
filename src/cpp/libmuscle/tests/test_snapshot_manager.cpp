@@ -9,13 +9,13 @@
 // into the real implementation to test.
 #include <ymmsl/ymmsl.hpp>
 
-#include <libmuscle/data.cpp>           // needs to be before close_port.cpp
-#include <libmuscle/close_port.cpp>
+#include <libmuscle/data.cpp>           // needs to be before milestone.cpp
 #include <libmuscle/instance.cpp>
 #include <libmuscle/logging.cpp>
 #include <libmuscle/mark.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/message.cpp>
+#include <libmuscle/milestone.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/receive_timeout_handler.cpp>
 #include <libmuscle/settings_manager.cpp>

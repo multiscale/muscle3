@@ -464,7 +464,8 @@ void TimelineManager::reset() {
         item.second.reset();
 }
 
-void TimelineManager::finish_reuse_iteration() {
+IterationCount TimelineManager::finish_reuse_iteration() {
+    IterationCount iteration(iteration_.get());
     bool subtimelines_complete = true;
     for (auto const & item : submanagers_) {
         if (!item.second.is_complete()) {
@@ -475,7 +476,7 @@ void TimelineManager::finish_reuse_iteration() {
 
     if (receive_.all_participated() && send_.all_participated() && subtimelines_complete) {
         reset();
-        return;
+        return iteration;
     }
 
     ExpectedActions expected;

@@ -138,7 +138,7 @@ class MessageOutOfSync : public TimelineError {
  */
 class TimelinePorts {
     public:
-        explicit TimelinePorts(std::vector<Port> const & ports);
+        explicit TimelinePorts(PortManager::PortReferences ports);
 
         /** Record that the given port/slot has participated. */
         void participate(std::string const & port_name, Optional<int> slot);
@@ -161,8 +161,7 @@ class TimelinePorts {
         /** Clear participation, keeping the tracked ports. */
         void reset();
 
-        std::vector<Port> ports;
-        std::size_t num_slots;
+        PortManager::PortReferences ports;
         std::vector<PortAndSlot> participated;
 };
 

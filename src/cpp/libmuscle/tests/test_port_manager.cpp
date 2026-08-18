@@ -302,15 +302,20 @@ TEST_F(libmuscle_port_manager, test_list_subtimelines_and_get_connected_ports) {
     auto oi_ports = port_manager.get_connected_ports(Operator::O_I);
     ASSERT_EQ(oi_ports.size(), 2u);
     std::unordered_map<std::string, Timeline> oi_timeline_by_name;
-    for (auto const & port : oi_ports)
+    for (Port const & port : oi_ports)
         oi_timeline_by_name.emplace(port.name, port.timeline);
     ASSERT_EQ(oi_timeline_by_name.at("oi_a"), Timeline(":a"));
     ASSERT_EQ(oi_timeline_by_name.at("oi_b"), Timeline(":b"));
 
     auto oi_a_ports = port_manager.get_connected_ports(Operator::O_I, Timeline(":a"));
     ASSERT_EQ(oi_a_ports.size(), 1u);
-    ASSERT_EQ(oi_a_ports[0].name, "oi_a");
-    ASSERT_EQ(oi_a_ports[0].timeline, Timeline(":a"));
+    ASSERT_EQ(oi_a_ports[0].get().name, "oi_a");
+    ASSERT_EQ(oi_a_ports[0].get().timeline, Timeline(":a"));
+
+    // Check that PortReferences are indeed referring to the original port
+    ASSERT_TRUE(oi_a_ports[0].get().is_open());
+    port_manager.get_port("oi_a").set_closed();
+    ASSERT_FALSE(oi_a_ports[0].get().is_open());
 }
 
 TEST_F(libmuscle_port_manager, test_port_message_counts) {

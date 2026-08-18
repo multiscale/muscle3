@@ -134,9 +134,6 @@ class TimelinePorts:
 
     def __init__(self, ports: list[Port]) -> None:
         self.ports = ports
-        self.num_slots = sum(
-            port.get_length() if port.is_vector() else 1 for port in ports
-        )
         self.participated: set[PortAndSlot] = set()
 
     def participate(self, port_name: str, slot: Optional[int]) -> None:
@@ -149,7 +146,8 @@ class TimelinePorts:
 
     def all_participated(self) -> bool:
         """Return whether every port/slot combination has participated."""
-        return len(self.participated) == self.num_slots
+        num = sum(port.get_length() if port.is_vector() else 1 for port in self.ports)
+        return len(self.participated) == num
 
     def missing_ports(self) -> list[tuple[Port, list[int]]]:
         """Return each connected port that still has slots which haven't

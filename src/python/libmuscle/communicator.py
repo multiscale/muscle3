@@ -540,16 +540,19 @@ class Communicator:
             "Sending %s to all %s ports.", milestone, "O_I" if only_o_i else "outgoing"
         )
         message = Message(float("-inf"), data=milestone, settings=Settings())
-        ports = self._port_manager.get_connected_ports(Operator.O_I)
+
+        def do_broadcast(op: Operator) -> None:
+            for port in self._port_manager.get_connected_ports(op):
+                port_name = str(port.name)
+                if port.is_vector():
+                    for slot in range(port.get_length()):
+                        self.send_message(port_name, message, slot)
+                else:
+                    self.send_message(port_name, message)
+
+        do_broadcast(Operator.O_I)
         if not only_o_i:
-            ports += self._port_manager.get_connected_ports(Operator.O_F)
-        for port in ports:
-            port_name = str(port.name)
-            if port.is_vector():
-                for slot in range(port.get_length()):
-                    self.send_message(port_name, message, slot)
-            else:
-                self.send_message(port_name, message)
+            do_broadcast(Operator.O_F)
 
     def _close_outgoing_ports(self) -> None:
         """Closes outgoing ports.

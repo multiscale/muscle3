@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Optional, cast
 
-from ymmsl.v0_2 import Identifier, Operator, Reference, Settings
+from ymmsl.v0_2 import Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.tcp_util import SocketClosed
@@ -10,6 +10,7 @@ from libmuscle.mpp_client import MPPClient
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_server import MPPServer
 from libmuscle.peer_info import PeerInfo
+from libmuscle.port import Port
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
@@ -184,13 +185,13 @@ class Communicator:
             message: The message to be sent.
             slot: The slot to send the message on, if any.
         """
-        _logger.debug(f"Sending message on {port_desc(port_name, slot)}")
-        slot_list: list[int] = [] if slot is None else [slot]
-
-        snd_endpoint = self.__get_endpoint(port_name, slot_list)
-        if not self._port_manager.get_port(str(snd_endpoint.port)).is_connected():
-            # log sending on disconnected port
+        port = self._port_manager.get_port(port_name)
+        if not port.is_connected():
+            _logger.debug(
+                "Sending message on unconnected port %s", port_desc(port_name, slot)
+            )
             return
+        _logger.debug("Sending message on %s", port_desc(port_name, slot))
 
         # TODO: ClosePort will be replaced with milestones, and then we do need an
         # iteration count.
@@ -199,7 +200,6 @@ class Communicator:
         else:
             iteration = self._timeline_manager.check_send_message(port_name, slot)
 
-        port = self._port_manager.get_port(port_name)
         profile_event = ProfileEvent(
             ProfileEventType.SEND,
             ProfileTimestamp(),
@@ -212,14 +212,11 @@ class Communicator:
             message.timestamp,
         )
 
-        recv_endpoints = self._peer_info.get_peer_endpoints(
-            snd_endpoint.port, slot_list
-        )
-
         port_length = None
         if port.is_resizable():
             port_length = port.get_length()
 
+        snd_endpoint, recv_endpoints = self._get_endpoints(port, slot)
         for recv_endpoint in recv_endpoints:
             mpp_message = MPPMessage(
                 snd_endpoint.ref(),
@@ -233,6 +230,7 @@ class Communicator:
                 iteration,
             )
             encoded_message = mpp_message.encoded()
+            profile_event.message_size = len(memoryview(encoded_message))
             self._server.deposit(recv_endpoint.ref(), encoded_message)
 
         port.increment_num_messages(slot)
@@ -240,7 +238,6 @@ class Communicator:
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
-        profile_event.message_size = len(memoryview(encoded_message))
         if not isinstance(message.data, ClosePort):
             self._profiler.record_event(profile_event)
 
@@ -296,14 +293,11 @@ class Communicator:
             RuntimeError: If the network connection had an error, or the
                     message number was incorrect.
         """
-        port = self._port_manager.get_port(port_name)
         self._timeline_manager.check_receive(port_name, slot)
 
+        port = self._port_manager.get_port(port_name)
         port_and_slot = port_desc(port_name, slot)
-        slot_list: list[int] = [] if slot is None else [slot]
-        _logger.debug(f"Waiting for message on {port_and_slot}")
-
-        recv_endpoint = self.__get_endpoint(port_name, slot_list)
+        _logger.debug("Waiting for message on %s", port_and_slot)
 
         receive_event = ProfileEvent(
             ProfileEventType.RECEIVE,
@@ -317,10 +311,8 @@ class Communicator:
 
         # peer_info already checks that there is at most one snd_endpoint
         # connected to the port we receive on
-        snd_endpoint = self._peer_info.get_peer_endpoints(
-            recv_endpoint.port, slot_list
-        )[0]
-        client = self.__get_client(snd_endpoint.instance())
+        recv_endpoint, (snd_endpoint,) = self._get_endpoints(port, slot)
+        client = self._get_client(snd_endpoint.instance())
         timeout_handler = None
         if self._receive_timeout >= 0:
             timeout_handler = ReceiveTimeoutHandler(
@@ -462,11 +454,7 @@ class Communicator:
         self._server.shutdown()
         self._profiler.record_event(shutdown_event)
 
-    def __instance_id(self) -> Reference:
-        """Returns our complete instance id."""
-        return self._kernel + self._index
-
-    def __get_client(self, instance: Reference) -> MPPClient:
+    def _get_client(self, instance: Reference) -> MPPClient:
         """Get or create a client to connect to the given instance.
 
         Args:
@@ -482,19 +470,14 @@ class Communicator:
 
         return self._clients[instance]
 
-    def __get_endpoint(self, port_name: str, slot: list[int]) -> Endpoint:
-        """Determines the endpoint on our side.
-
-        Args:
-            port_name: Name of the port to send or receive on.
-            slot: Slot to send or receive on.
-        """
-        try:
-            port = Identifier(port_name)
-        except ValueError as e:
-            raise ValueError(f'"{port_name}" is not a valid port name: {e}') from None
-
-        return Endpoint(self._kernel, self._index, port, slot)
+    def _get_endpoints(
+        self, port: Port, slot: Optional[int]
+    ) -> tuple[Endpoint, list[Endpoint]]:
+        """Return our endpoint and the peer endpoints for the given port and slot."""
+        return (
+            Endpoint(self._kernel, self._index, port.name, slot),
+            self._peer_info.get_peer_endpoints(port.name, slot),
+        )
 
     def _close_port(self, port_name: str, slot: Optional[int] = None) -> None:
         """Closes the given port.
@@ -573,10 +556,8 @@ class Communicator:
                         else:
                             self._drain_incoming_vector_port(port_name)
                     except RuntimeError:
-                        peer_endpoints = self._peer_info.get_peer_endpoints(
-                            Identifier(port_name), []
-                        )
-                        peer_name = str(peer_endpoints[0].kernel)
+                        peer_port = self._peer_info.get_peer_ports(port.name)[0]
+                        peer_name = str(peer_port[:-1])
                         _logger.warning(
                             "Connection with peer '%s' was lost at the end of the "
                             "simulation, probably because it crashed.",

@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Optional, cast
 
 from ymmsl.v0_2 import Conduit, Identifier, Port, Reference
 
@@ -132,7 +132,9 @@ class PeerInfo:
         """
         return self._peer_locations[peer_instance]
 
-    def get_peer_endpoints(self, port: Identifier, slot: list[int]) -> list[Endpoint]:
+    def get_peer_endpoints(
+        self, port: Identifier, slot: Optional[int]
+    ) -> list[Endpoint]:
         """Determine the peer endpoints for the given port and slot.
 
         Args:
@@ -145,16 +147,18 @@ class PeerInfo:
         peers = self._peers[self._kernel + port]
         endpoints = []
 
+        total_index = self._index.copy()
+        if slot is not None:
+            total_index.append(slot)
+
         for peer in peers:
             peer_kernel = peer[:-1]
             peer_port = cast(Identifier, peer[-1])
 
-            total_index = self._index + slot
-
             # rebalance the indices
             peer_dim = len(self._peer_dims[peer_kernel])
             peer_index = total_index[0:peer_dim]
-            peer_slot = total_index[peer_dim:]
+            peer_slot = total_index[peer_dim] if peer_dim < len(total_index) else None
             endpoints.append(Endpoint(peer_kernel, peer_index, peer_port, peer_slot))
 
         return endpoints

@@ -102,24 +102,27 @@ std::vector<std::string> PeerInfo::get_peer_locations(
 
 std::vector<Endpoint> PeerInfo::get_peer_endpoints(
         Identifier const & port,
-        std::vector<int> const & slot
+        Optional<int> const & slot
         ) const
 {
     auto peers = peers_.at(kernel_ + port);
     std::vector<Endpoint> endpoints;
+    
+    std::vector<int> total_index = index_;
+    if (slot.is_set())
+        total_index.push_back(slot.get());
 
     for (auto peer : peers) {
         Reference peer_kernel(peer.cbegin(), std::prev(peer.cend()));
         Identifier peer_port = std::prev(peer.cend())->identifier();
 
-        std::vector<int> total_index = index_;
-        total_index.insert(total_index.end(), slot.cbegin(), slot.cend());
-
         // rebalance the indices
         int peer_dim = peer_dims_.at(peer_kernel).size();
         auto peer_dim_it = std::next(total_index.cbegin(), peer_dim);
         std::vector<int> peer_index(total_index.cbegin(), peer_dim_it);
-        std::vector<int> peer_slot(peer_dim_it, total_index.cend());
+        Optional<int> peer_slot;
+        if (peer_dim_it != total_index.cend())
+            peer_slot = *peer_dim_it;
         endpoints.emplace_back(peer_kernel, peer_index, peer_port, peer_slot);
     }
 

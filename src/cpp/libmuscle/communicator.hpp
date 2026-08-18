@@ -170,10 +170,10 @@ class Communicator {
         ymmsl::Reference instance_id_() const;
         MPPClient & get_client_(ymmsl::Reference const & instance);
 
-        Endpoint get_endpoint_(
-                std::string const & port_name,
-                std::vector<int> const & slot
-                ) const;
+        /** Return our endpoint and the peer endpoints for the given port and slot.
+         */
+        std::tuple<Endpoint, std::vector<Endpoint>> get_endpoints_(
+                Port const & name, Optional<int> const & slot) const;
 
         std::tuple<std::vector<char>, mcp::ProfileData> try_receive_(
                 MPPClient & client, ymmsl::Reference const & receiver,

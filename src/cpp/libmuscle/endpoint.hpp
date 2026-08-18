@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/util.hpp>
 
 #include <string>
 #include <vector>
@@ -60,7 +61,7 @@ class Endpoint {
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 ymmsl::Identifier const & port,
-                std::vector<int> const & slot);
+                Optional<int> const & slot);
 
         /** Express as Reference.
          *
@@ -94,7 +95,7 @@ class Endpoint {
         ymmsl::Identifier port;
 
         /// Slot on which to send or receive.
-        std::vector<int> slot;
+        Optional<int> slot;
 };
 
 } }

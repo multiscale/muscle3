@@ -486,6 +486,14 @@ TEST_F(libmuscle_instance, receive_on_sending_port) {
     ASSERT_THROW(instance_.receive("out_v", 3), std::logic_error);
 }
 
+TEST_F(libmuscle_instance, receive_missing_slot) {
+    ASSERT_THROW(instance_.receive("in_v"), std::logic_error);
+}
+
+TEST_F(libmuscle_instance, receive_slot_on_scalar_port) {
+    ASSERT_THROW(instance_.receive("in", 0), std::logic_error);
+}
+
 TEST_F(libmuscle_instance, receive_f_init) {
     Message mock_msg(0.0, Settings());
     MockCommunicator::FInitCacheType cache = {{"in", mock_msg}};
@@ -516,7 +524,7 @@ TEST_F(libmuscle_instance, receive_default) {
 
 TEST_F(libmuscle_instance, receive_no_default) {
     ASSERT_THROW(instance_.receive("not_connected"), std::logic_error);
-    ASSERT_THROW(instance_.receive("not_connected_v"), std::runtime_error);
+    ASSERT_THROW(instance_.receive("not_connected_v", 42), std::logic_error);
 }
 
 TEST_F(libmuscle_instance, receive_inconsistent_settings) {

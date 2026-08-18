@@ -67,3 +67,22 @@ def test_double_deadlock(detector: DeadlockDetector) -> None:
     assert not detector.is_deadlocked("micro")
     assert detector.is_deadlocked("cycle2")
     assert detector.is_deadlocked("peer2")
+
+
+def test_deadlock_with_tail(detector: DeadlockDetector) -> None:
+    detector.waiting_for_receive("a", "b", "f_init", None)
+    detector.waiting_for_receive("b", "c", "s", None)
+    detector.waiting_for_receive("c", "b", "f_init", None)
+    assert detector.is_deadlocked("a")
+    assert detector.is_deadlocked("b")
+    assert detector.is_deadlocked("c")
+
+
+def test_double_deadlock_remove(detector: DeadlockDetector) -> None:
+    detector.waiting_for_receive("b", "c", "s", None)
+    detector.waiting_for_receive("c", "b", "f_init", None)
+    detector.waiting_for_receive("a", "b", "f_init", None)
+    detector.waiting_for_receive_done("b", "c", "s", None)
+    assert not detector.is_deadlocked("a")
+    assert not detector.is_deadlocked("b")
+    assert not detector.is_deadlocked("c")

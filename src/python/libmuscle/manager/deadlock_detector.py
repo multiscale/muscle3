@@ -24,8 +24,6 @@ class DeadlockDetector:
         """Maps instance IDs to the peer instance IDs they are waiting for."""
         self._waiting_instance_ports: dict[str, tuple[str, Optional[int]]] = {}
         """Maps instance IDs to the port/slot they are waiting for.."""
-        self._detected_deadlocks: list[list[str]] = []
-        """list of deadlocked instance cycles. Set by _handle_potential_deadlock."""
 
     def waiting_for_receive(
         self,
@@ -51,7 +49,6 @@ class DeadlockDetector:
             # Register that the instance is waiting
             self._waiting_instances[instance_id] = peer_instance_id
             self._waiting_instance_ports[instance_id] = (port_name, slot)
-            self._check_for_deadlock(instance_id)
 
     def waiting_for_receive_done(
         self,
@@ -80,54 +77,30 @@ class DeadlockDetector:
             del self._waiting_instances[instance_id]
             del self._waiting_instance_ports[instance_id]
 
-            # Check if we were part of a deadlock
-            for i, instance_list in enumerate(self._detected_deadlocks):
-                if instance_id in instance_list:
-                    del self._detected_deadlocks[i]
-                    break
-
     def is_deadlocked(self, instance_id: str) -> bool:
         """Check if the provided instance is part of a detected deadlock.
 
         This method can be called from any thread.
         """
         with self._mutex:
-            for deadlock_instances in self._detected_deadlocks:
-                if instance_id in deadlock_instances:
+            deadlock_instances = [instance_id]
+            cur_instance = instance_id
+            while cur_instance in self._waiting_instances:
+                cur_instance = self._waiting_instances[cur_instance]
+                if cur_instance in deadlock_instances:
                     _logger.fatal(
                         "Deadlock detected, simulation is aborting!\n%s",
                         self._format_deadlock(deadlock_instances),
                     )
                     return True
-        return False
+                deadlock_instances.append(cur_instance)
 
-    def _check_for_deadlock(self, instance_id: str) -> None:
-        """Check if there is a cycle of waiting instances that involves this instance.
-
-        Make sure to lock self._mutex before calling this.
-        """
-        deadlock_instances = [instance_id]
-        cur_instance = instance_id
-        while cur_instance in self._waiting_instances:
-            cur_instance = self._waiting_instances[cur_instance]
-            if cur_instance == instance_id:
-                self._handle_potential_deadlock(deadlock_instances)
-                return
-            deadlock_instances.append(cur_instance)
-        _logger.debug("No deadlock detected")
-
-    def _handle_potential_deadlock(self, deadlock_instances: list[str]) -> None:
-        """Handle a potential deadlock.
-
-        Make sure to lock self._mutex before calling this.
-
-        Args:
-            deadlock_instances: list of instances waiting for eachother
-        """
-        self._detected_deadlocks.append(deadlock_instances)
+            return False
 
     def _format_deadlock(self, deadlock_instances: list[str]) -> str:
         """Create and return formatted deadlock debug info.
+
+        Call with self._mutex acquired.
 
         Args:
             deadlock_instances: list of instances waiting for eachother

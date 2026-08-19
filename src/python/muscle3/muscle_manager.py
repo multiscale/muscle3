@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import textwrap
 import traceback
@@ -228,9 +227,6 @@ def _manage_simulation(
             print(f"Output may be found in {run_dir_obj.path}")
 
     sys.exit(0 if success else 1)
-
-
-_ENV_VAR_RE = re.compile(r"\$(\w+|\{[^}]*\})")
 
 
 def expand_settings(config: v0_2.Configuration) -> v0_2.Configuration:

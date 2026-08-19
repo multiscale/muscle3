@@ -74,16 +74,6 @@ struct CommunicatorReceiveMessageMock : CommunicatorReceiveMessageBase {
     }
 };
 
-
-using CommunicatorClosePortBase = MockFun<
-    Void, Val<std::string const &>, Val<Optional<int>>>;
-
-struct CommunicatorClosePortMock : CommunicatorClosePortBase {
-    void operator()(std::string const & port_name, Optional<int> slot = {}) {
-        CommunicatorClosePortBase::operator()(port_name, slot);
-    }
-};
-
 }
 
 

@@ -76,44 +76,35 @@ void Communicator::restore_state(TimelineState const & state) {
 void Communicator::send_message(
         std::string const & port_name,
         Message const & message,
-        Optional<int> slot,
-        double checkpoints_considered_until)
+        Optional<int> slot)
 {
-    std::vector<int> slot_list;
-    if (slot.is_set())
-        slot_list.push_back(slot.get());
-    log_debug("Sending message on ", port_desc(port_name, slot));
-
-    Endpoint snd_endpoint = get_endpoint_(port_name, slot_list);
-    if (!port_manager_.get_port(snd_endpoint.port).is_connected())
-        // log sending on disconnected port
-        return;
-
     Port & port = port_manager_.get_port(port_name);
-
-    ProfileEvent profile_event(
-            ProfileEventType::send, ProfileTimestamp(), {}, port, {}, slot,
-            port.get_num_messages(), {}, message.timestamp());
-
-    auto recv_endpoints = peer_info_.get().get_peer_endpoints(
-            snd_endpoint.port, slot_list);
-
-    Data settings_overlay(message.settings());
-
-    Optional<int> port_length;
-    if (port.is_resizable())
-        port_length = port.get_length();
+    if (!port.is_connected()) {
+        log_debug("Sending message on unconnected port ", port_desc(port_name, slot));
+        return;
+    }
+    log_debug("Sending message on ", port_desc(port_name, slot));
 
     Optional<IterationCount> iteration;
     if (!is_close_port(message.data()))
         iteration = timeline_manager_->check_send_message(port_name, slot);
 
+    ProfileEvent profile_event(
+            ProfileEventType::send, ProfileTimestamp(), {}, port, {}, slot,
+            port.get_num_messages(), {}, message.timestamp());
+
+    Optional<int> port_length;
+    if (port.is_resizable())
+        port_length = port.get_length();
+
+    auto endpoints = get_endpoints_(port, slot);
+    auto& snd_endpoint = std::get<0>(endpoints);
+    auto& recv_endpoints = std::get<1>(endpoints);
     for (auto recv_endpoint : recv_endpoints) {
         MPPMessage mpp_message(
                 snd_endpoint.ref(), recv_endpoint.ref(),
                 port_length, message.timestamp(), Optional<double>(),
-                settings_overlay, port.get_num_messages(slot),
-                checkpoints_considered_until,
+                Data(message.settings()), port.get_num_messages(slot),
                 message.data(), iteration);
 
         if (message.has_next_timestamp())
@@ -133,31 +124,56 @@ void Communicator::send_message(
         profiler_.record_event(std::move(profile_event));
 }
 
-std::tuple<Message, double> Communicator::receive_message(
+Communicator::FInitCacheType Communicator::pre_receive_f_init() {
+    FInitCacheType cache;
+
+    auto pre_receive = [&](std::string & port_name, Optional<int> slot) {
+        Reference port_ref(port_name);
+        if (slot.is_set())
+            port_ref += slot.get();
+        
+        auto msg = receive_message(port_name, slot);
+        if (is_close_port(msg.data()))
+            throw PortClosed();
+        cache.emplace(port_ref, msg);
+    };
+
+    for (Port const & port : port_manager_.get_connected_ports(Operator::F_INIT, {})) {
+        std::string port_name(port.name);
+        log_debug("Pre-receiving on port ", port_name);
+        if (!port.is_vector())
+            pre_receive(port_name, {});
+        else {
+            pre_receive(port_name, 0);
+            // The above receives the length, if needed, so now we can get the rest.
+            for (int slot = 1; slot < port.get_length(); ++slot)
+                pre_receive(port_name, slot);
+        }
+    }
+
+    return cache;
+}
+
+Message Communicator::receive_message(
         std::string const & port_name,
         Optional<int> slot,
         Optional<Message> const & default_msg)
 {
-    Port & port = port_manager_.get_port(port_name);
-
     timeline_manager_->check_receive(port_name, slot);
+
+    Port & port = port_manager_.get_port(port_name);
     std::string port_and_slot = port_desc(port_name, slot);
     log_debug("Waiting for message on ", port_and_slot);
-
-    std::vector<int> slot_list;
-    if (slot.is_set())
-        slot_list.emplace_back(slot.get());
-
-    Endpoint recv_endpoint(get_endpoint_(port_name, slot_list));
 
     ProfileEvent receive_event(
             ProfileEventType::receive, ProfileTimestamp(), {}, port, {}, slot,
             port.get_num_messages());
 
+    auto endpoints = get_endpoints_(port, slot);
+    auto& recv_endpoint = std::get<0>(endpoints);
     // peer_info already checks that there is at most one snd_endpoint
     // connected to the port we receive on
-    Endpoint snd_endpoint = peer_info_.get().get_peer_endpoints(
-            recv_endpoint.port, slot_list).at(0);
+    auto& snd_endpoint = std::get<1>(endpoints)[0];
     MPPClient & client = get_client_(snd_endpoint.instance());
     ReceiveTimeoutHandler handler(
             manager_, snd_endpoint.instance(), port_name, slot, receive_timeout_);
@@ -249,7 +265,7 @@ std::tuple<Message, double> Communicator::receive_message(
         timeline_manager_->record_received_message(
                 port_name, slot, mpp_message.iteration.get());
     }
-    return std::make_tuple(message, mpp_message.saved_until);
+    return message;
 }
 
 void Communicator::shutdown() {
@@ -289,17 +305,12 @@ MPPClient & Communicator::get_client_(Reference const & instance) {
     return *clients_.at(instance);
 }
 
-Endpoint Communicator::get_endpoint_(
-        std::string const & port_name, std::vector<int> const & slot) const {
-    try {
-        Identifier port(port_name);
-        return Endpoint(kernel_, index_, port, slot);
-    }
-    catch (std::invalid_argument const & e) {
-        std::ostringstream oss;
-        oss << "'" << port_name << "' is not a valid port name: " << e.what();
-        throw std::invalid_argument(oss.str());
-    }
+std::tuple<Endpoint, std::vector<Endpoint>> Communicator::get_endpoints_(
+        Port const & port, Optional<int> const & slot) const {
+    return {
+        Endpoint(kernel_, index_, port.name, slot),
+        peer_info_.get().get_peer_endpoints(port.name, slot)
+    };
 }
 
 std::tuple<std::vector<char>, mcp::ProfileData> Communicator::try_receive_(

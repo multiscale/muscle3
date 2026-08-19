@@ -9,11 +9,10 @@ from ymmsl.v0_2 import Identifier, Operator, Port, Reference, Settings, SettingV
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager
-from libmuscle.communicator import Communicator, Message
+from libmuscle.communicator import Communicator, FInitCacheType, Message, PortClosed
 from libmuscle.logging import LogLevel
 from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mmp_client import MMPClient
-from libmuscle.mpp_message import ClosePort
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
@@ -22,9 +21,6 @@ from libmuscle.snapshot_manager import SnapshotManager
 from libmuscle.util import extract_log_file_location
 
 _logger = logging.getLogger(__name__)
-
-
-_FInitCacheType = dict[tuple[str, Optional[int]], Message]
 
 
 class InstanceFlags(Flag):
@@ -176,7 +172,7 @@ class Instance:
         self._do_init = False
         """Whether to do f_init on this iteration of the reuse loop"""
 
-        self._f_init_cache: _FInitCacheType = {}
+        self._f_init_cache: FInitCacheType = {}
         """Stores pre-received messages for f_init ports"""
 
         self._register()
@@ -484,12 +480,7 @@ class Instance:
             message = copy(message)
             message.settings = self._settings_manager.overlay
 
-        self._communicator.send_message(
-            port_name,
-            message,
-            slot,
-            self._trigger_manager.checkpoints_considered_until(),
-        )
+        self._communicator.send_message(port_name, message, slot)
 
     def receive(
         self,
@@ -1022,7 +1013,7 @@ class Instance:
                     return default
 
             else:
-                msg, saved_until = self._communicator.receive_message(port_name, slot)
+                msg = self._communicator.receive_message(port_name, slot)
                 if not port.is_open(slot):
                     err_msg = (
                         f"Port {port_name} was closed while trying to"
@@ -1033,7 +1024,6 @@ class Instance:
                 if not with_settings:
                     self.__check_compatibility(port_name, msg.settings)
                     msg.settings = None
-                self._trigger_manager.harmonise_wall_time(saved_until)
         return msg
 
     def __make_full_name(self) -> tuple[Reference, list[int]]:
@@ -1154,32 +1144,32 @@ class Instance:
         """
         sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
 
-        all_ports_open = True
-        if not self._port_manager.settings_in_connected():
-            self._settings_manager.overlay = Settings()
-        else:
-            all_ports_open = self.__receive_settings()
-
-        self.__pre_receive_f_init()
-        for message in self._f_init_cache.values():
-            if isinstance(message.data, ClosePort):
-                all_ports_open = False
-
-        if not all_ports_open:
+        try:
+            self._f_init_cache = self._communicator.pre_receive_f_init()
+        except PortClosed:
             self._profiler.record_event(sw_event)
-
-        return all_ports_open
-
-    def __receive_settings(self) -> bool:
-        """Receives settings on muscle_settings_in.
-
-        Returns:
-            False iff the port is connnected and ClosePort was received.
-        """
-        message, saved_until = self._communicator.receive_message("muscle_settings_in")
-
-        if isinstance(message.data, ClosePort):
             return False
+        except RuntimeError as exc:
+            self.__shutdown(str(exc))
+            raise
+
+        # Handle received settings
+        if self._port_manager.settings_in_connected():
+            self.__handle_receive_settings()
+        else:
+            self._settings_manager.overlay = Settings()
+        # Overlay settings from received messages
+        apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
+        if apply_overlay:
+            for (port_name, _), msg in self._f_init_cache.items():
+                self.__apply_overlay(msg)
+                self.__check_compatibility(port_name, msg.settings)
+                msg.settings = None
+        return True
+
+    def __handle_receive_settings(self) -> None:
+        """Handle received settings on pre-received muscle_settings_in."""
+        message = self._f_init_cache.pop(("muscle_settings_in", None))
         if not isinstance(message.data, Settings):
             err_msg = (
                 f'"{self._instance_id}" received a message on'
@@ -1193,42 +1183,6 @@ class Instance:
         for key, value in message.data.items():
             settings[key] = value
         self._settings_manager.overlay = settings
-
-        self._trigger_manager.harmonise_wall_time(saved_until)
-        return True
-
-    def __pre_receive_f_init(self) -> None:
-        """Receives on all ports connected to F_INIT.
-
-        This receives all incoming messages on F_INIT and stores them
-        in self._f_init_cache.
-        """
-        apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
-
-        def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg, saved_until = self._communicator.receive_message(port_name, slot)
-            if apply_overlay:
-                self.__apply_overlay(msg)
-                self.__check_compatibility(port_name, msg.settings)
-                msg.settings = None
-            self._f_init_cache[(port_name, slot)] = msg
-            self._trigger_manager.harmonise_wall_time(saved_until)
-
-        self._f_init_cache = dict()
-        ports = self._port_manager.list_ports()
-        for port_name in ports.get(Operator.F_INIT, []):
-            _logger.debug(f"Pre-receiving on port {port_name}")
-            port = self._port_manager.get_port(port_name)
-            if not port.is_connected():
-                continue
-            if not port.is_vector():
-                pre_receive(port_name, None)
-            else:
-                pre_receive(port_name, 0)
-                # The above receives the length, if needed, so now we can
-                # get the rest.
-                for slot in range(1, port.get_length()):
-                    pre_receive(port_name, slot)
 
     def _set_remote_log_level(self) -> None:
         """Sets the remote log level.

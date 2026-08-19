@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ymmsl.v0_2 import Identifier, Reference
 
 
@@ -38,7 +40,7 @@ class Endpoint:
     """
 
     def __init__(
-        self, kernel: Reference, index: list[int], port: Identifier, slot: list[int]
+        self, kernel: Reference, index: list[int], port: Identifier, slot: Optional[int]
     ) -> None:
         """Create an Endpoint
 
@@ -70,7 +72,7 @@ class Endpoint:
         if self.index:
             ret += self.index
         ret += self.port
-        if self.slot:
+        if self.slot is not None:
             ret += self.slot
         return ret
 

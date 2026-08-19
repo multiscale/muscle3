@@ -112,7 +112,7 @@ class PeerInfo {
          */
         std::vector<Endpoint> get_peer_endpoints(
                 ymmsl::Identifier const & port,
-                std::vector<int> const & slot) const;
+                Optional<int> const & slot) const;
 
         /** Checks peer dimensions are as expected.
          * 

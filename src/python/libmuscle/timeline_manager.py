@@ -233,18 +233,10 @@ class TimelineManager:
         """
         self._port_manager = port_manager
 
-        receive_ports = self._port_manager.get_connected_ports(Operator.F_INIT)
-        # muscle_settings_in is F_INIT too, but it's not a declared port, so
-        # list_ports() doesn't return it; check_receive/record_received_message
-        # do treat it as F_INIT though, so it must be tracked here as well.
-        if self._port_manager.settings_in_connected():
-            receive_ports.append(self._port_manager.get_port("muscle_settings_in"))
-        self._receive = TimelinePorts(receive_ports)
+        self._receive = TimelinePorts(port_manager.get_connected_ports(Operator.F_INIT))
+        self._send = TimelinePorts(port_manager.get_connected_ports(Operator.O_F))
 
-        self._send = TimelinePorts(self._port_manager.get_connected_ports(Operator.O_F))
-
-        subtimelines = self._port_manager.list_subtimelines()
-
+        subtimelines = port_manager.list_subtimelines()
         self._submanagers = {
             tl: SubTimelineManager(tl, self._port_manager) for tl in subtimelines
         }

@@ -1,7 +1,7 @@
 from copy import copy
 
 import pytest
-from ymmsl.v0_2 import Reference
+from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.mpp_message import MPPMessage
 from libmuscle.outbox import Outbox
@@ -16,7 +16,7 @@ def outbox():
 def message():
     Ref = Reference
     return MPPMessage(
-        Ref("sender.out"), Ref("receiver.in"), None, 0.0, 1.0, b"", 0, 1.0, b"testing"
+        Ref("sender.out"), Ref("receiver.in"), None, 0.0, 1.0, Settings(), 0, b"testing"
     )
 
 

@@ -15,7 +15,6 @@ def test_create() -> None:
     next_timestamp = 11.0
     settings_overlay = (6789).to_bytes(2, "little", signed=True)
     message_number = 0
-    saved_until = 1.6
     data = (12345).to_bytes(2, "little", signed=True)
     msg = MPPMessage(
         sender,
@@ -25,7 +24,6 @@ def test_create() -> None:
         next_timestamp,
         settings_overlay,
         message_number,
-        saved_until,
         data,
     )
     assert msg.sender == sender
@@ -35,7 +33,6 @@ def test_create() -> None:
     assert msg.next_timestamp == 11.0
     assert msg.settings_overlay == settings_overlay
     assert msg.message_number == 0
-    assert msg.saved_until == 1.6
     assert msg.data == data
 
 
@@ -52,7 +49,7 @@ def test_grid_encode() -> None:
 
     grid = Grid(array, ["x", "y", "z"])
     msg = MPPMessage(
-        sender, receiver, None, timestamp, next_timestamp, Settings(), 0, 1.0, grid
+        sender, receiver, None, timestamp, next_timestamp, Settings(), 0, grid
     )
 
     wire_data = msg.encoded()
@@ -94,7 +91,6 @@ def test_grid_decode() -> None:
         "next_timestamp": None,
         "settings_overlay": msgpack.ExtType(1, settings_data),
         "message_number": 0,
-        "saved_until": 9.9,
         "data": msgpack.ExtType(2, grid_data),
     }
 
@@ -144,7 +140,7 @@ def test_grid_roundtrip() -> None:
 
         grid = Grid(array, ["x", "y", "z"])
         msg = MPPMessage(
-            sender, receiver, None, timestamp, next_timestamp, Settings(), 0, 1.0, grid
+            sender, receiver, None, timestamp, next_timestamp, Settings(), 0, grid
         )
 
         wire_data = msg.encoded()
@@ -166,7 +162,7 @@ def test_iteration_roundtrip() -> None:
     receiver = Reference("receiver.port")
 
     msg = MPPMessage(
-        sender, receiver, None, 0.0, None, Settings(), 0, 0.0, 42, iteration=[0, 2]
+        sender, receiver, None, 0.0, None, Settings(), 0, 42, iteration=[0, 2]
     )
     msg_out = MPPMessage.from_bytes(msg.encoded())
     assert msg_out.iteration == [0, 2]
@@ -197,7 +193,7 @@ def test_non_contiguous_grid_roundtrip() -> None:
 
     grid = Grid(array.real, ["a", "b", "c"])
     msg = MPPMessage(
-        sender, receiver, None, timestamp, next_timestamp, Settings(), 0, 7.7, grid
+        sender, receiver, None, timestamp, next_timestamp, Settings(), 0, grid
     )
 
     wire_data = msg.encoded()

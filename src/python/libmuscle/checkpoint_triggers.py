@@ -190,19 +190,6 @@ class TriggerManager:
         """Returns elapsed wallclock_time in seconds."""
         return time.monotonic() + self._mono_to_elapsed
 
-    def checkpoints_considered_until(self) -> float:
-        """Return elapsed time of last should_save*"""
-        return self._cpts_considered_until
-
-    def harmonise_wall_time(self, at_least: float) -> None:
-        """Ensure our elapsed time is at least the given value"""
-        cur = self.elapsed_walltime()
-        if cur < at_least:
-            _logger.debug(
-                "Harmonise wall time: advancing clock by %f seconds", at_least - cur
-            )
-            self._mono_to_elapsed += at_least - cur
-
     def should_save_snapshot(self, timestamp: float) -> bool:
         """Handles instance.should_save_snapshot"""
         if not self._has_checkpoints:

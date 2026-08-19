@@ -6,8 +6,8 @@ import pytest
 from ymmsl.v0_2 import Checkpoints, Operator, Settings
 from ymmsl.v0_2 import Reference as Ref
 
+from libmuscle.communicator import PortClosed
 from libmuscle.instance import Instance, InstanceFlags
-from libmuscle.mpp_message import ClosePort
 from libmuscle.peer_info import PeerInfo
 
 
@@ -62,7 +62,9 @@ def port_manager():
 @pytest.fixture
 def communicator():
     with patch("libmuscle.instance.Communicator") as Communicator:
-        yield Communicator.return_value
+        communicator = Communicator.return_value
+        communicator.pre_receive_f_init.return_value = {}
+        yield communicator
 
 
 @pytest.fixture
@@ -429,48 +431,29 @@ def test_reuse_set_overlay(
     mock_msg = MagicMock()
     mock_msg.data = Settings({"s1": 1, "s2": 2})
     mock_msg.settings = Settings({"s0": 0})
-    communicator.receive_message.return_value = mock_msg, 0.0
+    communicator.pre_receive_f_init.return_value = {
+        ("muscle_settings_in", None): mock_msg
+    }
 
     instance.reuse_instance()
-
-    communicator.receive_message.assert_called_with("muscle_settings_in")
     assert settings_manager.overlay["s0"] == 0
     assert settings_manager.overlay["s1"] == 1
     assert settings_manager.overlay["s2"] == 2
 
 
-@pytest.mark.parametrize("closed_port", ["muscle_settings_in", "in"])
-def test_reuse_closed_port(instance, port_manager, communicator, closed_port):
-
-    def receive_message(port, slot=None, default=None):
-        mock_msg = MagicMock()
-        if port == closed_port:
-            mock_msg.data = ClosePort()
-        else:
-            mock_msg.data = Settings()
-        return mock_msg, 0.0
-
-    port_manager.settings_in_connected.return_value = True
-    communicator.receive_message = receive_message
-
+def test_reuse_closed_port(instance, communicator):
+    communicator.pre_receive_f_init.side_effect = PortClosed()
     assert instance.reuse_instance() is False
 
 
-def test_reuse_f_init_vector_port(instance, port_manager, communicator):
-    port_manager.get_port("in")._length = 10
-
-    def receive_message(port, slot=None, default=None):
-        mock_msg = MagicMock()
-        mock_msg.data = Settings()
-        return mock_msg, 0.0
-
-    communicator.receive_message = receive_message
-
-    assert instance.reuse_instance() is True
+def test_reuse_no_closed_port(instance, communicator):
+    for _ in range(20):
+        assert instance.reuse_instance() is True
+    communicator.pre_receive_f_init.side_effect = PortClosed()
+    assert instance.reuse_instance() is False
 
 
 def test_reuse_no_f_init_ports(instance, connected_port_manager, communicator):
-    connected_port_manager.list_ports.return_value = {}
     connected_port_manager.has_f_init_connections.return_value = False
 
     assert instance.reuse_instance() is True
@@ -535,7 +518,7 @@ def test_receive_on_sending_port(instance):
 def test_receive_f_init(instance, port_manager, communicator):
     mock_msg = MagicMock()
     mock_msg.data = Settings()
-    communicator.receive_message.return_value = mock_msg, 0.0
+    communicator.pre_receive_f_init.return_value = {("in", None): mock_msg}
 
     instance.reuse_instance()
 
@@ -571,19 +554,13 @@ def test_receive_no_default(instance):
 def test_receive_inconsistent_settings(
     instance, settings_manager, port_manager, communicator
 ):
-
-    def receive_message(port, slot=None):
-        mock_msg = MagicMock()
-        if port == "muscle_settings_in":
-            mock_msg.data = Settings({"s1": 1})
-            mock_msg.settings = Settings()
-        else:
-            mock_msg.data = None
-            mock_msg.settings = Settings({"s0": 0})
-        return mock_msg, 0.0
-
-    communicator.receive_message.side_effect = receive_message
-
+    msgs = {
+        ("muscle_settings_in", None): MagicMock(
+            data=Settings({"s1": 1}), settings=Settings()
+        ),
+        ("in", None): MagicMock(settings=Settings({"s0": 0})),
+    }
+    communicator.pre_receive_f_init.return_value = msgs
     port_manager.settings_in_connected.return_value = True
 
     with pytest.raises(RuntimeError):
@@ -596,7 +573,7 @@ def test_receive_with_settings(
 
     mock_msg = MagicMock()
     mock_msg.settings = Settings({"s0": 0, "s1": 1})
-    communicator.receive_message.return_value = mock_msg, 0.0
+    communicator.pre_receive_f_init.return_value = {("in", None): mock_msg}
 
     instance_dont_apply_overlay.reuse_instance()
     msg = instance_dont_apply_overlay.receive("in")

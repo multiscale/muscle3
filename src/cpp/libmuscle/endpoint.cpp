@@ -11,7 +11,7 @@ Endpoint::Endpoint(
         Reference const & kernel,
         std::vector<int> const & index,
         Identifier const & port,
-        std::vector<int> const & slot)
+        Optional<int> const & slot)
     : kernel(kernel)
     , index(index)
     , port(port)
@@ -23,8 +23,8 @@ Reference Endpoint::ref() const {
     if (!index.empty())
         ret += index;
     ret += port;
-    if (!slot.empty())
-        ret += slot;
+    if (slot.is_set())
+        ret += slot.get();
     return ret;
 }
 

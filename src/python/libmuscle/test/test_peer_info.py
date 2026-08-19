@@ -88,14 +88,14 @@ def test_get_peer_locations(peer_info, peer_info2, peer_info3) -> None:
 
 
 def test_get_peer_endpoint(peer_info, peer_info2, peer_info3) -> None:
-    assert str(peer_info.get_peer_endpoints(Id("out"), [])[0]) == "other.in[13]"
-    assert str(peer_info.get_peer_endpoints(Id("in"), [])[0]) == "other.out[13]"
+    assert str(peer_info.get_peer_endpoints(Id("out"), None)[0]) == "other.in[13]"
+    assert str(peer_info.get_peer_endpoints(Id("in"), None)[0]) == "other.out[13]"
 
-    assert str(peer_info2.get_peer_endpoints(Id("out"), [11])[0]) == "kernel[11].in"
-    assert str(peer_info2.get_peer_endpoints(Id("in"), [11])[0]) == "kernel[11].out"
+    assert str(peer_info2.get_peer_endpoints(Id("out"), 11)[0]) == "kernel[11].in"
+    assert str(peer_info2.get_peer_endpoints(Id("in"), 11)[0]) == "kernel[11].out"
 
-    assert str(peer_info3.get_peer_endpoints(Id("out"), [42])[0]) == "other.in[42]"
-    assert str(peer_info3.get_peer_endpoints(Id("in"), [42])[0]) == "other.out[42]"
+    assert str(peer_info3.get_peer_endpoints(Id("out"), 42)[0]) == "other.in[42]"
+    assert str(peer_info3.get_peer_endpoints(Id("in"), 42)[0]) == "other.out[42]"
 
 
 def test_get_ymmsl_ports(peer_info) -> None:

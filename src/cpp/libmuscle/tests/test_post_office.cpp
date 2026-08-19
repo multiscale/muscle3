@@ -34,7 +34,7 @@ std::vector<char> make_message() {
             "test_sender.port", "test_receiver.port",
             Optional<int>(),
             0.0, 1.0,
-            DataConstRef(), 0, 5.0, DataConstRef());
+            DataConstRef(), 0, DataConstRef());
     return msg.encoded();
 }
 

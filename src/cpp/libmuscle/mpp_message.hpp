@@ -38,7 +38,7 @@ class MPPMessage {
                 Optional<int> port_length,
                 double timestamp, Optional<double> next_timestamp,
                 DataConstRef const & settings_overlay, int message_number,
-                double saved_until, DataConstRef const & data,
+                DataConstRef const & data,
                 Optional<IterationCount> const & iteration = {});
 
         /** Create an MCP Message from an encoded buffer.
@@ -68,7 +68,6 @@ class MPPMessage {
         Optional<double> next_timestamp;
         DataConstRef settings_overlay;
         int message_number;
-        double saved_until;
         DataConstRef data;
         Optional<IterationCount> iteration;
 

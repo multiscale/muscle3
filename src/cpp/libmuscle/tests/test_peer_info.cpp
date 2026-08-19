@@ -137,12 +137,12 @@ TEST(libmuscle_peer_info, get_peer_endpoint) {
     ASSERT_EQ(std::string(pi.get_peer_endpoints("in", {})[0]), "other.out[13]");
 
     auto pi2 = peer_info2();
-    ASSERT_EQ(std::string(pi2.get_peer_endpoints("out", {11})[0]), "kernel[11].in");
-    ASSERT_EQ(std::string(pi2.get_peer_endpoints("in", {11})[0]), "kernel[11].out");
+    ASSERT_EQ(std::string(pi2.get_peer_endpoints("out", 11)[0]), "kernel[11].in");
+    ASSERT_EQ(std::string(pi2.get_peer_endpoints("in", 11)[0]), "kernel[11].out");
 
     auto pi3 = peer_info3();
-    ASSERT_EQ(std::string(pi3.get_peer_endpoints("out", {42})[0]), "other.in[42]");
-    ASSERT_EQ(std::string(pi3.get_peer_endpoints("in", {42})[0]), "other.out[42]");
+    ASSERT_EQ(std::string(pi3.get_peer_endpoints("out", 42)[0]), "other.in[42]");
+    ASSERT_EQ(std::string(pi3.get_peer_endpoints("in", 42)[0]), "other.out[42]");
 }
 
 

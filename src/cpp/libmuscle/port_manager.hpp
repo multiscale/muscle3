@@ -68,7 +68,8 @@ class PortManager {
          */
         bool has_f_init_connections() const;
 
-        /** Returns the connected ports for the given operator.
+        /** Returns the connected ports for the given operator. This includes
+         * muscle_settings_in for F_INIT.
          *
          * @param oper The operator to select ports for.
          * @param timeline If set, only return ports on this timeline.

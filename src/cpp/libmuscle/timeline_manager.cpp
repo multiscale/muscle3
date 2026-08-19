@@ -389,16 +389,11 @@ void SubTimelineManager::missing_actions(ExpectedActions & result) const {
 
 TimelineManager::TimelineManager(PortManager const & port_manager)
     : port_manager_(port_manager)
-    , receive_({})
+    , receive_(port_manager.get_connected_ports(Operator::F_INIT, Optional<Timeline>()))
     , send_(port_manager.get_connected_ports(Operator::O_F, Optional<Timeline>()))
     , submanagers_()
     , iteration_()
 {
-    auto receive_ports = port_manager_.get_connected_ports(Operator::F_INIT, Optional<Timeline>());
-    if (port_manager_.settings_in_connected())
-        receive_ports.push_back(port_manager_.get_port("muscle_settings_in"));
-    receive_ = TimelinePorts(receive_ports);
-
     for (auto const & tl : port_manager_.list_subtimelines())
         submanagers_.emplace(tl, SubTimelineManager(tl, port_manager_));
 

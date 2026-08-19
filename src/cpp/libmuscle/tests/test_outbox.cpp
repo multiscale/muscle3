@@ -37,7 +37,7 @@ TEST(libmuscle_outbox, test_deposit_retrieve_message) {
             Optional<int>(),
             0.0, 1.0,
             DataConstRef(),
-            0, 1.0,
+            0,
             DataConstRef("testing"));
 
     auto message_data = message.encoded();

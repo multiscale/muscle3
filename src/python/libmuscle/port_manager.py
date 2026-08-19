@@ -85,7 +85,8 @@ class PortManager:
         operator: Operator,
         timeline: Optional[Timeline] = None,
     ) -> list[Port]:
-        """Returns the connected ports for the given operator.
+        """Returns the connected ports for the given operator. Includes
+        muscle_settings_in for F_INIT.
 
         Args:
             operator: The operator to select ports for.
@@ -94,13 +95,16 @@ class PortManager:
         Returns:
             The Port objects for this operator's connected ports.
         """
-        return [
+        result = [
             port
             for port in self._ports.values()
             if port.operator is operator
             and (timeline is None or port.timeline == timeline)
             and port.is_connected()
         ]
+        if operator is Operator.F_INIT and self.settings_in_connected():
+            result.append(self._muscle_settings_in)
+        return result
 
     def list_subtimelines(self) -> set[Timeline]:
         """Returns the timelines of this instance's connected O_I/S ports.

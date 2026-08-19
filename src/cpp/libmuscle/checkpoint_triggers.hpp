@@ -123,17 +123,9 @@ class TriggerManager {
          */
         double elapsed_walltime();
 
-        /** Return elapsed time of last should_save*
-         */
-        double checkpoints_considered_until();
-
         /** Returns whether checkpoints are defined
          */
         bool has_checkpoints() const { return has_checkpoints_; }
-
-        /** Ensure our elapsed time is at least the given value
-         */
-        void harmonise_wall_time(double at_least);
 
         /** Handles instance.should_save_snapshot
          */

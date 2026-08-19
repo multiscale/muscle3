@@ -29,6 +29,11 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+class PortClosed : public std::runtime_error {
+    public:
+        PortClosed() : std::runtime_error("Port closed") {};
+};
+
 /** Communication engine for MUSCLE3.
  *
  * This class is the mailroom for an instance that uses MUSCLE3. It manages
@@ -38,6 +43,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 class Communicator {
     public:
         using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+        using FInitCacheType = std::unordered_map<::ymmsl::Reference, Message>;
 
         /** Create a Communicator.
          *
@@ -87,14 +93,17 @@ class Communicator {
          * @param port_name The port on which this message is to be sent.
          * @param message The message to send.
          * @param slot The slot to send the message on.
-         * @param checkpoints_considered_until When we last checked if we
-         *      should save a snapshot (wallclock time).
          */
         void send_message(
                 std::string const & port_name,
                 Message const & message,
-                Optional<int> slot = {},
-                double checkpoints_considered_until = -std::numeric_limits<double>::infinity());
+                Optional<int> slot = {});
+
+        /** Receive on all connected F_INIT port (including muscle_settings_in).
+         * 
+         * @return The received messages.
+         */
+        FInitCacheType pre_receive_f_init();
 
         /** Receive a message and attached settings overlay.
          *
@@ -115,12 +124,11 @@ class Communicator {
          *
          * @return The received message, with message.settings holding the
          *      settings overlay. The setings attribute is guaranteed to be set.
-         *      Second, the saved_until metadata field from the received message.
          *
          * @throws std::runtime_error if no default was given and the port is
          *      not connected.
          */
-        std::tuple<Message, double> receive_message(
+        Message receive_message(
                 std::string const & port_name,
                 Optional<int> slot = {},
                 Optional<Message> const & default_msg = {}
@@ -162,10 +170,10 @@ class Communicator {
         ymmsl::Reference instance_id_() const;
         MPPClient & get_client_(ymmsl::Reference const & instance);
 
-        Endpoint get_endpoint_(
-                std::string const & port_name,
-                std::vector<int> const & slot
-                ) const;
+        /** Return our endpoint and the peer endpoints for the given port and slot.
+         */
+        std::tuple<Endpoint, std::vector<Endpoint>> get_endpoints_(
+                Port const & name, Optional<int> const & slot) const;
 
         std::tuple<std::vector<char>, mcp::ProfileData> try_receive_(
                 MPPClient & client, ymmsl::Reference const & receiver,

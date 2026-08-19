@@ -61,6 +61,8 @@ PortManager::PortReferences PortManager::get_connected_ports(
             continue;
         result.push_back(port.second);
     }
+    if (oper == Operator::F_INIT && settings_in_connected())
+        result.push_back(muscle_settings_in());
     return result;
 }
 

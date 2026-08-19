@@ -17,7 +17,7 @@ MPPMessage::MPPMessage(
             Optional<int> port_length,
             double timestamp, Optional<double> next_timestamp,
             DataConstRef const & settings_overlay,
-            int message_number, double saved_until,
+            int message_number,
             DataConstRef const & data,
             Optional<IterationCount> const & iteration
             )
@@ -28,7 +28,6 @@ MPPMessage::MPPMessage(
         , next_timestamp(next_timestamp)
         , settings_overlay(settings_overlay)
         , message_number(message_number)
-        , saved_until(saved_until)
         , data(data)
         , iteration(iteration)
     {}
@@ -84,7 +83,6 @@ MPPMessage MPPMessage::from_dict_(DataConstRef const & dict) {
             next_timestamp,
             dict["settings_overlay"],
             dict["message_number"].as<int>(),
-            dict["saved_until"].as<double>(),
             dict["data"],
             decode_iteration(dict["iteration"]));
 }
@@ -106,7 +104,6 @@ DataConstRef MPPMessage::as_dict_() const {
             "next_timestamp", next_timestamp_data,
             "settings_overlay", settings_overlay,
             "message_number", message_number,
-            "saved_until", saved_until,
             "data", data,
             "iteration", encode_iteration(iteration)
             );

@@ -156,10 +156,8 @@ class Instance::Impl {
                 std::string const & port_name, Optional<int> slot,
                 bool is_send, bool allow_slot_out_of_range = false);
 
-        bool receive_settings_();
+        void handle_receive_settings_();
         bool pre_receive_();
-        void pre_receive_(std::string const & port_name, Optional<int> slot);
-        void pre_receive_f_init_();
         Optional<double> f_init_max_timestamp_();
         bool decide_reuse_instance_();
         void save_snapshot_(
@@ -676,21 +674,16 @@ Message Instance::Impl::receive_message(
             }
         }
         else {
-            double saved_until;
-            std::tie(result, saved_until) = communicator_->receive_message(
-                    port_name, slot);
+            result = communicator_->receive_message(port_name, slot);
             if (!port.is_open(slot)) {
                 std::ostringstream oss;
                 oss << "Port \"" << port_ref << "\" is closed, but we're trying";
                 oss << " to receive on it. Did the peer crash?";
                 error = Error(std::runtime_error(oss.str()));
             }
-            else {
-                if (!with_settings) {
-                    check_compatibility_(port_name, result.settings());
-                    result.unset_settings();
-                }
-                trigger_manager_->harmonise_wall_time(saved_until);
+            else if (!with_settings) {
+                check_compatibility_(port_name, result.settings());
+                result.unset_settings();
             }
         }
     }
@@ -911,16 +904,11 @@ void Instance::Impl::check_port_(
     }
 }
 
-/* Receives settings on muscle_settings_in.
- *
- * @return false iff the port is connected and ClosePort was received.
- */
-bool Instance::Impl::receive_settings_() {
-    auto msg_saved_until = communicator_->receive_message("muscle_settings_in");
-    auto & msg = std::get<0>(msg_saved_until);
-
-    if (is_close_port(msg.data()))
-        return false;
+/* Handle received settings on pre-received muscle_settings_in. */
+void Instance::Impl::handle_receive_settings_() {
+    Reference port_ref("muscle_settings_in");
+    auto msg = f_init_cache_.at(port_ref);
+    f_init_cache_.erase(port_ref);
 
     if (!msg.data().is_a<Settings>()) {
         std::ostringstream oss;
@@ -936,8 +924,6 @@ bool Instance::Impl::receive_settings_() {
     for (auto const & key_val : msg.data().as<Settings>())
         settings[key_val.first] = key_val.second;
     settings_manager_.overlay = settings;
-
-    return true;
 }
 
 /** Pre-receives on all ports.
@@ -949,74 +935,32 @@ bool Instance::Impl::receive_settings_() {
 bool Instance::Impl::pre_receive_() {
     ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
 
-    bool all_ports_open = true;
-    if (!port_manager_->settings_in_connected())
-        settings_manager_.overlay = Settings();
-    else
-        all_ports_open = receive_settings_();
-
-    pre_receive_f_init_();
-    for (auto const & ref_msg : f_init_cache_)
-        if (is_close_port(ref_msg.second.data()))
-                all_ports_open = false;
-
-    if (!all_ports_open)
+    try {
+        f_init_cache_ = communicator_->pre_receive_f_init();
+    } catch (PortClosed &err) {
         profiler_->record_event(std::move(sw_event));
+        return false;
+    } catch (std::runtime_error &err) {
+        shutdown_(err.what());
+        throw;
+    }
 
-    return all_ports_open;
-}
-
-/* Pre-receive on the given port and slot, if any.
- *
- * Helper for pre_receive_f_init() below.
- */
-void Instance::Impl::pre_receive_(
-        std::string const & port_name, Optional<int> slot) {
-    Reference port_ref(port_name);
-    if (slot.is_set())
-        port_ref += slot.get();
-
-    auto msg_saved_until = communicator_->receive_message(port_name, slot);
-
-    auto & msg = std::get<0>(msg_saved_until);
+    // Handle received settings
+    if (port_manager_->settings_in_connected())
+        handle_receive_settings_();
+    else
+        settings_manager_.overlay = Settings();
+    // Overlay settings from received messages
     bool apply_overlay = !(flags_ & InstanceFlags::DONT_APPLY_OVERLAY);
     if (apply_overlay) {
-        apply_overlay_(msg);
-        if (msg.has_settings())
-            check_compatibility_(port_name, msg.settings());
-        msg.unset_settings();
-    }
-    f_init_cache_.emplace(port_ref, msg);
-
-    auto & saved_until = std::get<1>(msg_saved_until);
-    trigger_manager_->harmonise_wall_time(saved_until);
-}
-
-/* Receives on all ports connected to F_INIT.
- *
- * This receives all incoming messages on F_INIT and stores them in
- * f_init_cache_.
- */
-void Instance::Impl::pre_receive_f_init_() {
-    f_init_cache_.clear();
-    auto ports = port_manager_->list_ports();
-    if (ports.count(Operator::F_INIT) == 1) {
-        for (auto const & port_name : ports.at(Operator::F_INIT)) {
-            log_debug("Pre-receiving on port ", port_name);
-            auto const & port = port_manager_->get_port(port_name);
-            if (!port.is_connected())
-                continue;
-            if (!port.is_vector())
-                pre_receive_(port_name, {});
-            else {
-                pre_receive_(port_name, 0);
-                // The above receives the length, if needed, so now we can get
-                // the rest.
-                for (int slot = 1; slot < port.get_length(); ++slot)
-                    pre_receive_(port_name, slot);
-            }
+        for (auto &item : f_init_cache_) {
+            apply_overlay_(item.second);
+            if (item.second.has_settings())
+                check_compatibility_(std::string(item.first), item.second.settings());
+            item.second.unset_settings();
         }
     }
+    return true;
 }
 
 /** Return max timestamp of pre-received F_INIT messages

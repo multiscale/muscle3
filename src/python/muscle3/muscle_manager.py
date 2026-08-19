@@ -1,3 +1,5 @@
+import os
+import re
 import sys
 import textwrap
 import traceback
@@ -228,6 +230,23 @@ def _manage_simulation(
     sys.exit(0 if success else 1)
 
 
+_ENV_VAR_RE = re.compile(r"\$(\w+|\{[^}]*\})")
+
+
+def expand_settings(config: v0_2.Configuration) -> v0_2.Configuration:
+    """Expand environment variables in string setting values.
+
+    This iterates over the (string) settings and expands found environment variables.
+    """
+    for name in list(config.settings):
+        value = config.settings[name]
+        if not isinstance(value, str):
+            continue
+        config.settings[name] = os.path.expandvars(value)
+
+    return config
+
+
 def load_configuration(paths: Sequence[str]) -> v0_2.Configuration:
     """Load, combine a series of configuration files
 
@@ -245,7 +264,7 @@ def load_configuration(paths: Sequence[str]) -> v0_2.Configuration:
         with catch_warnings():
             filterwarnings("ignore", "In yMMSL v0.2.*")
             filterwarnings("ignore", "Comments can unfortunately.*")
-            return ymmsl.convert_to(v0_2.Configuration, config_v1)
+            return expand_settings(ymmsl.convert_to(v0_2.Configuration, config_v1))
     else:
         # convert to v0.2 if needed and merge v0.2 style
         with catch_warnings():
@@ -255,7 +274,7 @@ def load_configuration(paths: Sequence[str]) -> v0_2.Configuration:
 
             for d in docs[1:]:
                 config_v2.update(ymmsl.convert_to(v0_2.Configuration, d))
-        return config_v2
+        return expand_settings(config_v2)
 
 
 def load_files(paths: Sequence[str]) -> list[Document]:

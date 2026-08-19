@@ -78,6 +78,31 @@ def connected_communicator(communicator):
     return communicator
 
 
+def mock_mpp_receive(
+    sender="snd",  # Not correct, but unused in receive_message
+    receiver="rcv",  # Not correct, but unused in receive_message
+    port_length=None,
+    timestamp=0.0,
+    next_timestamp=None,
+    settings_overlay=None,
+    message_number=0,
+    data=None,
+    iteration=None,
+):
+    """Helper method for mocking return values for mpp_client.receive."""
+    return MPPMessage(
+        Ref(str(sender)),
+        Ref(str(receiver)),
+        port_length,
+        timestamp,
+        next_timestamp,
+        Settings() if settings_overlay is None else settings_overlay,
+        message_number,
+        data,
+        iteration or [],
+    ).encoded(), MagicMock()
+
+
 def test_create_communicator(communicator, mpp_server):
     assert communicator._server == mpp_server
     pass
@@ -129,7 +154,7 @@ def test_send_message_disconnected(connected_communicator, mpp_server):
 
 
 def test_receive_message(connected_communicator, mpp_client):
-    msg = MPPMessage(
+    mpp_client.receive.return_value = mock_mpp_receive(
         Ref("peer.out"),
         Ref("component.in"),
         None,
@@ -140,8 +165,6 @@ def test_receive_message(connected_communicator, mpp_client):
         "Testing",
         [0],
     )
-
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
     connected_communicator.set_receive_timeout(-1)
     recv_msg = connected_communicator.receive_message("in")
@@ -157,7 +180,7 @@ def test_receive_message(connected_communicator, mpp_client):
 
 
 def test_receive_message_vector(connected_communicator, mpp_client):
-    msg = MPPMessage(
+    mpp_client.receive.return_value = mock_mpp_receive(
         Ref("peer2.out_v"),
         Ref("component.in_v"),
         5,
@@ -168,8 +191,6 @@ def test_receive_message_vector(connected_communicator, mpp_client):
         "Testing2",
         [0],
     )
-
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
     connected_communicator.set_receive_timeout(-1)
     recv_msg = connected_communicator.receive_message("in_v", 5)
@@ -185,18 +206,7 @@ def test_receive_message_vector(connected_communicator, mpp_client):
 
 
 def test_receive_root_milestone(connected_communicator, mpp_client, port_manager):
-    msg = MPPMessage(
-        Ref("peer.out"),
-        Ref("component.in"),
-        None,
-        float("inf"),
-        None,
-        Settings(),
-        0,
-        Milestone([]),
-        [],
-    )
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
+    mpp_client.receive.return_value = mock_mpp_receive(data=Milestone([]))
 
     with pytest.raises(PortClosed):
         connected_communicator.receive_message("in")
@@ -207,18 +217,7 @@ def test_receive_root_milestone(connected_communicator, mpp_client, port_manager
 def test_receive_root_milestone_vector(
     connected_communicator, mpp_client, port_manager
 ):
-    msg = MPPMessage(
-        Ref("peer2.out_v"),
-        Ref("component.in_v"),
-        5,
-        float("inf"),
-        None,
-        Settings(),
-        0,
-        Milestone([]),
-        [],
-    )
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
+    mpp_client.receive.return_value = mock_mpp_receive(data=Milestone([]))
 
     with pytest.raises(PortClosed):
         connected_communicator.receive_message("in_v", 5)
@@ -265,8 +264,7 @@ def test_pre_receive_vector(connected_communicator, mock_ports):
 def test_port_count_validation(
     connected_communicator, mpp_client, connected_port_manager
 ):
-
-    msg = MPPMessage(
+    mpp_client.receive.return_value = mock_mpp_receive(
         Ref("peer.out"),
         Ref("component.in"),
         None,
@@ -277,8 +275,6 @@ def test_port_count_validation(
         b"test",
         [0],
     )
-
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
     connected_communicator.receive_message("in")
     assert connected_port_manager.get_port("in").get_message_counts() == [1]
@@ -291,8 +287,7 @@ def test_port_count_validation(
 def test_port_discard_error_on_resume(
     caplog, connected_communicator, mpp_client, connected_port_manager
 ):
-
-    msg = MPPMessage(
+    mpp_client.receive.return_value = mock_mpp_receive(
         Ref("other.out[13]"),
         Ref("kernel[13].in"),
         None,
@@ -303,8 +298,6 @@ def test_port_discard_error_on_resume(
         b"test",
         [],
     )
-
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
     connected_port_manager.get_port("out").restore_message_counts([0])
     connected_port_manager.get_port("in").restore_message_counts([2])
@@ -329,25 +322,20 @@ def test_port_discard_success_on_resume(
     caplog, connected_communicator, mpp_client, connected_port_manager
 ):
 
-    side_effect = [
-        (
-            MPPMessage(
-                Ref("other.out[13]"),
-                Ref("kernel[13].in"),
-                None,
-                0.0,
-                None,
-                Settings({"test1": 12}),
-                message_number,
-                {"this is message": message_number},
-                [0],
-            ).encoded(),
-            MagicMock(),
+    mpp_client.receive.side_effect = [
+        mock_mpp_receive(
+            Ref("other.out[13]"),
+            Ref("kernel[13].in"),
+            None,
+            0.0,
+            None,
+            Settings({"test1": 12}),
+            message_number,
+            {"this is message": message_number},
+            [0],
         )
         for message_number in [1, 2]
     ]
-
-    mpp_client.receive.side_effect = side_effect
 
     connected_port_manager.get_port("out").restore_message_counts([0])
     connected_port_manager.get_port("in").restore_message_counts([2])

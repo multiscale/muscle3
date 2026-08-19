@@ -135,6 +135,16 @@ struct libmuscle_communicator2 : libmuscle_communicator {
 };
 
 
+std::tuple<std::vector<char>, ProfileData> mock_mpp_receive(MPPMessage const & msg) {
+    return {msg.encoded(), ProfileData()};
+}
+
+std::tuple<std::vector<char>, ProfileData> mock_mpp_receive(
+        DataConstRef const & data, IterationCount const & iteration ) {
+    // sender and receiver are not correct, but unused in receive_message
+    return mock_mpp_receive({"snd", "rcv", {}, 0.0, {}, Settings(), 0, data, iteration});
+}
+
 /* Tests */
 TEST_F(libmuscle_communicator, create_communicator) {}
 
@@ -171,13 +181,10 @@ TEST_F(libmuscle_communicator2, send_message_disconnected) {
 }
 
 TEST_F(libmuscle_communicator2, receive_message) {
-    MPPMessage msg(
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive({
             "peer.out", "component.in", {}, 2.0, 3.0,
             Settings({{"s0", "0"}, {"s1", true}}), 0, "Testing",
-            IterationCount({0}));
-
-    MockMPPClient::return_value.receive.return_value = std::make_tuple(
-            msg.encoded(), ProfileData());
+            IterationCount({0})});
 
     auto recv_msg = connected_communicator_.receive_message("in");
 
@@ -192,13 +199,10 @@ TEST_F(libmuscle_communicator2, receive_message) {
 }
 
 TEST_F(libmuscle_communicator2, receive_message_vector) {
-    MPPMessage msg(
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive({
             "peer2.out_v", "component.in_v", 5, 4.0, 6.0,
             Settings({{"s0", {0.0}}, {"s1", 1.0}}), 0, "Testing2",
-            IterationCount({0}));
-
-    MockMPPClient::return_value.receive.return_value = std::make_tuple(
-            msg.encoded(), ProfileData());
+            IterationCount({0})});
 
     auto recv_msg = connected_communicator_.receive_message("in_v", 5);
 
@@ -212,30 +216,18 @@ TEST_F(libmuscle_communicator2, receive_message_vector) {
     ASSERT_EQ(recv_msg.settings().at("s1"), 1.0);
 }
 
-TEST_F(libmuscle_communicator2, receive_close_port) {
-    MPPMessage msg(
-            "peer.out", "component.in", {}, std::numeric_limits<double>::infinity(), {},
-            Settings(), 0, Milestone(IterationCount({})), {});
-
-    MockMPPClient::return_value.receive.return_value = std::make_tuple(
-            msg.encoded(), ProfileData());
+TEST_F(libmuscle_communicator2, receive_root_milestone) {
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
+        Milestone(IterationCount({})), {});
 
     ASSERT_THROW(connected_communicator_.receive_message("in"), PortClosed);
 
     ASSERT_FALSE(mock_ports_.at("in")->is_open());
 }
 
-// Testing pre_receive_f_init is too difficult to set up correctly without the ability
-// to mock Communicator::receive_message (like the Python tests can)
-// TODO: review after implementing conduit filters.
-
-TEST_F(libmuscle_communicator2, receive_close_port_vector) {
-    MPPMessage msg(
-            "peer2.out_v", "component.in_v", 5, std::numeric_limits<double>::infinity(),
-            {}, Settings(), 0, Milestone(IterationCount({})), {});
-
-    MockMPPClient::return_value.receive.return_value = std::make_tuple(
-            msg.encoded(), ProfileData());
+TEST_F(libmuscle_communicator2, receive_root_milestone_vector) {
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
+        Milestone(IterationCount({})), {});
 
     ASSERT_THROW(connected_communicator_.receive_message("in_v", 5), PortClosed);
 
@@ -243,13 +235,10 @@ TEST_F(libmuscle_communicator2, receive_close_port_vector) {
 }
 
 TEST_F(libmuscle_communicator2, port_count_validation) {
-    MPPMessage msg(
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive({
             "peer.out", "component.in",
             {}, 0.0, {}, Settings({{"test1", 12}}), 0, "test",
-            IterationCount({0}));
-
-    MockMPPClient::return_value.receive.return_value = std::make_tuple(
-            msg.encoded(), ProfileData());
+            IterationCount({0})});
 
     connected_communicator_.receive_message("in");
 
@@ -262,13 +251,10 @@ TEST_F(libmuscle_communicator2, port_count_validation) {
 }
 
 TEST_F(libmuscle_communicator2, port_discard_error_on_resume) {
-    MPPMessage msg(
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive({
             "other.out[13]", "kernel[13].in",
             {}, 0.0, {}, Settings({{"test1", 12}}), 1, "test",
-            IterationCount({0}));
-
-    MockMPPClient::return_value.receive.return_value = std::make_tuple(
-            msg.encoded(), ProfileData());
+            IterationCount({0})});
 
     connected_port_manager_.get_port("out").restore_message_counts({0});
     connected_port_manager_.get_port("in").restore_message_counts({2});

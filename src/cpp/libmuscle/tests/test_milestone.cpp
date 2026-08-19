@@ -59,9 +59,9 @@ TEST(libmuscle_milestone, test_encode_decode_final_milestone) {
 
     ASSERT_TRUE(is_milestone(d2));
 
-    Milestone const * m2 = reinterpret_cast<Milestone const*>(&d2);
-    ASSERT_EQ(m2->iteration(), IterationCount());
-    ASSERT_TRUE(m2->is_final_milestone());
+    Milestone m2(d2);
+    ASSERT_EQ(m2.iteration(), IterationCount());
+    ASSERT_TRUE(m2.is_final_milestone());
 }
 
 TEST(libmuscle_milestone, test_encode_decode_milestone) {
@@ -75,7 +75,7 @@ TEST(libmuscle_milestone, test_encode_decode_milestone) {
 
     ASSERT_TRUE(is_milestone(d2));
 
-    Milestone const * m2 = reinterpret_cast<Milestone const*>(&d2);
-    ASSERT_EQ(m2->iteration(), IterationCount({1, 2}));
-    ASSERT_FALSE(m2->is_final_milestone());
+    Milestone m2(d2);
+    ASSERT_EQ(m2.iteration(), IterationCount({1, 2}));
+    ASSERT_FALSE(m2.is_final_milestone());
 }

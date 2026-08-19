@@ -111,13 +111,15 @@ def mock_ports():
 def connected_port_manager(port_manager, declared_ports, mock_ports):
 
     def get_port(name):
+        if name == "muscle_settings_in":
+            return port_manager._muscle_settings_in
         return mock_ports[name]
 
     def port_exists(name):
         return name in mock_ports
 
     def get_connected_ports(operator, timeline=None):
-        # Delegate to actual implementation
+        # Ensure this returns connected ports based on 'is_connected' of all mock ports
         return PortManager.get_connected_ports(port_manager, operator, timeline)
 
     port_manager._ports = mock_ports

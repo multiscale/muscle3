@@ -110,16 +110,19 @@ struct libmuscle_communicator2 : libmuscle_communicator {
             Conduit("peer3.out_r", "component.in_r"),
             Conduit("component.out_v", "peer2.in"),
             Conduit("component.out_r", "peer3.in_r"),
-            Conduit("component.out", "peer.in")});
+            Conduit("component.out", "peer.in"),
+            Conduit("qmc.out", "component.muscle_settings_in")});
 
         PeerDims peer_dims({
                 {Reference("peer"), {}},
                 {Reference("peer2"), {13}},
-                {Reference("peer3"), {}}});
+                {Reference("peer3"), {}},
+                {Reference("qmc"), {}}});
 
         PeerLocations peer_locations({
                 {Reference("peer"), {"tcp:peer:9001"}},
                 {Reference("peer3"), {"tcp:peer3:9001"}},
+                {Reference("qmc"), {"tcp:qmc:9001"}},
                 });
         for (int i = 0; i < 13; ++i) {
             auto port_name = std::string("peer2[") + std::to_string(i) + "]";
@@ -232,6 +235,102 @@ TEST_F(libmuscle_communicator2, receive_root_milestone_vector) {
     ASSERT_THROW(connected_communicator_.receive_message("in_v", 5), PortClosed);
 
     ASSERT_FALSE(mock_ports_["in_v"]->is_open(5));
+}
+
+TEST_F(libmuscle_communicator2, pre_receive_f_init) {
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
+        Data("test"), {});
+
+    auto cache = connected_communicator_.pre_receive_f_init();
+    ASSERT_EQ(cache.size(), 1);
+    ASSERT_EQ(cache.at("in").data(), Data("test"));
+}
+
+TEST_F(libmuscle_communicator2, pre_receive_f_init_with_settings) {
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
+        Settings({{"a", true}}), {});
+    connected_port_manager_.settings_in_connected.return_value = true;
+
+    auto cache = connected_communicator_.pre_receive_f_init();
+    ASSERT_EQ(cache.size(), 2);
+    ASSERT_EQ(cache.at("in").data(), Settings({{"a", true}}));
+    ASSERT_EQ(cache.at("muscle_settings_in").data(), Settings({{"a", true}}));
+}
+
+TEST_F(libmuscle_communicator2, pre_receive_close_port) {
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
+        Milestone({IterationCount({})}), {});
+
+    ASSERT_THROW(connected_communicator_.pre_receive_f_init(), PortClosed);
+}
+
+TEST_F(libmuscle_communicator2, pre_receive_vector) {
+    MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
+        Data("test"), {});
+
+    mock_ports_["in"] = std::make_unique<Port>("in", Operator::F_INIT, Timeline(""), true, true, 0, std::vector<int>());
+    mock_ports_["in"]->set_length(4);
+
+    auto cache = connected_communicator_.pre_receive_f_init();
+    ASSERT_EQ(cache.size(), 4);
+    for (int slot = 0; slot < 4; ++slot) {
+        ASSERT_EQ(cache.count(Reference("in") + slot), 1);
+    }
+}
+
+TEST_F(libmuscle_communicator2, pre_receive_broadcast_milestone) {
+    std::vector<std::tuple<std::vector<char>, ProfileData>> return_values =  {
+        mock_mpp_receive(Milestone(IterationCount({1})), {1}),
+        mock_mpp_receive(Data("test data"), {2, 0}),
+    };
+    auto next_message = return_values.begin();
+    MockMPPClient::return_value.receive.side_effect = [&](Reference const &, TimeoutHandler *){
+        return *next_message++;
+    };
+
+    auto cache = connected_communicator_.pre_receive_f_init();
+    ASSERT_EQ(cache.size(), 1);
+    ASSERT_EQ(cache.at("in").data(), Data("test data"));
+    // Expect a milestone broadcasted to all O_I and O_F ports
+    auto num_oi = mock_ports_["out_v"]->get_length() + mock_ports_["out_r"]->get_length();
+    auto num_of = 1;  // out is a scalar port
+    auto deposit = connected_communicator_.server_.deposit;
+    ASSERT_EQ(deposit.call_args_list.size(), num_of + num_oi);
+    for (auto const & args: deposit.call_args_list) {
+        std::shared_ptr<MPPMessage> msg = std::get<1>(args);
+        ASSERT_TRUE(is_milestone(msg->data));
+        ASSERT_EQ(Milestone(msg->data).iteration(), IterationCount({1}));
+    }
+}
+
+TEST_F(libmuscle_communicator2, pre_receive_different_milestones) {
+    connected_port_manager_.settings_in_connected.return_value = true;
+    // One of these is received on "in", the other on "muscle_settings_in"
+    std::vector<std::tuple<std::vector<char>, ProfileData>> return_values =  {
+        mock_mpp_receive(Milestone(IterationCount({1})), {1}),
+        mock_mpp_receive(Data("test data"), {2, 0}),
+    };
+    auto next_message = return_values.begin();
+    MockMPPClient::return_value.receive.side_effect = [&](Reference const &, TimeoutHandler *){
+        return *next_message++;
+    };
+
+    ASSERT_THROW(connected_communicator_.pre_receive_f_init(), std::runtime_error);
+}
+
+TEST_F(libmuscle_communicator2, pre_receive_some_port_close) {
+    connected_port_manager_.settings_in_connected.return_value = true;
+    // One of these is received on "in", the other on "muscle_settings_in"
+    std::vector<std::tuple<std::vector<char>, ProfileData>> return_values =  {
+        mock_mpp_receive(Milestone(IterationCount({1})), {1}),
+        mock_mpp_receive(Milestone(IterationCount({})), {}),
+    };
+    auto next_message = return_values.begin();
+    MockMPPClient::return_value.receive.side_effect = [&](Reference const &, TimeoutHandler *){
+        return *next_message++;
+    };
+
+    ASSERT_THROW(connected_communicator_.pre_receive_f_init(), std::runtime_error);
 }
 
 TEST_F(libmuscle_communicator2, port_count_validation) {

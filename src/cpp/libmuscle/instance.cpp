@@ -675,7 +675,7 @@ Message Instance::Impl::receive_message(
         }
         else {
             try {
-                result = communicator_->receive_message(port_name, slot);
+                result = communicator_->receive_s_message(port_name, slot);
             } catch (PortClosed &err) {
                 std::ostringstream oss;
                 oss << "Port \"" << port_ref << "\" is closed, but we're trying";

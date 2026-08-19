@@ -106,7 +106,7 @@ class Communicator {
          */
         FInitCacheType pre_receive_f_init();
 
-        /** Receive a message and attached settings overlay.
+        /** Receive a message and attached settings overlay on an "S" port.
          *
          * Receiving is a blocking operation. This function will contact the
          * sender, wait for a message to be available, and receive and return
@@ -115,7 +115,7 @@ class Communicator {
          * This is non-const, because receiving a message may cause an update
          * to the dimensions of the port.
          *
-         * @param port_name The endpoint on which a message is to be received.
+         * @param port_name The port on which a message is to be received.
          * @param slot The slot to receive the message on, if any.
          *
          * @return The received message, with message.settings holding the
@@ -124,7 +124,7 @@ class Communicator {
          * @throws std::runtime_error if no default was given and the port is
          *      not connected.
          */
-        Message receive_message(
+        Message receive_s_message(
                 std::string const & port_name,
                 Optional<int> slot = {}
                 );

@@ -189,7 +189,7 @@ TEST_F(libmuscle_communicator2, receive_message) {
             Settings({{"s0", "0"}, {"s1", true}}), 0, "Testing",
             IterationCount({0})});
 
-    auto recv_msg = connected_communicator_.receive_message("in");
+    auto recv_msg = connected_communicator_.receive_s_message("in");
 
     auto & mpp_client = connected_communicator_.clients_.at("peer");
     ASSERT_TRUE(mpp_client->receive.called_with("component.in", nullptr));
@@ -207,7 +207,7 @@ TEST_F(libmuscle_communicator2, receive_message_vector) {
             Settings({{"s0", {0.0}}, {"s1", 1.0}}), 0, "Testing2",
             IterationCount({0})});
 
-    auto recv_msg = connected_communicator_.receive_message("in_v", 5);
+    auto recv_msg = connected_communicator_.receive_s_message("in_v", 5);
 
     auto mpp_client = connected_communicator_.clients_.at("peer2[5]").get();
     ASSERT_TRUE(mpp_client->receive.called_with("component.in_v[5]", nullptr));
@@ -223,7 +223,7 @@ TEST_F(libmuscle_communicator2, receive_root_milestone) {
     MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
         Milestone(IterationCount({})), {});
 
-    ASSERT_THROW(connected_communicator_.receive_message("in"), PortClosed);
+    ASSERT_THROW(connected_communicator_.receive_s_message("in"), PortClosed);
 
     ASSERT_FALSE(mock_ports_.at("in")->is_open());
 }
@@ -232,7 +232,7 @@ TEST_F(libmuscle_communicator2, receive_root_milestone_vector) {
     MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
         Milestone(IterationCount({})), {});
 
-    ASSERT_THROW(connected_communicator_.receive_message("in_v", 5), PortClosed);
+    ASSERT_THROW(connected_communicator_.receive_s_message("in_v", 5), PortClosed);
 
     ASSERT_FALSE(mock_ports_["in_v"]->is_open(5));
 }
@@ -339,14 +339,14 @@ TEST_F(libmuscle_communicator2, port_count_validation) {
             {}, 0.0, {}, Settings({{"test1", 12}}), 0, "test",
             IterationCount({0})});
 
-    connected_communicator_.receive_message("in");
+    connected_communicator_.receive_s_message("in");
 
     ASSERT_EQ(
             connected_port_manager_.get_port("in").get_message_counts(),
             std::vector<int>({1}));
 
     // the message received has message_number = 0 again
-    ASSERT_THROW(connected_communicator_.receive_message("in"), std::runtime_error);
+    ASSERT_THROW(connected_communicator_.receive_s_message("in"), std::runtime_error);
 }
 
 TEST_F(libmuscle_communicator2, port_discard_error_on_resume) {
@@ -368,7 +368,7 @@ TEST_F(libmuscle_communicator2, port_discard_error_on_resume) {
     // In the next block, the first message with message_number=1 is discarded.
     // The RuntimeError is raised when 'receiving' the second message with
     // message_number=1
-    ASSERT_THROW(connected_communicator_.receive_message("in"), std::runtime_error);
+    ASSERT_THROW(connected_communicator_.receive_s_message("in"), std::runtime_error);
     bool message_logged = false;
     for (auto const & log_args : MockLogger::instance().caplog.call_args_list) {
         auto const & msg = std::get<1>(log_args);
@@ -409,7 +409,7 @@ TEST_F(libmuscle_communicator2, port_discard_success_on_resume) {
         ASSERT_TRUE(connected_port_manager_.get_port(port).is_resuming());
     }
 
-    auto recv_msg = connected_communicator_.receive_message("in");
+    auto recv_msg = connected_communicator_.receive_s_message("in");
 
     bool message_logged = false;
     for (auto const & log_args : MockLogger::instance().caplog.call_args_list) {

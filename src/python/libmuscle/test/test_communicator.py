@@ -158,7 +158,7 @@ def test_send_message_disconnected(connected_communicator, mpp_server):
     mpp_server.deposit.assert_not_called()
 
 
-def test_receive_message(connected_communicator, mpp_client):
+def test_receive_s_message(connected_communicator, mpp_client):
     mpp_client.receive.return_value = mock_mpp_receive(
         Ref("peer.out"),
         Ref("component.in"),
@@ -172,7 +172,7 @@ def test_receive_message(connected_communicator, mpp_client):
     )
 
     connected_communicator.set_receive_timeout(-1)
-    recv_msg = connected_communicator.receive_message("in")
+    recv_msg = connected_communicator.receive_s_message("in")
 
     mpp_client.receive.assert_called_with(Ref("component.in"), None)
 
@@ -198,7 +198,7 @@ def test_receive_message_vector(connected_communicator, mpp_client):
     )
 
     connected_communicator.set_receive_timeout(-1)
-    recv_msg = connected_communicator.receive_message("in_v", 5)
+    recv_msg = connected_communicator.receive_s_message("in_v", 5)
 
     mpp_client.receive.assert_called_with(Ref("component.in_v[5]"), None)
 
@@ -214,7 +214,7 @@ def test_receive_root_milestone(connected_communicator, mpp_client, port_manager
     mpp_client.receive.return_value = mock_mpp_receive(data=Milestone([]))
 
     with pytest.raises(PortClosed):
-        connected_communicator.receive_message("in")
+        connected_communicator.receive_s_message("in")
 
     assert port_manager.get_port("in").is_open() is False
 
@@ -225,7 +225,7 @@ def test_receive_root_milestone_vector(
     mpp_client.receive.return_value = mock_mpp_receive(data=Milestone([]))
 
     with pytest.raises(PortClosed):
-        connected_communicator.receive_message("in_v", 5)
+        connected_communicator.receive_s_message("in_v", 5)
 
     assert port_manager.get_port("in_v").is_open(5) is False
 
@@ -330,12 +330,12 @@ def test_port_count_validation(
         [0],
     )
 
-    connected_communicator.receive_message("in")
+    connected_communicator.receive_s_message("in")
     assert connected_port_manager.get_port("in").get_message_counts() == [1]
 
     with pytest.raises(RuntimeError):
         # the message received has message_number = 0 again
-        connected_communicator.receive_message("in")
+        connected_communicator.receive_s_message("in")
 
 
 def test_port_discard_error_on_resume(
@@ -365,7 +365,7 @@ def test_port_discard_error_on_resume(
     # message_number=1
     with caplog.at_level(logging.DEBUG, "libmuscle.communicator"):
         with pytest.raises(RuntimeError):
-            connected_communicator.receive_message("in")
+            connected_communicator.receive_s_message("in")
 
         assert any(
             ["Discarding received message" in rec.message for rec in caplog.records]
@@ -399,7 +399,7 @@ def test_port_discard_success_on_resume(
         assert connected_port_manager.get_port(port).is_resuming(None)
 
     with caplog.at_level(logging.DEBUG, "libmuscle.communicator"):
-        msg = connected_communicator.receive_message("in")
+        msg = connected_communicator.receive_s_message("in")
         assert any(
             ["Discarding received message" in rec.message for rec in caplog.records]
         )

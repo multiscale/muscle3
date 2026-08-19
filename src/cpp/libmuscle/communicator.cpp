@@ -208,13 +208,12 @@ Communicator::FInitCacheType Communicator::pre_receive_f_init() {
     return cache;
 }
 
-Message Communicator::receive_message(
+Message Communicator::receive_s_message(
         std::string const & port_name,
         Optional<int> slot)
 {
-    // This method is only called by Instance to receive S messages. Instance should
-    // not need to bother about milestones, so we keep receiving messages until we
-    // have actual data.
+    // Instance should not need to bother about milestones, so we keep receiving
+    // messages until we have actual data.
     while (true) {
         auto message = receive_message_(port_name, slot);
         if (is_milestone(message.data())) {

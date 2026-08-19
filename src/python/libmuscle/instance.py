@@ -1014,7 +1014,7 @@ class Instance:
 
             else:
                 try:
-                    msg = self._communicator.receive_message(port_name, slot)
+                    msg = self._communicator.receive_s_message(port_name, slot)
                 except PortClosed:
                     err_msg = (
                         f"Port {port_name} was closed while trying to"

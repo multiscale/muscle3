@@ -302,16 +302,15 @@ class Communicator:
 
         return cache
 
-    def receive_message(self, port_name: str, slot: Optional[int] = None) -> Message:
-        """Receive a message and attached settings overlay.
+    def receive_s_message(self, port_name: str, slot: Optional[int] = None) -> Message:
+        """Receive a message and attached settings overlay on an "S" port.
 
         Receiving is a blocking operation. This function will contact
         the sender, wait for a message to be available, and receive and
         return it.
 
         Args:
-            port_name: The endpoint on which a message is to be
-                    received.
+            port_name: The port on which a message is to be received.
             slot: The slot to receive the message on, if any.
 
         Returns:
@@ -323,9 +322,8 @@ class Communicator:
             RuntimeError: If the network connection had an error, or the
                     message number was incorrect.
         """
-        # This method is only called by Instance to receive S messages. Instance should
-        # not need to bother about milestones, so we keep receiving messages until we
-        # have actual data.
+        # Instance should not need to bother about milestones, so we keep receiving
+        # messages until we have actual data:
         while True:
             message = self._receive_message(port_name, slot)
             if isinstance(message.data, Milestone):

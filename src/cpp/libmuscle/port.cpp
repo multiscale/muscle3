@@ -118,12 +118,11 @@ void Port::set_length(int length) {
     }
 }
 
-void Port::set_closed() {
-    is_open_[0] = false;
-}
-
-void Port::set_closed(int slot) {
-    is_open_[slot] = false;
+void Port::set_closed(Optional<int> slot) {
+    if (!slot.is_set())
+        is_open_[0] = false;
+    else
+        is_open_[slot.get()] = false;
 }
 
 void Port::restore_message_counts(const std::vector<int> &num_messages) {

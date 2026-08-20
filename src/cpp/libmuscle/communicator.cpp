@@ -1,6 +1,5 @@
 #include <libmuscle/communicator.hpp>
 
-#include <libmuscle/close_port.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mcp/ext_types.hpp>
@@ -11,13 +10,14 @@
 
 #include <ymmsl/ymmsl.hpp>
 
+#include <algorithm>
 #include <cassert>
 #include <limits>
 #include <memory>
 #include <sstream>
 
 
-using libmuscle::_MUSCLE_IMPL_NS::ClosePort;
+using libmuscle::_MUSCLE_IMPL_NS::Milestone;
 using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::ExtTypeId;
 using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
@@ -60,7 +60,8 @@ void Communicator::set_peer_info(PeerInfo const & peer_info) {
 
 void Communicator::finish_reuse_iteration() {
     assert(timeline_manager_);
-    timeline_manager_->finish_reuse_iteration();
+    IterationCount finished_iteration = timeline_manager_->finish_reuse_iteration();
+    broadcast_milestone_(Milestone(finished_iteration), true);
 }
 
 TimelineState Communicator::get_state() const {
@@ -83,10 +84,18 @@ void Communicator::send_message(
         log_debug("Sending message on unconnected port ", port_desc(port_name, slot));
         return;
     }
+    if (!port.is_open(slot)) {
+        if (is_milestone(message.data()) && Milestone(message.data()).is_final_milestone())
+            return;  // Ignore closing an already closed port 
+        throw std::runtime_error(
+                "Port " + port_desc(port_name, slot) + " is already closed.");
+    }
     log_debug("Sending message on ", port_desc(port_name, slot));
 
-    Optional<IterationCount> iteration;
-    if (!is_close_port(message.data()))
+    IterationCount iteration;
+    if (is_milestone(message.data()))
+        iteration = Milestone(message.data()).iteration();
+    else
         iteration = timeline_manager_->check_send_message(port_name, slot);
 
     ProfileEvent profile_event(
@@ -115,13 +124,14 @@ void Communicator::send_message(
         server_.deposit(recv_endpoint.ref(), std::move(message_bytes));
     }
 
-    port.increment_num_messages(slot);
-
     profile_event.stop();
     if (port.is_vector())
         profile_event.port_length = port.get_length();
-    if (!is_close_port(message.data()))
+    if (!is_milestone(message.data())) {
         profiler_.record_event(std::move(profile_event));
+        port.increment_num_messages(slot);
+    } else if (Milestone(message.data()).is_final_milestone())
+        port.set_closed(slot);
 }
 
 Communicator::FInitCacheType Communicator::pre_receive_f_init() {
@@ -132,9 +142,7 @@ Communicator::FInitCacheType Communicator::pre_receive_f_init() {
         if (slot.is_set())
             port_ref += slot.get();
         
-        auto msg = receive_message(port_name, slot);
-        if (is_close_port(msg.data()))
-            throw PortClosed();
+        auto msg = receive_message_(port_name, slot);
         cache.emplace(port_ref, msg);
     };
 
@@ -151,13 +159,77 @@ Communicator::FInitCacheType Communicator::pre_receive_f_init() {
         }
     }
 
+    // Check if we have received milestones
+    std::vector<Optional<IterationCount>> milestone_iterations;
+    std::vector<std::string> closed_ports;
+    for (auto & item : cache) {
+        Optional<IterationCount> it;
+        if (is_milestone(item.second.data())) {
+            Milestone milestone(item.second.data());
+            it = milestone.iteration();
+            if (milestone.is_final_milestone()) {
+                closed_ports.emplace_back(item.first);
+            }
+        }
+        auto found = std::find(milestone_iterations.begin(), milestone_iterations.end(), it);
+        if (found == milestone_iterations.end())  // Not found
+            milestone_iterations.push_back(it);
+    }
+    // Milestones should be consistent, or something went wrong
+    if (milestone_iterations.size() > 1) {
+        if (closed_ports.size() > 0) {
+            std::ostringstream oss;
+            oss << "Some ports were unexpectedly closed while trying to receive, did ";
+            oss << "the peers crash? Closed ports: ";
+            bool first = true;
+            for (auto & port : closed_ports) {
+                if (!first) oss << ", ";
+                first = false;
+                oss << port;
+            }
+            throw std::runtime_error(oss.str());
+        }
+        throw std::runtime_error(
+            "Internal error: received milestones for different iterations in F_INIT. "
+            "This is not supposed to happen and may be a bug in libmuscle. Please "
+            "report an issue."
+        );
+    }
+    if (milestone_iterations.at(0).is_set()) {
+        // Propagate milestone
+        Milestone milestone(milestone_iterations.at(0).get());
+        broadcast_milestone_(milestone, false);
+        if (milestone_iterations.at(0).get().empty())  // Final milestone received
+            throw PortClosed();
+        // Pre-receive again to receive the actual messages
+        return pre_receive_f_init();
+    }
+
     return cache;
 }
 
-Message Communicator::receive_message(
+Message Communicator::receive_s_message(
         std::string const & port_name,
-        Optional<int> slot,
-        Optional<Message> const & default_msg)
+        Optional<int> slot)
+{
+    // Instance should not need to bother about milestones, so we keep receiving
+    // messages until we have actual data.
+    while (true) {
+        auto message = receive_message_(port_name, slot);
+        if (is_milestone(message.data())) {
+            if (Milestone(message.data()).is_final_milestone())
+                throw PortClosed();
+            // TODO: handle milestone, if needed
+        } else {
+            return message;
+        }
+    }
+}
+
+
+Message Communicator::receive_message_(
+        std::string const & port_name,
+        Optional<int> slot)
 {
     timeline_manager_->check_receive(port_name, slot);
 
@@ -195,11 +267,9 @@ Message Communicator::receive_message(
         if (port.is_resizable())
             port.set_length(mpp_message.port_length.get());
 
-    if (is_close_port(mpp_message.data)) {
-        if (slot.is_set())
-            port.set_closed(slot.get());
-        else
-            port.set_closed();
+    if (is_milestone(mpp_message.data)) {
+        if (Milestone(mpp_message.data).is_final_milestone())
+            port.set_closed(slot);
     }
 
     Message message(
@@ -232,7 +302,8 @@ Message Communicator::receive_message(
 
     receive_event.message_size = std::get<0>(msg_and_profile).size();
 
-    if (!is_close_port(message.data())) {
+    if (!is_milestone(mpp_message.data) || !Milestone(mpp_message.data).is_final_milestone()) {
+        // Don't log receives of final milestone: this is recorded as SHUTDOWN_WAIT
         profiler_.record_event(std::move(recv_wait_event));
         profiler_.record_event(std::move(recv_xfer_event));
         profiler_.record_event(std::move(recv_decode_event));
@@ -245,8 +316,9 @@ Message Communicator::receive_message(
                 port.is_resuming(slot)) {
             log_debug("Discarding received message on ", port_and_slot,
                           ": resuming from weakly consistent snapshot");
-            port.set_resumed(slot);
-            return receive_message(port_name, slot, default_msg);
+            if (!is_milestone(mpp_message.data))
+                port.set_resumed(slot);
+            return receive_message_(port_name, slot);
         }
         std::ostringstream oss;
         oss << "Received message on " << port_and_slot;
@@ -255,15 +327,18 @@ Message Communicator::receive_message(
         oss << ". Are you resuming from an inconsistent snapshot?";
         throw std::runtime_error(oss.str());
     }
-    port.increment_num_messages(slot);
 
-    log_debug("Received message on ", port_and_slot);
-
-    if (is_close_port(message.data())) {
-        log_debug("Port ", port_and_slot, " is now closed");
-    } else {
+    if (!is_milestone(mpp_message.data)) {
+        port.increment_num_messages(slot);
+        log_debug("Received message on ", port_and_slot);
         timeline_manager_->record_received_message(
                 port_name, slot, mpp_message.iteration.get());
+    } else {
+        Milestone milestone(mpp_message.data);
+        if (milestone.is_final_milestone())
+            log_debug("Port ", port_and_slot, " is now closed");
+        else
+            log_debug("Received ", std::string(milestone), " on ", port_and_slot);
     }
     return message;
 }
@@ -331,35 +406,34 @@ std::tuple<std::vector<char>, mcp::ProfileData> Communicator::try_receive_(
     }
 }
 
-void Communicator::close_port_(
-        std::string const & port_name, Optional<int> slot) {
-    Message message(
-            std::numeric_limits<double>::infinity(),
-            ClosePort(), Settings());
-    log_debug("Closing port ", port_desc(port_name, slot));
-    send_message(port_name, message, slot);
+void Communicator::broadcast_milestone_(Milestone const & milestone, bool only_o_i) {
+    log_debug("Sending ", std::string(milestone), " to all ", (only_o_i ? "O_I" : "outgoing"), " ports");
+    Message message(-std::numeric_limits<double>::infinity(), milestone, Settings());
+
+    auto do_broadcast = [&](Operator op) {
+        for (Port const & port : port_manager_.get_connected_ports(op, {})) {
+            if (port.is_vector()) {
+                for (int slot = 0; slot < port.get_length(); ++slot)
+                    send_message(port.name, message, slot);
+            } else {
+                send_message(port.name, message);
+            }
+        }
+    };
+
+    do_broadcast(Operator::O_I);
+    if (!only_o_i)
+        do_broadcast(Operator::O_F);
 }
 
 void Communicator::close_outgoing_ports_() {
-    for (auto const & oper_ports : port_manager_.list_ports()) {
-        if (allows_sending(oper_ports.first)) {
-            for (auto const & port_name : oper_ports.second) {
-                auto const & port = port_manager_.get_port(port_name);
-                if (port.is_vector()) {
-                    for (int slot = 0; slot < port.get_length(); ++slot)
-                        close_port_(port_name, slot);
-                }
-                else
-                    close_port_(port_name);
-            }
-        }
-    }
+    broadcast_milestone_(Milestone(IterationCount({})), false);
 }
 
 void Communicator::drain_incoming_port_(std::string const & port_name) {
     auto const & port = port_manager_.get_port(port_name);
     while (port.is_open())
-        receive_message(port_name);
+        receive_message_(port_name);
 }
 
 void Communicator::drain_incoming_vector_port_(std::string const & port_name) {
@@ -374,7 +448,7 @@ void Communicator::drain_incoming_vector_port_(std::string const & port_name) {
         all_closed = true;
         for (int slot = 0; slot < port.get_length(); ++slot) {
             if (port.is_open(slot))
-                receive_message(port_name, slot);
+                receive_message_(port_name, slot);
             if (port.is_open(slot))
                 all_closed = false;
         }

@@ -7,7 +7,7 @@ from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.tcp_util import SocketClosed
 from libmuscle.mmp_client import MMPClient
 from libmuscle.mpp_client import MPPClient
-from libmuscle.mpp_message import ClosePort, MPPMessage
+from libmuscle.mpp_message import Milestone, MPPMessage
 from libmuscle.mpp_server import MPPServer
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port import Port
@@ -15,7 +15,7 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
-from libmuscle.timeline_manager import TimelineManager, TimelineState
+from libmuscle.timeline_manager import IterationCount, TimelineManager, TimelineState
 from libmuscle.util import port_desc
 
 _logger = logging.getLogger(__name__)
@@ -166,8 +166,9 @@ class Communicator:
         self._timeline_manager.restore_state(state)
 
     def finish_reuse_iteration(self) -> None:
-        """Prepare the timeline manager for the next reuse loop."""
-        self._timeline_manager.finish_reuse_iteration()
+        """Finish the reuse iteration and send milestones."""
+        finished_iteration = self._timeline_manager.finish_reuse_iteration()
+        self._broadcast_milestone(Milestone(finished_iteration), True)
 
     def send_message(
         self,
@@ -191,12 +192,17 @@ class Communicator:
                 "Sending message on unconnected port %s", port_desc(port_name, slot)
             )
             return
+        if not port.is_open(slot):
+            if (
+                isinstance(message.data, Milestone)
+                and message.data.is_final_milestone()
+            ):
+                return  # Ignore closing an already closed port
+            raise RuntimeError(f"Port {port_desc(port_name, slot)} is already closed.")
         _logger.debug("Sending message on %s", port_desc(port_name, slot))
 
-        # TODO: ClosePort will be replaced with milestones, and then we do need an
-        # iteration count.
-        if isinstance(message.data, ClosePort):
-            iteration = None
+        if isinstance(message.data, Milestone):
+            iteration = message.data.iteration
         else:
             iteration = self._timeline_manager.check_send_message(port_name, slot)
 
@@ -233,13 +239,14 @@ class Communicator:
             profile_event.message_size = len(memoryview(encoded_message))
             self._server.deposit(recv_endpoint.ref(), encoded_message)
 
-        port.increment_num_messages(slot)
-
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
-        if not isinstance(message.data, ClosePort):
+        if not isinstance(message.data, Milestone):
             self._profiler.record_event(profile_event)
+            port.increment_num_messages(slot)
+        elif message.data.is_final_milestone():
+            port.set_closed(slot)
 
     def pre_receive_f_init(self) -> FInitCacheType:
         """Receive on all connected F_INIT port (including muscle_settings_in).
@@ -250,10 +257,7 @@ class Communicator:
         cache: FInitCacheType = {}
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg = self.receive_message(port_name, slot)
-            if isinstance(msg.data, ClosePort):
-                raise PortClosed()
-            cache[(port_name, slot)] = msg
+            cache[(port_name, slot)] = self._receive_message(port_name, slot)
 
         for port in self._port_manager.get_connected_ports(Operator.F_INIT):
             port_name = str(port.name)
@@ -266,22 +270,47 @@ class Communicator:
                 for slot in range(1, port.get_length()):
                     pre_receive(port_name, slot)
 
+        # Check if we have received milestones
+        milestone_iterations: list[Optional[IterationCount]] = []
+        closed_ports: set[str] = set()
+        for (port_name, _), message in cache.items():
+            it = message.data.iteration if isinstance(message.data, Milestone) else None
+            if it not in milestone_iterations:
+                milestone_iterations.append(it)
+            if it == []:
+                closed_ports.add(port_name)
+        # Milestones should be consistent, or something went wrong
+        if len(milestone_iterations) > 1:
+            if closed_ports:
+                raise RuntimeError(
+                    "Some ports were unexpectedly closed while trying to receive, did "
+                    "the peers crash? Closed ports: " + ", ".join(sorted(closed_ports))
+                )
+            raise RuntimeError(
+                "Internal error: received milestones for different iterations in "
+                f"F_INIT: {milestone_iterations}. This is not supposed to happen and "
+                "may be a bug in libmuscle. Please report an issue."
+            )
+        if milestone_iterations[0] is not None:
+            # Propagate milestone
+            milestone = Milestone(milestone_iterations[0])
+            self._broadcast_milestone(milestone, False)
+            if milestone.is_final_milestone():
+                raise PortClosed()
+            # Pre-receive again to receive the actual messages
+            return self.pre_receive_f_init()
+
         return cache
 
-    def receive_message(self, port_name: str, slot: Optional[int] = None) -> Message:
-        """Receive a message and attached settings overlay.
+    def receive_s_message(self, port_name: str, slot: Optional[int] = None) -> Message:
+        """Receive a message and attached settings overlay on an "S" port.
 
         Receiving is a blocking operation. This function will contact
         the sender, wait for a message to be available, and receive and
         return it.
 
-        If the port is not connected, then the default value will be
-        returned if one was given, exactly as it was given. If no
-        default was given then a RuntimeError will be raised.
-
         Args:
-            port_name: The endpoint on which a message is to be
-                    received.
+            port_name: The port on which a message is to be received.
             slot: The slot to receive the message on, if any.
 
         Returns:
@@ -293,6 +322,19 @@ class Communicator:
             RuntimeError: If the network connection had an error, or the
                     message number was incorrect.
         """
+        # Instance should not need to bother about milestones, so we keep receiving
+        # messages until we have actual data:
+        while True:
+            message = self._receive_message(port_name, slot)
+            if isinstance(message.data, Milestone):
+                if message.data.is_final_milestone():
+                    raise PortClosed()
+                # TODO: handle milestone, if needed
+            else:
+                return message
+
+    def _receive_message(self, port_name: str, slot: Optional[int]) -> Message:
+        """Implementation for receive_message."""
         self._timeline_manager.check_receive(port_name, slot)
 
         port = self._port_manager.get_port(port_name)
@@ -356,8 +398,11 @@ class Communicator:
             if port.is_resizable():
                 port.set_length(mpp_message.port_length)
 
-        if isinstance(mpp_message.data, ClosePort):
-            port.set_closed(slot)
+        milestone: Optional[Milestone] = None
+        if isinstance(mpp_message.data, Milestone):
+            milestone = mpp_message.data
+            if milestone.is_final_milestone():
+                port.set_closed(slot)
 
         message = Message(
             mpp_message.timestamp,
@@ -401,7 +446,8 @@ class Communicator:
 
         receive_event.message_size = len(memoryview(mpp_message_bytes))
 
-        if not isinstance(mpp_message.data, ClosePort):
+        if milestone is None or not milestone.is_final_milestone():
+            # Don't log receives of final milestone: this is recorded as SHUTDOWN_WAIT
             self._profiler.record_event(recv_wait_event)
             self._profiler.record_event(recv_xfer_event)
             self._profiler.record_event(recv_decode_event)
@@ -417,8 +463,9 @@ class Communicator:
                     f"Discarding received message on {port_and_slot}"
                     ": resuming from weakly consistent snapshot"
                 )
-                port.set_resumed(slot)
-                return self.receive_message(port_name, slot)
+                if milestone is None:
+                    port.set_resumed(slot)
+                return self._receive_message(port_name, slot)
             raise RuntimeError(
                 f"Received message on {port_and_slot} with"
                 " unexpected message number"
@@ -426,16 +473,17 @@ class Communicator:
                 f" {expected_message_number}. Are you resuming"
                 " from an inconsistent snapshot?"
             )
-        port.increment_num_messages(slot)
 
-        _logger.debug(f"Received message on {port_and_slot}")
-        if isinstance(mpp_message.data, ClosePort):
-            _logger.debug(f"Port {port_and_slot} is now closed")
-        else:
-            assert mpp_message.iteration is not None
+        if milestone is None:
+            port.increment_num_messages(slot)
+            _logger.debug(f"Received message on {port_and_slot}")
             self._timeline_manager.record_received_message(
                 port_name, slot, mpp_message.iteration
             )
+        elif milestone.is_final_milestone():
+            _logger.debug(f"Port {port_and_slot} is now closed")
+        else:
+            _logger.debug("Received %s on %s", milestone, port_and_slot)
 
         return message
 
@@ -479,69 +527,58 @@ class Communicator:
             self._peer_info.get_peer_endpoints(port.name, slot),
         )
 
-    def _close_port(self, port_name: str, slot: Optional[int] = None) -> None:
-        """Closes the given port.
-
-        This signals to any connected instance that no more messages
-        will be sent on this port, which it can use to decide whether
-        to shut down or continue running.
+    def _broadcast_milestone(self, milestone: Milestone, only_o_i: bool) -> None:
+        """Send a Milestone to all O_I (and optionally O_F) ports/slots.
 
         Args:
-            port_name: The name of the port to close.
+            milestone: The Milestone to send.
+            only_o_i: Set to True to only send to connected O_I ports.
         """
-        message = Message(float("inf"), None, ClosePort(), Settings())
-        _logger.debug(f"Closing port {port_desc(port_name, slot)}")
-        self.send_message(port_name, message, slot)
+        _logger.debug(
+            "Sending %s to all %s ports.", milestone, "O_I" if only_o_i else "outgoing"
+        )
+        message = Message(float("-inf"), data=milestone, settings=Settings())
+
+        def do_broadcast(op: Operator) -> None:
+            for port in self._port_manager.get_connected_ports(op):
+                port_name = str(port.name)
+                if port.is_vector():
+                    for slot in range(port.get_length()):
+                        self.send_message(port_name, message, slot)
+                else:
+                    self.send_message(port_name, message)
+
+        do_broadcast(Operator.O_I)
+        if not only_o_i:
+            do_broadcast(Operator.O_F)
 
     def _close_outgoing_ports(self) -> None:
         """Closes outgoing ports.
 
-        This sends a close port message on all slots of all outgoing
-        ports.
+        This broadcasts the root Milestone message on all slots of all outgoing ports.
         """
-        for operator, ports in self._port_manager.list_ports().items():
-            if operator.allows_sending():
-                for port_name in ports:
-                    port = self._port_manager.get_port(port_name)
-                    if port.is_vector():
-                        for slot in range(port.get_length()):
-                            self._close_port(port_name, slot)
-                    else:
-                        self._close_port(port_name)
+        self._broadcast_milestone(Milestone([]), False)
 
     def _drain_incoming_port(self, port_name: str) -> None:
-        """Receives messages until a ClosePort is received.
-
-        Receives at least once.
-
-        Args:
-            port_name: Port to drain.
-        """
+        """Receives messages until the scalar port is closed."""
         port = self._port_manager.get_port(port_name)
         while port.is_open():
-            # TODO: log warning if not a ClosePort
-            self.receive_message(port_name)
+            # TODO: log warning if not a Milestone
+            self._receive_message(port_name, None)
 
     def _drain_incoming_vector_port(self, port_name: str) -> None:
-        """Receives messages until a ClosePort is received.
-
-        Works with (resizable) vector ports.
-
-        Args:
-            port_name: Port to drain.
-        """
+        """Receives messages until the vector port is closed."""
         port = self._port_manager.get_port(port_name)
         while not all([not port.is_open(slot) for slot in range(port.get_length())]):
             for slot in range(port.get_length()):
                 if port.is_open(slot):
-                    self.receive_message(port_name, slot)
+                    self._receive_message(port_name, slot)
 
     def _close_incoming_ports(self) -> None:
         """Closes incoming ports.
 
-        This receives on all incoming ports until a ClosePort is
-        received on them, signaling that there will be no more
-        messages, and allowing the sending instance to shut down
+        This receives on all incoming ports until the port is closed. This signals that
+        there will be no more messages, and allows the sending instance to shut down
         cleanly.
         """
         for operator, port_names in self._port_manager.list_ports().items():

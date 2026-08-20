@@ -45,7 +45,7 @@ class DataConstRef;
 
 class Data;
 
-bool is_close_port(DataConstRef const &);
+bool is_milestone(DataConstRef const & data);
 
 namespace mcp {
     // forward-declare this so it can be a friend
@@ -542,7 +542,7 @@ class DataConstRef {
         Zones_ mp_zones_;
         msgpack::object * mp_obj_;
 
-        // cache for extracted complex object, e.g. Settings, Grid
+        // cache for extracted complex object, e.g. Settings, Grid, Milestone
         mutable std::shared_ptr<DataConstRef> obj_cache_;
 
         // create DCR pointing to the given object and sharing the given zone
@@ -640,7 +640,7 @@ class DataConstRef {
 
         // see comment at Data::init_dict_'s implementation
         friend class Data;
-        friend bool ::libmuscle::_MUSCLE_IMPL_NS::is_close_port(DataConstRef const &);
+        friend bool ::libmuscle::_MUSCLE_IMPL_NS::is_milestone(DataConstRef const &);
 };
 
 

@@ -131,11 +131,13 @@ struct ConnectedPortManagerFixture {
         typedef ::libmuscle::_MUSCLE_IMPL_NS::Port Port;
         typedef ::ymmsl::Operator Operator;
         typedef ::ymmsl::Timeline Timeline;
+        using PortReferences = std::vector<std::reference_wrapper<const Port>>;
 
         std::unordered_map<ymmsl::Operator, std::vector<std::string>> declared_ports_;
 
         std::unordered_map<
             std::string, std::unique_ptr<Port>> mock_ports_;
+        Port muscle_settings_in_;
 
         ::libmuscle::_MUSCLE_IMPL_NS::MockPortManager connected_port_manager_;
 
@@ -145,6 +147,7 @@ struct ConnectedPortManagerFixture {
                 {Operator::O_I, {"out_v", "out_r"}},
                 {Operator::S, {"in_v", "in_r", "not_connected_v"}},
                 {Operator::O_F, {"out"}}}
+            , muscle_settings_in_{"muscle_settings_in", Operator::F_INIT, Timeline(""), false, true, 0, {}}
         {
             // Can't do this in the initializer list because you can't move from one,
             // and you can't copy a unique_ptr.
@@ -157,8 +160,11 @@ struct ConnectedPortManagerFixture {
             mock_ports_["not_connected_v"] = std::make_unique<Port>("not_connected_v", Operator::S, Timeline(""), true, false, 0, std::vector<int>());
             mock_ports_["out"] = std::make_unique<Port>("out", Operator::O_F, Timeline(""), false, true, 0, std::vector<int>());
 
+            connected_port_manager_.muscle_settings_in.return_value = &muscle_settings_in_;
             connected_port_manager_.get_port.side_effect = [this]
                 (std::string const & name) -> Port &  {
+                    if (name == "muscle_settings_in")
+                        return muscle_settings_in_;
                     return *mock_ports_.at(name);
                 };
             connected_port_manager_.list_ports.return_value = declared_ports_;
@@ -167,6 +173,20 @@ struct ConnectedPortManagerFixture {
                     return mock_ports_.count(name) != 0;
                 };
             connected_port_manager_.has_f_init_connections.return_value = true;
+            connected_port_manager_.get_connected_ports.side_effect = [&] (
+                    ::ymmsl::Operator op, ::libmuscle::_MUSCLE_IMPL_NS::Optional<::ymmsl::Timeline> tl
+                    ) -> PortReferences {
+                assert(!tl.is_set());  // This mock doesn't support filtering on timeline
+                PortReferences result;
+                for (auto & port_name : declared_ports_.at(op)) {
+                    Port & port = *mock_ports_.at(port_name);
+                    if (port.is_connected())
+                        result.push_back(port);
+                }
+                if (op == Operator::F_INIT && connected_port_manager_.settings_in_connected())
+                    result.push_back(muscle_settings_in_);
+                return result;
+            };
         }
 };
 

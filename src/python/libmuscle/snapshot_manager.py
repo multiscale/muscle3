@@ -146,15 +146,14 @@ class SnapshotManager:
             Simulation time at which the snapshot was made.
         """
         port_message_counts = self._port_manager.get_message_counts()
-        if final:
+        if final and "at_end" not in triggers:
             # Decrease F_INIT port counts by one: F_INIT messages are already
             # pre-received, but not yet processed by the user code. Therefore,
             # the snapshot state should treat these as not-received.
-            all_ports = self._port_manager.list_ports()
-            ports = all_ports.get(Operator.F_INIT, [])
-            if self._port_manager.settings_in_connected():
-                ports.append("muscle_settings_in")
-            for port_name in ports:
+            # N.B. For a snapshot at the end of the simulation, there were no F_INIT
+            # messages, so we do not decrease.
+            for port in self._port_manager.get_connected_ports(Operator.F_INIT):
+                port_name = str(port.name)
                 new_counts = [i - 1 for i in port_message_counts[port_name]]
                 port_message_counts[port_name] = new_counts
 

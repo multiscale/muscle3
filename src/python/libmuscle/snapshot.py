@@ -112,6 +112,7 @@ class MsgPackSnapshot(Snapshot):
             settings,
             0,
             message.data,
+            [],
         ).encoded()
 
     @staticmethod

@@ -24,7 +24,6 @@ void inject_fault(int socket_fd);
 
 #include <libmuscle/api_guard.cpp>
 #include <libmuscle/checkpoint_triggers.cpp>
-#include <libmuscle/close_port.cpp>
 #include <libmuscle/communicator.cpp>
 #include <libmuscle/endpoint.cpp>
 #include <libmuscle/instance.cpp>
@@ -43,6 +42,7 @@ void inject_fault(int socket_fd);
 #include <libmuscle/mcp/tcp_transport_client.cpp>
 #include <libmuscle/mcp/tcp_transport_server.cpp>
 #include <libmuscle/message.cpp>
+#include <libmuscle/milestone.cpp>
 #include <libmuscle/outbox.cpp>
 #include <libmuscle/peer_info.cpp>
 #include <libmuscle/port.cpp>

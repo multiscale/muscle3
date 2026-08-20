@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
             0.0, 1.0,
             overlay_settings,
             0,
-            data_dict);
+            data_dict, {});
     post_office.deposit(receiver, std::move(msg.encoded()));
 
     TcpTransportServer server(handler);

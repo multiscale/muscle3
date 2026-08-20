@@ -19,7 +19,7 @@ MPPMessage::MPPMessage(
             DataConstRef const & settings_overlay,
             int message_number,
             DataConstRef const & data,
-            Optional<IterationCount> const & iteration
+            IterationCount const & iteration
             )
         : sender(sender)
         , receiver(receiver)
@@ -84,7 +84,7 @@ MPPMessage MPPMessage::from_dict_(DataConstRef const & dict) {
             dict["settings_overlay"],
             dict["message_number"].as<int>(),
             dict["data"],
-            decode_iteration(dict["iteration"]));
+            decode_iteration(dict["iteration"]).get());
 }
 
 DataConstRef MPPMessage::as_dict_() const {

@@ -39,7 +39,7 @@ class MPPMessage {
                 double timestamp, Optional<double> next_timestamp,
                 DataConstRef const & settings_overlay, int message_number,
                 DataConstRef const & data,
-                Optional<IterationCount> const & iteration = {});
+                IterationCount const & iteration);
 
         /** Create an MCP Message from an encoded buffer.
          *

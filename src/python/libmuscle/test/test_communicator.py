@@ -6,7 +6,7 @@ from ymmsl.v0_2 import Conduit, Settings
 from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.communicator import Communicator, Message, PortClosed
-from libmuscle.mpp_message import ClosePort, MPPMessage
+from libmuscle.mpp_message import Milestone, MPPMessage
 from libmuscle.peer_info import PeerInfo
 
 
@@ -66,16 +66,46 @@ def connected_communicator(communicator):
         Conduit("component.out_v", "peer2.in"),
         Conduit("component.out_r", "peer3.in_r"),
         Conduit("component.out", "peer.in"),
+        Conduit("qmc.out", "component.muscle_settings_in"),
     ]
 
-    peer_dims = {Ref("peer"): [], Ref("peer2"): [13], Ref("peer3"): []}
+    peer_dims = {Ref("peer"): [], Ref("peer2"): [13], Ref("peer3"): [], Ref("qmc"): []}
 
-    peer_locations = {Ref("peer"): ["tcp:peer:9001"], Ref("peer3"): ["tcp:peer3:9001"]}
+    peer_locations = {
+        Ref("peer"): ["tcp:peer:9001"],
+        Ref("peer3"): ["tcp:peer3:9001"],
+        Ref("qmc"): ["tcp:qmc:9001"],
+    }
     peer_locations.update({Ref(f"peer2[{s}]"): ["tcp:peer2:9001"] for s in range(13)})
 
     peer_info = PeerInfo(Ref("component"), [], conduits, peer_dims, peer_locations, [])
     communicator.set_peer_info(peer_info)
     return communicator
+
+
+def mock_mpp_receive(
+    sender="snd",  # Not correct, but unused in receive_message
+    receiver="rcv",  # Not correct, but unused in receive_message
+    port_length=None,
+    timestamp=0.0,
+    next_timestamp=None,
+    settings_overlay=None,
+    message_number=0,
+    data=None,
+    iteration=None,
+):
+    """Helper method for mocking return values for mpp_client.receive."""
+    return MPPMessage(
+        Ref(str(sender)),
+        Ref(str(receiver)),
+        port_length,
+        timestamp,
+        next_timestamp,
+        Settings() if settings_overlay is None else settings_overlay,
+        message_number,
+        data,
+        iteration or [],
+    ).encoded(), MagicMock()
 
 
 def test_create_communicator(communicator, mpp_server):
@@ -128,8 +158,8 @@ def test_send_message_disconnected(connected_communicator, mpp_server):
     mpp_server.deposit.assert_not_called()
 
 
-def test_receive_message(connected_communicator, mpp_client):
-    msg = MPPMessage(
+def test_receive_s_message(connected_communicator, mpp_client):
+    mpp_client.receive.return_value = mock_mpp_receive(
         Ref("peer.out"),
         Ref("component.in"),
         None,
@@ -141,10 +171,8 @@ def test_receive_message(connected_communicator, mpp_client):
         [0],
     )
 
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
-
     connected_communicator.set_receive_timeout(-1)
-    recv_msg = connected_communicator.receive_message("in")
+    recv_msg = connected_communicator.receive_s_message("in")
 
     mpp_client.receive.assert_called_with(Ref("component.in"), None)
 
@@ -157,7 +185,7 @@ def test_receive_message(connected_communicator, mpp_client):
 
 
 def test_receive_message_vector(connected_communicator, mpp_client):
-    msg = MPPMessage(
+    mpp_client.receive.return_value = mock_mpp_receive(
         Ref("peer2.out_v"),
         Ref("component.in_v"),
         5,
@@ -169,10 +197,8 @@ def test_receive_message_vector(connected_communicator, mpp_client):
         [0],
     )
 
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
-
     connected_communicator.set_receive_timeout(-1)
-    recv_msg = connected_communicator.receive_message("in_v", 5)
+    recv_msg = connected_communicator.receive_s_message("in_v", 5)
 
     mpp_client.receive.assert_called_with(Ref("component.in_v[5]"), None)
 
@@ -184,87 +210,115 @@ def test_receive_message_vector(connected_communicator, mpp_client):
     assert recv_msg.settings["s1"] == 1.0
 
 
-def test_receive_close_port(connected_communicator, mpp_client, port_manager):
-    msg = MPPMessage(
-        Ref("peer.out"),
-        Ref("component.in"),
-        None,
-        float("inf"),
-        None,
-        Settings(),
-        0,
-        ClosePort(),
-    )
-    assert msg.iteration is None
+def test_receive_root_milestone(connected_communicator, mpp_client, port_manager):
+    mpp_client.receive.return_value = mock_mpp_receive(data=Milestone([]))
 
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
-
-    connected_communicator.receive_message("in")
+    with pytest.raises(PortClosed):
+        connected_communicator.receive_s_message("in")
 
     assert port_manager.get_port("in").is_open() is False
 
 
-def test_receive_close_port_vector(connected_communicator, mpp_client, port_manager):
-    msg = MPPMessage(
-        Ref("peer2.out_v"),
-        Ref("component.in_v"),
-        5,
-        float("inf"),
-        None,
-        Settings(),
-        0,
-        ClosePort(),
-    )
-    assert msg.iteration is None
+def test_receive_root_milestone_vector(
+    connected_communicator, mpp_client, port_manager
+):
+    mpp_client.receive.return_value = mock_mpp_receive(data=Milestone([]))
 
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
-
-    connected_communicator.receive_message("in_v", 5)
+    with pytest.raises(PortClosed):
+        connected_communicator.receive_s_message("in_v", 5)
 
     assert port_manager.get_port("in_v").is_open(5) is False
 
 
-def test_pre_receive_f_init(connected_communicator):
-    msg = MagicMock()
-    connected_communicator.receive_message = MagicMock(return_value=msg)
+def test_pre_receive_f_init(connected_communicator, mpp_client):
+    mpp_client.receive.return_value = mock_mpp_receive(data="test")
 
     cache = connected_communicator.pre_receive_f_init()
-    assert cache == {("in", None): msg}
+    assert len(cache) == 1
+    assert cache[("in", None)].data == "test"
 
 
 def test_pre_receive_f_init_with_settings(
-    connected_communicator, connected_port_manager
+    connected_communicator, connected_port_manager, mpp_client
 ):
-    msg = MagicMock()
-    connected_communicator.receive_message = MagicMock(return_value=msg)
+    mpp_client.receive.return_value = mock_mpp_receive(data=Settings({"a": True}))
     connected_port_manager.settings_in_connected.return_value = True
 
     cache = connected_communicator.pre_receive_f_init()
-    assert cache == {("in", None): msg, ("muscle_settings_in", None): msg}
+    assert cache.keys() == {("in", None), ("muscle_settings_in", None)}
+    for msg in cache.values():
+        assert msg.data == Settings({"a": True})
 
 
-def test_pre_receive_close_port(connected_communicator):
-    msg = MagicMock(data=ClosePort())
-    connected_communicator.receive_message = MagicMock(return_value=msg)
+def test_pre_receive_close_port(connected_communicator, mpp_client):
+    mpp_client.receive.return_value = mock_mpp_receive(data=Milestone([]))
 
     with pytest.raises(PortClosed):
         connected_communicator.pre_receive_f_init()
 
 
-def test_pre_receive_vector(connected_communicator, mock_ports):
-    msg = MagicMock()
-    connected_communicator.receive_message = MagicMock(return_value=msg)
-    mock_ports["in"]._length = 4
+def test_pre_receive_vector(connected_communicator, mock_ports, mpp_client):
+    mpp_client.receive.return_value = mock_mpp_receive(data="test")
+    mock_ports["in"]._is_resizable = True
+    mock_ports["in"].set_length(4)
 
     cache = connected_communicator.pre_receive_f_init()
-    assert cache == {("in", slot): msg for slot in range(4)}
+    assert cache.keys() == {("in", slot) for slot in range(4)}
+
+
+def test_pre_receive_broadcast_milestone(
+    connected_communicator, mock_ports, mpp_client, mpp_server
+):
+    mpp_client.receive.side_effect = [
+        (mock_mpp_receive(data=Milestone([1]), iteration=[1])),
+        (mock_mpp_receive(data="test data", iteration=[2, 0])),
+    ]
+
+    cache = connected_communicator.pre_receive_f_init()
+    assert cache.keys() == {("in", None)}
+    assert cache[("in", None)].data == "test data"
+    # Expect a milestone broadcasted to all O_I and O_F ports
+    num_oi = mock_ports["out_v"].get_length() + mock_ports["out_r"].get_length()
+    num_of = 1  # out is a scalar port
+    assert mpp_server.deposit.call_count == num_of + num_oi
+    for call in mpp_server.deposit.call_args_list:
+        msg = MPPMessage.from_bytes(call[0][1])
+        assert isinstance(msg.data, Milestone)
+        assert msg.data.iteration == [1]
+
+
+def test_pre_receive_different_milestones(
+    connected_communicator, connected_port_manager, mpp_client
+):
+    connected_port_manager.settings_in_connected.return_value = True
+    # One of these is received on "in", the other on "muscle_settings_in":
+    mpp_client.receive.side_effect = [
+        (mock_mpp_receive(data=Milestone([1]), iteration=[1])),
+        (mock_mpp_receive(data=Milestone([2]), iteration=[2])),
+    ]
+
+    with pytest.raises(RuntimeError, match="different iterations"):
+        connected_communicator.pre_receive_f_init()
+
+
+def test_pre_receive_some_port_closed(
+    connected_communicator, connected_port_manager, mpp_client
+):
+    connected_port_manager.settings_in_connected.return_value = True
+    # One of these is received on "in", the other on "muscle_settings_in":
+    mpp_client.receive.side_effect = [
+        (mock_mpp_receive(data=Milestone([1]), iteration=[1])),
+        (mock_mpp_receive(data=Milestone([]), iteration=[])),
+    ]
+
+    with pytest.raises(RuntimeError, match="unexpectedly closed"):
+        connected_communicator.pre_receive_f_init()
 
 
 def test_port_count_validation(
     connected_communicator, mpp_client, connected_port_manager
 ):
-
-    msg = MPPMessage(
+    mpp_client.receive.return_value = mock_mpp_receive(
         Ref("peer.out"),
         Ref("component.in"),
         None,
@@ -276,21 +330,18 @@ def test_port_count_validation(
         [0],
     )
 
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
-
-    connected_communicator.receive_message("in")
+    connected_communicator.receive_s_message("in")
     assert connected_port_manager.get_port("in").get_message_counts() == [1]
 
     with pytest.raises(RuntimeError):
         # the message received has message_number = 0 again
-        connected_communicator.receive_message("in")
+        connected_communicator.receive_s_message("in")
 
 
 def test_port_discard_error_on_resume(
     caplog, connected_communicator, mpp_client, connected_port_manager
 ):
-
-    msg = MPPMessage(
+    mpp_client.receive.return_value = mock_mpp_receive(
         Ref("other.out[13]"),
         Ref("kernel[13].in"),
         None,
@@ -299,9 +350,8 @@ def test_port_discard_error_on_resume(
         Settings({"test1": 12}),
         1,
         b"test",
+        [],
     )
-
-    mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
     connected_port_manager.get_port("out").restore_message_counts([0])
     connected_port_manager.get_port("in").restore_message_counts([2])
@@ -315,7 +365,7 @@ def test_port_discard_error_on_resume(
     # message_number=1
     with caplog.at_level(logging.DEBUG, "libmuscle.communicator"):
         with pytest.raises(RuntimeError):
-            connected_communicator.receive_message("in")
+            connected_communicator.receive_s_message("in")
 
         assert any(
             ["Discarding received message" in rec.message for rec in caplog.records]
@@ -326,25 +376,20 @@ def test_port_discard_success_on_resume(
     caplog, connected_communicator, mpp_client, connected_port_manager
 ):
 
-    side_effect = [
-        (
-            MPPMessage(
-                Ref("other.out[13]"),
-                Ref("kernel[13].in"),
-                None,
-                0.0,
-                None,
-                Settings({"test1": 12}),
-                message_number,
-                {"this is message": message_number},
-                [0],
-            ).encoded(),
-            MagicMock(),
+    mpp_client.receive.side_effect = [
+        mock_mpp_receive(
+            Ref("other.out[13]"),
+            Ref("kernel[13].in"),
+            None,
+            0.0,
+            None,
+            Settings({"test1": 12}),
+            message_number,
+            {"this is message": message_number},
+            [0],
         )
         for message_number in [1, 2]
     ]
-
-    mpp_client.receive.side_effect = side_effect
 
     connected_port_manager.get_port("out").restore_message_counts([0])
     connected_port_manager.get_port("in").restore_message_counts([2])
@@ -354,7 +399,7 @@ def test_port_discard_success_on_resume(
         assert connected_port_manager.get_port(port).is_resuming(None)
 
     with caplog.at_level(logging.DEBUG, "libmuscle.communicator"):
-        msg = connected_communicator.receive_message("in")
+        msg = connected_communicator.receive_s_message("in")
         assert any(
             ["Discarding received message" in rec.message for rec in caplog.records]
         )
@@ -378,7 +423,8 @@ def test_shutdown(
         None,
         Settings(),
         0,
-        ClosePort(),
+        Milestone([]),
+        [],
     )
 
     messages = {Ref("component.in"): msg}
@@ -399,7 +445,8 @@ def test_shutdown(
                 None,
                 Settings(),
                 0,
-                ClosePort(),
+                Milestone([]),
+                [],
             )
 
     def receive(receiver, timeout_handler):
@@ -424,8 +471,25 @@ def test_shutdown(
     for call in mpp_server.deposit.call_args_list:
         assert call[0][0] in expected_receivers
         msg = MPPMessage.from_bytes(call[0][1])
-        assert isinstance(msg.data, ClosePort)
-        assert msg.iteration is None
+        assert isinstance(msg.data, Milestone)
         expected_receivers.remove(call[0][0])
 
     assert not expected_receivers
+
+
+def test_send_milestone_at_reuse(
+    connected_communicator, timeline_manager, mock_ports, mpp_server
+):
+    timeline_manager().finish_reuse_iteration.return_value = [1, 2]
+
+    connected_communicator.finish_reuse_iteration()
+
+    timeline_manager().finish_reuse_iteration.assert_called_once()
+    # Expect a milestone broadcasted to all O_I ports
+    num_expected = mock_ports["out_v"].get_length() + mock_ports["out_r"].get_length()
+    assert mpp_server.deposit.call_count == num_expected
+    for call in mpp_server.deposit.call_args_list:
+        assert str(call[0][0]).startswith(("peer2", "peer3"))
+        msg = MPPMessage.from_bytes(call[0][1])
+        assert isinstance(msg.data, Milestone)
+        assert msg.data.iteration == [1, 2]

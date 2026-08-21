@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from typing import Optional, TypedDict
 
@@ -11,6 +12,8 @@ from libmuscle.util import port_desc
 PortAndSlot: TypeAlias = tuple[str, Optional[int]]  # (port_name, slot)
 IterationCount: TypeAlias = list[int]  # nested iteration counts of a message
 ExpectedActions: TypeAlias = list[tuple[str, Port, list[int]]]
+
+_logger = logging.getLogger(__name__)
 
 
 class SubTimelineState(TypedDict):
@@ -35,7 +38,6 @@ class TimelineState:
 
     iteration: Optional[IterationCount]
     send_participated: list[PortAndSlot]
-    receive_participated: list[PortAndSlot]
     subtimeline_states: dict[str, SubTimelineState]
 
 
@@ -58,6 +60,11 @@ def _expected_message(subject: str, expected: ExpectedActions) -> str:
         f"Not allowed to {subject} yet: was expecting one of the following"
         f" instead:\n{bullets}"
     )
+
+
+def is_subiteration(c1: IterationCount, c2: IterationCount) -> bool:
+    """Check if c1 is a sub-iteration of c2, or if c1 is equal to c2."""
+    return c1[: len(c2)] == c2
 
 
 class TimelineError(RuntimeError):
@@ -232,8 +239,6 @@ class TimelineManager:
             port_manager: The (already connected) port manager for this instance.
         """
         self._port_manager = port_manager
-
-        self._receive = TimelinePorts(port_manager.get_connected_ports(Operator.F_INIT))
         self._send = TimelinePorts(port_manager.get_connected_ports(Operator.O_F))
 
         subtimelines = port_manager.list_subtimelines()
@@ -246,6 +251,28 @@ class TimelineManager:
         self._iteration: Optional[IterationCount] = (
             None if self._port_manager.has_f_init_connections() else []
         )
+
+    def check_finit_iterations(
+        self, iterations: dict[PortAndSlot, IterationCount]
+    ) -> IterationCount:
+        """Set current iteration count from pre-received F_INIT messages."""
+        assert self._iteration is None
+        assert iterations
+        iteration = next(iter(iterations.values()))
+        for it in iterations.values():
+            if it != iteration:
+                raise RuntimeError(
+                    "Pre-received F_INIT messages from parallel timelines:\n"
+                    + "\n".join(
+                        f"- {port_desc(port, slot)}: {it}"
+                        for (port, slot), it in iterations.items()
+                    )
+                    + "\nPlease verify that all connected instances send the same "
+                    "number of messages on their O_I ports."
+                )
+
+        self._iteration = iteration
+        return self._iteration
 
     def check_send_message(
         self, port_name: str, slot: Optional[int] = None
@@ -307,61 +334,34 @@ class TimelineManager:
 
         return self._iteration
 
-    def check_receive(self, port_name: str, slot: Optional[int] = None) -> None:
-        """Check that receiving on the given port is currently allowed.
-
-        An F_INIT port may receive once after the reuse loop starts and before any other
-        ports are used.
-
-        Whether an S port may receive is delegated to the corresponding
-        SubTimelineManager.
+    def check_receive_s(self, port_name: str, slot: Optional[int] = None) -> None:
+        """Check that receiving on the given S port is currently allowed.
 
         Args:
             port_name: Name of the F_INIT or S port about to receive.
             slot: The slot being received on, if this is a vector port.
         """
         port = self._port_manager.get_port(port_name)
+        assert port.operator is Operator.S
+        self._submanagers[port.timeline].check_receive(port, slot)
 
-        if port.operator is Operator.F_INIT:
-            if self._receive.has_participated(port_name, slot):
-                raise AlreadyParticipated(port, slot)
-        elif port.operator is Operator.S:
-            self._submanagers[port.timeline].check_receive(port, slot)
-
-    def record_received_message(
+    def record_received_s_message(
         self,
         port_name: str,
         slot: Optional[int],
         iteration: IterationCount,
     ) -> None:
-        """Record that a message has been received on the given port.
+        """Record that a message has been received on the given S port.
 
         check_receive already established that this receive is allowed.
 
-        For an F_INIT port, if the main timeline has not started yet, its
-        iteration is adopted from the message, otherwise the message must carry
-        the same iteration the main timeline is already on.
-
-        For an S port, recording the message is delegated directly to the
-        corresponding SubTimelineManager.
-
         Args:
-            port_name: Name of the F_INIT or S port a message was received
-                on.
-            slot: The slot the message was received on, if this is a vector
-                port.
+            port_name: Name of the F_INIT or S port a message was received on.
+            slot: The slot the message was received on, if this is a vector port.
             iteration: The iteration the received message was sent with.
         """
         port = self._port_manager.get_port(port_name)
-
-        if port.operator is Operator.F_INIT:
-            if self._iteration is None:
-                self._iteration = iteration
-            elif iteration != self._iteration:
-                raise MessageOutOfSync(port, slot)
-            self._receive.participate(port_name, slot)
-            return
-
+        assert port.operator is Operator.S
         self._submanagers[port.timeline].record_received_message(port, slot, iteration)
 
     def reset(self) -> None:
@@ -373,7 +373,6 @@ class TimelineManager:
         """
         self._iteration = None if self._port_manager.has_f_init_connections() else []
         self._send.reset()
-        self._receive.reset()
         for stm in self._submanagers.values():
             stm.reset()
 
@@ -390,15 +389,13 @@ class TimelineManager:
         """
         assert self._iteration is not None
         iteration = self._iteration
-        if (
-            self._receive.all_participated()
-            and self._send.all_participated()
-            and all(stm.is_complete() for stm in self._submanagers.values())
+        if self._send.all_participated() and all(
+            stm.is_complete() for stm in self._submanagers.values()
         ):
             self.reset()
             return iteration
 
-        expected = _expected_actions(self._send, self._receive)
+        expected = _expected_actions(self._send)
         for stm in self._submanagers.values():
             if not stm.is_complete():
                 expected += _expected_actions(stm._send, stm._receive)
@@ -409,11 +406,10 @@ class TimelineManager:
         """Return the main timeline's iteration and participation, and every
         sub-timeline's state, for saving in a snapshot.
         """
-        # N.B. we only sort send/receive participated to test equality.
+        # N.B. we only sort send.participated to test equality.
         return TimelineState(
             iteration=self._iteration,
             send_participated=sorted(self._send.participated),
-            receive_participated=sorted(self._receive.participated),
             subtimeline_states={
                 str(tl): stm.get_state() for tl, stm in self._submanagers.items()
             },
@@ -430,7 +426,6 @@ class TimelineManager:
         """
         self._iteration = state.iteration
         self._send.participated = {(p, s) for p, s in state.send_participated}
-        self._receive.participated = {(p, s) for p, s in state.receive_participated}
         for tl, stm in self._submanagers.items():
             sub_state = state.subtimeline_states.get(str(tl))
             if sub_state is not None:

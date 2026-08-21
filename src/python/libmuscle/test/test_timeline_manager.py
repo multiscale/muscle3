@@ -97,7 +97,7 @@ def check_received(
     slot: Optional[int],
     iteration: IterationCount,
 ) -> None:
-    timeline_manager.check_receive(port, slot)
+    timeline_manager.check_receive_s(port, slot)
     timeline_manager.record_received_message(port, slot, iteration)
 
 
@@ -219,7 +219,7 @@ def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
     check_received(timeline_manager, "muscle_settings_in", None, [])
     check_received(timeline_manager, "in_a1", None, [0])
 
-    timeline_manager.check_receive("in_a1_2")
+    timeline_manager.check_receive_s("in_a1_2")
     with pytest.raises(MessageOutOfSync) as exc_info:
         timeline_manager.record_received_message("in_a1_2", None, [7])
     assert exc_info.value.port == timeline_manager._port_manager.get_port("in_a1_2")
@@ -252,9 +252,9 @@ def test_check_send_message_o_i_when_o_i_leads_and_complete(
     check_received(timeline_manager, "muscle_settings_in", None, [])
 
     first_iteration = timeline_manager.check_send_message("out_a1")
-    timeline_manager.check_receive("in_a1")
+    timeline_manager.check_receive_s("in_a1")
     timeline_manager.record_received_message("in_a1", None, first_iteration)
-    timeline_manager.check_receive("in_a1_2")
+    timeline_manager.check_receive_s("in_a1_2")
     timeline_manager.record_received_message("in_a1_2", None, first_iteration)
 
     second_iteration = timeline_manager.check_send_message("out_a1")
@@ -286,7 +286,7 @@ def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
 def test_check_receive_f_init_allowed_when_not_yet_participated(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_receive("in_f")
+    timeline_manager.check_receive_s("in_f")
     assert not timeline_manager._receive.has_participated("in_f", None)
 
     timeline_manager.record_received_message("in_f", None, [3])
@@ -305,7 +305,7 @@ def test_check_receive_f_init_raises_already_participated_when_received_twice(
     check_received(timeline_manager, "in_f", None, [])
 
     with pytest.raises(AlreadyParticipated) as exc_info:
-        timeline_manager.check_receive("in_f")
+        timeline_manager.check_receive_s("in_f")
 
     assert exc_info.value.port == timeline_manager._port_manager.get_port("in_f")
     assert exc_info.value.slot is None
@@ -318,7 +318,7 @@ def test_record_received_message_f_init_raises_when_iteration_differs(
     """Once the main timeline has started, an F_INIT message for a different
     iteration is rejected."""
     check_received(timeline_manager, "in_f", None, [3])
-    timeline_manager.check_receive("muscle_settings_in")
+    timeline_manager.check_receive_s("muscle_settings_in")
 
     with pytest.raises(MessageOutOfSync) as exc_info:
         timeline_manager.record_received_message("muscle_settings_in", None, [4])
@@ -352,7 +352,7 @@ def test_check_receive_message_s_blocked_when_o_i_leads_and_not_all_o_i_sent(
     # "out_a2_2" never sent, so O_I hasn't fully led :A2 yet
 
     with pytest.raises(PortBlocked) as exc_info:
-        timeline_manager.check_receive("in_a2")
+        timeline_manager.check_receive_s("in_a2")
 
     assert exc_info.value.expected == expected(
         timeline_manager, ("send", "out_a2_2", [])
@@ -377,7 +377,7 @@ def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
     # A second receive on in_a2 cannot advance the sub-iteration itself: with O_I
     # leading, only a new O_I send is allowed to do that.
     with pytest.raises(PortBlocked) as exc_info:
-        timeline_manager.check_receive("in_a2")
+        timeline_manager.check_receive_s("in_a2")
 
     assert exc_info.value.expected == expected(
         timeline_manager, ("send", "out_a2", []), ("send", "out_a2_2", [])
@@ -398,7 +398,7 @@ def test_check_receive_message_s_when_s_leads_and_complete(
     timeline_manager.check_send_message("out_a2")
     timeline_manager.check_send_message("out_a2_2")
 
-    timeline_manager.check_receive("in_a2")
+    timeline_manager.check_receive_s("in_a2")
     with pytest.raises(MessageOutOfSync) as exc_info:
         timeline_manager.record_received_message("in_a2", None, first_iteration)
     assert exc_info.value.port == timeline_manager._port_manager.get_port("in_a2")
@@ -423,7 +423,7 @@ def test_check_receive_message_s_blocked_when_s_leads_and_incomplete(
     # neither "out_a2" nor "out_a2_2" received, so the sub-iteration is incomplete
 
     with pytest.raises(PortBlocked) as exc_info:
-        timeline_manager.check_receive("in_a2")
+        timeline_manager.check_receive_s("in_a2")
 
     assert exc_info.value.expected == expected(
         timeline_manager, ("send", "out_a2", []), ("send", "out_a2_2", [])

@@ -21,9 +21,8 @@ PeerInfo::PeerInfo(
         )
     : kernel_(kernel)
     , index_(index)
-    , incoming_ports_()
-    , outgoing_ports_()
     , peers_()                          // peer port ids, indexed by local kernel.port
+    , filters_per_receiver_()           // conduit filters per receiving kernel.port
     , peer_dims_(peer_dims)             // indexed by peer kernel id
     , peer_locations_(peer_locations)   // indexed by peer instance id
     , ymmsl_ports_(ymmsl_ports)
@@ -31,11 +30,6 @@ PeerInfo::PeerInfo(
     for (auto const & conduit : conduits) {
         if (conduit.sending_component() == kernel_) {
             // we send on the port this conduit attaches to
-            auto it = std::find(
-                    outgoing_ports_.cbegin(), outgoing_ports_.cend(), conduit.sender);
-            if (it == outgoing_ports_.end())
-                outgoing_ports_.push_back(conduit.sender);
-
             auto search = peers_.find(conduit.sender);
             if (search == peers_.end())
                 search = peers_.emplace(
@@ -52,10 +46,11 @@ PeerInfo::PeerInfo(
                 ss << " is allowed.";
                 throw std::runtime_error(ss.str());
             }
-            incoming_ports_.push_back(conduit.receiver);
             std::vector<Reference> vec = {conduit.sender};
             peers_.emplace(conduit.receiver, vec);
         }
+
+        filters_per_receiver_.emplace(conduit.receiver, conduit.filters);
     }
 }
 
@@ -63,26 +58,13 @@ std::vector<::ymmsl::Port> const & PeerInfo::list_ymmsl_ports() const {
     return ymmsl_ports_;
 }
 
-IncomingPorts PeerInfo::list_incoming_ports() const {
-    IncomingPorts result;
-    for (auto const & port_ref: incoming_ports_) {
-        Identifier port_id = port_ref[port_ref.length() - 1].identifier();
-        result.emplace_back(port_id, peers_.at(port_ref)[0]);
-    }
-    return result;
-}
-
-OutgoingPorts PeerInfo::list_outgoing_ports() const {
-    OutgoingPorts result;
-    for (auto const & port_ref: outgoing_ports_) {
-        Identifier port_id = port_ref[port_ref.length() - 1].identifier();
-        result.emplace_back(port_id, peers_.at(port_ref));
-    }
-    return result;
-}
-
 bool PeerInfo::is_connected(Identifier const & port) const {
     return peers_.count(kernel_ + port);
+}
+
+std::vector<ymmsl::ConduitFilter> const & PeerInfo::get_filters_for_receiver(
+        Reference const & receiver) {
+    return filters_per_receiver_.at(receiver);
 }
 
  std::vector<ymmsl::Reference> const & PeerInfo::get_peer_ports(

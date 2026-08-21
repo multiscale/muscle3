@@ -1,6 +1,6 @@
 from typing import Optional, cast
 
-from ymmsl.v0_2 import Conduit, Identifier, Port, Reference
+from ymmsl.v0_2 import Conduit, ConduitFilter, Identifier, Port, Reference
 
 from libmuscle.endpoint import Endpoint
 
@@ -41,28 +41,25 @@ class PeerInfo:
         self._index = index
         self._conduits = conduits
 
-        self._incoming_ports: list[Reference] = []
-        self._outgoing_ports: list[Reference] = []
-
         # peer port ids, indexed by local kernel.port id
         self._peers: dict[Reference, list[Reference]] = {}
+        self._filters_per_receiver: dict[Reference, list[ConduitFilter]] = {}
 
         for conduit in conduits:
-            if str(conduit.sending_component()) == str(kernel):
+            if conduit.sending_component() == kernel:
                 # we send on the port this conduit attaches to
-                if conduit.sender not in self._outgoing_ports:
-                    self._outgoing_ports.append(conduit.sender)
                 self._peers.setdefault(conduit.sender, []).append(conduit.receiver)
 
-            if str(conduit.receiving_component()) == str(kernel):
+            if conduit.receiving_component() == kernel:
                 # we receive on the port this conduit attaches to
                 if conduit.receiver in self._peers:
                     raise RuntimeError(
                         f'Receiving port "{conduit.receiving_port()}" is connected'
                         " by multiple conduits, but at most one is allowed."
                     )
-                self._incoming_ports.append(conduit.receiver)
                 self._peers[conduit.receiver] = [conduit.sender]
+
+            self._filters_per_receiver[conduit.receiver] = conduit.filters
 
         self._peer_dims = peer_dims  # indexed by kernel id
         self._peer_locations = peer_locations  # indexed by instance id
@@ -72,30 +69,6 @@ class PeerInfo:
         """list ports declared in the yMMSL configuration"""
         return self._ymmsl_ports
 
-    def list_incoming_ports(self) -> list[tuple[Identifier, Reference]]:
-        """list incoming ports.
-
-        Returns:
-            A list of tuples containing a port id and a reference to the
-            peer endpoint.
-        """
-        return [
-            (cast(Identifier, port_ref[-1]), self._peers[port_ref][0])
-            for port_ref in self._incoming_ports
-        ]
-
-    def list_outgoing_ports(self) -> list[tuple[Identifier, list[Reference]]]:
-        """list outgoing ports.
-
-        Returns:
-            A list of tuples containing a port id and a list of references
-            to the peer endpoint(s).
-        """
-        return [
-            (cast(Identifier, port_ref[-1]), self._peers[port_ref])
-            for port_ref in self._outgoing_ports
-        ]
-
     def is_connected(self, port: Identifier) -> bool:
         """Determine whether the given port is connected.
 
@@ -104,6 +77,10 @@ class PeerInfo:
         """
         recv_port_full = self._kernel + port
         return recv_port_full in self._peers
+
+    def get_filters_for_receiver(self, receiver: Reference) -> list[ConduitFilter]:
+        """Get the conduit filters for a receiver (component + port name)"""
+        return self._filters_per_receiver[receiver]
 
     def get_peer_ports(self, port: Identifier) -> list[Reference]:
         """Get a reference for the peer ports.

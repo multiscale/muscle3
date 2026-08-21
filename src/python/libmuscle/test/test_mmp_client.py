@@ -130,10 +130,7 @@ def test_request_peers(mocked_mmp_client, profile_data) -> None:
     assert peer_info._conduits[0].sender == "component.out"
     assert peer_info._conduits[0].receiver == "other.in"
 
-    assert peer_info._incoming_ports == []
-    assert peer_info._outgoing_ports == [Reference("component.out")]
     assert peer_info._peers == {"component.out": ["other.in"]}
-
     assert peer_info._peer_dims == {"other": [20]}
     assert peer_info._peer_locations == {"other": ["direct:test", "tcp:test"]}
 

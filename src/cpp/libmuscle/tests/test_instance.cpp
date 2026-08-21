@@ -85,8 +85,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 bool operator==(PeerInfo const & lhs, PeerInfo const & rhs) {
     if (lhs.kernel_ != rhs.kernel_) return false;
     if (lhs.index_ != rhs.index_) return false;
-    if (lhs.incoming_ports_ != rhs.incoming_ports_) return false;
-    if (lhs.outgoing_ports_ != rhs.outgoing_ports_) return false;
+    if (lhs.filters_per_receiver_ != rhs.filters_per_receiver_) return false;
     if (lhs.peers_ != rhs.peers_) return false;
     if (lhs.peer_dims_ != rhs.peer_dims_) return false;
     if (lhs.peer_locations_ != rhs.peer_locations_) return false;

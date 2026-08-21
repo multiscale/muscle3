@@ -6,6 +6,7 @@
 
 
 using ymmsl::impl::Conduit;
+using ymmsl::impl::ConduitFilter;
 using ymmsl::impl::Identifier;
 using ymmsl::impl::ReferencePart;
 
@@ -46,5 +47,19 @@ TEST(ymmsl_model, conduit) {
     ASSERT_EQ(test_conduit3.receiving_component(), Identifier("a"));
     ASSERT_EQ(test_conduit3.receiving_port(), Identifier("b"));
     ASSERT_EQ(test_conduit3.receiving_slot(), std::vector<int>{3});
+
+    Conduit test_conduit4("a.b", "b.c", "last repeat pad");
+    ASSERT_EQ(test_conduit4.filters.size(), 3);
+    ASSERT_EQ(test_conduit4.filters[0], ConduitFilter::LAST);
+    ASSERT_EQ(test_conduit4.filters[1], ConduitFilter::REPEAT);
+    ASSERT_EQ(test_conduit4.filters[2], ConduitFilter::PAD);
+
+    ASSERT_TRUE(is_repeater(ConduitFilter::REPEAT));
+    ASSERT_TRUE(is_repeater(ConduitFilter::PAD));
+    ASSERT_FALSE(is_repeater(ConduitFilter::LAST));
+
+    ASSERT_FALSE(is_reducer(ConduitFilter::REPEAT));
+    ASSERT_FALSE(is_reducer(ConduitFilter::PAD));
+    ASSERT_TRUE(is_reducer(ConduitFilter::LAST));
 }
 

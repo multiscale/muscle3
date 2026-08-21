@@ -14,6 +14,7 @@ namespace ymmsl {
     using impl::operator_name;
     using impl::operator_for_name;
     using impl::Conduit;
+    using impl::ConduitFilter;
     using impl::Identifier;
     using impl::operator<<;
     using impl::Operator;

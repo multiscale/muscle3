@@ -6,10 +6,49 @@
 
 namespace ymmsl { namespace impl {
 
-Conduit::Conduit(std::string const & sender, std::string const & receiver)
+std::string conduit_filter_name(ConduitFilter filter) {
+    switch (filter) {
+        case ConduitFilter::LAST:
+            return "last";
+        case ConduitFilter::REPEAT:
+            return "repeat";
+        case ConduitFilter::PAD:
+            return "pad";
+    }
+    throw std::logic_error("Unreachable code reached");
+}
+
+ConduitFilter conduit_filter_for_name(std::string const & name) {
+    if (name == "last")
+        return ConduitFilter::LAST;
+    if (name == "repeat")
+        return ConduitFilter::REPEAT;
+    if (name == "pad")
+        return ConduitFilter::PAD;
+    throw std::invalid_argument("Unknown conduit filter name: " + name);
+}
+
+bool is_reducer(ConduitFilter filter) {
+    return filter == ConduitFilter::LAST;
+}
+
+bool is_repeater(ConduitFilter filter) {
+    return filter == ConduitFilter::REPEAT || filter == ConduitFilter::PAD;
+}
+
+
+Conduit::Conduit(
+        std::string const & sender, std::string const & receiver,
+        std::string const & filters)
     : sender(sender)
     , receiver(receiver)
+    , filters()
 {
+    std::istringstream stream(filters);
+    std::string f;
+    while (stream >> f)
+        this->filters.push_back(conduit_filter_for_name(f));
+
     check_reference_(sender);
     check_reference_(receiver);
 }

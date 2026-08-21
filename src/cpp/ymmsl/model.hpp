@@ -7,6 +7,39 @@
 
 namespace ymmsl { namespace impl {
 
+/** Represents a filter to apply to messages passing through a conduit.
+ */
+enum ConduitFilter {
+    /** Pass only the last message and drop preceding ones. */
+    LAST,
+    /** Repeat a single message as often as needed. */
+    REPEAT,
+    /** Pass a single message and then generate nil-messages as needed. */
+    PAD
+};
+
+/** Return the name of the given conduit filter.
+ */
+std::string conduit_filter_name(ConduitFilter filter);
+
+/** Return the conduit filter from its name.
+ */
+ConduitFilter conduit_filter_for_name(std::string const & name);
+
+/** Return whether this filter is a reducer.
+ * 
+ * Reducers take one or more sent messages and filter them down to a single one for
+ * the recipient.
+ **/
+bool is_reducer(ConduitFilter filter);
+
+/** Return whether this filter is a repeater.
+ * 
+ * Repeaters take a single message and turn it into multiple to cover multiple
+ * receive attempts.
+ **/
+bool is_repeater(ConduitFilter filter);
+
 /** A conduit transports data between simulation components.
  *
  * A conduit has two endpoints, which are references to a Port on a Component.
@@ -21,6 +54,7 @@ namespace ymmsl { namespace impl {
 class Conduit {
     public:
         Reference sender, receiver;
+        std::vector<ConduitFilter> filters;
 
         /** Create a Conduit.
          *
@@ -28,8 +62,9 @@ class Conduit {
          *      including the component name and the port name.
          * @param receiver The receiving port that this conduit is connected
          *      to, including the component name and the port name.
+         * @param filters A string containing space-separated filter names.
          */
-        Conduit(std::string const & sender, std::string const & receiver);
+        Conduit(std::string const & sender, std::string const & receiver, std::string const & filters = {});
 
         /** Convert to string.
          */

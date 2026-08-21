@@ -105,7 +105,7 @@ def test_request_peers(mocked_mmp_client, profile_data) -> None:
 
     result_msg = [
         ResponseType.SUCCESS.value,
-        [["component.out", "other.in"]],
+        [["component.out", "other.in", ""]],
         {"other": [20]},
         {"other": ["direct:test", "tcp:test"]},
         [["out", "O_F", ""]],

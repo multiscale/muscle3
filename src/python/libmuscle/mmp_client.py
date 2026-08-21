@@ -302,7 +302,7 @@ class MMPClient:
         if response[0] == ResponseType.ERROR.value:
             raise RuntimeError(f"Error getting peers from manager: {response[1]}")
 
-        conduits = [Conduit(snd, recv) for snd, recv in response[1]]
+        conduits = [Conduit(snd, recv, filters) for snd, recv, filters in response[1]]
 
         peer_dimensions = {
             Reference(component): dims for component, dims in response[2].items()

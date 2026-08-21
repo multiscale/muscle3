@@ -53,6 +53,7 @@ TEST(ymmsl_model, conduit) {
     ASSERT_EQ(test_conduit4.filters[0], ConduitFilter::LAST);
     ASSERT_EQ(test_conduit4.filters[1], ConduitFilter::REPEAT);
     ASSERT_EQ(test_conduit4.filters[2], ConduitFilter::PAD);
+    ASSERT_EQ(std::string(test_conduit4), "Conduit(a.b -> last repeat pad -> b.c)");
 
     ASSERT_TRUE(is_repeater(ConduitFilter::REPEAT));
     ASSERT_TRUE(is_repeater(ConduitFilter::PAD));

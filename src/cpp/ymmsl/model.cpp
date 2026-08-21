@@ -56,12 +56,18 @@ Conduit::Conduit(
 Conduit::operator std::string() const {
     std::ostringstream oss;
 
-    oss << "Conduit(" << sender << " -> " << receiver << ")";
+    oss << "Conduit(" << sender;
+    if (!filters.empty()) {
+        oss << " ->";
+        for (auto & filter : filters)
+            oss << " " << conduit_filter_name(filter);
+    }
+    oss << " -> " << receiver << ")";
     return oss.str();
 }
 
 bool Conduit::operator==(Conduit const & rhs) const {
-    return sender == rhs.sender && receiver == rhs.receiver;
+    return sender == rhs.sender && receiver == rhs.receiver && filters == rhs.filters;
 }
 
 Reference Conduit::sending_component() const {

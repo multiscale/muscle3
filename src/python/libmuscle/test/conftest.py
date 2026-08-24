@@ -48,7 +48,6 @@ def timeline_state() -> TimelineState:
     return TimelineState(
         iteration=[1],
         send_participated=[],
-        receive_participated=[["in", None]],
         subtimeline_states={},
     )
 

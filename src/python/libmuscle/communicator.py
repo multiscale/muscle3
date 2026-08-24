@@ -1,7 +1,9 @@
 import logging
+from collections.abc import Iterator
+from copy import deepcopy
 from typing import Any, Optional, cast
 
-from ymmsl.v0_2 import Operator, Reference, Settings
+from ymmsl.v0_2 import ConduitFilter, Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.tcp_util import SocketClosed
@@ -15,14 +17,21 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
-from libmuscle.timeline_manager import IterationCount, TimelineManager, TimelineState
+from libmuscle.timeline_manager import (
+    IterationCount,
+    PortAndSlot,
+    TimelineManager,
+    TimelineState,
+    is_subiteration,
+)
 from libmuscle.util import port_desc
 
 _logger = logging.getLogger(__name__)
 
 
 MessageObject = Any
-FInitCacheType = dict[tuple[str, Optional[int]], "Message"]
+FInitCacheType = dict[PortAndSlot, "Message"]
+_MPPCacheType = dict[PortAndSlot, MPPMessage]
 
 
 class PortClosed(Exception):
@@ -73,6 +82,30 @@ class Message:
         self.settings = settings
 
 
+def _make_message(mpp_msg: MPPMessage, copy: bool = False) -> Message:
+    """Create a Message object from the provided MPPMessage.
+
+    Args:
+        mpp_msg: The MPPMessage object to create the Message from.
+        copy: Whether to deepcopy the data and settings.
+    """
+    return Message(
+        mpp_msg.timestamp,
+        mpp_msg.next_timestamp,
+        deepcopy(mpp_msg.data) if copy else mpp_msg.data,
+        deepcopy(mpp_msg.settings_overlay) if copy else mpp_msg.settings_overlay,
+    )
+
+
+def _yield_slots(port: Port) -> Iterator[Optional[int]]:
+    """Iterator over the slots in the port."""
+    if not port.is_vector():
+        yield None
+    else:
+        yield 0  # Allow pre-receive to receive 1 message that updates port._length
+        yield from range(1, port.get_length())
+
+
 class Communicator:
     """Communication engine for MUSCLE3.
 
@@ -116,6 +149,11 @@ class Communicator:
         # indexed by remote instance id
         self._clients: dict[Reference, MPPClient] = {}
 
+        self._f_init_repeaters: dict[str, list[ConduitFilter]] = {}
+        """List of repeater filters to be applied to each F_INIT port."""
+        self._f_init_repeat_cache: _MPPCacheType = {}
+        """Message cache for F_INIT ports with repeater filters."""
+
     def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.
 
@@ -140,6 +178,7 @@ class Communicator:
         """
         self._peer_info = peer_info
         self._timeline_manager = TimelineManager(self._port_manager)
+        self._prepare_conduit_filters()
 
     def set_receive_timeout(self, receive_timeout: float) -> None:
         """Update the timeout after which the manager is notified that we are waiting
@@ -251,26 +290,51 @@ class Communicator:
     def pre_receive_f_init(self) -> FInitCacheType:
         """Receive on all connected F_INIT port (including muscle_settings_in).
 
+        This method assumes that there is at least one connected F_INIT port.
+
         Returns:
             f_init_cache: The received messages.
         """
         cache: FInitCacheType = {}
 
-        def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            cache[(port_name, slot)] = self._receive_message(port_name, slot)
-
+        iterations: dict[PortAndSlot, IterationCount] = {}
+        # Pre-receive on ports without repeater filters:
         for port in self._port_manager.get_connected_ports(Operator.F_INIT):
             port_name = str(port.name)
-            _logger.debug("Pre-receiving on port %s", port_name)
-            if not port.is_vector():
-                pre_receive(port_name, None)
-            else:
-                pre_receive(port_name, 0)
-                # The above receives the length, if needed, so now we can get the rest.
-                for slot in range(1, port.get_length()):
-                    pre_receive(port_name, slot)
+            if port_name not in self._f_init_repeaters:
+                _logger.debug("Pre-receiving on port %s", port_name)
+                for slot in _yield_slots(port):
+                    mpp_message = self._receive_message(port_name, slot)
+                    cache[(port_name, slot)] = _make_message(mpp_message)
+                    iterations[(port_name, slot)] = mpp_message.iteration
 
         # Check if we have received milestones
+        milestone = self._verify_received_milestones(cache)
+        if milestone is not None:
+            self._broadcast_milestone(milestone, False)
+            if milestone.is_final_milestone():
+                raise PortClosed()
+            # Clean up stale messages from the cache
+            self._f_init_repeat_cache = {
+                key: message
+                for key, message in self._f_init_repeat_cache.items()
+                if len(message.iteration) < len(milestone.iteration)
+            }
+            # Pre-receive again to receive the actual messages
+            return self.pre_receive_f_init()
+
+        # Verify that all F_INIT messages agree on the iteration count
+        cur_iteration = self._timeline_manager.check_finit_iterations(iterations)
+        # Put messages from repeater ports in the cache:
+        self._pre_receive_finit_with_repeaters(cur_iteration, cache)
+        return cache
+
+    def _verify_received_milestones(self, cache: FInitCacheType) -> Optional[Milestone]:
+        """Check if the received messages have consistent milestones.
+
+        Returns:
+            None if no milestones were received, the received Milestone otherwise.
+        """
         milestone_iterations: list[Optional[IterationCount]] = []
         closed_ports: set[str] = set()
         for (port_name, _), message in cache.items():
@@ -291,16 +355,60 @@ class Communicator:
                 f"F_INIT: {milestone_iterations}. This is not supposed to happen and "
                 "may be a bug in libmuscle. Please report an issue."
             )
-        if milestone_iterations[0] is not None:
-            # Propagate milestone
-            milestone = Milestone(milestone_iterations[0])
-            self._broadcast_milestone(milestone, False)
-            if milestone.is_final_milestone():
-                raise PortClosed()
-            # Pre-receive again to receive the actual messages
-            return self.pre_receive_f_init()
+        (iteration,) = milestone_iterations
+        return None if iteration is None else Milestone(iteration)
 
-        return cache
+    def _pre_receive_finit_with_repeaters(
+        self, cur_iteration: IterationCount, cache: FInitCacheType
+    ) -> None:
+        """Handle pre-receive F_INIT for ports with repeater filters.
+
+        Determines if we need to receive again based on the current iteration count and
+        the previously received messages for those ports.
+
+        Args:
+            cur_iteration: Iteration count for the new reuse loop.
+            cache: F_INIT cache to add messages to.
+        """
+        for port_name in self._f_init_repeaters:
+            port = self._port_manager.get_port(port_name)
+
+            # If the message is not in the cache we need to receive again. We may need
+            # to receive and discard multiple messages here, see the tests
+            # (test_repeater_filters_discard_messages) for a scenario.
+            slot = 0 if port.is_vector() else None
+            while (port_name, slot) not in self._f_init_repeat_cache:
+                _logger.debug("Pre-receiving on port %s", port_name)
+                for recv_slot in _yield_slots(port):
+                    mpp_msg = self._receive_message(port_name, recv_slot)
+                    if is_subiteration(cur_iteration, mpp_msg.iteration):
+                        self._f_init_repeat_cache[(port_name, recv_slot)] = mpp_msg
+                    elif mpp_msg.iteration > cur_iteration:
+                        raise RuntimeError(
+                            "Internal error: Received a message from the future on "
+                            f"{port_desc(port_name, slot)}. Message iteration is "
+                            f"{mpp_msg.iteration}, while ours is {cur_iteration}."
+                        )
+
+            # Repeat or pad the cached messages
+            filters = self._f_init_repeaters[port_name]
+            pad_message = any(
+                filter is ConduitFilter.PAD and cur_iteration[-len(filters) + i] > 0
+                for i, filter in enumerate(filters)
+            )
+            for slot in _yield_slots(port):
+                mpp_msg = self._f_init_repeat_cache[(port_name, slot)]
+                if not is_subiteration(cur_iteration, mpp_msg.iteration):
+                    raise RuntimeError(
+                        "Internal error: Invalid cached message for "
+                        f"{port_desc(port_name, slot)}. Cached message iteration is "
+                        f"{mpp_msg.iteration}, while ours is {cur_iteration}."
+                    )
+                # Create a deepcopy, so users won't alter the message we cache:
+                message = _make_message(mpp_msg, copy=True)
+                if pad_message:
+                    message.data = None
+                cache[(port_name, slot)] = message
 
     def receive_s_message(self, port_name: str, slot: Optional[int] = None) -> Message:
         """Receive a message and attached settings overlay on an "S" port.
@@ -322,6 +430,7 @@ class Communicator:
             RuntimeError: If the network connection had an error, or the
                     message number was incorrect.
         """
+        self._timeline_manager.check_receive_s(port_name, slot)
         # Instance should not need to bother about milestones, so we keep receiving
         # messages until we have actual data:
         while True:
@@ -331,12 +440,13 @@ class Communicator:
                     raise PortClosed()
                 # TODO: handle milestone, if needed
             else:
-                return message
+                self._timeline_manager.record_received_s_message(
+                    port_name, slot, message.iteration
+                )
+                return _make_message(message)
 
-    def _receive_message(self, port_name: str, slot: Optional[int]) -> Message:
+    def _receive_message(self, port_name: str, slot: Optional[int]) -> MPPMessage:
         """Implementation for receive_message."""
-        self._timeline_manager.check_receive(port_name, slot)
-
         port = self._port_manager.get_port(port_name)
         port_and_slot = port_desc(port_name, slot)
         _logger.debug("Waiting for message on %s", port_and_slot)
@@ -404,13 +514,6 @@ class Communicator:
             if milestone.is_final_milestone():
                 port.set_closed(slot)
 
-        message = Message(
-            mpp_message.timestamp,
-            mpp_message.next_timestamp,
-            mpp_message.data,
-            mpp_message.settings_overlay,
-        )
-
         recv_wait_event = ProfileEvent(
             ProfileEventType.RECEIVE_WAIT,
             profile[0],
@@ -420,7 +523,7 @@ class Communicator:
             slot,
             port.get_num_messages(),
             len(memoryview(mpp_message_bytes)),
-            message.timestamp,
+            mpp_message.timestamp,
         )
 
         recv_xfer_event = ProfileEvent(
@@ -432,11 +535,11 @@ class Communicator:
             slot,
             port.get_num_messages(),
             len(memoryview(mpp_message_bytes)),
-            message.timestamp,
+            mpp_message.timestamp,
         )
 
-        recv_decode_event.message_timestamp = message.timestamp
-        receive_event.message_timestamp = message.timestamp
+        recv_decode_event.message_timestamp = mpp_message.timestamp
+        receive_event.message_timestamp = mpp_message.timestamp
 
         if port.is_vector():
             receive_event.port_length = port.get_length()
@@ -477,15 +580,12 @@ class Communicator:
         if milestone is None:
             port.increment_num_messages(slot)
             _logger.debug(f"Received message on {port_and_slot}")
-            self._timeline_manager.record_received_message(
-                port_name, slot, mpp_message.iteration
-            )
         elif milestone.is_final_milestone():
             _logger.debug(f"Port {port_and_slot} is now closed")
         else:
             _logger.debug("Received %s on %s", milestone, port_and_slot)
 
-        return message
+        return mpp_message
 
     def shutdown(self) -> None:
         """Shuts down the Communicator, closing connections."""
@@ -609,3 +709,24 @@ class Communicator:
         """
         self._close_outgoing_ports()
         self._close_incoming_ports()
+
+    def _prepare_conduit_filters(self) -> None:
+        """Check which ports are connected with a conduit filter and initialize the
+        associated logic.
+        """
+        # F_INIT repeat/pad filters
+        for port in self._port_manager.get_connected_ports(Operator.F_INIT):
+            filters = self._peer_info.get_filters_for_receiver(self._kernel + port.name)
+            # Only keep the repeater filters, the sending component handles reducers:
+            filters = [filter for filter in filters if filter.is_repeater()]
+            if filters:
+                self._f_init_repeaters[str(port.name)] = filters
+        # S repeat/pad filters are not implemented
+        for port in self._port_manager.get_connected_ports(Operator.S):
+            filters = self._peer_info.get_filters_for_receiver(self._kernel + port.name)
+            if any(filter.is_repeater() for filter in filters):
+                raise NotImplementedError(
+                    "Repeater filters are not implemented for S ports, you may connect "
+                    "the conduit to an F_INIT port instead."
+                )
+        # TODO: reducer filters

@@ -9,6 +9,7 @@
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/mpp_client.hpp>
 #include <libmuscle/mpp_server.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/peer_info.hpp>
 #include <libmuscle/port.hpp>
@@ -45,6 +46,7 @@ class Communicator {
     public:
         using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
         using FInitCacheType = std::unordered_map<::ymmsl::Reference, Message>;
+        using MPPCacheType = std::unordered_map<::ymmsl::Reference, MPPMessage>;
 
         /** Create a Communicator.
          *
@@ -101,6 +103,8 @@ class Communicator {
                 Optional<int> slot = {});
 
         /** Receive on all connected F_INIT port (including muscle_settings_in).
+         * 
+         * This method assumes that there is at least one connected F_INIT port.
          * 
          * @return The received messages.
          */
@@ -162,9 +166,22 @@ class Communicator {
     PRIVATE:
         using Ports_ = std::unordered_map<std::string, Port>;
 
+        /** Check if the received messages have consistent milestones.
+         * 
+         * @return Unset if no milestones were received, the received milestone otherwise.
+         */
+        Optional<Milestone> verify_received_milestones_(FInitCacheType const & cache);
+
+        /** Handle pre-receive F_INIT for ports with repeater filters.
+         * 
+         * @param cur_iteration Iteration count for the new reuse loop.
+         * @param cache F_INIT cache to add messages to.
+         */
+        void pre_receive_f_init_with_repeaters_(IterationCount const & cur_iteration, FInitCacheType & cache);
+
         /** Implementation for receive_message.
          */
-        Message receive_message_(
+        MPPMessage receive_message_(
                 std::string const & port_name,
                 Optional<int> slot = {}
                 );
@@ -217,6 +234,11 @@ class Communicator {
          */
         void close_ports_();
 
+        /** Check which ports are connected with a conduit filter and initialize the
+         *  associated logic.
+         */
+        void prepare_conduit_filters_();
+
         ymmsl::Reference kernel_;
         std::vector<int> index_;
         PortManager & port_manager_;
@@ -227,6 +249,11 @@ class Communicator {
         Optional<PeerInfo> peer_info_;
         double receive_timeout_;
         std::unique_ptr<TimelineManager> timeline_manager_;
+        
+        /** List of repeater filters to be applied to each F_INIT port. */
+        std::unordered_map<std::string, std::vector<::ymmsl::ConduitFilter>> f_init_repeaters_;
+        /** Message cache for F_INIT ports with repeater filters. */
+        MPPCacheType f_init_repeat_cache_;
 };
 
 } }

@@ -17,9 +17,10 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
     public:
         MockTimelineManager(ReturnValue) {
             NAME_MOCK_MEM_FUN(MockTimelineManager, constructor);
+            NAME_MOCK_MEM_FUN(MockTimelineManager, check_f_init_iterations);
             NAME_MOCK_MEM_FUN(MockTimelineManager, check_send_message);
-            NAME_MOCK_MEM_FUN(MockTimelineManager, check_receive);
-            NAME_MOCK_MEM_FUN(MockTimelineManager, record_received_message);
+            NAME_MOCK_MEM_FUN(MockTimelineManager, check_receive_s);
+            NAME_MOCK_MEM_FUN(MockTimelineManager, record_received_s_message);
             NAME_MOCK_MEM_FUN(MockTimelineManager, reset);
             NAME_MOCK_MEM_FUN(MockTimelineManager, finish_reuse_iteration);
             NAME_MOCK_MEM_FUN(MockTimelineManager, get_state);
@@ -38,14 +39,18 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
         MockFun<Void, Obj<PortManager const *>> constructor;
 
         MockFun<
+            Val<IterationCount const &>,
+            Val<std::unordered_map<::ymmsl::Reference, IterationCount>>> check_f_init_iterations;
+
+        MockFun<
             Val<IterationCount>, Val<std::string const &>,
             Val<Optional<int>>> check_send_message;
 
-        MockFun<Void, Val<std::string const &>, Val<Optional<int>>> check_receive;
+        MockFun<Void, Val<std::string const &>, Val<Optional<int>>> check_receive_s;
 
         MockFun<
             Void, Val<std::string const &>, Val<Optional<int>>,
-            Val<IterationCount const &>> record_received_message;
+            Val<IterationCount const &>> record_received_s_message;
 
         MockFun<Void> reset;
 

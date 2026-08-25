@@ -60,6 +60,28 @@ Optional<IterationCount> decode_iteration(DataConstRef const & data) {
 }
 
 
+bool is_subiteration(IterationCount const & c1, IterationCount const & c2) {
+    if (c1.size() < c2.size())
+        return false;
+    for (std::size_t i = 0; i < c2.size(); ++i) {
+        if (c1[i] != c2[i])
+            return false;
+    }
+    return true;
+}
+
+std::string to_string(IterationCount const & iteration) {
+    std::ostringstream oss;
+    oss << "[";
+    for (std::size_t i = 0; i < iteration.size(); ++i) {
+        if (i > 0) oss << ", ";
+        oss << iteration[i];
+    }
+    oss << "]";
+    return oss.str();
+}
+
+
 Data SubTimelineState::to_data() const {
     Data first_op;
     if (first_operator.is_set())
@@ -91,7 +113,6 @@ Data TimelineState::to_data() const {
     return Data::dict(
             "iteration", encode_iteration(iteration),
             "send_participated", encode_participated(send_participated),
-            "receive_participated", encode_participated(receive_participated),
             "subtimeline_states", subtimelines);
 }
 
@@ -99,7 +120,6 @@ TimelineState TimelineState::from_data(DataConstRef const & data) {
     TimelineState state;
     state.iteration = decode_iteration(data["iteration"]);
     state.send_participated = decode_participated(data["send_participated"]);
-    state.receive_participated = decode_participated(data["receive_participated"]);
 
     auto subtimelines = data["subtimeline_states"];
     for (std::size_t i = 0; i < subtimelines.size(); ++i)
@@ -389,7 +409,6 @@ void SubTimelineManager::missing_actions(ExpectedActions & result) const {
 
 TimelineManager::TimelineManager(PortManager const & port_manager)
     : port_manager_(port_manager)
-    , receive_(port_manager.get_connected_ports(Operator::F_INIT, Optional<Timeline>()))
     , send_(port_manager.get_connected_ports(Operator::O_F, Optional<Timeline>()))
     , submanagers_()
     , iteration_()
@@ -399,6 +418,29 @@ TimelineManager::TimelineManager(PortManager const & port_manager)
 
     if (!port_manager_.has_f_init_connections())
         iteration_ = IterationCount();
+}
+
+IterationCount const & TimelineManager::check_f_init_iterations(
+        std::unordered_map<::ymmsl::Reference, IterationCount> const & iterations) {
+    if (iteration_.is_set()) throw std::logic_error("Internal error: iteration_ is set.");
+    if (iterations.empty()) throw std::logic_error("Internal error: missing iterations.");
+
+    IterationCount const & first = iterations.begin()->second;
+    for (auto const & item : iterations) {
+        if (item.second != first) {
+            std::ostringstream oss;
+            oss << "Pre-received F_INIT messages from parallel timelines:";
+            for (auto const & ii : iterations) {
+                oss << "\n- " << ii.first << ": " << to_string(ii.second);
+            }
+            oss << "\nPlease verify that all connected instances send the same ";
+            oss << "number of messages on their O_I ports.";
+            throw std::runtime_error(oss.str());
+        }
+    }
+
+    iteration_ = first;
+    return iteration_.get();
 }
 
 IterationCount TimelineManager::check_send_message(
@@ -429,29 +471,18 @@ IterationCount TimelineManager::check_send_o_f_(Port const & port, Optional<int>
     return iteration_.get();
 }
 
-void TimelineManager::check_receive(std::string const & port_name, Optional<int> slot) {
+void TimelineManager::check_receive_s(std::string const & port_name, Optional<int> slot) {
     Port const & port = port_manager_.get_port(port_name);
-
-    if (port.oper == Operator::F_INIT) {
-        if (receive_.has_participated(port_name, slot))
-            throw AlreadyParticipated(port, slot);
-    } else if (port.oper == Operator::S)
-        submanagers_.at(port.timeline).check_receive(port, slot);
+    if (port.oper != Operator::S)
+        throw std::logic_error("Internal error: port.oper != Operator::S");
+    submanagers_.at(port.timeline).check_receive(port, slot);
 }
 
-void TimelineManager::record_received_message(
+void TimelineManager::record_received_s_message(
         std::string const & port_name, Optional<int> slot, IterationCount const & iteration) {
     Port const & port = port_manager_.get_port(port_name);
-
-    if (port.oper == Operator::F_INIT) {
-        if (!iteration_.is_set())
-            iteration_ = iteration;
-        else if (iteration != iteration_.get())
-            throw MessageOutOfSync(port, slot);
-        receive_.participate(port_name, slot);
-        return;
-    }
-
+    if (port.oper != Operator::S)
+        throw std::logic_error("Internal error: port.oper != Operator::S");
     submanagers_.at(port.timeline).record_received_message(port, slot, iteration);
 }
 
@@ -459,7 +490,6 @@ void TimelineManager::reset() {
     iteration_ = port_manager_.has_f_init_connections() ?
             Optional<IterationCount>() : Optional<IterationCount>(IterationCount());
     send_.reset();
-    receive_.reset();
     for (auto & item : submanagers_)
         item.second.reset();
 }
@@ -474,13 +504,13 @@ IterationCount TimelineManager::finish_reuse_iteration() {
         }
     }
 
-    if (receive_.all_participated() && send_.all_participated() && subtimelines_complete) {
+    if (send_.all_participated() && subtimelines_complete) {
         reset();
         return iteration;
     }
 
     ExpectedActions expected;
-    expected_actions(&send_, &receive_, expected);
+    expected_actions(&send_, nullptr, expected);
     for (auto const & item : submanagers_) {
         if (!item.second.is_complete())
             item.second.missing_actions(expected);
@@ -493,7 +523,6 @@ TimelineState TimelineManager::get_state() const {
     TimelineState state;
     state.iteration = iteration_;
     state.send_participated = send_.participated;
-    state.receive_participated = receive_.participated;
     for (auto const & item : submanagers_)
         state.subtimeline_states.emplace(
                 static_cast<std::string>(item.first), item.second.get_state());
@@ -503,7 +532,6 @@ TimelineState TimelineManager::get_state() const {
 void TimelineManager::restore_state(TimelineState const & state) {
     iteration_ = state.iteration;
     send_.participated = state.send_participated;
-    receive_.participated = state.receive_participated;
     for (auto & item : submanagers_) {
         auto it = state.subtimeline_states.find(static_cast<std::string>(item.first));
         if (it != state.subtimeline_states.end())

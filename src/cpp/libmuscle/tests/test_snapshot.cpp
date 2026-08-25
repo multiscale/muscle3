@@ -76,8 +76,6 @@ TEST_F(libmuscle_snapshot, test_snapshot) {
               snapshot2.timeline_state.iteration.get());
     ASSERT_EQ(snapshot_.timeline_state.send_participated,
               snapshot2.timeline_state.send_participated);
-    ASSERT_EQ(snapshot_.timeline_state.receive_participated,
-              snapshot2.timeline_state.receive_participated);
     ASSERT_EQ(snapshot_.timeline_state.subtimeline_states.size(),
               snapshot2.timeline_state.subtimeline_states.size());
 }

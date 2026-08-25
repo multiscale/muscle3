@@ -203,8 +203,6 @@ struct TimelineStateFixture {
         TimelineStateFixture() {
             timeline_state_.iteration = IterationCount({1});
             timeline_state_.send_participated = {};
-            timeline_state_.receive_participated = {
-                    PortAndSlot("in", OptionalSlot())};
             timeline_state_.subtimeline_states = {};
         }
 };

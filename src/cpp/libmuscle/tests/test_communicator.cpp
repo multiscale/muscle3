@@ -134,6 +134,7 @@ struct libmuscle_communicator2 : libmuscle_communicator {
         // disable receive timeouts for these tests, so we can check call
         // signatures: mpp_client->receive.called_with(..., nullptr)
         connected_communicator_.set_receive_timeout(-1.0);
+        connected_communicator_.timeline_manager_->check_f_init_iterations.return_value = IterationCount({});
     }
 };
 
@@ -171,8 +172,7 @@ TEST_F(libmuscle_communicator2, send_message) {
     ASSERT_EQ(overlay["s0"].as<int64_t>(), 0);
     ASSERT_EQ(overlay["s1"].as<std::string>(), "1");
     ASSERT_EQ(encoded_msg.data.as<std::string>(), "test");
-    ASSERT_TRUE(encoded_msg.iteration.is_set());
-    ASSERT_EQ(encoded_msg.iteration.get(), IterationCount({2, 0}));
+    ASSERT_EQ(encoded_msg.iteration, IterationCount({2, 0}));
 }
 
 TEST_F(libmuscle_communicator2, send_message_disconnected) {

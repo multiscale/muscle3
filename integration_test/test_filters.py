@@ -3,7 +3,7 @@ from ymmsl.v0_2 import Operator
 
 from libmuscle import Instance, Message
 
-from .conftest import run_manager_with_actors
+from .conftest import run_manager_with_actors, skip_if_python_only
 
 
 def macro() -> None:
@@ -123,5 +123,17 @@ def test_repeater_filters(tmp_path, filters):
         "meso": ("python", meso),
         "micro": ("python", micro),
         "pico": ("python", pico, filters),
+    }
+    run_manager_with_actors(config.format(filters=filters), tmp_path, actors)
+
+
+@skip_if_python_only
+@pytest.mark.parametrize("filters", ["repeat repeat", "repeat pad", "pad pad"])
+def test_repeater_filters_cpp(tmp_path, filters):
+    actors = {
+        "macro": ("python", macro),
+        "meso": ("python", meso),
+        "micro": ("python", micro),
+        "pico": ("cpp", "conduit_filters_test", filters),
     }
     run_manager_with_actors(config.format(filters=filters), tmp_path, actors)

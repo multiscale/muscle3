@@ -42,6 +42,14 @@ Optional<IterationCount> decode_iteration(DataConstRef const & data);
 using ExpectedAction = std::tuple<std::string, Port, std::vector<int>>;
 using ExpectedActions = std::vector<ExpectedAction>;
 
+/** Check if c1 is a sub-iteration of c2, or if c1 is equal to c2.
+ */
+bool is_subiteration(IterationCount const & c1, IterationCount const & c2);
+
+/** String representation of IterationCount
+ */
+std::string to_string(IterationCount const & iteration);
+
 /** A single sub-timeline's state, as returned by SubTimelineManager::get_state()
  * for saving in a snapshot. */
 struct SubTimelineState {
@@ -66,7 +74,6 @@ struct SubTimelineState {
 struct TimelineState {
     Optional<IterationCount> iteration;
     std::vector<PortAndSlot> send_participated;
-    std::vector<PortAndSlot> receive_participated;
     std::unordered_map<std::string, SubTimelineState> subtimeline_states;
 
     Data to_data() const;
@@ -277,6 +284,11 @@ class TimelineManager {
          */
         explicit TimelineManager(PortManager const & port_manager);
 
+        /** Set current iteration count from pre-received F_INIT messages.
+         */
+        IterationCount const & check_f_init_iterations(
+            std::unordered_map<::ymmsl::Reference, IterationCount> const & iterations);
+
         /** Check and update the timeline state before sending on the given
          * port.
          *
@@ -293,28 +305,23 @@ class TimelineManager {
         IterationCount check_send_message(
                 std::string const & port_name, Optional<int> slot = {});
 
-        /** Check that receiving on the given port is currently allowed.
+        /** Check that receiving on the given S port is currently allowed.
          *
-         * An F_INIT port may receive once after the reuse loop starts and
-         * before any other ports are used. Whether an S port may receive is
-         * delegated to the corresponding SubTimelineManager.
-         *
-         * @param port_name Name of the F_INIT or S port about to receive.
+         * @param port_name Name of the S port about to receive.
          * @param slot The slot being received on, if this is a vector port.
          */
-        void check_receive(std::string const & port_name, Optional<int> slot = {});
+        void check_receive_s(std::string const & port_name, Optional<int> slot = {});
 
-        /** Record that a message has been received on the given port.
+        /** Record that a message has been received on the given S port.
          *
          * check_receive already established that this receive is allowed.
          *
-         * @param port_name Name of the F_INIT or S port a message was
-         *      received on.
+         * @param port_name Name of the S port a message was received on.
          * @param slot The slot the message was received on, if this is a
          *      vector port.
          * @param iteration The iteration the received message was sent with.
          */
-        void record_received_message(
+        void record_received_s_message(
                 std::string const & port_name, Optional<int> slot,
                 IterationCount const & iteration);
 
@@ -352,7 +359,6 @@ class TimelineManager {
         IterationCount check_send_o_f_(Port const & port, Optional<int> slot);
 
         PortManager const & port_manager_;
-        TimelinePorts receive_;
         TimelinePorts send_;
         std::unordered_map<::ymmsl::Timeline, SubTimelineManager> submanagers_;
         Optional<IterationCount> iteration_;

@@ -69,7 +69,7 @@ class MPPMessage {
         DataConstRef settings_overlay;
         int message_number;
         DataConstRef data;
-        Optional<IterationCount> iteration;
+        IterationCount iteration;
 
     private:
         static MPPMessage from_dict_(DataConstRef const & dict);

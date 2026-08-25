@@ -145,7 +145,6 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     ASSERT_EQ(restored_state.iteration.is_set(), timeline_state_.iteration.is_set());
     ASSERT_EQ(restored_state.iteration.get(), timeline_state_.iteration.get());
     ASSERT_EQ(restored_state.send_participated, timeline_state_.send_participated);
-    ASSERT_EQ(restored_state.receive_participated, timeline_state_.receive_participated);
     ASSERT_EQ(
             restored_state.subtimeline_states.size(),
             timeline_state_.subtimeline_states.size());

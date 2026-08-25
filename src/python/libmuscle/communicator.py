@@ -296,8 +296,8 @@ class Communicator:
             f_init_cache: The received messages.
         """
         cache: FInitCacheType = {}
-
         iterations: dict[PortAndSlot, IterationCount] = {}
+
         # Pre-receive on ports without repeater filters:
         for port in self._port_manager.get_connected_ports(Operator.F_INIT):
             port_name = str(port.name)

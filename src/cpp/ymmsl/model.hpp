@@ -9,7 +9,7 @@ namespace ymmsl { namespace impl {
 
 /** Represents a filter to apply to messages passing through a conduit.
  */
-enum ConduitFilter {
+enum class ConduitFilter {
     /** Pass only the last message and drop preceding ones. */
     LAST,
     /** Repeat a single message as often as needed. */

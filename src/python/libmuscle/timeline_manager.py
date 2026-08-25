@@ -252,7 +252,7 @@ class TimelineManager:
             None if self._port_manager.has_f_init_connections() else []
         )
 
-    def check_finit_iterations(
+    def check_f_init_iterations(
         self, iterations: dict[PortAndSlot, IterationCount]
     ) -> IterationCount:
         """Set current iteration count from pre-received F_INIT messages."""
@@ -338,7 +338,7 @@ class TimelineManager:
         """Check that receiving on the given S port is currently allowed.
 
         Args:
-            port_name: Name of the F_INIT or S port about to receive.
+            port_name: Name of the S port about to receive.
             slot: The slot being received on, if this is a vector port.
         """
         port = self._port_manager.get_port(port_name)
@@ -356,7 +356,7 @@ class TimelineManager:
         check_receive already established that this receive is allowed.
 
         Args:
-            port_name: Name of the F_INIT or S port a message was received on.
+            port_name: Name of the S port a message was received on.
             slot: The slot the message was received on, if this is a vector port.
             iteration: The iteration the received message was sent with.
         """

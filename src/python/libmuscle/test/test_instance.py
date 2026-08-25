@@ -515,6 +515,16 @@ def test_receive_on_sending_port(instance):
         instance.receive("out_v", 3)
 
 
+def test_receive_missing_slot(instance):
+    with pytest.raises(RuntimeError):
+        instance.receive("in_v")
+
+
+def test_receive_slot_on_scalar_port(instance):
+    with pytest.raises(RuntimeError):
+        instance.receive("in", 0)
+
+
 def test_receive_f_init(instance, port_manager, communicator):
     mock_msg = MagicMock()
     mock_msg.data = Settings()

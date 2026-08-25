@@ -957,74 +957,52 @@ class Instance:
         """
         self.__check_port(port_name, slot, False, True)
 
+        err_msg: Optional[str] = None
         port = self._port_manager.get_port(port_name)
-        if port.operator is Operator.F_INIT:
+        if not port.is_connected():
+            if default is not None:
+                _logger.debug(
+                    "No message received on port %s as it is not connected", port_name
+                )
+                return default
+            else:
+                err_msg = (
+                    f'Tried to receive on port "{port_name}", which is disconnected,'
+                    " and no default value was given. Either specify a default, or"
+                    " connect a sending component to this port."
+                )
+        elif port.operator is Operator.F_INIT:
             if (port_name, slot) in self._f_init_cache:
                 msg = self._f_init_cache[(port_name, slot)]
                 del self._f_init_cache[(port_name, slot)]
                 if with_settings and msg.settings is None:
                     err_msg = (
-                        "If you use receive_with_settings()"
-                        " on an F_INIT port, then you have to"
-                        " set the flag"
-                        " :attr:`InstanceFlag.DONT_APPLY_OVERLAY` when"
-                        " creating the :class:`Instance`, otherwise the"
-                        " settings will already have been applied by"
-                        " MUSCLE."
+                        "If you use receive_with_settings() on an F_INIT port, then you"
+                        " have to set the flag 'InstanceFlag.DONT_APPLY_OVERLAY' when"
+                        " creating the Instance, otherwise the settings will already"
+                        " have been applied by MUSCLE."
                     )
-                    self.__shutdown(err_msg)
-                    raise RuntimeError(err_msg)
             else:
-                if port.is_connected():
-                    err_msg = (
-                        "Tried to receive twice on the same"
-                        f' port "{port_name}", that\'s not possible.'
-                        " Did you forget to call"
-                        " reuse_instance() in your reuse loop?"
-                    )
-                    self.__shutdown(err_msg)
-                    raise RuntimeError(err_msg)
-                else:
-                    if default is not None:
-                        return default
-                    err_msg = (
-                        f'Tried to receive on port "{port_name}",'
-                        " which is not connected, and no"
-                        " default value was given. Please"
-                        " connect this port!"
-                    )
-                    self.__shutdown(err_msg)
-                    raise RuntimeError(err_msg)
+                err_msg = (
+                    f'Tried to receive twice on the same port "{port_name}", that\'s'
+                    " not possible. Did you forget to call reuse_instance() in your"
+                    " reuse loop?"
+                )
 
         else:
-            if not port.is_connected():
-                if default is None:
-                    raise RuntimeError(
-                        f'Tried to receive on port "{port_name}", which'
-                        " is disconnected, and no default value was"
-                        " given. Either specify a default, or"
-                        " connect a sending component to this"
-                        " port."
-                    )
-                else:
-                    _logger.debug(
-                        f"No message received on {port_name} as it is not connected"
-                    )
-                    return default
-
-            else:
-                try:
-                    msg = self._communicator.receive_s_message(port_name, slot)
-                except PortClosed:
-                    err_msg = (
-                        f"Port {port_name} was closed while trying to"
-                        " receive on it, did the peer crash?"
-                    )
-                    self.__shutdown(err_msg)
-                    raise RuntimeError(err_msg) from None
+            try:
+                msg = self._communicator.receive_s_message(port_name, slot)
                 if not with_settings:
                     self.__check_compatibility(port_name, msg.settings)
                     msg.settings = None
+            except PortClosed:
+                err_msg = (
+                    f"Port {port_name} was closed while trying to"
+                    " receive on it, did the peer crash?"
+                )
+        if err_msg is not None:
+            self.__shutdown(err_msg)
+            raise RuntimeError(err_msg)
         return msg
 
     def __make_full_name(self) -> tuple[Reference, list[int]]:
@@ -1112,6 +1090,10 @@ class Instance:
                 self.__shutdown(err_msg)
                 raise RuntimeError(err_msg)
 
+        if port.is_vector() and slot is None:
+            err_msg = f'Port "{port_name}" is a vector port, but no slot was given.'
+            self.__shutdown(err_msg)
+            raise RuntimeError(err_msg)
         if slot is not None:
             if not port.is_vector():
                 err_msg = (

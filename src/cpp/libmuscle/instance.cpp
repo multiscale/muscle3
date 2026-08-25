@@ -616,7 +616,20 @@ Message Instance::Impl::receive_message(
 
     Reference port_ref(port_name);
     auto const & port = port_manager_->get_port(port_name);
-    if (port.oper == Operator::F_INIT) {
+    if (!port.is_connected()) {
+        if (default_msg.is_set()) {
+            log_debug("No message received on port ", port_ref, " as it is not connected.");
+            result = default_msg.get();
+        }
+        else {
+            std::ostringstream oss;
+            oss << "Tried to receive on port \"" << port_ref << "\" which is";
+            oss << " disconnected, and no default value was given. Either";
+            oss << " specify a default, or connect a sending port to this port.";
+            error = Error(std::logic_error(oss.str()));
+        }
+    }
+    else if (port.oper == Operator::F_INIT) {
         if (slot.is_set())
             port_ref += slot.get();
 
@@ -626,66 +639,32 @@ Message Instance::Impl::receive_message(
 
             if (with_settings && !result.has_settings()) {
                 error = Error(std::logic_error(
-                        "If you use receive_with_settings() on an F_INIT"
-                        " port, then you have to set the flag"
-                        " 'InstanceFlags::DONT_APPLY_OVERLAY' when constructing"
-                        " the Instance, otherwise the settings will"
-                        " already have been applied by MUSCLE."));
+                        "If you use receive_with_settings() on an F_INIT port, then you"
+                        " have to set the flag 'InstanceFlag::DONT_APPLY_OVERLAY' when"
+                        " creating the Instance, otherwise the settings will already"
+                        " have been applied by MUSCLE."));
             }
         }
         else {
-            if (port.is_connected()) {
-                std::ostringstream oss;
-                oss << "Tried to receive twice on the same port '";
-                oss << port_ref << "' in a single F_INIT, that's not possible.";
-                oss << " Did you forget to call reuse_instance() in your reuse";
-                oss << " loop?";
-                error = Error(std::logic_error(oss.str()));
-            }
-            else {
-                if (default_msg.is_set())
-                    result = default_msg.get();
-                else {
-                    std::ostringstream oss;
-                    oss << "Tried to receive on port '" << port_ref << "', which";
-                    oss << " is not connected, and no default value was given.";
-                    oss << " Please connect this port!";
-                    error = Error(std::logic_error(oss.str()));
-                }
-            }
+            std::ostringstream oss;
+            oss << "Tried to receive twice on the same port \"" << port_ref;
+            oss << "\", that's not possible. Did you forget to call reuse_instance()";
+            oss << " in your reuse loop?";
+            error = Error(std::logic_error(oss.str()));
         }
     }
     else {
-        if (!port.is_connected()) {
-            if (!default_msg.is_set()) {
-                std::ostringstream oss;
-                oss << "Tried to receive on port \"" << port_ref << "\" which is";
-                oss << " disconnected, and no default value was given. Either";
-                oss << " specify a default, or connect a sending port to this";
-                oss << " port.";
-                error = Error(std::runtime_error(oss.str()));
-            }
-            else {
-                std::ostringstream oss;
-                oss << "No message received on " << port_ref << " as it is not";
-                oss << " connected.";
-                log_debug(oss.str());
-                result = default_msg.get();
-            }
-        }
-        else {
-            try {
-                result = communicator_->receive_s_message(port_name, slot);
-            } catch (PortClosed &err) {
-                std::ostringstream oss;
-                oss << "Port \"" << port_ref << "\" is closed, but we're trying";
-                oss << " to receive on it. Did the peer crash?";
-                error = Error(std::runtime_error(oss.str()));
-            }
-            if (!error.is_error() && !with_settings) {
+        try {
+            result = communicator_->receive_s_message(port_name, slot);
+            if (!with_settings) {
                 check_compatibility_(port_name, result.settings());
                 result.unset_settings();
             }
+        } catch (PortClosed &err) {
+            std::ostringstream oss;
+            oss << "Port \"" << port_ref << "\" is closed, but we're trying";
+            oss << " to receive on it. Did the peer crash?";
+            error = Error(std::runtime_error(oss.str()));
         }
     }
 
@@ -881,6 +860,11 @@ void Instance::Impl::check_port_(
         }
     }
 
+    if (port.is_vector() and !slot.is_set()) {
+        std::ostringstream oss;
+        oss << "Port \"" << port_name << "\" is a vector port, but no slot was given.";
+        throw std::logic_error(oss.str());
+    }
     if (slot.is_set()) {
         if (!port.is_vector()) {
             std::ostringstream oss;

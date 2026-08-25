@@ -50,7 +50,11 @@ def decode_port(data: list[str]) -> Port:
 
 def encode_conduit(conduit: Conduit) -> list[str]:
     """Convert a Conduit to a MsgPack-compatible value."""
-    return [str(conduit.sender), str(conduit.receiver)]
+    return [
+        str(conduit.sender),
+        str(conduit.receiver),
+        " ".join(f.value for f in conduit.filters),
+    ]
 
 
 def encode_ports(ports: Ports) -> list[list[str]]:

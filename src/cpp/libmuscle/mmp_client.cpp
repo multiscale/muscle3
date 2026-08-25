@@ -275,7 +275,9 @@ auto MMPClient::request_peers() -> PeerInfo
     std::vector<Conduit> conduits;
     for (std::size_t i = 0u; i < recv_conduits.size(); ++i)
         conduits.emplace_back(
-                recv_conduits[i][0].as<std::string>(), recv_conduits[i][1].as<std::string>());
+                recv_conduits[i][0].as<std::string>(),
+                recv_conduits[i][1].as<std::string>(),
+                recv_conduits[i][2].as<std::string>());
 
 
     auto const & recv_dims = response[2];

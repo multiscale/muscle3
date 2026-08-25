@@ -59,26 +59,17 @@ class PeerInfo {
          */
         std::vector<::ymmsl::Port> const & list_ymmsl_ports() const;
 
-        /** List incoming ports.
-         *
-         * @return A vector of tuples containing a port id and a reference to the
-         *      peer endpoint.
-         */
-        IncomingPorts list_incoming_ports() const;
-
-        /** List outgoing ports.
-         *
-         * @return A vector of tuples containing a port id and a vector of references
-         * to the peer endpoints.
-         */
-        OutgoingPorts list_outgoing_ports() const;
-
         /** Determine whether the given port is connected.
          *
          * @param port The port to check.
          * @return true iff the port is connected.
          */
         bool is_connected(ymmsl::Identifier const & port) const;
+
+        /** Get the conduit filters for a receiver (component + port name)
+         */
+        std::vector<ymmsl::ConduitFilter> const & get_filters_for_receiver(
+                ymmsl::Reference const & receiver);
 
         /** Get a reference for all the peer ports.
          *
@@ -125,9 +116,8 @@ class PeerInfo {
         ymmsl::Reference kernel_;
         std::vector<int> index_;
 
-        std::vector<ymmsl::Reference> incoming_ports_, outgoing_ports_;
-
         std::unordered_map<ymmsl::Reference, std::vector<ymmsl::Reference>> peers_;
+        std::unordered_map<ymmsl::Reference, std::vector<ymmsl::ConduitFilter>> filters_per_receiver_;
         PeerDims peer_dims_;
         PeerLocations peer_locations_;
         std::vector<::ymmsl::Port> ymmsl_ports_;

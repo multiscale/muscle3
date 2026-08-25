@@ -50,14 +50,6 @@ void test_register_instance(MMPClient & client) {
 void test_request_peers(MMPClient & client) {
     auto peer_info = client.request_peers();
 
-    auto const & incoming_ports = peer_info.list_incoming_ports();
-    assert(incoming_ports.size() == 1);
-    assert(std::get<0>(incoming_ports[0]) == "micro.in");
-
-    auto const & outgoing_ports = peer_info.list_outgoing_ports();
-    assert(outgoing_ports.size() == 1);
-    assert(std::get<0>(outgoing_ports[0]) == "micro.out");
-
     auto const & in_peer_ports = peer_info.get_peer_ports("micro.in");
     assert(in_peer_ports.size() == 1);
     assert(in_peer_ports[0] == "macro.out");

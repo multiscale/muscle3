@@ -6,8 +6,6 @@ from ymmsl.v0_2 import Operator
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
 
-NUM_MICROS = 10
-
 
 def macro() -> None:
     """Macro model implementation."""

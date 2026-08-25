@@ -45,7 +45,7 @@ class TopologyStore:
         for conduit in self.model.conduits:
             if conduit.sending_component() == component:
                 ret.append(conduit)
-            if conduit.receiving_component() == component:
+            elif conduit.receiving_component() == component:
                 ret.append(conduit)
         return ret
 

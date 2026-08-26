@@ -22,7 +22,6 @@ from libmuscle.timeline_manager import (
     PortAndSlot,
     TimelineManager,
     TimelineState,
-    is_subiteration,
 )
 from libmuscle.util import port_desc
 
@@ -149,9 +148,13 @@ class Communicator:
         # indexed by remote instance id
         self._clients: dict[Reference, MPPClient] = {}
 
+        self._cur_iteration: Optional[IterationCount] = None
+        """Iteration count of the current reuse loop. Only None at initialization."""
+        self._pre_receive_ports: list[Port] = []
+        """List of ports that we should pre-receive on."""
         self._ports_with_repeaters: dict[str, list[ConduitFilter]] = {}
         """List of repeater filters to be applied to each F_INIT port."""
-        self._repeat_cache: _MPPCacheType = {}
+        self._message_cache: _MPPCacheType = {}
         """Message cache for F_INIT ports with repeater filters."""
 
     def get_locations(self) -> list[str]:
@@ -203,11 +206,6 @@ class Communicator:
             state: The state to restore, as returned by get_state().
         """
         self._timeline_manager.restore_state(state)
-
-    def finish_reuse_iteration(self) -> None:
-        """Finish the reuse iteration and send milestones."""
-        finished_iteration = self._timeline_manager.finish_reuse_iteration()
-        self._broadcast_milestone(Milestone(finished_iteration), True)
 
     def send_message(
         self,
@@ -290,114 +288,78 @@ class Communicator:
     def pre_receive_f_init(self) -> FInitCacheType:
         """Receive on all connected F_INIT port (including muscle_settings_in).
 
-        This method assumes that there is at least one connected F_INIT port.
-
         Returns:
             f_init_cache: The received messages.
         """
-        cache: FInitCacheType = {}
-        iterations: dict[PortAndSlot, IterationCount] = {}
+        milestone: Optional[Milestone] = None
+        if self._cur_iteration is not None:
+            self._timeline_manager.finish_reuse_iteration()
+            milestone = Milestone(self._cur_iteration)
 
-        # Pre-receive on ports without repeater filters:
+        while True:
+            if milestone is not None:
+                # Should send on O_I only when this is the milestone for our current
+                # iteration. Other milestones (received on F_INIT ports) should
+                # propagate to O_F as well:
+                self._broadcast_milestone(
+                    milestone, only_o_i=(milestone.iteration == self._cur_iteration)
+                )
+
+                # Clean up stale messages in the cache
+                self._message_cache = {
+                    key: message
+                    for key, message in self._message_cache.items()
+                    if message.iteration != milestone.iteration
+                }
+
+                # TODO: send buffered message for reducer filters
+
+                if milestone.is_final_milestone():
+                    raise PortClosed()
+
+            received_iterations: list[IterationCount] = []
+            received_milestones: list[Milestone] = []
+            # Pre-receive on all F_INIT ports and repeated S ports, if needed
+            for port in self._pre_receive_ports:
+                port_name = str(port.name)
+                for slot in _yield_slots(port):
+                    if (port_name, slot) in self._message_cache:
+                        continue
+                    _logger.debug("Pre-receiving on %s", port_desc(port_name, slot))
+                    mpp_message = self._receive_message(port_name, slot)
+                    self._message_cache[(port_name, slot)] = mpp_message
+
+                    received_iterations.append(mpp_message.iteration)
+                    if isinstance(mpp_message.data, Milestone):
+                        received_milestones.append(mpp_message.data)
+
+            if not received_milestones:
+                break
+            # Handle most deeply nested milestone first:
+            # TODO: check if all milestones are properly nested?
+            milestone = max(
+                received_milestones, key=lambda milestone: len(milestone.iteration)
+            )
+
+        # Update current iteration
+        self._cur_iteration = self._timeline_manager.check_f_init_iterations(
+            received_iterations
+        )
+
+        # Fill F_INIT cache for Instance
+        cache: FInitCacheType = {}
         for port in self._port_manager.get_connected_ports(Operator.F_INIT):
             port_name = str(port.name)
-            if port_name not in self._ports_with_repeaters:
-                _logger.debug("Pre-receiving on port %s", port_name)
-                for slot in _yield_slots(port):
-                    mpp_message = self._receive_message(port_name, slot)
-                    cache[(port_name, slot)] = _make_message(mpp_message)
-                    iterations[(port_name, slot)] = mpp_message.iteration
+            filters = self._ports_with_repeaters.get(port_name, [])
+            pad_message = self._should_pad_message(self._cur_iteration, filters)
+            for slot in _yield_slots(port):
+                mpp_message = self._message_cache[(port_name, slot)]
+                message = _make_message(mpp_message)
+                if pad_message:
+                    message.data = None
+                cache[(port_name, slot)] = message
 
-        # Check if we have received milestones
-        milestone = self._verify_received_milestones(cache)
-        if milestone is not None:
-            self._broadcast_milestone(milestone, False)
-            if milestone.is_final_milestone():
-                raise PortClosed()
-            # Pre-receive again to receive the actual messages
-            return self.pre_receive_f_init()
-
-        # Verify that all F_INIT messages agree on the iteration count
-        cur_iteration = self._timeline_manager.check_f_init_iterations(iterations)
-        # Put messages from repeater ports in the cache:
-        self._pre_receive_ports_with_repeaters(cur_iteration, cache)
         return cache
-
-    def _verify_received_milestones(self, cache: FInitCacheType) -> Optional[Milestone]:
-        """Check if the received messages have consistent milestones.
-
-        Returns:
-            None if no milestones were received, the received Milestone otherwise.
-        """
-        milestone_iterations: list[Optional[IterationCount]] = []
-        closed_ports: set[str] = set()
-        for (port_name, _), message in cache.items():
-            it = message.data.iteration if isinstance(message.data, Milestone) else None
-            if it not in milestone_iterations:
-                milestone_iterations.append(it)
-            if it == []:
-                closed_ports.add(port_name)
-        # Milestones should be consistent, or something went wrong
-        if len(milestone_iterations) > 1:
-            if closed_ports:
-                raise RuntimeError(
-                    "Some ports were unexpectedly closed while trying to receive, did "
-                    "the peers crash? Closed ports: " + ", ".join(sorted(closed_ports))
-                )
-            raise RuntimeError(
-                "Internal error: received milestones for different iterations in "
-                f"F_INIT: {milestone_iterations}. This is not supposed to happen and "
-                "may be a bug in libmuscle. Please report an issue."
-            )
-        (iteration,) = milestone_iterations
-        return None if iteration is None else Milestone(iteration)
-
-    def _pre_receive_ports_with_repeaters(
-        self, cur_iteration: IterationCount, cache: FInitCacheType
-    ) -> None:
-        """Handle pre-receive for ports with repeater filters.
-
-        Args:
-            cur_iteration: Iteration count for the new reuse loop.
-            cache: F_INIT cache to add messages of F_INIT ports to.
-        """
-        for port_name, filters in self._ports_with_repeaters.items():
-            port = self._port_manager.get_port(port_name)
-
-            # If the message is not in the cache we need to receive again. We may need
-            # to receive and discard multiple messages here, see the tests
-            # (test_repeater_filters_discard_messages) for a scenario.
-            slot = 0 if port.is_vector() else None
-            while (port_name, slot) not in self._repeat_cache:
-                _logger.debug("Pre-receiving on port %s", port_name)
-                for recv_slot in _yield_slots(port):
-                    mpp_msg = self._receive_message(port_name, recv_slot)
-                    if is_subiteration(cur_iteration, mpp_msg.iteration):
-                        self._repeat_cache[(port_name, recv_slot)] = mpp_msg
-                    elif mpp_msg.iteration > cur_iteration:
-                        raise RuntimeError(
-                            "Internal error: Received a message from the future on "
-                            f"{port_desc(port_name, recv_slot)}. Message iteration is "
-                            f"{mpp_msg.iteration}, while ours is {cur_iteration}."
-                        )
-
-            # Fill F_INIT cache:
-            if port.operator is Operator.F_INIT:
-                # Repeat or pad the cached messages
-                pad_message = self._should_pad_message(cur_iteration, filters)
-                for slot in _yield_slots(port):
-                    mpp_msg = self._repeat_cache[(port_name, slot)]
-                    if not is_subiteration(cur_iteration, mpp_msg.iteration):
-                        raise RuntimeError(
-                            "Internal error: Invalid cached message for "
-                            f"{port_desc(port_name, slot)}. Cached message iteration "
-                            f"is {mpp_msg.iteration}, while ours is {cur_iteration}."
-                        )
-                    # Create a deepcopy, so users won't alter the message we cache:
-                    message = _make_message(mpp_msg, copy=True)
-                    if pad_message:
-                        message.data = None
-                    cache[(port_name, slot)] = message
 
     def receive_s_message(self, port_name: str, slot: Optional[int] = None) -> Message:
         """Receive a message and attached settings overlay on an "S" port.
@@ -424,7 +386,7 @@ class Communicator:
         # Handle receive on repeated S port:
         if port_name in self._ports_with_repeaters:
             filters = self._ports_with_repeaters[port_name]
-            message = self._repeat_cache[(port_name, slot)]
+            message = self._message_cache[(port_name, slot)]
             cur_iteration = self._timeline_manager.record_received_s_message(
                 port_name, slot, message.iteration, n_repeat=len(filters)
             )
@@ -654,13 +616,6 @@ class Communicator:
         if not only_o_i:
             do_broadcast(Operator.O_F)
 
-        # Clean up stale messages from the repeat cache
-        self._repeat_cache = {
-            key: message
-            for key, message in self._repeat_cache.items()
-            if len(message.iteration) < len(milestone.iteration)
-        }
-
     def _close_outgoing_ports(self) -> None:
         """Closes outgoing ports.
 
@@ -733,10 +688,8 @@ class Communicator:
                 filters = [filter for filter in filters if filter.is_repeater()]
                 if filters:
                     self._ports_with_repeaters[str(port.name)] = filters
-        # If we have no connected F_INIT ports, then pre_receive is not called but we
-        # still need to receive once on repeated S ports:
-        if not self._port_manager.has_f_init_connections():
-            self._pre_receive_ports_with_repeaters([], {})
+                if operator is Operator.F_INIT or filters:
+                    self._pre_receive_ports.append(port)
 
         # TODO: reducer filters
 

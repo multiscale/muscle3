@@ -133,19 +133,16 @@ def test_repeater_filters(repeater_communicator, mpp_client, repeat_filter):
     assert cache[("unfiltered", None)].data == [0, 0]
     assert cache[("repeated", None)].data == [0]
     assert cache[("twicerepeated", None)].data == []
-    repeater_communicator.finish_reuse_iteration()
 
     cache = repeater_communicator.pre_receive_f_init()
     assert cache[("unfiltered", None)].data == [0, 1]
     assert cache[("repeated", None)].data == (None if is_padded else [0])
     assert cache[("twicerepeated", None)].data == (None if is_padded else [])
-    repeater_communicator.finish_reuse_iteration()
 
     cache = repeater_communicator.pre_receive_f_init()
     assert cache[("unfiltered", None)].data == [2, 0]
     assert cache[("repeated", None)].data == [2]
     assert cache[("twicerepeated", None)].data == (None if is_padded else [])
-    repeater_communicator.finish_reuse_iteration()
 
     with pytest.raises(PortClosed):
         repeater_communicator.pre_receive_f_init()
@@ -202,13 +199,11 @@ def test_repeater_filters_discard_messages(
     for i in range(3):
         msg = repeater_communicator.receive_s_message("repeated_s")
         assert msg.data == (None if i and is_padded else [2, 0, 0])
-    repeater_communicator.finish_reuse_iteration()
 
     cache = repeater_communicator.pre_receive_f_init()
     assert cache[("unfiltered", None)].data == [2, 1, 0]
     assert cache[("repeated", None)].data == [2, 1]
     assert cache[("twicerepeated", None)].data == (None if is_padded else [2])
-    repeater_communicator.finish_reuse_iteration()
 
     cache = repeater_communicator.pre_receive_f_init()
     assert cache[("unfiltered", None)].data == [2, 1, 1]
@@ -217,7 +212,6 @@ def test_repeater_filters_discard_messages(
     for i in range(3):
         msg = repeater_communicator.receive_s_message("repeated_s")
         assert msg.data == (None if i and is_padded else [2, 1, 1])
-    repeater_communicator.finish_reuse_iteration()
 
     with pytest.raises(PortClosed):
         repeater_communicator.pre_receive_f_init()
@@ -246,6 +240,7 @@ def test_repeater_filters_no_finit(mpp_client, repeat_filter):
         "s_in": [ConduitFilter(repeat_filter)],
     }
 
+    assert communicator.pre_receive_f_init() == {}
     # We can now receive on s_in as often as we'd like
     for i in range(8):
         msg = communicator.receive_s_message("s_in")

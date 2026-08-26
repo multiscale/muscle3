@@ -246,32 +246,19 @@ class TimelineManager:
             tl: SubTimelineManager(tl, self._port_manager) for tl in subtimelines
         }
 
-        # A component with no connected F_INIT ports has no F_INIT message to
-        # learn its iteration from, so its main timeline starts at [].
-        self._iteration: Optional[IterationCount] = (
-            None if self._port_manager.has_f_init_connections() else []
-        )
+        self._iteration: Optional[IterationCount] = None
 
     def check_f_init_iterations(
-        self, iterations: dict[PortAndSlot, IterationCount]
+        self, iterations: list[IterationCount]
     ) -> IterationCount:
         """Set current iteration count from pre-received F_INIT messages."""
         assert self._iteration is None
-        assert iterations
-        first, *remainder = iterations.values()
-        for it in remainder:
-            if it != first:
-                raise RuntimeError(
-                    "Pre-received F_INIT messages from parallel timelines:\n"
-                    + "\n".join(
-                        f"- {port_desc(port, slot)}: {it}"
-                        for (port, slot), it in iterations.items()
-                    )
-                    + "\nPlease verify that all connected instances send the same "
-                    "number of messages on their O_I ports."
-                )
-
-        self._iteration = first
+        if not iterations:
+            assert not self._port_manager.has_f_init_connections()
+            self._iteration = []
+        else:
+            # TODO: check if all iterations are consistent?
+            self._iteration = max(iterations, key=len)
         return self._iteration
 
     def check_send_message(
@@ -379,12 +366,12 @@ class TimelineManager:
         F_INIT ports to wait for) and participation state, and resets every sub-timeline
         in turn.
         """
-        self._iteration = None if self._port_manager.has_f_init_connections() else []
+        self._iteration = None
         self._send.reset()
         for stm in self._submanagers.values():
             stm.reset()
 
-    def finish_reuse_iteration(self) -> IterationCount:
+    def finish_reuse_iteration(self) -> None:
         """Check if the current reuse loop iteration has finished and reset for the
         next one.
 
@@ -396,12 +383,11 @@ class TimelineManager:
             Iteration count of the finished reuse loop.
         """
         assert self._iteration is not None
-        iteration = self._iteration
         if self._send.all_participated() and all(
             stm.is_complete() for stm in self._submanagers.values()
         ):
             self.reset()
-            return iteration
+            return
 
         expected = _expected_actions(self._send)
         for stm in self._submanagers.values():

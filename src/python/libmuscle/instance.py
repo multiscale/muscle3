@@ -881,38 +881,18 @@ class Instance:
         elif self._first_run:
             self._first_run = False
 
-        if not self._first_run:
-            self._communicator.finish_reuse_iteration()
-
-        # resume from intermediate
+        # resume from intermediate?
         if self._first_run and self._snapshot_manager.resuming_from_intermediate():
             self._do_resume = True
             self._do_init = False
             return True
 
-        f_init_connected = self._port_manager.has_f_init_connections()
+        # resume from final?
+        self._do_resume = (
+            self._first_run and self._snapshot_manager.resuming_from_final()
+        )
 
-        # resume from final
-        if self._first_run and self._snapshot_manager.resuming_from_final():
-            if f_init_connected:
-                got_f_init_messages = self._pre_receive()
-                self._do_resume = True
-                self._do_init = True
-                return got_f_init_messages
-            else:
-                self._do_resume = False  # unused
-                self._do_init = False  # unused
-                return False
-
-        # fresh start or resuming from implicit snapshot
-        self._do_resume = False
-
-        # simple straight single run without resuming
-        if not f_init_connected:
-            self._do_init = self._first_run
-            return self._first_run
-
-        # not resuming and f_init connected, run while we get messages
+        # run while we get messages
         got_f_init_messages = self._pre_receive()
         self._do_init = got_f_init_messages
         return got_f_init_messages

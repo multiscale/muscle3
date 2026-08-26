@@ -350,7 +350,8 @@ class TimelineManager:
         port_name: str,
         slot: Optional[int],
         iteration: IterationCount,
-    ) -> None:
+        n_repeat: int,
+    ) -> IterationCount:
         """Record that a message has been received on the given S port.
 
         check_receive already established that this receive is allowed.
@@ -359,10 +360,17 @@ class TimelineManager:
             port_name: Name of the S port a message was received on.
             slot: The slot the message was received on, if this is a vector port.
             iteration: The iteration the received message was sent with.
+            n_repeat: Number of repeater filters applied to this message.
+
+        Returns:
+            Current iteration count of the subtimeline.
         """
         port = self._port_manager.get_port(port_name)
         assert port.operator is Operator.S
-        self._submanagers[port.timeline].record_received_message(port, slot, iteration)
+        assert self._iteration is not None
+        return self._submanagers[port.timeline].record_received_message(
+            port, slot, iteration, self._iteration, n_repeat
+        )
 
     def reset(self) -> None:
         """Reset the main timeline and it's sub-timelines.
@@ -549,8 +557,13 @@ class SubTimelineManager:
                 raise PortBlocked(port, slot, expected)
 
     def record_received_message(
-        self, port: Port, slot: Optional[int], iteration: IterationCount
-    ) -> None:
+        self,
+        port: Port,
+        slot: Optional[int],
+        iteration: IterationCount,
+        component_iteration: IterationCount,
+        n_repeat: int,
+    ) -> IterationCount:
         """Record that a message has been received on the given S port.
 
         If this sub-timeline has not started yet, its iteration is adopted from the
@@ -568,6 +581,11 @@ class SubTimelineManager:
             port: The S port a message was received on.
             slot: The slot the message was received on, if this is a vector port.
             iteration: The iteration the received message was sent with.
+            component_iteration: The current iteration of the component.
+            n_repeat: Number of repeater filters applied to this message.
+
+        Returns:
+            Current iteration count of the subtimeline.
 
         Raises:
             MessageOutOfSync: If this port and slot has not yet received for
@@ -579,20 +597,42 @@ class SubTimelineManager:
         """
         port_name = str(port.name)
 
+        if n_repeat and not is_subiteration(component_iteration, iteration):
+            raise RuntimeError(
+                "Internal error: Invalid cached message for "
+                f"{port_desc(port_name, slot)}. Cached message iteration "
+                f"is {iteration}, while ours is {component_iteration}."
+            )
+
         if self._iteration is None:
+            if n_repeat:
+                # We need to pad the iteration count of the cached message with zeros.
+                # Take component_iteration as start, to support multiple level of repeat
+                # filters, and handle the following case:
+                # - cached message iteration count: [2]
+                # - component iteration count: [2, 1]
+                # - our iteration count: None
+                # -> Our iteration count needs to become [2, 1, 0]
+                num_append = len(iteration) - len(component_iteration) + n_repeat
+                iteration = component_iteration + [0] * num_append
             self._iteration = iteration
             self._first_operator = Operator.S
         elif not self._receive.has_participated(port_name, slot):
-            if iteration != self._iteration:
+            if not is_subiteration(self._iteration, iteration):
                 raise MessageOutOfSync(port, slot)
         else:
-            if iteration <= self._iteration:
+            if n_repeat:
+                # Serving a repeated message, just increment the last count:
+                self._iteration[-1] += 1
+            elif iteration <= self._iteration:
                 raise MessageOutOfSync(port, slot)
-            self._iteration = iteration
+            else:
+                self._iteration = iteration
             self._send.reset()
             self._receive.reset()
 
         self._receive.participate(port_name, slot)
+        return self._iteration
 
     def reset(self) -> None:
         """Reset this sub-timeline once the main timeline's reuse loop iteration

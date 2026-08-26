@@ -149,9 +149,9 @@ class Communicator:
         # indexed by remote instance id
         self._clients: dict[Reference, MPPClient] = {}
 
-        self._f_init_repeaters: dict[str, list[ConduitFilter]] = {}
+        self._ports_with_repeaters: dict[str, list[ConduitFilter]] = {}
         """List of repeater filters to be applied to each F_INIT port."""
-        self._f_init_repeat_cache: _MPPCacheType = {}
+        self._repeat_cache: _MPPCacheType = {}
         """Message cache for F_INIT ports with repeater filters."""
 
     def get_locations(self) -> list[str]:
@@ -301,7 +301,7 @@ class Communicator:
         # Pre-receive on ports without repeater filters:
         for port in self._port_manager.get_connected_ports(Operator.F_INIT):
             port_name = str(port.name)
-            if port_name not in self._f_init_repeaters:
+            if port_name not in self._ports_with_repeaters:
                 _logger.debug("Pre-receiving on port %s", port_name)
                 for slot in _yield_slots(port):
                     mpp_message = self._receive_message(port_name, slot)
@@ -314,19 +314,13 @@ class Communicator:
             self._broadcast_milestone(milestone, False)
             if milestone.is_final_milestone():
                 raise PortClosed()
-            # Clean up stale messages from the cache
-            self._f_init_repeat_cache = {
-                key: message
-                for key, message in self._f_init_repeat_cache.items()
-                if len(message.iteration) < len(milestone.iteration)
-            }
             # Pre-receive again to receive the actual messages
             return self.pre_receive_f_init()
 
         # Verify that all F_INIT messages agree on the iteration count
         cur_iteration = self._timeline_manager.check_f_init_iterations(iterations)
         # Put messages from repeater ports in the cache:
-        self._pre_receive_f_init_with_repeaters(cur_iteration, cache)
+        self._pre_receive_ports_with_repeaters(cur_iteration, cache)
         return cache
 
     def _verify_received_milestones(self, cache: FInitCacheType) -> Optional[Milestone]:
@@ -358,28 +352,28 @@ class Communicator:
         (iteration,) = milestone_iterations
         return None if iteration is None else Milestone(iteration)
 
-    def _pre_receive_f_init_with_repeaters(
+    def _pre_receive_ports_with_repeaters(
         self, cur_iteration: IterationCount, cache: FInitCacheType
     ) -> None:
-        """Handle pre-receive F_INIT for ports with repeater filters.
+        """Handle pre-receive for ports with repeater filters.
 
         Args:
             cur_iteration: Iteration count for the new reuse loop.
-            cache: F_INIT cache to add messages to.
+            cache: F_INIT cache to add messages of F_INIT ports to.
         """
-        for port_name, filters in self._f_init_repeaters.items():
+        for port_name, filters in self._ports_with_repeaters.items():
             port = self._port_manager.get_port(port_name)
 
             # If the message is not in the cache we need to receive again. We may need
             # to receive and discard multiple messages here, see the tests
             # (test_repeater_filters_discard_messages) for a scenario.
             slot = 0 if port.is_vector() else None
-            while (port_name, slot) not in self._f_init_repeat_cache:
+            while (port_name, slot) not in self._repeat_cache:
                 _logger.debug("Pre-receiving on port %s", port_name)
                 for recv_slot in _yield_slots(port):
                     mpp_msg = self._receive_message(port_name, recv_slot)
                     if is_subiteration(cur_iteration, mpp_msg.iteration):
-                        self._f_init_repeat_cache[(port_name, recv_slot)] = mpp_msg
+                        self._repeat_cache[(port_name, recv_slot)] = mpp_msg
                     elif mpp_msg.iteration > cur_iteration:
                         raise RuntimeError(
                             "Internal error: Received a message from the future on "
@@ -387,24 +381,23 @@ class Communicator:
                             f"{mpp_msg.iteration}, while ours is {cur_iteration}."
                         )
 
-            # Repeat or pad the cached messages
-            pad_message = any(
-                filter is ConduitFilter.PAD and cur_iteration[-len(filters) + i] > 0
-                for i, filter in enumerate(filters)
-            )
-            for slot in _yield_slots(port):
-                mpp_msg = self._f_init_repeat_cache[(port_name, slot)]
-                if not is_subiteration(cur_iteration, mpp_msg.iteration):
-                    raise RuntimeError(
-                        "Internal error: Invalid cached message for "
-                        f"{port_desc(port_name, slot)}. Cached message iteration is "
-                        f"{mpp_msg.iteration}, while ours is {cur_iteration}."
-                    )
-                # Create a deepcopy, so users won't alter the message we cache:
-                message = _make_message(mpp_msg, copy=True)
-                if pad_message:
-                    message.data = None
-                cache[(port_name, slot)] = message
+            # Fill F_INIT cache:
+            if port.operator is Operator.F_INIT:
+                # Repeat or pad the cached messages
+                pad_message = self._should_pad_message(cur_iteration, filters)
+                for slot in _yield_slots(port):
+                    mpp_msg = self._repeat_cache[(port_name, slot)]
+                    if not is_subiteration(cur_iteration, mpp_msg.iteration):
+                        raise RuntimeError(
+                            "Internal error: Invalid cached message for "
+                            f"{port_desc(port_name, slot)}. Cached message iteration "
+                            f"is {mpp_msg.iteration}, while ours is {cur_iteration}."
+                        )
+                    # Create a deepcopy, so users won't alter the message we cache:
+                    message = _make_message(mpp_msg, copy=True)
+                    if pad_message:
+                        message.data = None
+                    cache[(port_name, slot)] = message
 
     def receive_s_message(self, port_name: str, slot: Optional[int] = None) -> Message:
         """Receive a message and attached settings overlay on an "S" port.
@@ -427,6 +420,19 @@ class Communicator:
                     message number was incorrect.
         """
         self._timeline_manager.check_receive_s(port_name, slot)
+
+        # Handle receive on repeated S port:
+        if port_name in self._ports_with_repeaters:
+            filters = self._ports_with_repeaters[port_name]
+            message = self._repeat_cache[(port_name, slot)]
+            cur_iteration = self._timeline_manager.record_received_s_message(
+                port_name, slot, message.iteration, n_repeat=len(filters)
+            )
+            result = _make_message(message, copy=True)
+            if self._should_pad_message(cur_iteration, filters):
+                result.data = None
+            return result
+
         # Instance should not need to bother about milestones, so we keep receiving
         # messages until we have actual data:
         while True:
@@ -437,7 +443,7 @@ class Communicator:
                 # TODO: handle milestone, if needed
             else:
                 self._timeline_manager.record_received_s_message(
-                    port_name, slot, message.iteration
+                    port_name, slot, message.iteration, n_repeat=0
                 )
                 return _make_message(message)
 
@@ -648,6 +654,13 @@ class Communicator:
         if not only_o_i:
             do_broadcast(Operator.O_F)
 
+        # Clean up stale messages from the repeat cache
+        self._repeat_cache = {
+            key: message
+            for key, message in self._repeat_cache.items()
+            if len(message.iteration) < len(milestone.iteration)
+        }
+
     def _close_outgoing_ports(self) -> None:
         """Closes outgoing ports.
 
@@ -710,19 +723,33 @@ class Communicator:
         """Check which ports are connected with a conduit filter and initialize the
         associated logic.
         """
-        # F_INIT repeat/pad filters
-        for port in self._port_manager.get_connected_ports(Operator.F_INIT):
-            filters = self._peer_info.get_filters_for_receiver(self._kernel + port.name)
-            # Only keep the repeater filters, the sending component handles reducers:
-            filters = [filter for filter in filters if filter.is_repeater()]
-            if filters:
-                self._f_init_repeaters[str(port.name)] = filters
-        # S repeat/pad filters are not implemented
-        for port in self._port_manager.get_connected_ports(Operator.S):
-            filters = self._peer_info.get_filters_for_receiver(self._kernel + port.name)
-            if any(filter.is_repeater() for filter in filters):
-                raise NotImplementedError(
-                    "Repeater filters are not implemented for S ports, you may connect "
-                    "the conduit to an F_INIT port instead."
+        # Repeater filters
+        for operator in (Operator.F_INIT, Operator.S):
+            for port in self._port_manager.get_connected_ports(operator):
+                filters = self._peer_info.get_filters_for_receiver(
+                    self._kernel + port.name
                 )
+                # Only keep the repeater filters, the sending component handles reducers
+                filters = [filter for filter in filters if filter.is_repeater()]
+                if filters:
+                    self._ports_with_repeaters[str(port.name)] = filters
+        # If we have no connected F_INIT ports, then pre_receive is not called but we
+        # still need to receive once on repeated S ports:
+        if not self._port_manager.has_f_init_connections():
+            self._pre_receive_ports_with_repeaters([], {})
+
         # TODO: reducer filters
+
+    def _should_pad_message(
+        self, cur_iteration: IterationCount, filters: list[ConduitFilter]
+    ) -> bool:
+        """Check if we should pad the message in the current iteration, based on the
+        configured pad/repeat filters.
+
+        Returns:
+            True if the message data should be nilled, False otherwise.
+        """
+        return any(
+            filter is ConduitFilter.PAD and cur_iteration[-len(filters) + i] > 0
+            for i, filter in enumerate(filters)
+        )

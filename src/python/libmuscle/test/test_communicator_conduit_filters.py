@@ -41,19 +41,23 @@ def repeater_communicator(repeat_filter, mpp_client):
                 "component.twicerepeated",
                 repeat_filter + " " + repeat_filter,
             ),
+            Conduit("parent1.out2", "component.repeated_s", repeat_filter),
         ],
         {Ref("parent1"): [], Ref("parent2"): [], Ref("parent3"): []},
         {Ref("parent1"): [], Ref("parent2"): [], Ref("parent3"): []},
         [
-            Port(Id(name), Operator.F_INIT)
-            for name in ["unfiltered", "repeated", "twicerepeated"]
+            Port(Id("unfiltered"), Operator.F_INIT),
+            Port(Id("repeated"), Operator.F_INIT),
+            Port(Id("twicerepeated"), Operator.F_INIT),
+            Port(Id("repeated_s"), Operator.S),
         ],
     )
     port_manager.connect_ports(peer_info)
     communicator.set_peer_info(peer_info)
-    assert communicator._f_init_repeaters == {
+    assert communicator._ports_with_repeaters == {
         "repeated": [ConduitFilter(repeat_filter)],
         "twicerepeated": [ConduitFilter(repeat_filter)] * 2,
+        "repeated_s": [ConduitFilter(repeat_filter)],
     }
     yield communicator
     communicator.shutdown()
@@ -119,6 +123,7 @@ def test_repeater_filters(repeater_communicator, mpp_client, repeat_filter):
             "component.twicerepeated": twicerepeated_messages,
             "component.repeated": repeated_messages,
             "component.unfiltered": unfiltered_messages,
+            "component.repeated_s": unfiltered_messages,
         },
     )
 
@@ -184,6 +189,7 @@ def test_repeater_filters_discard_messages(
             "component.twicerepeated": twicerepeated_messages,
             "component.repeated": repeated_messages,
             "component.unfiltered": unfiltered_messages,
+            "component.repeated_s": unfiltered_messages,
         },
     )
 
@@ -193,6 +199,9 @@ def test_repeater_filters_discard_messages(
     assert cache[("unfiltered", None)].data == [2, 0, 0]
     assert cache[("repeated", None)].data == [2, 0]
     assert cache[("twicerepeated", None)].data == [2]
+    for i in range(3):
+        msg = repeater_communicator.receive_s_message("repeated_s")
+        assert msg.data == (None if i and is_padded else [2, 0, 0])
     repeater_communicator.finish_reuse_iteration()
 
     cache = repeater_communicator.pre_receive_f_init()
@@ -205,7 +214,45 @@ def test_repeater_filters_discard_messages(
     assert cache[("unfiltered", None)].data == [2, 1, 1]
     assert cache[("repeated", None)].data == (None if is_padded else [2, 1])
     assert cache[("twicerepeated", None)].data == (None if is_padded else [2])
+    for i in range(3):
+        msg = repeater_communicator.receive_s_message("repeated_s")
+        assert msg.data == (None if i and is_padded else [2, 1, 1])
     repeater_communicator.finish_reuse_iteration()
 
     with pytest.raises(PortClosed):
         repeater_communicator.pre_receive_f_init()
+
+
+def test_repeater_filters_no_finit(mpp_client, repeat_filter):
+    # Prepare messages before communicator.set_peer_info is called:
+    mock_receive_messages(mpp_client, {"component.s_in": [[], Milestone([])]})
+
+    # Prepare a communicator with only a repeated S port and no F_INIT ports:
+    port_manager = PortManager([], None)
+    communicator = Communicator(
+        Ref("component"), [], port_manager, MagicMock(), MagicMock()
+    )
+    peer_info = PeerInfo(
+        Ref("component"),
+        [],
+        [Conduit("previous.out", "component.s_in", repeat_filter)],
+        {Ref("previous"): []},
+        {Ref("previous"): []},
+        [Port(Id("s_in"), Operator.S)],
+    )
+    port_manager.connect_ports(peer_info)
+    communicator.set_peer_info(peer_info)
+    assert communicator._ports_with_repeaters == {
+        "s_in": [ConduitFilter(repeat_filter)],
+    }
+
+    # We can now receive on s_in as often as we'd like
+    for i in range(8):
+        msg = communicator.receive_s_message("s_in")
+        if i == 0 or repeat_filter == "repeat":
+            assert msg.data == []
+        else:
+            assert msg.data is None
+
+    # Cleanup
+    communicator.shutdown()

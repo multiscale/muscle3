@@ -580,25 +580,24 @@ class Communicator:
         there will be no more messages, and allows the sending instance to shut down
         cleanly.
         """
-        for operator, port_names in self._port_manager.list_ports().items():
-            if operator.allows_receiving():
-                for port_name in port_names:
-                    port = self._port_manager.get_port(port_name)
-                    if not port.is_connected():
-                        continue
-                    try:
-                        if not port.is_vector():
-                            self._drain_incoming_port(port_name)
-                        else:
-                            self._drain_incoming_vector_port(port_name)
-                    except RuntimeError:
-                        peer_port = self._peer_info.get_peer_ports(port.name)[0]
-                        peer_name = str(peer_port[:-1])
-                        _logger.warning(
-                            "Connection with peer '%s' was lost at the end of the "
-                            "simulation, probably because it crashed.",
-                            peer_name,
-                        )
+        for operator in (Operator.F_INIT, Operator.S):
+            for port in self._port_manager.get_connected_ports(operator):
+                port_name = str(port.name)
+                if not port.is_connected():
+                    continue
+                try:
+                    if not port.is_vector():
+                        self._drain_incoming_port(port_name)
+                    else:
+                        self._drain_incoming_vector_port(port_name)
+                except RuntimeError:
+                    peer_port = self._peer_info.get_peer_ports(port.name)[0]
+                    peer_name = str(peer_port[:-1])
+                    _logger.warning(
+                        "Connection with peer '%s' was lost at the end of the "
+                        "simulation, probably because it crashed.",
+                        peer_name,
+                    )
 
     def _close_ports(self) -> None:
         """Closes all ports.
@@ -606,5 +605,7 @@ class Communicator:
         This sends a close port message on all slots of all outgoing
         ports, then receives one on all incoming ports.
         """
+        if not hasattr(self, "_peer_info"):
+            return  # Not connected yet, no ports to close
         self._close_outgoing_ports()
         self._close_incoming_ports()

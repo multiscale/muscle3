@@ -134,7 +134,7 @@ class Instance::Impl {
         std::unique_ptr<SnapshotManager> snapshot_manager_;
         std::unique_ptr<TriggerManager> trigger_manager_;
         bool first_run_;
-        bool did_pre_receive_;
+        Optional<bool> do_reuse_;
         bool do_resume_;
         bool do_init_;
         std::unordered_map<::ymmsl::Reference, Message> f_init_cache_;
@@ -157,7 +157,7 @@ class Instance::Impl {
                 bool is_send, bool allow_slot_out_of_range = false);
 
         void handle_receive_settings_();
-        void pre_receive_();
+        bool pre_receive_();
         Optional<double> f_init_max_timestamp_();
         void save_snapshot_(
                 Optional<Message> message, bool final,
@@ -193,7 +193,7 @@ Instance::Impl::Impl(
     , declared_ports_(ports)
     , settings_manager_()
     , first_run_(true)
-    , did_pre_receive_(false)
+    , do_reuse_()
     , do_resume_(false)
     , do_init_(true)
     , f_init_cache_()
@@ -300,11 +300,14 @@ bool Instance::Impl::reuse_instance() {
                  !!(InstanceFlags::KEEPS_NO_STATE_FOR_NEXT_USE & flags_)));
         }
 
-        if (!did_pre_receive_) pre_receive_();
-        did_pre_receive_ = false;
-        // We should enter an iteration of the reuse loop when it is the first run,
-        // or if we have new F_INIT messages in the cache:
-        do_reuse = first_run_ || !f_init_cache_.empty();
+        if (do_reuse_.is_set()) {
+            // thank you, should_save_final_snapshot, for running this already
+            do_reuse = do_reuse_.get();
+            do_reuse_ = {};
+        } else {
+            bool has_messages = pre_receive_();
+            do_reuse = first_run_ || has_messages;
+        }
 
         if (do_implicit_checkpoint) {
             if (trigger_manager_->should_save_final_snapshot(
@@ -790,11 +793,9 @@ bool Instance::Impl::should_save_final_snapshot() {
 #ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
 #endif
-        pre_receive_();
-        did_pre_receive_ = true;
-        bool do_reuse = !f_init_cache_.empty();  // Reuse if we received new messages
+        do_reuse_ = pre_receive_();
         result = trigger_manager_->should_save_final_snapshot(
-                do_reuse, f_init_max_timestamp_());
+                do_reuse_.get(), f_init_max_timestamp_());
 #ifdef MUSCLE_ENABLE_MPI
         mpi_barrier_.signal();
         int result_mpi = result;
@@ -971,7 +972,7 @@ void Instance::Impl::handle_receive_settings_() {
  *
  * @return true iff no ports were closed.
  */
-void Instance::Impl::pre_receive_() {
+bool Instance::Impl::pre_receive_() {
     ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
 
     try {
@@ -979,11 +980,12 @@ void Instance::Impl::pre_receive_() {
     } catch (PortClosed &err) {
         profiler_->record_event(std::move(sw_event));
         f_init_cache_.clear();
-        return;
+        return false;
     } catch (std::runtime_error &err) {
         shutdown_(err.what());
         throw;
     }
+    bool has_messages = !f_init_cache_.empty();
 
     // Handle received settings
     if (port_manager_->settings_in_connected())
@@ -1000,6 +1002,7 @@ void Instance::Impl::pre_receive_() {
             item.second.unset_settings();
         }
     }
+    return has_messages;
 }
 
 /** Return max timestamp of pre-received F_INIT messages

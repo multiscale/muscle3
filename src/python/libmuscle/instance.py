@@ -159,8 +159,14 @@ class Instance:
         self._first_run = True
         """Whether this is the first iteration of the reuse loop"""
 
-        self._did_pre_receive = False
-        """Flag set to True iff should_save_final_snapshot already pre-received"""
+        self._do_reuse: Optional[bool] = None
+        """Whether to enter the next iteration of the reuse loop.
+
+        Possible values:
+        - None: not yet pre-received
+        - True: pre-received and a message was received
+        - False: pre-received, but no messages available anymore
+        """
 
         self._do_resume = False
         """Whether to resume on this iteration of the reuse loop"""
@@ -247,12 +253,13 @@ class Instance:
                     )
                 )
 
-            if not self._did_pre_receive:
-                self._pre_receive()
-            self._did_pre_receive = False
-            # We should enter an iteration of the reuse loop when it is the first run,
-            # or if we have new F_INIT messages in the cache:
-            do_reuse = self._first_run or bool(self._f_init_cache)
+            if self._do_reuse is not None:
+                # thank you, should_save_final_snapshot, for running this already
+                do_reuse = self._do_reuse
+                self._do_reuse = None
+            else:
+                has_messages = self._pre_receive()
+                do_reuse = self._first_run or has_messages
 
             if do_implicit_checkpoint:
                 if self._trigger_manager.should_save_final_snapshot(
@@ -691,11 +698,9 @@ class Instance:
         """
         self._api_guard.verify_should_save_final_snapshot()
 
-        self._pre_receive()
-        self._did_pre_receive = True
-        do_reuse = bool(self._f_init_cache)  # Reuse if we received new messages
+        self._do_reuse = self._pre_receive()
         result = self._trigger_manager.should_save_final_snapshot(
-            do_reuse, self.__f_init_max_timestamp
+            self._do_reuse, self.__f_init_max_timestamp
         )
 
         self._api_guard.should_save_final_snapshot_done(result)
@@ -1078,11 +1083,11 @@ class Instance:
                         self.__shutdown(err_msg)
                         raise RuntimeError(err_msg)
 
-    def _pre_receive(self) -> None:
+    def _pre_receive(self) -> bool:
         """Pre-receives on all ports.
 
         Returns:
-            True iff no ports were closed.
+            True if new F_INIT messages were received.
         """
         sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
 
@@ -1091,10 +1096,11 @@ class Instance:
         except PortClosed:
             self._profiler.record_event(sw_event)
             self._f_init_cache.clear()
-            return
+            return False
         except RuntimeError as exc:
             self.__shutdown(str(exc))
             raise
+        has_messages = bool(self._f_init_cache)
 
         # Handle received settings
         if self._port_manager.settings_in_connected():
@@ -1108,6 +1114,7 @@ class Instance:
                 self.__apply_overlay(msg)
                 self.__check_compatibility(port_name, msg.settings)
                 msg.settings = None
+        return has_messages
 
     def __handle_receive_settings(self) -> None:
         """Handle received settings on pre-received muscle_settings_in."""

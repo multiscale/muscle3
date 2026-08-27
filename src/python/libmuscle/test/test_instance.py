@@ -453,23 +453,11 @@ def test_reuse_no_closed_port(instance, communicator):
     assert instance.reuse_instance() is False
 
 
-def test_reuse_no_f_init_ports(instance, connected_port_manager, communicator):
-    connected_port_manager.has_f_init_connections.return_value = False
+def test_reuse_no_f_init_ports(instance, communicator):
+    communicator.pre_receive_f_init.side_effect = [{}, PortClosed()]
 
     assert instance.reuse_instance() is True
     assert instance.reuse_instance() is False
-
-
-def test_reuse_subsequent_iteration_finishes_reuse_iteration(
-    instance, connected_port_manager, communicator
-):
-    connected_port_manager.has_f_init_connections.return_value = False
-
-    instance.reuse_instance()
-    communicator.finish_reuse_iteration.assert_not_called()
-
-    instance.reuse_instance()
-    communicator.finish_reuse_iteration.assert_called_once()
 
 
 def test_send_message(instance, settings_manager, communicator):

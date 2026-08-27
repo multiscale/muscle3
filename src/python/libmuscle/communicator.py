@@ -22,6 +22,7 @@ from libmuscle.timeline_manager import (
     PortAndSlot,
     TimelineManager,
     TimelineState,
+    get_most_nested_iteration,
 )
 from libmuscle.util import port_desc
 
@@ -205,6 +206,7 @@ class Communicator:
         Args:
             state: The state to restore, as returned by get_state().
         """
+        self._cur_iteration = state.iteration
         self._timeline_manager.restore_state(state)
 
     def send_message(
@@ -318,7 +320,7 @@ class Communicator:
                     raise PortClosed()
 
             received_iterations: list[IterationCount] = []
-            received_milestones: list[Milestone] = []
+            milestone_iterations: list[IterationCount] = []
             # Pre-receive on all F_INIT ports and repeated S ports, if needed
             for port in self._pre_receive_ports:
                 port_name = str(port.name)
@@ -331,15 +333,19 @@ class Communicator:
 
                     received_iterations.append(mpp_message.iteration)
                     if isinstance(mpp_message.data, Milestone):
-                        received_milestones.append(mpp_message.data)
+                        milestone_iterations.append(mpp_message.data.iteration)
 
-            if not received_milestones:
-                break
+            if not milestone_iterations:
+                break  # No milestones received, we have only messages now
+
             # Handle most deeply nested milestone first:
-            # TODO: check if all milestones are properly nested?
-            milestone = max(
-                received_milestones, key=lambda milestone: len(milestone.iteration)
-            )
+            most_nested_iteration = get_most_nested_iteration(milestone_iterations)
+            if most_nested_iteration is None:
+                raise RuntimeError(
+                    "Internal error: received milestones for incompatible iterations "
+                    f"during F_INIT: {milestone_iterations}"
+                )
+            milestone = Milestone(most_nested_iteration)
 
         # Update current iteration
         self._cur_iteration = self._timeline_manager.check_f_init_iterations(
@@ -645,25 +651,24 @@ class Communicator:
         there will be no more messages, and allows the sending instance to shut down
         cleanly.
         """
-        for operator, port_names in self._port_manager.list_ports().items():
-            if operator.allows_receiving():
-                for port_name in port_names:
-                    port = self._port_manager.get_port(port_name)
-                    if not port.is_connected():
-                        continue
-                    try:
-                        if not port.is_vector():
-                            self._drain_incoming_port(port_name)
-                        else:
-                            self._drain_incoming_vector_port(port_name)
-                    except RuntimeError:
-                        peer_port = self._peer_info.get_peer_ports(port.name)[0]
-                        peer_name = str(peer_port[:-1])
-                        _logger.warning(
-                            "Connection with peer '%s' was lost at the end of the "
-                            "simulation, probably because it crashed.",
-                            peer_name,
-                        )
+        for operator in (Operator.F_INIT, Operator.S):
+            for port in self._port_manager.get_connected_ports(operator):
+                port_name = str(port.name)
+                if not port.is_connected():
+                    continue
+                try:
+                    if not port.is_vector():
+                        self._drain_incoming_port(port_name)
+                    else:
+                        self._drain_incoming_vector_port(port_name)
+                except RuntimeError:
+                    peer_port = self._peer_info.get_peer_ports(port.name)[0]
+                    peer_name = str(peer_port[:-1])
+                    _logger.warning(
+                        "Connection with peer '%s' was lost at the end of the "
+                        "simulation, probably because it crashed.",
+                        peer_name,
+                    )
 
     def _close_ports(self) -> None:
         """Closes all ports.

@@ -80,6 +80,7 @@ def vector_timeline_manager() -> TimelineManager:
     pm.connect_ports(peer_info)
 
     tm = TimelineManager(pm)
+    tm.check_f_init_iterations([])
     return tm
 
 
@@ -126,6 +127,7 @@ def test_finish_reuse_iteration_ignores_muscle_settings_in_when_disconnected(
 def test_o_f_can_send_immediately_when_no_f_init_connections(
     timeline_manager: TimelineManager,
 ) -> None:
+    timeline_manager.check_f_init_iterations([])
     assert timeline_manager.check_send_message("out_f") == []
 
 
@@ -284,7 +286,7 @@ def test_check_finit_iterations_when_iteration_differs(
     timeline_manager: TimelineManager,
 ) -> None:
     """All F_INIT messages should have the same iteration count."""
-    with pytest.raises(RuntimeError, match="parallel timelines"):
+    with pytest.raises(RuntimeError, match="incompatible iteration counts"):
         timeline_manager.check_f_init_iterations([[3], [4]])
 
 

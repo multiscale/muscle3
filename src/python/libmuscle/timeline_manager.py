@@ -67,6 +67,19 @@ def is_subiteration(c1: IterationCount, c2: IterationCount) -> bool:
     return c1[: len(c2)] == c2
 
 
+def get_most_nested_iteration(
+    iterations: list[IterationCount],
+) -> Optional[IterationCount]:
+    """Check that all iterations are subiterations of each other, and return the most
+    nested one."""
+    assert iterations
+    iterations.sort()
+    for i in range(len(iterations) - 1):
+        if not is_subiteration(iterations[i + 1], iterations[i]):
+            return None
+    return iterations[-1]
+
+
 class TimelineError(RuntimeError):
     """Base class for exceptions raised when Instance's send/receive calls
     violate the timeline consistency rules."""
@@ -257,8 +270,13 @@ class TimelineManager:
             assert not self._port_manager.has_f_init_connections()
             self._iteration = []
         else:
-            # TODO: check if all iterations are consistent?
-            self._iteration = max(iterations, key=len)
+            most_nested_iteration = get_most_nested_iteration(iterations)
+            if most_nested_iteration is None:
+                raise RuntimeError(
+                    "Internal error: received F_INIT messages with incompatible "
+                    f"iteration counts: {iterations}"
+                )
+            self._iteration = most_nested_iteration
         return self._iteration
 
     def check_send_message(

@@ -182,6 +182,9 @@ class Instance:
             # Clean up when we cannot connect to our peers. This could happen when peers
             # are not started (in time) in a pytest context, but we still want to run
             # more test cases without threads lingering around.
+
+            # FIXME: This is ugly:
+            PortManager.settings_in_connected = lambda self: False  # type: ignore[method-assign]
             self.__shutdown()
             raise
         # Note: self._setup_checkpointing() needs to have the ports initialized

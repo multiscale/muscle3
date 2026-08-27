@@ -29,9 +29,7 @@ def mpp_server(MPPServer):
 @pytest.fixture
 def port_manager():
     with patch("libmuscle.communicator.PortManager") as PortManager:
-        port_manager = PortManager.return_value
-        port_manager.settings_in_connected.return_value = False
-        yield port_manager
+        yield PortManager.return_value
 
 
 @pytest.fixture(autouse=True)
@@ -238,11 +236,9 @@ def test_pre_receive_f_init(connected_communicator, mpp_client):
     assert cache[("in", None)].data == "test"
 
 
-def test_pre_receive_f_init_with_settings(
-    connected_communicator, connected_port_manager, mpp_client
-):
+@pytest.mark.parametrize("settings_in_connected", [True], indirect=True)
+def test_pre_receive_f_init_with_settings(connected_communicator, mpp_client):
     mpp_client.receive.return_value = mock_mpp_receive(data=Settings({"a": True}))
-    connected_port_manager.settings_in_connected.return_value = True
 
     cache = connected_communicator.pre_receive_f_init()
     assert cache.keys() == {("in", None), ("muscle_settings_in", None)}
@@ -287,31 +283,28 @@ def test_pre_receive_broadcast_milestone(
         assert msg.data.iteration == [1]
 
 
-def test_pre_receive_different_milestones(
-    connected_communicator, connected_port_manager, mpp_client
-):
-    connected_port_manager.settings_in_connected.return_value = True
+@pytest.mark.parametrize("settings_in_connected", [True], indirect=True)
+def test_pre_receive_different_milestones(connected_communicator, mpp_client):
     # One of these is received on "in", the other on "muscle_settings_in":
     mpp_client.receive.side_effect = [
-        (mock_mpp_receive(data=Milestone([1]), iteration=[1])),
-        (mock_mpp_receive(data=Milestone([2]), iteration=[2])),
+        mock_mpp_receive(data=Milestone([1]), iteration=[1]),
+        mock_mpp_receive(data=Milestone([2]), iteration=[2]),
     ]
 
-    with pytest.raises(RuntimeError, match="different iterations"):
+    with pytest.raises(RuntimeError, match="incompatible iterations"):
         connected_communicator.pre_receive_f_init()
 
 
-def test_pre_receive_some_port_closed(
-    connected_communicator, connected_port_manager, mpp_client
-):
-    connected_port_manager.settings_in_connected.return_value = True
+@pytest.mark.parametrize("settings_in_connected", [True], indirect=True)
+def test_pre_receive_some_port_closed(connected_communicator, mpp_client):
     # One of these is received on "in", the other on "muscle_settings_in":
     mpp_client.receive.side_effect = [
-        (mock_mpp_receive(data=Milestone([1]), iteration=[1])),
-        (mock_mpp_receive(data=Milestone([]), iteration=[])),
+        mock_mpp_receive(data=Milestone([1]), iteration=[1]),
+        mock_mpp_receive(data=Milestone([]), iteration=[]),
+        mock_mpp_receive(data=Milestone([]), iteration=[]),
     ]
 
-    with pytest.raises(RuntimeError, match="unexpectedly closed"):
+    with pytest.raises(PortClosed):
         connected_communicator.pre_receive_f_init()
 
 
@@ -478,13 +471,20 @@ def test_shutdown(
 
 
 def test_send_milestone_at_reuse(
-    connected_communicator, timeline_manager, mock_ports, mpp_server
+    connected_communicator, timeline_manager, mock_ports, mpp_server, mpp_client
 ):
-    timeline_manager().finish_reuse_iteration.return_value = [1, 2]
+    mpp_client.receive.side_effect = [
+        mock_mpp_receive(message_number=0, data=None, iteration=[1, 2]),
+        mock_mpp_receive(message_number=1, data=None, iteration=[1, 3]),
+    ]
+    timeline_manager().check_f_init_iterations.side_effect = lambda x: x[0]
 
-    connected_communicator.finish_reuse_iteration()
+    connected_communicator.pre_receive_f_init()
+    mpp_server.deposit.assert_not_called()
 
+    connected_communicator.pre_receive_f_init()
     timeline_manager().finish_reuse_iteration.assert_called_once()
+
     # Expect a milestone broadcasted to all O_I ports
     num_expected = mock_ports["out_v"].get_length() + mock_ports["out_r"].get_length()
     assert mpp_server.deposit.call_count == num_expected

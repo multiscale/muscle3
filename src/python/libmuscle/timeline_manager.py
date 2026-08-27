@@ -243,9 +243,7 @@ class TimelineManager:
 
         # A component with no connected F_INIT ports has no F_INIT message to
         # learn its iteration from, so its main timeline starts at [].
-        self._iteration: Optional[IterationCount] = (
-            None if self._port_manager.has_f_init_connections() else []
-        )
+        self._iteration: Optional[IterationCount] = None
 
     def check_send_message(
         self, port_name: str, slot: Optional[int] = None
@@ -377,20 +375,19 @@ class TimelineManager:
         for stm in self._submanagers.values():
             stm.reset()
 
-    def finish_reuse_iteration(self) -> IterationCount:
-        """Check if the current reuse loop iteration has finished and reset for the
-        next one.
+    def start_reuse_iteration(self) -> Optional[IterationCount]:
+        """Called at the start of the reuse loop.
 
+        If this is not the first run, checks if the previous reuse loop is complete:
         The reuse loop iteration is complete once every main-timeline port has
         participated and every sub-timeline has either completed a sub-iteration or
         wasn't used at all this reuse loop iteration.
 
         Returns:
-            Iteration count of the finished reuse loop.
+            Iteration count of the finished reuse loop or None if this is the first run.
         """
-        assert self._iteration is not None
         iteration = self._iteration
-        if (
+        if iteration is None or (
             self._receive.all_participated()
             and self._send.all_participated()
             and all(stm.is_complete() for stm in self._submanagers.values())

@@ -67,7 +67,9 @@ def timeline_manager(has_f_init: bool, include_settings: bool) -> TimelineManage
     peer_info = PeerInfo(Ref("component"), [], conduits, peer_dims, {}, ymmsl_ports)
     pm.connect_ports(peer_info)
 
-    return TimelineManager(pm)
+    tm = TimelineManager(pm)
+    assert tm.start_reuse_iteration() is None
+    return tm
 
 
 @pytest.fixture
@@ -79,6 +81,7 @@ def vector_timeline_manager() -> TimelineManager:
     pm.connect_ports(peer_info)
 
     tm = TimelineManager(pm)
+    assert tm.start_reuse_iteration() is None
     return tm
 
 
@@ -109,7 +112,7 @@ def test_finish_reuse_iteration_blocked_when_muscle_settings_in_not_received(
     # muscle_settings_in is never received this iteration
 
     with pytest.raises(ReuseLoopIncomplete) as exc_info:
-        timeline_manager.finish_reuse_iteration()
+        timeline_manager.start_reuse_iteration()
 
     assert exc_info.value.expected == expected(
         timeline_manager, ("receive", "muscle_settings_in", [])
@@ -123,7 +126,7 @@ def test_finish_reuse_iteration_ignores_muscle_settings_in_when_disconnected(
     check_received(timeline_manager, "in_f", None, [])
     timeline_manager.check_send_message("out_f")
 
-    timeline_manager.finish_reuse_iteration()
+    timeline_manager.start_reuse_iteration()
 
 
 @pytest.mark.parametrize("has_f_init", [False], indirect=True)
@@ -444,7 +447,7 @@ def test_finish_reuse_iteration_resets_when_complete(
     # sub-timeline is considered complete.
     timeline_manager.check_send_message("out_f")
 
-    timeline_manager.finish_reuse_iteration()
+    timeline_manager.start_reuse_iteration()
 
     # A fresh, just-connected TimelineManager has never participated in
     # anything, so comparing against its state confirms everything was reset.
@@ -464,7 +467,7 @@ def test_finish_reuse_iteration_raises_when_incomplete(
     # "out_f" is never sent either
 
     with pytest.raises(ReuseLoopIncomplete) as exc_info:
-        timeline_manager.finish_reuse_iteration()
+        timeline_manager.start_reuse_iteration()
 
     assert exc_info.value.expected == expected(
         timeline_manager,
@@ -515,7 +518,7 @@ def test_vector_port_reuse_iteration_incomplete_lists_missing_slots(
     tm.check_send_message("out_v", 0)
 
     with pytest.raises(ReuseLoopIncomplete) as exc_info:
-        tm.finish_reuse_iteration()
+        tm.start_reuse_iteration()
 
     port_out_v = tm._port_manager.get_port("out_v")
     assert exc_info.value.expected == [("send", port_out_v, [1, 2])]

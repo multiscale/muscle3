@@ -156,20 +156,16 @@ class Instance:
         self._trigger_manager = TriggerManager()
         """Keeps track of checkpoints and triggers snapshots."""
 
-        self._first_run: Optional[bool] = None
+        self._first_run = True
         """Whether this is the first iteration of the reuse loop"""
 
-        self._do_reuse: Optional[bool] = None
-        """Whether to enter this iteration of the reuse loop
-
-        This is None during the reuse loop, and set between
-        should_save_final_snapshot and reuse_instance.
-        """
+        self._did_pre_receive = False
+        """Flag set to True iff should_save_final_snapshot already pre-received"""
 
         self._do_resume = False
         """Whether to resume on this iteration of the reuse loop"""
 
-        self._do_init = False
+        self._do_init = True
         """Whether to do f_init on this iteration of the reuse loop"""
 
         self._f_init_cache: FInitCacheType = {}
@@ -229,31 +225,43 @@ class Instance:
         """
         self._api_guard.verify_reuse_instance()
 
-        if self._do_reuse is not None:
-            # thank you, should_save_final_snapshot, for running this already
-            do_reuse = self._do_reuse
-            self._do_reuse = None
+        if self._first_run and self._snapshot_manager.resuming_from_intermediate():
+            self._do_resume = True
+            self._do_init = False
+            do_reuse = True
         else:
-            do_reuse = self._decide_reuse_instance()
+            if self._first_run and self._snapshot_manager.resuming_from_final():
+                self._do_resume = True
+                self._do_init = True
+                self._first_run = False
+                do_implicit_checkpoint = False
+            else:
+                self._do_resume = False
+                self._do_init = True
+                do_implicit_checkpoint = (
+                    not self._first_run
+                    and InstanceFlags.USES_CHECKPOINT_API not in self._flags
+                    and (
+                        InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE in self._flags
+                        or InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE in self._flags
+                    )
+                )
 
-        # now _first_run, _do_resume and _do_init are also set correctly
+            if not self._did_pre_receive:
+                self._pre_receive()
+            self._did_pre_receive = False
+            # We should enter an iteration of the reuse loop when it is the first run,
+            # or if we have new F_INIT messages in the cache:
+            do_reuse = self._first_run or bool(self._f_init_cache)
 
-        do_implicit_checkpoint = (
-            not self._first_run
-            and InstanceFlags.USES_CHECKPOINT_API not in self._flags
-            and (
-                InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE in self._flags
-                or InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE in self._flags
-            )
-        )
+            if do_implicit_checkpoint:
+                if self._trigger_manager.should_save_final_snapshot(
+                    do_reuse, self.__f_init_max_timestamp
+                ):
+                    # store a None instead of a Message
+                    self._save_snapshot(None, True, self.__f_init_max_timestamp)
 
-        if do_implicit_checkpoint:
-            if self._trigger_manager.should_save_final_snapshot(
-                do_reuse, self.__f_init_max_timestamp
-            ):
-                # store a None instead of a Message
-                self._save_snapshot(None, True, self.__f_init_max_timestamp)
-
+        self._first_run = False
         if not do_reuse:
             self.__shutdown()
 
@@ -683,9 +691,11 @@ class Instance:
         """
         self._api_guard.verify_should_save_final_snapshot()
 
-        self._do_reuse = self._decide_reuse_instance()
+        self._pre_receive()
+        self._did_pre_receive = True
+        do_reuse = bool(self._f_init_cache)  # Reuse if we received new messages
         result = self._trigger_manager.should_save_final_snapshot(
-            self._do_reuse, self.__f_init_max_timestamp
+            do_reuse, self.__f_init_max_timestamp
         )
 
         self._api_guard.should_save_final_snapshot_done(result)
@@ -867,55 +877,6 @@ class Instance:
             "Timeout on receiving messages set to %f",
             self._communicator._receive_timeout,
         )
-
-    def _decide_reuse_instance(self) -> bool:
-        """Decide whether and how to reuse the instance.
-
-        This sets self._first_run, self._do_resume and self._do_init, and
-        returns whether to reuse one more time. This is the real top of
-        the reuse loop, and it gets called by reuse_instance and
-        should_save_final_snapshot.
-        """
-        if self._first_run is None:
-            self._first_run = True
-        elif self._first_run:
-            self._first_run = False
-
-        if not self._first_run:
-            self._communicator.finish_reuse_iteration()
-
-        # resume from intermediate
-        if self._first_run and self._snapshot_manager.resuming_from_intermediate():
-            self._do_resume = True
-            self._do_init = False
-            return True
-
-        f_init_connected = self._port_manager.has_f_init_connections()
-
-        # resume from final
-        if self._first_run and self._snapshot_manager.resuming_from_final():
-            if f_init_connected:
-                got_f_init_messages = self._pre_receive()
-                self._do_resume = True
-                self._do_init = True
-                return got_f_init_messages
-            else:
-                self._do_resume = False  # unused
-                self._do_init = False  # unused
-                return False
-
-        # fresh start or resuming from implicit snapshot
-        self._do_resume = False
-
-        # simple straight single run without resuming
-        if not f_init_connected:
-            self._do_init = self._first_run
-            return self._first_run
-
-        # not resuming and f_init connected, run while we get messages
-        got_f_init_messages = self._pre_receive()
-        self._do_init = got_f_init_messages
-        return got_f_init_messages
 
     def _save_snapshot(
         self,
@@ -1117,7 +1078,7 @@ class Instance:
                         self.__shutdown(err_msg)
                         raise RuntimeError(err_msg)
 
-    def _pre_receive(self) -> bool:
+    def _pre_receive(self) -> None:
         """Pre-receives on all ports.
 
         Returns:
@@ -1129,7 +1090,8 @@ class Instance:
             self._f_init_cache = self._communicator.pre_receive_f_init()
         except PortClosed:
             self._profiler.record_event(sw_event)
-            return False
+            self._f_init_cache.clear()
+            return
         except RuntimeError as exc:
             self.__shutdown(str(exc))
             raise
@@ -1146,7 +1108,6 @@ class Instance:
                 self.__apply_overlay(msg)
                 self.__check_compatibility(port_name, msg.settings)
                 msg.settings = None
-        return True
 
     def __handle_receive_settings(self) -> None:
         """Handle received settings on pre-received muscle_settings_in."""

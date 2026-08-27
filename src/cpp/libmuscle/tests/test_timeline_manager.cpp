@@ -120,6 +120,7 @@ struct libmuscle_timeline_manager : ::testing::Test {
             bool include_settings = false) {
         port_manager_ = make_port_manager(declared_ports, timelines, {}, include_settings);
         tm_ = std::make_unique<TimelineManager>(*port_manager_);
+        ASSERT_FALSE(tm_->start_reuse_iteration().is_set());
     }
 };
 
@@ -153,6 +154,7 @@ struct libmuscle_vector_timeline_manager : libmuscle_timeline_manager {
         port_manager_ = make_port_manager(
                 PortsDescription{{Operator::O_F, {"out_v[]"}}}, {}, {{"out_v", {3}}});
         tm_ = std::make_unique<TimelineManager>(*port_manager_);
+        tm_->start_reuse_iteration();
     }
 };
 
@@ -303,7 +305,7 @@ TEST_F(libmuscle_full_timeline_manager, finish_reuse_iteration_raises_when_incom
     check_received(*tm_, "muscle_settings_in", {}, {3});
     // out_f never sent
 
-    ASSERT_THROW(tm_->finish_reuse_iteration(), ReuseLoopIncomplete);
+    ASSERT_THROW(tm_->start_reuse_iteration(), ReuseLoopIncomplete);
 }
 
 TEST_F(libmuscle_full_timeline_manager, finish_reuse_iteration_resets_when_complete) {
@@ -311,7 +313,7 @@ TEST_F(libmuscle_full_timeline_manager, finish_reuse_iteration_resets_when_compl
     check_received(*tm_, "muscle_settings_in", {}, {3});
     tm_->check_send_message("out_f");
 
-    tm_->finish_reuse_iteration();
+    tm_->start_reuse_iteration();
 
     // fully reset: the same sequence works again from scratch
     check_received(*tm_, "in_f", {}, {4});
@@ -326,7 +328,7 @@ TEST_F(libmuscle_full_timeline_manager, finish_reuse_iteration_ok_when_subtimeli
     check_received(*tm_, "muscle_settings_in", {}, {3});
     tm_->check_send_message("out_f");
 
-    ASSERT_NO_THROW(tm_->finish_reuse_iteration());
+    ASSERT_NO_THROW(tm_->start_reuse_iteration());
 }
 
 
@@ -385,7 +387,7 @@ TEST_F(libmuscle_vector_timeline_manager, each_slot_participates_independently) 
 TEST_F(libmuscle_vector_timeline_manager, reuse_loop_incomplete_lists_missing_slots) {
     tm_->check_send_message("out_v", 0);
 
-    ASSERT_THROW(tm_->finish_reuse_iteration(), ReuseLoopIncomplete);
+    ASSERT_THROW(tm_->start_reuse_iteration(), ReuseLoopIncomplete);
 }
 
 TEST_F(libmuscle_vector_timeline_manager, finish_reuse_iteration_ok_once_all_slots_sent) {
@@ -393,5 +395,5 @@ TEST_F(libmuscle_vector_timeline_manager, finish_reuse_iteration_ok_once_all_slo
     tm_->check_send_message("out_v", 1);
     tm_->check_send_message("out_v", 2);
 
-    ASSERT_NO_THROW(tm_->finish_reuse_iteration());
+    ASSERT_NO_THROW(tm_->start_reuse_iteration());
 }

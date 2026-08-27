@@ -48,6 +48,7 @@ def mpp_client(MPPClient):
 @pytest.fixture
 def timeline_manager():
     with patch("libmuscle.communicator.TimelineManager") as MockTimelineManager:
+        MockTimelineManager.return_value.start_reuse_iteration.return_value = None
         yield MockTimelineManager
 
 
@@ -478,13 +479,14 @@ def test_shutdown(
 
 
 def test_send_milestone_at_reuse(
-    connected_communicator, timeline_manager, mock_ports, mpp_server
+    connected_communicator, timeline_manager, mock_ports, mpp_server, mpp_client
 ):
-    timeline_manager().finish_reuse_iteration.return_value = [1, 2]
+    mpp_client.receive.return_value = mock_mpp_receive(data=None, iteration=[1, 3])
+    timeline_manager().start_reuse_iteration.return_value = [1, 2]
 
-    connected_communicator.finish_reuse_iteration()
+    connected_communicator.pre_receive_f_init()
 
-    timeline_manager().finish_reuse_iteration.assert_called_once()
+    timeline_manager().start_reuse_iteration.assert_called_once()
     # Expect a milestone broadcasted to all O_I ports
     num_expected = mock_ports["out_v"].get_length() + mock_ports["out_r"].get_length()
     assert mpp_server.deposit.call_count == num_expected

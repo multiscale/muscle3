@@ -165,11 +165,6 @@ class Communicator:
         """
         self._timeline_manager.restore_state(state)
 
-    def finish_reuse_iteration(self) -> None:
-        """Finish the reuse iteration and send milestones."""
-        finished_iteration = self._timeline_manager.finish_reuse_iteration()
-        self._broadcast_milestone(Milestone(finished_iteration), True)
-
     def send_message(
         self,
         port_name: str,
@@ -254,6 +249,10 @@ class Communicator:
         Returns:
             f_init_cache: The received messages.
         """
+        finished_iteration = self._timeline_manager.start_reuse_iteration()
+        if finished_iteration is not None:
+            self._broadcast_milestone(Milestone(finished_iteration), True)
+
         cache: FInitCacheType = {}
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
@@ -291,7 +290,7 @@ class Communicator:
                 f"F_INIT: {milestone_iterations}. This is not supposed to happen and "
                 "may be a bug in libmuscle. Please report an issue."
             )
-        if milestone_iterations[0] is not None:
+        if milestone_iterations and milestone_iterations[0] is not None:
             # Propagate milestone
             milestone = Milestone(milestone_iterations[0])
             self._broadcast_milestone(milestone, False)

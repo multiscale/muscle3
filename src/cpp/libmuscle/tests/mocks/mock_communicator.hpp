@@ -96,11 +96,11 @@ class MockCommunicator : public MockClass<MockCommunicator> {
             NAME_MOCK_MEM_FUN(MockCommunicator, get_locations);
             NAME_MOCK_MEM_FUN(MockCommunicator, set_peer_info);
             NAME_MOCK_MEM_FUN(MockCommunicator, send_message);
+            NAME_MOCK_MEM_FUN(MockCommunicator, pre_receive_f_init);
             NAME_MOCK_MEM_FUN(MockCommunicator, receive_s_message);
             NAME_MOCK_MEM_FUN(MockCommunicator, shutdown);
             NAME_MOCK_MEM_FUN(MockCommunicator, set_receive_timeout);
             NAME_MOCK_MEM_FUN(MockCommunicator, get_receive_timeout);
-            NAME_MOCK_MEM_FUN(MockCommunicator, finish_reuse_iteration);
             NAME_MOCK_MEM_FUN(MockCommunicator, get_state);
             NAME_MOCK_MEM_FUN(MockCommunicator, restore_state);
         }
@@ -144,8 +144,6 @@ class MockCommunicator : public MockClass<MockCommunicator> {
         MockFun<Void, Val<double>> set_receive_timeout;
 
         MockFun<Val<double>> get_receive_timeout;
-
-        MockFun<Void> finish_reuse_iteration;
 
         MockFun<Val<TimelineState>> get_state;
 

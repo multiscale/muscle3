@@ -455,22 +455,27 @@ void Communicator::drain_incoming_vector_port_(std::string const & port_name) {
 }
 
 void Communicator::close_incoming_ports_() {
-    for (auto const & oper_ports : port_manager_.list_ports()) {
-        if (allows_receiving(oper_ports.first)) {
-            for (auto const & port_name : oper_ports.second) {
-                auto const & port = port_manager_.get_port(port_name);
-                if (!port.is_connected())
-                    continue;
+    for (auto op : {Operator::F_INIT, Operator::S}) {
+        for (Port const & port : port_manager_.get_connected_ports(op, {})) {
+            try {
                 if (port.is_vector())
-                    drain_incoming_vector_port_(port_name);
+                    drain_incoming_vector_port_(port.name);
                 else
-                    drain_incoming_port_(port_name);
+                    drain_incoming_port_(port.name);
+            } catch (std::runtime_error & exc) {
+                auto peer_port = peer_info_.get().get_peer_ports(port.name)[0];
+                Reference peer_name(peer_port.cbegin(), std::prev(peer_port.cend()));
+                log_warning(
+                    "Connection with peer '", peer_name, "' was lost at the end of the "
+                    "simulation, probably because it crashed.");
             }
         }
     }
 }
 
 void Communicator::close_ports_() {
+    if (!peer_info_.is_set())
+        return;  // Not connected yet, no ports to close
     close_outgoing_ports_();
     close_incoming_ports_();
 }

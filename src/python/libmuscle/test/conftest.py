@@ -7,6 +7,7 @@ from ymmsl.v0_2 import Operator, Reference, Settings
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.communicator import Message
+from libmuscle.communicator_state import CommunicatorState
 from libmuscle.mcp.transport_client import ProfileData
 from libmuscle.mmp_client import MMPClient
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
@@ -44,12 +45,15 @@ def profile_data() -> ProfileData:
 
 
 @pytest.fixture
-def timeline_state() -> TimelineState:
-    return TimelineState(
-        iteration=[1],
-        send_participated=[],
-        receive_participated=[["in", None]],
-        subtimeline_states={},
+def communicator_state() -> CommunicatorState:
+    return CommunicatorState(
+        port_message_counts={"in": [1], "out": [4], "muscle_settings_in": [0]},
+        timeline_state=TimelineState(
+            iteration=[1],
+            send_participated=[],
+            receive_participated=[["in", None]],
+            subtimeline_states={},
+        ),
     )
 
 

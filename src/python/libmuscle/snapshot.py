@@ -1,70 +1,27 @@
-from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass
-from typing import Optional, cast
+from dataclasses import dataclass
+from typing import ClassVar, Optional, cast
 
 import msgpack
 from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle import communicator
+from libmuscle.communicator_state import CommunicatorState
 from libmuscle.mpp_message import MPPMessage
-from libmuscle.timeline_manager import TimelineState
 
 
-class Snapshot(ABC):
-    """Snapshot data structure.
+@dataclass
+class Snapshot:
+    """Snapshot data structure."""
 
-    This is an abstract base class, implementations are provided by subclasses.
-    """
+    SNAPSHOT_VERSION_BYTE: ClassVar[bytes] = b"2"
 
-    SNAPSHOT_VERSION_BYTE = b"\0"
-
-    def __init__(
-        self,
-        triggers: list[str],
-        wallclock_time: float,
-        port_message_counts: dict[str, list[int]],
-        is_final_snapshot: bool,
-        message: Optional["communicator.Message"],
-        settings_overlay: Settings,
-        timeline_state: TimelineState,
-    ) -> None:
-        self.triggers = triggers
-        self.wallclock_time = wallclock_time
-        self.port_message_counts = port_message_counts
-        self.is_final_snapshot = is_final_snapshot
-        self.message = message
-        # self.message is None for implicit snapshots, so we cannot store the
-        # Settings overlay in that message object.
-        self.settings_overlay = settings_overlay
-        self.timeline_state = timeline_state
-
-    @classmethod
-    @abstractmethod
-    def from_bytes(cls, data: bytes) -> "Snapshot":
-        """Create a snapshot object from binary data.
-
-        Args:
-            data: binary data representing the snapshot. Note that this must
-                **exclude** the versioning byte.
-        """
-        ...
-
-    @abstractmethod
-    def to_bytes(self) -> bytes:
-        """Convert the snapshot object to binary data.
-
-        Returns:
-            Binary data representing the snapshot. Note that this must
-                **exclude** the versioning byte.
-        """
-        ...
-
-
-class MsgPackSnapshot(Snapshot):
-    """Snapshot stored in messagepack format"""
-
-    SNAPSHOT_VERSION_BYTE = b"2"
+    triggers: list[str]
+    wallclock_time: float
+    is_final_snapshot: bool
+    message: Optional["communicator.Message"]
+    settings_overlay: Settings
+    communicator_state: CommunicatorState
 
     @classmethod
     def from_bytes(cls, data: bytes) -> "Snapshot":
@@ -72,11 +29,10 @@ class MsgPackSnapshot(Snapshot):
         return cls(
             dct["triggers"],
             dct["wallclock_time"],
-            dct["port_message_counts"],
             dct["is_final_snapshot"],
             cls.bytes_to_message(dct["message"]),
             Settings(dct["settings_overlay"]),
-            TimelineState(**dct["timeline_state"]),
+            CommunicatorState.fromdict(dct["communicator_state"]),
         )
 
     def to_bytes(self) -> bytes:
@@ -86,11 +42,10 @@ class MsgPackSnapshot(Snapshot):
                 {
                     "triggers": self.triggers,
                     "wallclock_time": self.wallclock_time,
-                    "port_message_counts": self.port_message_counts,
                     "is_final_snapshot": self.is_final_snapshot,
                     "message": self.message_to_bytes(self.message),
                     "settings_overlay": self.settings_overlay.as_ordered_dict(),
-                    "timeline_state": asdict(self.timeline_state),
+                    "communicator_state": self.communicator_state.asdict(),
                 }
             ),
         )
@@ -150,7 +105,7 @@ class SnapshotMetadata:
             snapshot.wallclock_time,
             snapshot.message.timestamp if snapshot.message else float("NaN"),
             snapshot.message.next_timestamp if snapshot.message else None,
-            snapshot.port_message_counts,
+            snapshot.communicator_state.port_message_counts,
             snapshot.is_final_snapshot,
             snapshot_filename,
         )

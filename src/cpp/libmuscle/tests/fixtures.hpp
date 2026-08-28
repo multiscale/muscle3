@@ -191,21 +191,24 @@ struct ConnectedPortManagerFixture {
 };
 
 
-struct TimelineStateFixture {
+struct CommunicatorStateFixture {
     public:
-        typedef ::libmuscle::_MUSCLE_IMPL_NS::TimelineState TimelineState;
+        typedef ::libmuscle::_MUSCLE_IMPL_NS::CommunicatorState CommunicatorState;
         typedef ::libmuscle::_MUSCLE_IMPL_NS::PortAndSlot PortAndSlot;
         typedef ::libmuscle::_MUSCLE_IMPL_NS::IterationCount IterationCount;
         typedef ::libmuscle::_MUSCLE_IMPL_NS::Optional<int> OptionalSlot;
 
-        TimelineState timeline_state_;
+        CommunicatorState communicator_state_;
 
-        TimelineStateFixture() {
-            timeline_state_.iteration = IterationCount({1});
-            timeline_state_.send_participated = {};
-            timeline_state_.receive_participated = {
+        CommunicatorStateFixture() {
+            communicator_state_.port_message_counts = {
+                {"in", {1}}, {"out", {4}}, {"muscle_settings_in", {0}}};
+
+            communicator_state_.timeline_state.iteration = IterationCount({1});
+            communicator_state_.timeline_state.send_participated = {};
+            communicator_state_.timeline_state.receive_participated = {
                     PortAndSlot("in", OptionalSlot())};
-            timeline_state_.subtimeline_states = {};
+            communicator_state_.timeline_state.subtimeline_states = {};
         }
 };
 

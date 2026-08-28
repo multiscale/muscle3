@@ -1,6 +1,7 @@
 #include <libmuscle/instance.hpp>
 
 #include <libmuscle/api_guard.hpp>
+#include <libmuscle/communicator_state.hpp>
 #include <libmuscle/communicator.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
@@ -124,6 +125,7 @@ class Instance::Impl {
         std::unique_ptr<Profiler> profiler_;
         std::unique_ptr<PortManager> port_manager_;
         std::unique_ptr<Communicator> communicator_;
+        Optional<CommunicatorState> communicator_state_;
 #ifdef MUSCLE_ENABLE_MPI
         int mpi_root_;
         MPI_Comm mpi_comm_;
@@ -229,7 +231,7 @@ Instance::Impl::Impl(
                 new Communicator(
                     name, index, *port_manager_, *profiler_, *manager_));
         snapshot_manager_.reset(new SnapshotManager(
-                instance_name_, *manager_, *port_manager_, *communicator_));
+                instance_name_, *manager_, *communicator_));
         trigger_manager_.reset(new TriggerManager());
 
         register_();
@@ -356,6 +358,7 @@ bool Instance::Impl::reuse_instance() {
     }
 #endif
 
+    communicator_state_ = {};
     first_run_ = false;
     if (!do_reuse) {
         shutdown_();
@@ -973,6 +976,7 @@ void Instance::Impl::handle_receive_settings_() {
  * @return true iff no ports were closed.
  */
 bool Instance::Impl::pre_receive_() {
+    communicator_state_ = communicator_->get_state();
     ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
 
     try {
@@ -1026,11 +1030,20 @@ Optional<double> Instance::Impl::f_init_max_timestamp_() {
 void Instance::Impl::save_snapshot_(
         Optional<Message> message, bool final,
         Optional<double> f_init_max_timestamp) {
+    CommunicatorState communicator_state;
+    if (final) {
+        assert(communicator_state_.is_set());
+        communicator_state = communicator_state_.get();
+    } else {
+        assert(!communicator_state_.is_set());
+        communicator_state = communicator_->get_state();
+    }
     auto triggers = trigger_manager_->get_triggers();
     auto walltime = trigger_manager_->elapsed_walltime();
     auto timestamp = snapshot_manager_->save_snapshot(
             message, final, triggers, walltime,
-            f_init_max_timestamp, settings_manager_.overlay);
+            f_init_max_timestamp, settings_manager_.overlay,
+            communicator_state);
     trigger_manager_->update_checkpoints(timestamp);
 }
 

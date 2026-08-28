@@ -1,5 +1,6 @@
 #pragma once
 
+#include <libmuscle/communicator_state.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/namespace.hpp>
@@ -145,9 +146,9 @@ class MockCommunicator : public MockClass<MockCommunicator> {
 
         MockFun<Val<double>> get_receive_timeout;
 
-        MockFun<Val<TimelineState>> get_state;
+        MockFun<Val<CommunicatorState>> get_state;
 
-        MockFun<Void, Val<TimelineState const &>> restore_state;
+        MockFun<Void, Val<CommunicatorState const &>> restore_state;
 };
 
 using Communicator = MockCommunicator;

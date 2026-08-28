@@ -58,14 +58,18 @@ void Communicator::set_peer_info(PeerInfo const & peer_info) {
     timeline_manager_ = std::make_unique<TimelineManager>(port_manager_);
 }
 
-TimelineState Communicator::get_state() const {
+CommunicatorState Communicator::get_state() const {
     assert(timeline_manager_);
-    return timeline_manager_->get_state();
+    return {
+        port_manager_.get_message_counts(),
+        timeline_manager_->get_state()
+    };
 }
 
-void Communicator::restore_state(TimelineState const & state) {
+void Communicator::restore_state(CommunicatorState const & state) {
     assert(timeline_manager_);
-    timeline_manager_->restore_state(state);
+    port_manager_.restore_message_counts(state.port_message_counts);
+    timeline_manager_->restore_state(state.timeline_state);
 }
 
 void Communicator::send_message(

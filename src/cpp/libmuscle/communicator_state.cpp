@@ -13,9 +13,14 @@ Data CommunicatorState::to_data() const {
         pmc[kv.first] = counts;
     }
 
+    Data mc = Data::dict();
+    for (const auto & kv : message_cache)
+        mc[std::string(kv.first)] = kv.second.encoded_as_data();
+
     return Data::dict(
         "port_message_counts", pmc,
-        "timeline_state", timeline_state.to_data());
+        "timeline_state", timeline_state.to_data(),
+        "message_cache", mc);
 }
 
 CommunicatorState CommunicatorState::from_data(DataConstRef const & data) {
@@ -31,6 +36,10 @@ CommunicatorState CommunicatorState::from_data(DataConstRef const & data) {
     }
 
     state.timeline_state = TimelineState::from_data(data["timeline_state"]);
+
+    auto data_mc = data["message_cache"];
+    for (std::size_t i=0; i<data_mc.size(); ++i)
+        state.message_cache.emplace(data_mc.key(i), MPPMessage::from_bytes(data_mc.value(i)));
 
     return state;
 }

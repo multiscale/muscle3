@@ -63,7 +63,7 @@ def port_manager():
 def communicator():
     with patch("libmuscle.instance.Communicator") as Communicator:
         communicator = Communicator.return_value
-        communicator.pre_receive_f_init.return_value = {}
+        communicator.pre_receive.return_value = {}
         yield communicator
 
 
@@ -431,9 +431,7 @@ def test_reuse_set_overlay(
     mock_msg = MagicMock()
     mock_msg.data = Settings({"s1": 1, "s2": 2})
     mock_msg.settings = Settings({"s0": 0})
-    communicator.pre_receive_f_init.return_value = {
-        ("muscle_settings_in", None): mock_msg
-    }
+    communicator.pre_receive.return_value = {("muscle_settings_in", None): mock_msg}
 
     instance.reuse_instance()
     assert settings_manager.overlay["s0"] == 0
@@ -443,20 +441,20 @@ def test_reuse_set_overlay(
 
 def test_reuse_closed_port(instance, communicator):
     assert instance.reuse_instance() is True  # First iteration: should always reuse
-    communicator.pre_receive_f_init.side_effect = PortClosed()
+    communicator.pre_receive.side_effect = PortClosed()
     assert instance.reuse_instance() is False
 
 
 def test_reuse_no_closed_port(instance, communicator):
-    communicator.pre_receive_f_init.return_value = {("in", None): Message(1)}
+    communicator.pre_receive.return_value = {("in", None): Message(1)}
     for _ in range(20):
         assert instance.reuse_instance() is True
-    communicator.pre_receive_f_init.side_effect = PortClosed()
+    communicator.pre_receive.side_effect = PortClosed()
     assert instance.reuse_instance() is False
 
 
 def test_reuse_no_f_init_ports(instance, connected_port_manager, communicator):
-    connected_port_manager.has_f_init_connections.return_value = False
+    communicator.pre_receive.side_effect = [{}, PortClosed()]
 
     assert instance.reuse_instance() is True
     assert instance.reuse_instance() is False
@@ -466,7 +464,7 @@ def test_reuse_always_pre_receives(instance, connected_port_manager, communicato
     connected_port_manager.has_f_init_connections.return_value = False
 
     instance.reuse_instance()
-    communicator.pre_receive_f_init.assert_called_once()
+    communicator.pre_receive.assert_called_once()
 
 
 def test_send_message(instance, settings_manager, communicator):
@@ -525,7 +523,7 @@ def test_receive_slot_on_scalar_port(instance):
 def test_receive_f_init(instance, port_manager, communicator):
     mock_msg = MagicMock()
     mock_msg.data = Settings()
-    communicator.pre_receive_f_init.return_value = {("in", None): mock_msg}
+    communicator.pre_receive.return_value = {("in", None): mock_msg}
 
     instance.reuse_instance()
 
@@ -567,7 +565,7 @@ def test_receive_inconsistent_settings(
         ),
         ("in", None): MagicMock(settings=Settings({"s0": 0})),
     }
-    communicator.pre_receive_f_init.return_value = msgs
+    communicator.pre_receive.return_value = msgs
     port_manager.settings_in_connected.return_value = True
 
     with pytest.raises(RuntimeError):
@@ -580,7 +578,7 @@ def test_receive_with_settings(
 
     mock_msg = MagicMock()
     mock_msg.settings = Settings({"s0": 0, "s1": 1})
-    communicator.pre_receive_f_init.return_value = {("in", None): mock_msg}
+    communicator.pre_receive.return_value = {("in", None): mock_msg}
 
     instance_dont_apply_overlay.reuse_instance()
     msg = instance_dont_apply_overlay.receive("in")

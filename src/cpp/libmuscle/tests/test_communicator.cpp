@@ -239,11 +239,11 @@ TEST_F(libmuscle_communicator2, receive_root_milestone_vector) {
     ASSERT_FALSE(mock_ports_["in_v"]->is_open(5));
 }
 
-TEST_F(libmuscle_communicator2, pre_receive_f_init) {
+TEST_F(libmuscle_communicator2, pre_receive) {
     MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
         Data("test"), {});
 
-    auto cache = connected_communicator_.pre_receive_f_init();
+    auto cache = connected_communicator_.pre_receive();
     ASSERT_EQ(cache.size(), 1);
     ASSERT_EQ(cache.at("in").data(), Data("test"));
 }
@@ -253,7 +253,7 @@ TEST_F(libmuscle_communicator2, pre_receive_f_init_with_settings) {
         Settings({{"a", true}}), {});
     connected_port_manager_.settings_in_connected.return_value = true;
 
-    auto cache = connected_communicator_.pre_receive_f_init();
+    auto cache = connected_communicator_.pre_receive();
     ASSERT_EQ(cache.size(), 2);
     ASSERT_EQ(cache.at("in").data(), Settings({{"a", true}}));
     ASSERT_EQ(cache.at("muscle_settings_in").data(), Settings({{"a", true}}));
@@ -263,7 +263,7 @@ TEST_F(libmuscle_communicator2, pre_receive_close_port) {
     MockMPPClient::return_value.receive.return_value = mock_mpp_receive(
         Milestone({IterationCount({})}), {});
 
-    ASSERT_THROW(connected_communicator_.pre_receive_f_init(), PortClosed);
+    ASSERT_THROW(connected_communicator_.pre_receive(), PortClosed);
 }
 
 TEST_F(libmuscle_communicator2, pre_receive_vector) {
@@ -273,7 +273,7 @@ TEST_F(libmuscle_communicator2, pre_receive_vector) {
     mock_ports_["in"] = std::make_unique<Port>("in", Operator::F_INIT, Timeline(""), true, true, 0, std::vector<int>());
     mock_ports_["in"]->set_length(4);
 
-    auto cache = connected_communicator_.pre_receive_f_init();
+    auto cache = connected_communicator_.pre_receive();
     ASSERT_EQ(cache.size(), 4);
     for (int slot = 0; slot < 4; ++slot) {
         ASSERT_EQ(cache.count(Reference("in") + slot), 1);
@@ -290,7 +290,7 @@ TEST_F(libmuscle_communicator2, pre_receive_broadcast_milestone) {
         return *next_message++;
     };
 
-    auto cache = connected_communicator_.pre_receive_f_init();
+    auto cache = connected_communicator_.pre_receive();
     ASSERT_EQ(cache.size(), 1);
     ASSERT_EQ(cache.at("in").data(), Data("test data"));
     // Expect a milestone broadcasted to all O_I and O_F ports
@@ -317,7 +317,7 @@ TEST_F(libmuscle_communicator2, pre_receive_different_milestones) {
         return *next_message++;
     };
 
-    ASSERT_THROW(connected_communicator_.pre_receive_f_init(), std::runtime_error);
+    ASSERT_THROW(connected_communicator_.pre_receive(), std::runtime_error);
 }
 
 TEST_F(libmuscle_communicator2, pre_receive_some_port_close) {
@@ -332,7 +332,7 @@ TEST_F(libmuscle_communicator2, pre_receive_some_port_close) {
         return *next_message++;
     };
 
-    ASSERT_THROW(connected_communicator_.pre_receive_f_init(), std::runtime_error);
+    ASSERT_THROW(connected_communicator_.pre_receive(), std::runtime_error);
 }
 
 TEST_F(libmuscle_communicator2, port_count_validation) {

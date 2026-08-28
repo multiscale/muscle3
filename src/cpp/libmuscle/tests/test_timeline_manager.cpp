@@ -99,12 +99,12 @@ std::unique_ptr<PortManager> make_port_manager(
     return port_manager;
 }
 
-/* check_receive + record_received_message, as Communicator::receive_message does. */
+/* check_receive_s + record_received_message, as Communicator::receive_message does. */
 void check_received(
         TimelineManager & tm, std::string const & port_name, Optional<int> slot,
         IterationCount const & iteration) {
-    tm.check_receive(port_name, slot);
-    tm.record_received_message(port_name, slot, iteration);
+    tm.check_receive_s(port_name, slot);
+    tm.record_received_s_message(port_name, slot, iteration);
 }
 
 }   // anonymous namespace
@@ -163,12 +163,12 @@ struct libmuscle_vector_timeline_manager : libmuscle_timeline_manager {
 
 TEST_F(libmuscle_full_timeline_manager, f_init_receive_allowed_once) {
     check_received(*tm_, "in_f", {}, {});
-    ASSERT_THROW(tm_->check_receive("in_f"), AlreadyParticipated);
+    ASSERT_THROW(tm_->check_receive_s("in_f"), AlreadyParticipated);
 }
 
 TEST_F(libmuscle_full_timeline_manager, settings_in_receive_allowed_once) {
     check_received(*tm_, "muscle_settings_in", {}, {});
-    ASSERT_THROW(tm_->check_receive("muscle_settings_in"), AlreadyParticipated);
+    ASSERT_THROW(tm_->check_receive_s("muscle_settings_in"), AlreadyParticipated);
 }
 
 TEST_F(libmuscle_full_timeline_manager, record_received_message_f_init_adopts_iteration) {
@@ -182,7 +182,7 @@ TEST_F(libmuscle_full_timeline_manager, record_received_message_f_init_adopts_it
 TEST_F(libmuscle_full_timeline_manager, record_received_message_f_init_raises_on_mismatch) {
     check_received(*tm_, "in_f", {}, {3});
     ASSERT_THROW(
-            tm_->record_received_message("muscle_settings_in", {}, {4}), MessageOutOfSync);
+            tm_->record_received_s_message("muscle_settings_in", {}, {4}), MessageOutOfSync);
 }
 
 TEST_F(libmuscle_timeline_manager, o_f_can_send_immediately_when_no_f_init_connections) {
@@ -252,7 +252,7 @@ TEST_F(libmuscle_full_timeline_manager, s_leads_first_receive_starts_subtimeline
 
     check_received(*tm_, "in_a1", {}, {7});
     // second receive on the same port before O_I sends anything is blocked
-    ASSERT_THROW(tm_->check_receive("in_a1"), PortBlocked);
+    ASSERT_THROW(tm_->check_receive_s("in_a1"), PortBlocked);
 }
 
 TEST_F(libmuscle_full_timeline_manager, s_leads_o_i_blocked_until_all_s_received) {
@@ -275,8 +275,8 @@ TEST_F(libmuscle_full_timeline_manager, s_leads_advances_on_strictly_later_itera
     tm_->check_send_message("out_a1");
 
     // an equal-or-earlier iteration on the already-participated S port is out of sync
-    tm_->check_receive("in_a1");
-    ASSERT_THROW(tm_->record_received_message("in_a1", {}, {7}), MessageOutOfSync);
+    tm_->check_receive_s("in_a1");
+    ASSERT_THROW(tm_->record_received_s_message("in_a1", {}, {7}), MessageOutOfSync);
 
     // a strictly later one advances the sub-iteration
     check_received(*tm_, "in_a1", {}, {8});

@@ -15,6 +15,8 @@ from libmuscle.timeline_manager import (
     PortBlocked,
     ReuseLoopIncomplete,
     TimelineManager,
+    get_most_nested_iteration,
+    is_subiteration,
 )
 
 
@@ -82,6 +84,7 @@ def vector_timeline_manager() -> TimelineManager:
 
     tm = TimelineManager(pm)
     assert tm.start_reuse_iteration() is None
+    assert tm.check_pre_received_iteration_counts([]) == []
     return tm
 
 
@@ -100,33 +103,25 @@ def check_received(
     slot: Optional[int],
     iteration: IterationCount,
 ) -> None:
-    timeline_manager.check_receive(port, slot)
-    timeline_manager.record_received_message(port, slot, iteration)
+    timeline_manager.check_receive_s(port, slot)
+    timeline_manager.record_received_s_message(port, slot, iteration)
 
 
-def test_finish_reuse_iteration_blocked_when_muscle_settings_in_not_received(
-    timeline_manager: TimelineManager,
-) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    timeline_manager.check_send_message("out_f")
-    # muscle_settings_in is never received this iteration
-
-    with pytest.raises(ReuseLoopIncomplete) as exc_info:
-        timeline_manager.start_reuse_iteration()
-
-    assert exc_info.value.expected == expected(
-        timeline_manager, ("receive", "muscle_settings_in", [])
-    )
+def test_is_subiteration():
+    assert is_subiteration([], [])
+    assert is_subiteration([1, 2], [1, 2])
+    assert is_subiteration([1, 2], [1])
+    assert is_subiteration([1, 2], [])
+    assert not is_subiteration([1, 2], [1, 2, 3])
+    assert not is_subiteration([1, 2], [1, 1])
 
 
-@pytest.mark.parametrize("include_settings", [False], indirect=True)
-def test_finish_reuse_iteration_ignores_muscle_settings_in_when_disconnected(
-    timeline_manager: TimelineManager,
-) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    timeline_manager.check_send_message("out_f")
-
-    timeline_manager.start_reuse_iteration()
+def test_get_most_nested_iteration():
+    assert get_most_nested_iteration([[1, 2, 3], [1], [1, 2, 3, 4]]) == [1, 2, 3, 4]
+    with pytest.raises(ValueError, match="empty list"):
+        get_most_nested_iteration([])
+    with pytest.raises(ValueError, match="not a subiteration"):
+        get_most_nested_iteration([[1], [2]])
 
 
 @pytest.mark.parametrize("has_f_init", [False], indirect=True)
@@ -134,6 +129,7 @@ def test_finish_reuse_iteration_ignores_muscle_settings_in_when_disconnected(
 def test_o_f_can_send_immediately_when_no_f_init_connections(
     timeline_manager: TimelineManager,
 ) -> None:
+    timeline_manager.check_pre_received_iteration_counts([])  # no F_INIT messages
     assert timeline_manager.check_send_message("out_f") == []
 
 
@@ -141,8 +137,7 @@ def test_check_send_message_o_f_blocked_when_subtimeline_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
     # receive on the F_INIT ports
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so the :A1 sub-timeline is incomplete
 
@@ -158,8 +153,7 @@ def test_check_send_message_o_f_raises_already_participated_when_sent_twice(
     timeline_manager: TimelineManager,
 ) -> None:
     # receive on the F_INIT ports
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     # skipping the subtimelines is allowed
     timeline_manager.check_send_message("out_f")
 
@@ -174,8 +168,7 @@ def test_check_send_message_o_f_raises_already_participated_when_sent_twice(
 def test_check_send_message_o_f_marks_participated_and_returns_iteration(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
 
     assert not timeline_manager._send.has_participated("out_f", None)
     iteration = timeline_manager.check_send_message("out_f")
@@ -187,8 +180,7 @@ def test_check_send_message_o_f_marks_participated_and_returns_iteration(
 def test_check_send_message_o_i_starts_subtimeline_with_o_i_leading(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
 
     iteration = timeline_manager.check_send_message("out_a1")
 
@@ -202,8 +194,7 @@ def test_check_send_message_o_i_starts_subtimeline_with_o_i_leading(
 def test_check_send_message_o_i_blocked_when_s_leads_and_not_all_s_received(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a1", None, [0])
     # "in_a1_2" never received, so S hasn't fully led :A1 yet
 
@@ -218,13 +209,12 @@ def test_check_send_message_o_i_blocked_when_s_leads_and_not_all_s_received(
 def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a1", None, [0])
 
-    timeline_manager.check_receive("in_a1_2")
+    timeline_manager.check_receive_s("in_a1_2")
     with pytest.raises(MessageOutOfSync) as exc_info:
-        timeline_manager.record_received_message("in_a1_2", None, [7])
+        timeline_manager.record_received_s_message("in_a1_2", None, [7])
     assert exc_info.value.port == timeline_manager._port_manager.get_port("in_a1_2")
     assert exc_info.value.slot is None
 
@@ -251,14 +241,13 @@ def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
 def test_check_send_message_o_i_when_o_i_leads_and_complete(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
 
     first_iteration = timeline_manager.check_send_message("out_a1")
-    timeline_manager.check_receive("in_a1")
-    timeline_manager.record_received_message("in_a1", None, first_iteration)
-    timeline_manager.check_receive("in_a1_2")
-    timeline_manager.record_received_message("in_a1_2", None, first_iteration)
+    timeline_manager.check_receive_s("in_a1")
+    timeline_manager.record_received_s_message("in_a1", None, first_iteration)
+    timeline_manager.check_receive_s("in_a1_2")
+    timeline_manager.record_received_s_message("in_a1_2", None, first_iteration)
 
     second_iteration = timeline_manager.check_send_message("out_a1")
 
@@ -273,8 +262,7 @@ def test_check_send_message_o_i_when_o_i_leads_and_complete(
 def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so the sub-iteration is incomplete
 
@@ -286,58 +274,33 @@ def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
     )
 
 
-def test_check_receive_f_init_allowed_when_not_yet_participated(
-    timeline_manager: TimelineManager,
-) -> None:
-    timeline_manager.check_receive("in_f")
-    assert not timeline_manager._receive.has_participated("in_f", None)
+def test_check_pre_receive_increments(timeline_manager: TimelineManager) -> None:
+    assert timeline_manager.check_pre_received_iteration_counts(
+        [[1, 2, 3], [1, 2], [1], [], [1, 2, 3], [1, 2]]
+    ) == [1, 2, 3]
 
-    timeline_manager.record_received_message("in_f", None, [3])
-    assert timeline_manager._iteration == [3]
-    assert timeline_manager._receive.has_participated("in_f", None)
+    with pytest.raises(RuntimeError, match="not newer"):
+        # Iteration count should increase
+        timeline_manager.check_pre_received_iteration_counts([[1, 2, 3]])
 
-    check_received(timeline_manager, "muscle_settings_in", None, [3])
-
-    assert timeline_manager._iteration == [3]
-    assert timeline_manager._receive.has_participated("muscle_settings_in", None)
+    assert timeline_manager.check_pre_received_iteration_counts(
+        [[1, 2, 4], [1, 2], [1], [], [1, 2, 4], [1, 2]]
+    ) == [1, 2, 4]
 
 
-def test_check_receive_f_init_raises_already_participated_when_received_twice(
-    timeline_manager: TimelineManager,
-) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-
-    with pytest.raises(AlreadyParticipated) as exc_info:
-        timeline_manager.check_receive("in_f")
-
-    assert exc_info.value.port == timeline_manager._port_manager.get_port("in_f")
-    assert exc_info.value.slot is None
-    assert exc_info.value.action == "receive"
-
-
-def test_record_received_message_f_init_raises_when_iteration_differs(
+def test_check_pre_receive_iterations_when_iteration_differs(
     timeline_manager: TimelineManager,
 ) -> None:
     """Once the main timeline has started, an F_INIT message for a different
     iteration is rejected."""
-    check_received(timeline_manager, "in_f", None, [3])
-    timeline_manager.check_receive("muscle_settings_in")
-
-    with pytest.raises(MessageOutOfSync) as exc_info:
-        timeline_manager.record_received_message("muscle_settings_in", None, [4])
-
-    assert exc_info.value.port == timeline_manager._port_manager.get_port(
-        "muscle_settings_in"
-    )
-    assert exc_info.value.slot is None
+    with pytest.raises(ValueError, match="not a subiteration"):
+        timeline_manager.check_pre_received_iteration_counts([[3], [4]])
 
 
 def test_check_receive_message_s_starts_subtimeline_with_s_leading(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
-
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a2", None, [0])
 
     stm = timeline_manager._submanagers[Timeline(":A2")]
@@ -349,13 +312,12 @@ def test_check_receive_message_s_starts_subtimeline_with_s_leading(
 def test_check_receive_message_s_blocked_when_o_i_leads_and_not_all_o_i_sent(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     timeline_manager.check_send_message("out_a2")
     # "out_a2_2" never sent, so O_I hasn't fully led :A2 yet
 
     with pytest.raises(PortBlocked) as exc_info:
-        timeline_manager.check_receive("in_a2")
+        timeline_manager.check_receive_s("in_a2")
 
     assert exc_info.value.expected == expected(
         timeline_manager, ("send", "out_a2_2", [])
@@ -365,8 +327,7 @@ def test_check_receive_message_s_blocked_when_o_i_leads_and_not_all_o_i_sent(
 def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     timeline_manager.check_send_message("out_a2")
     timeline_manager.check_send_message("out_a2_2")
 
@@ -380,7 +341,7 @@ def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
     # A second receive on in_a2 cannot advance the sub-iteration itself: with O_I
     # leading, only a new O_I send is allowed to do that.
     with pytest.raises(PortBlocked) as exc_info:
-        timeline_manager.check_receive("in_a2")
+        timeline_manager.check_receive_s("in_a2")
 
     assert exc_info.value.expected == expected(
         timeline_manager, ("send", "out_a2", []), ("send", "out_a2_2", [])
@@ -390,9 +351,7 @@ def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
 def test_check_receive_message_s_when_s_leads_and_complete(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
-
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a2", None, [1])
 
     stm = timeline_manager._submanagers[Timeline(":A2")]
@@ -401,9 +360,9 @@ def test_check_receive_message_s_when_s_leads_and_complete(
     timeline_manager.check_send_message("out_a2")
     timeline_manager.check_send_message("out_a2_2")
 
-    timeline_manager.check_receive("in_a2")
+    timeline_manager.check_receive_s("in_a2")
     with pytest.raises(MessageOutOfSync) as exc_info:
-        timeline_manager.record_received_message("in_a2", None, first_iteration)
+        timeline_manager.record_received_s_message("in_a2", None, first_iteration)
     assert exc_info.value.port == timeline_manager._port_manager.get_port("in_a2")
     assert exc_info.value.slot is None
 
@@ -420,13 +379,12 @@ def test_check_receive_message_s_when_s_leads_and_complete(
 def test_check_receive_message_s_blocked_when_s_leads_and_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [])
-    check_received(timeline_manager, "muscle_settings_in", None, [])
+    timeline_manager.check_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a2", None, [1])
     # neither "out_a2" nor "out_a2_2" received, so the sub-iteration is incomplete
 
     with pytest.raises(PortBlocked) as exc_info:
-        timeline_manager.check_receive("in_a2")
+        timeline_manager.check_receive_s("in_a2")
 
     assert exc_info.value.expected == expected(
         timeline_manager, ("send", "out_a2", []), ("send", "out_a2_2", [])
@@ -438,8 +396,7 @@ def test_finish_reuse_iteration_resets_when_complete(
 ) -> None:
     # Drive one full reuse loop iteration, using :A1's sub-timeline, to
     # completion.
-    check_received(timeline_manager, "in_f", None, [3])
-    check_received(timeline_manager, "muscle_settings_in", None, [3])
+    timeline_manager.check_pre_received_iteration_counts([[3], [3]])
     timeline_manager.check_send_message("out_a1")
     check_received(timeline_manager, "in_a1", None, [3, 0])
     check_received(timeline_manager, "in_a1_2", None, [3, 0])
@@ -449,10 +406,13 @@ def test_finish_reuse_iteration_resets_when_complete(
 
     timeline_manager.start_reuse_iteration()
 
-    # A fresh, just-connected TimelineManager has never participated in
-    # anything, so comparing against its state confirms everything was reset.
-    fresh = TimelineManager(timeline_manager._port_manager)
-    assert timeline_manager.get_state() == fresh.get_state()
+    # Inspect timeline state to check that everything is reset:
+    state = timeline_manager.get_state()
+    assert state.send_participated == []
+    assert all(
+        not any(subtl_state.values())  # All values should be None or empty lists
+        for subtl_state in state.subtimeline_states.values()
+    )
 
 
 def test_finish_reuse_iteration_raises_when_incomplete(
@@ -460,8 +420,7 @@ def test_finish_reuse_iteration_raises_when_incomplete(
 ) -> None:
     # Start a reuse loop iteration but leave it incomplete: :A1's
     # sub-timeline is started but never finishes, and O_F never sends.
-    check_received(timeline_manager, "in_f", None, [4])
-    check_received(timeline_manager, "muscle_settings_in", None, [4])
+    timeline_manager.check_pre_received_iteration_counts([[4], [4]])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so :A1 is incomplete, and
     # "out_f" is never sent either
@@ -480,8 +439,7 @@ def test_finish_reuse_iteration_raises_when_incomplete(
 def test_get_state_and_restore_state_round_trip(
     timeline_manager: TimelineManager,
 ) -> None:
-    check_received(timeline_manager, "in_f", None, [3])
-    check_received(timeline_manager, "muscle_settings_in", None, [3])
+    timeline_manager.check_pre_received_iteration_counts([[3], [3]])
     timeline_manager.check_send_message("out_a1")
     check_received(timeline_manager, "in_a1", None, [3, 0])
     # "in_a1_2" not yet received, so :A1 is incomplete, and "out_f" not yet sent

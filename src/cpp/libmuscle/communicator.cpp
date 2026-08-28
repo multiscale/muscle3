@@ -33,6 +33,45 @@ using ymmsl::Settings;
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+namespace {
+
+/** Helper method to construct a Message from an MPPMessage.
+ * 
+ * N.B. since C++ enforces only const access to .settings and .data, we don't need to
+ * make a copy (unlike the Python equivalent).
+ */
+Message make_message(MPPMessage const & mpp_msg) {
+    Message message(
+        mpp_msg.timestamp,
+        mpp_msg.data,
+        mpp_msg.settings_overlay.as<Settings>()
+    );
+    if (mpp_msg.next_timestamp.is_set())
+        message.set_next_timestamp(mpp_msg.next_timestamp.get());
+    return message;
+}
+
+
+/** Helper template method to execute code for each slot of the given port.
+ * 
+ * Expects a function with arguments (Optional<int> slot, Reference port_ref)
+ */
+template<typename F>
+void for_each_slot(Port const & port, F&& f) {
+    Reference port_name(port.name);
+    if (!port.is_vector()) {
+        f({}, port_name);
+    } else {
+        int slot = 0; // Allow pre-receive to receive 1 message that updates port._length
+        do {
+            f(slot, port_name + slot);  
+        } while (++slot < port.get_length());
+    }
+}
+
+}
+
+
 Communicator::Communicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
@@ -47,6 +86,9 @@ Communicator::Communicator(
     , server_()
     , clients_()
     , receive_timeout_(10.0)  // Notify manager, by default, after 10 seconds waiting in receive_message()
+    , pre_receive_ports_()
+    , repeat_filters_()
+    , message_cache_()
 {}
 
 std::vector<std::string> Communicator::get_locations() const {
@@ -56,13 +98,15 @@ std::vector<std::string> Communicator::get_locations() const {
 void Communicator::set_peer_info(PeerInfo const & peer_info) {
     peer_info_ = peer_info;
     timeline_manager_ = std::make_unique<TimelineManager>(port_manager_);
+    prepare_conduit_filters_();
 }
 
 CommunicatorState Communicator::get_state() const {
     assert(timeline_manager_);
     return {
         port_manager_.get_message_counts(),
-        timeline_manager_->get_state()
+        timeline_manager_->get_state(),
+        message_cache_
     };
 }
 
@@ -70,6 +114,7 @@ void Communicator::restore_state(CommunicatorState const & state) {
     assert(timeline_manager_);
     port_manager_.restore_message_counts(state.port_message_counts);
     timeline_manager_->restore_state(state.timeline_state);
+    message_cache_ = state.message_cache;
 }
 
 void Communicator::send_message(
@@ -132,80 +177,89 @@ void Communicator::send_message(
         port.set_closed(slot);
 }
 
-Communicator::FInitCacheType Communicator::pre_receive_f_init() {
+Communicator::FInitCacheType Communicator::pre_receive() {
     assert(timeline_manager_);
     auto finished_iteration = timeline_manager_->start_reuse_iteration();
-    if (finished_iteration.is_set())
-        broadcast_milestone_(Milestone(finished_iteration.get()), true);
+    auto milestone_iteration = finished_iteration;
 
+    while (true) {
+        if (milestone_iteration.is_set()) {
+            // Should send on O_I only when this is the milestone for the finished
+            // iteration. Other milestones (received on F_INIT ports) should
+            // propagate to O_F as well:
+            Milestone milestone(milestone_iteration.get());
+            broadcast_milestone_(milestone, (milestone_iteration == finished_iteration));
+
+            // Clean up stale messages in the cache
+            for (auto it = message_cache_.begin(); it != message_cache_.end(); ) {
+                if (it->second.iteration == milestone_iteration.get())
+                    it = message_cache_.erase(it);
+                else
+                    ++it;
+            }
+
+            // TODO: send buffered messages for reducer filters
+
+            if (milestone.is_final_milestone())
+                throw PortClosed();
+        }
+
+        std::vector<IterationCount> milestone_iterations;
+        // Pre-receive on all F_INIT ports and repeated S ports, if needed
+        for (Port const & port : pre_receive_ports_) {
+            std::string port_name(port.name);
+            for_each_slot(port, [&](Optional<int> slot, Reference port_ref){
+                if (message_cache_.count(port_ref)) return;
+                log_debug("Pre-receiving on ", port_desc(port_name, slot));
+                auto mpp_message = receive_message_(port_name, slot);
+                message_cache_.emplace(port_ref, mpp_message);
+
+                if (is_milestone(mpp_message.data))
+                    milestone_iterations.emplace_back(Milestone(mpp_message.data).iteration());
+            });
+        }
+
+        if (milestone_iterations.empty())
+            break;  // No milestones received, we have only messages now
+
+        // Handle most deeply nested milestone first:
+        try {
+            milestone_iteration = get_most_nested_iteration(milestone_iterations);
+        } catch (std::runtime_error & err) {
+            throw std::runtime_error(
+                "Internal error: received milestones for incompatible iterations "
+                "during F_INIT: " + std::string(err.what())
+            );
+        }
+    }
+
+    // Update current iteration
+    std::vector<IterationCount> received_iterations;
+    for (auto & item : message_cache_)
+        received_iterations.push_back(item.second.iteration);
+    auto new_iteration = timeline_manager_->check_pre_received_iteration_counts(
+            received_iterations);
+
+    // Sanity check: we should not have any milestones left in the cache at this point
+    for (auto & item : message_cache_) {
+        if (is_milestone(item.second.data))
+            throw std::runtime_error("Internal error: found milestones in message cache.");
+    }
+
+    // Fill F_INIT cache for Instance
     FInitCacheType cache;
-
-    auto pre_receive = [&](std::string & port_name, Optional<int> slot) {
-        Reference port_ref(port_name);
-        if (slot.is_set())
-            port_ref += slot.get();
-        
-        auto msg = receive_message_(port_name, slot);
-        cache.emplace(port_ref, msg);
-    };
-
     for (Port const & port : port_manager_.get_connected_ports(Operator::F_INIT, {})) {
         std::string port_name(port.name);
-        log_debug("Pre-receiving on port ", port_name);
-        if (!port.is_vector())
-            pre_receive(port_name, {});
-        else {
-            pre_receive(port_name, 0);
-            // The above receives the length, if needed, so now we can get the rest.
-            for (int slot = 1; slot < port.get_length(); ++slot)
-                pre_receive(port_name, slot);
-        }
-    }
-
-    // Check if we have received milestones
-    std::vector<Optional<IterationCount>> milestone_iterations;
-    std::vector<std::string> closed_ports;
-    for (auto & item : cache) {
-        Optional<IterationCount> it;
-        if (is_milestone(item.second.data())) {
-            Milestone milestone(item.second.data());
-            it = milestone.iteration();
-            if (milestone.is_final_milestone()) {
-                closed_ports.emplace_back(item.first);
-            }
-        }
-        auto found = std::find(milestone_iterations.begin(), milestone_iterations.end(), it);
-        if (found == milestone_iterations.end())  // Not found
-            milestone_iterations.push_back(it);
-    }
-    // Milestones should be consistent, or something went wrong
-    if (milestone_iterations.size() > 1) {
-        if (closed_ports.size() > 0) {
-            std::ostringstream oss;
-            oss << "Some ports were unexpectedly closed while trying to receive, did ";
-            oss << "the peers crash? Closed ports: ";
-            bool first = true;
-            for (auto & port : closed_ports) {
-                if (!first) oss << ", ";
-                first = false;
-                oss << port;
-            }
-            throw std::runtime_error(oss.str());
-        }
-        throw std::runtime_error(
-            "Internal error: received milestones for different iterations in F_INIT. "
-            "This is not supposed to happen and may be a bug in libmuscle. Please "
-            "report an issue."
-        );
-    }
-    if (!milestone_iterations.empty() && milestone_iterations.at(0).is_set()) {
-        // Propagate milestone
-        Milestone milestone(milestone_iterations.at(0).get());
-        broadcast_milestone_(milestone, false);
-        if (milestone_iterations.at(0).get().empty())  // Final milestone received
-            throw PortClosed();
-        // Pre-receive again to receive the actual messages
-        return pre_receive_f_init();
+        bool pad_message = false;
+        if (repeat_filters_.count(port_name))
+            pad_message = pad_message_(new_iteration, repeat_filters_.at(port_name));
+        for_each_slot(port, [&](Optional<int> slot, Reference port_ref){
+            auto & mpp_message = message_cache_.at(port_ref);
+            auto message = make_message(mpp_message);
+            if (pad_message)
+                message.set_data(Data());
+            cache.emplace(port_ref, message);
+        });
     }
 
     return cache;
@@ -215,27 +269,43 @@ Message Communicator::receive_s_message(
         std::string const & port_name,
         Optional<int> slot)
 {
+    timeline_manager_->check_receive_s(port_name, slot);
+
+    // Handle receive on repeated S port:
+    if (repeat_filters_.count(port_name)) {
+        auto & filters = repeat_filters_.at(port_name);
+        Reference port_ref(port_name);
+        if (slot.is_set()) port_ref += slot.get();
+        auto & message = message_cache_.at(port_ref);
+        auto & cur_iteration = timeline_manager_->record_received_s_message(
+                port_name, slot, message.iteration, filters.size());
+        auto result = make_message(message);
+        if (pad_message_(cur_iteration, filters))
+            result.set_data(Data());
+        return result;
+    }
+
     // Instance should not need to bother about milestones, so we keep receiving
     // messages until we have actual data.
     while (true) {
         auto message = receive_message_(port_name, slot);
-        if (is_milestone(message.data())) {
-            if (Milestone(message.data()).is_final_milestone())
+        if (is_milestone(message.data)) {
+            if (Milestone(message.data).is_final_milestone())
                 throw PortClosed();
             // TODO: handle milestone, if needed
         } else {
-            return message;
+            timeline_manager_->record_received_s_message(
+                    port_name, slot, message.iteration);
+            return make_message(message);
         }
     }
 }
 
 
-Message Communicator::receive_message_(
+MPPMessage Communicator::receive_message_(
         std::string const & port_name,
         Optional<int> slot)
 {
-    timeline_manager_->check_receive(port_name, slot);
-
     Port & port = port_manager_.get_port(port_name);
     std::string port_and_slot = port_desc(port_name, slot);
     log_debug("Waiting for message on ", port_and_slot);
@@ -262,7 +332,6 @@ Message Communicator::receive_message_(
             port.get_num_messages(), msg.size());
 
     auto mpp_message = MPPMessage::from_bytes(msg);
-    Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
 
     recv_decode_event.stop();
 
@@ -275,26 +344,20 @@ Message Communicator::receive_message_(
             port.set_closed(slot);
     }
 
-    Message message(
-            mpp_message.timestamp, mpp_message.data, overlay_settings);
-
-    if (mpp_message.next_timestamp.is_set())
-        message.set_next_timestamp(mpp_message.next_timestamp.get());
-
     ProfileTimestamp start_recv, end_wait, end_transfer;
     std::tie(start_recv, end_wait, end_transfer) = std::get<1>(msg_and_profile);
     ProfileEvent recv_wait_event(
             ProfileEventType::receive_wait, start_recv,
             end_wait, port, mpp_message.port_length, slot,
-            port.get_num_messages(), msg.size(), message.timestamp());
+            port.get_num_messages(), msg.size(), mpp_message.timestamp);
 
     ProfileEvent recv_xfer_event(
             ProfileEventType::receive_transfer, end_wait,
             end_transfer, port, mpp_message.port_length, slot,
-            port.get_num_messages(), msg.size(), message.timestamp());
+            port.get_num_messages(), msg.size(), mpp_message.timestamp);
 
-    recv_decode_event.message_timestamp = message.timestamp();
-    receive_event.message_timestamp = message.timestamp();
+    recv_decode_event.message_timestamp = mpp_message.timestamp;
+    receive_event.message_timestamp = mpp_message.timestamp;
 
     if (port.is_vector()) {
         receive_event.port_length = port.get_length();
@@ -334,8 +397,6 @@ Message Communicator::receive_message_(
     if (!is_milestone(mpp_message.data)) {
         port.increment_num_messages(slot);
         log_debug("Received message on ", port_and_slot);
-        timeline_manager_->record_received_message(
-                port_name, slot, mpp_message.iteration.get());
     } else {
         Milestone milestone(mpp_message.data);
         if (milestone.is_final_milestone())
@@ -343,7 +404,7 @@ Message Communicator::receive_message_(
         else
             log_debug("Received ", std::string(milestone), " on ", port_and_slot);
     }
-    return message;
+    return mpp_message;
 }
 
 void Communicator::shutdown() {
@@ -482,6 +543,38 @@ void Communicator::close_ports_() {
         return;  // Not connected yet, no ports to close
     close_outgoing_ports_();
     close_incoming_ports_();
+}
+
+void Communicator::prepare_conduit_filters_() {
+    // Repeater filters
+    for (auto op : {Operator::F_INIT, Operator::S}) {
+        for (Port const & port : port_manager_.get_connected_ports(op, {})) {
+            auto filters = peer_info_.get().get_filters_for_receiver(kernel_ + port.name);
+            // Only keep the repeater filters, the sending component handles reducers:
+            filters.erase(
+                std::remove_if(filters.begin(), filters.end(), ::ymmsl::is_reducer),
+                filters.end());
+            if (!filters.empty())
+                repeat_filters_.emplace(port.name, filters);
+            if (op == Operator::F_INIT || !filters.empty())
+                pre_receive_ports_.push_back(port);
+        }
+    }
+
+    // TODO: reducer filters
+}
+
+
+bool Communicator::pad_message_(
+        IterationCount const & cur_iteration,
+        std::vector<::ymmsl::ConduitFilter> const & filters)
+{
+    std::size_t offset = cur_iteration.size() - filters.size();
+    for (std::size_t i = 0; i < filters.size(); ++i) {
+        if (filters[i] == ::ymmsl::ConduitFilter::PAD && cur_iteration[offset + i] > 0)
+            return true;
+    }
+    return false;
 }
 
 } }

@@ -396,9 +396,6 @@ TimelineManager::TimelineManager(PortManager const & port_manager)
 {
     for (auto const & tl : port_manager_.list_subtimelines())
         submanagers_.emplace(tl, SubTimelineManager(tl, port_manager_));
-
-    if (!port_manager_.has_f_init_connections())
-        iteration_ = IterationCount();
 }
 
 IterationCount TimelineManager::check_send_message(
@@ -464,8 +461,8 @@ void TimelineManager::reset() {
         item.second.reset();
 }
 
-IterationCount TimelineManager::finish_reuse_iteration() {
-    IterationCount iteration(iteration_.get());
+Optional<IterationCount> TimelineManager::start_reuse_iteration() {
+    auto iteration = iteration_;
     bool subtimelines_complete = true;
     for (auto const & item : submanagers_) {
         if (!item.second.is_complete()) {
@@ -474,7 +471,10 @@ IterationCount TimelineManager::finish_reuse_iteration() {
         }
     }
 
-    if (receive_.all_participated() && send_.all_participated() && subtimelines_complete) {
+    if (!iteration.is_set() || (
+            receive_.all_participated()
+            && send_.all_participated()
+            && subtimelines_complete )) {
         reset();
         return iteration;
     }

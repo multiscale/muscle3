@@ -133,7 +133,7 @@ class Instance::Impl {
         SettingsManager settings_manager_;
         std::unique_ptr<SnapshotManager> snapshot_manager_;
         std::unique_ptr<TriggerManager> trigger_manager_;
-        Optional<bool> first_run_;
+        bool first_run_;
         Optional<bool> do_reuse_;
         bool do_resume_;
         bool do_init_;
@@ -159,7 +159,6 @@ class Instance::Impl {
         void handle_receive_settings_();
         bool pre_receive_();
         Optional<double> f_init_max_timestamp_();
-        bool decide_reuse_instance_();
         void save_snapshot_(
                 Optional<Message> message, bool final,
                 Optional<double> f_init_max_timestamp);
@@ -193,10 +192,10 @@ Instance::Impl::Impl(
 #endif
     , declared_ports_(ports)
     , settings_manager_()
-    , first_run_()
+    , first_run_(true)
     , do_reuse_()
     , do_resume_(false)
-    , do_init_(false)
+    , do_init_(true)
     , f_init_cache_()
     , is_shut_down_(false)
     , flags_(flags)
@@ -274,34 +273,90 @@ bool Instance::Impl::reuse_instance() {
     api_guard_->verify_reuse_instance();
 
     bool do_reuse;
-    if (do_reuse_.is_set()) {
-        // thank you, should_save_final_snapshot, for running this already
-        do_reuse = do_reuse_.get();
-        do_reuse_ = {};
-    } else {
-        do_reuse = decide_reuse_instance_();
-    }
+    Error error;
 
-    // now first_run_, do_resume_ and do_init_ are also set correctly
 #ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
+        try {
 #endif
-        bool do_implicit_checkpoint = (
-                !first_run_.get() &&
+    if (first_run_ && snapshot_manager_->resuming_from_intermediate()) {
+        do_resume_ = true;
+        do_init_ = false;
+        do_reuse = true;
+    } else {
+        bool do_implicit_checkpoint;
+        if (first_run_ && snapshot_manager_->resuming_from_final()) {
+            do_resume_ = true;
+            do_init_ = true;
+            first_run_ = false;
+            do_implicit_checkpoint = false;
+        } else {
+            do_resume_ = false;
+            do_init_ = true;
+            do_implicit_checkpoint = (
+                !first_run_ &&
                 !(InstanceFlags::USES_CHECKPOINT_API & flags_) &&
                 (!!(InstanceFlags::STATE_NOT_REQUIRED_FOR_NEXT_USE & flags_) or
                  !!(InstanceFlags::KEEPS_NO_STATE_FOR_NEXT_USE & flags_)));
+        }
+
+        if (do_reuse_.is_set()) {
+            // thank you, should_save_final_snapshot, for running this already
+            do_reuse = do_reuse_.get();
+            do_reuse_ = {};
+        } else {
+            bool has_messages = pre_receive_();
+            do_reuse = first_run_ || has_messages;
+        }
 
         if (do_implicit_checkpoint) {
             if (trigger_manager_->should_save_final_snapshot(
                     do_reuse, f_init_max_timestamp_()))
                 save_snapshot_({}, true, f_init_max_timestamp_());
         }
+    }
 
 #ifdef MUSCLE_ENABLE_MPI
+        } catch (std::exception const & exc) {
+            error = exc;
+        }
+        mpi_barrier_.signal();
+        error.bcast(mpi_comm_, mpi_root_);
+        error.throw_if_error();
+
+        int do_reuse_mpi[3] = {do_reuse, do_resume_, do_init_};
+        MPI_Bcast(do_reuse_mpi, 3, MPI_INT, mpi_root_, mpi_comm_);
+
+        // Broadcast settings overlay
+        auto soverlay_data = Data(settings_manager_.overlay);
+        msgpack::sbuffer sbuf;
+        msgpack::pack(sbuf, soverlay_data);
+        int size = sbuf.size();
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        MPI_Bcast(sbuf.data(), size, MPI_CHAR, mpi_root_, mpi_comm_);
+    } else {
+        mpi_barrier_.wait();
+        error.bcast(mpi_comm_, mpi_root_);
+        error.throw_if_error();
+
+        int do_reuse_mpi[3];
+        MPI_Bcast(do_reuse_mpi, 3, MPI_INT, mpi_root_, mpi_comm_);
+        do_reuse = do_reuse_mpi[0];
+        do_resume_ = do_reuse_mpi[1];
+        do_init_ = do_reuse_mpi[2];
+
+        // Apply settings overlay
+        int size = 0;
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        std::vector<char> buf(size);
+        MPI_Bcast(&buf[0], size, MPI_CHAR, mpi_root_, mpi_comm_);
+        auto zone = std::make_shared<msgpack::zone>();
+        DataConstRef soverlay_data = mcp::unpack_data(zone, &buf[0], size);
+        settings_manager_.overlay = soverlay_data.as<Settings>();
     }
 #endif
 
+    first_run_ = false;
     if (!do_reuse) {
         shutdown_();
     }
@@ -734,11 +789,11 @@ void Instance::Impl::save_snapshot(Message message) {
 bool Instance::Impl::should_save_final_snapshot() {
     api_guard_->verify_should_save_final_snapshot();
 
-    do_reuse_ = decide_reuse_instance_();
     bool result;
 #ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
 #endif
+        do_reuse_ = pre_receive_();
         result = trigger_manager_->should_save_final_snapshot(
                 do_reuse_.get(), f_init_max_timestamp_());
 #ifdef MUSCLE_ENABLE_MPI
@@ -924,11 +979,13 @@ bool Instance::Impl::pre_receive_() {
         f_init_cache_ = communicator_->pre_receive_f_init();
     } catch (PortClosed &err) {
         profiler_->record_event(std::move(sw_event));
+        f_init_cache_.clear();
         return false;
     } catch (std::runtime_error &err) {
         shutdown_(err.what());
         throw;
     }
+    bool has_messages = !f_init_cache_.empty();
 
     // Handle received settings
     if (port_manager_->settings_in_connected())
@@ -945,7 +1002,7 @@ bool Instance::Impl::pre_receive_() {
             item.second.unset_settings();
         }
     }
-    return true;
+    return has_messages;
 }
 
 /** Return max timestamp of pre-received F_INIT messages
@@ -958,116 +1015,6 @@ Optional<double> Instance::Impl::f_init_max_timestamp_() {
             result = timestamp;
     }
     return result;
-}
-
-/** Decide whether and how to reuse the instance.
- *
- * This sets self._first_run, self._do_resume and self._do_init, and
- * returns whether to reuse one more time. This is the real top of
- * the reuse loop, and it gets called by reuse_instance and
- * should_save_final_snapshot.
- */
-bool Instance::Impl::decide_reuse_instance_() {
-    if (!first_run_.is_set())
-        first_run_ = true;
-    else
-        first_run_ = false;
-
-    bool do_reuse;
-
-    Error error;
-
-#ifdef MUSCLE_ENABLE_MPI
-    int rank;
-    MPI_Comm_rank(mpi_comm_, &rank);
-
-    if (mpi_barrier_.is_root()) {
-        try {
-#endif
-            if (!first_run_.get())
-                communicator_->finish_reuse_iteration();
-
-            bool f_init_connected = port_manager_->has_f_init_connections();
-            if (first_run_.get() && snapshot_manager_->resuming_from_intermediate()) {
-                // resume from intermediate
-                do_resume_ = true;
-                do_init_ = false;
-                do_reuse = true;
-            } else if (first_run_.get() && snapshot_manager_->resuming_from_final()) {
-                // resume from final
-                if (f_init_connected) {
-                    bool got_f_init_messages = pre_receive_();
-                    do_resume_ = true;
-                    do_init_ = true;
-                    do_reuse = got_f_init_messages;
-                } else {
-                    do_resume_ = false;
-                    do_init_ = false;
-                    do_reuse = false;
-                }
-            } else {
-                // fresh start or resuming from implicit snapshot
-                do_resume_ = false;
-
-                if (!f_init_connected) {
-                    // simple straight single run without resuming
-                    do_init_ = first_run_.get();
-                    do_reuse = first_run_.get();
-                } else {
-                    // not resuming and f_init connected, run while we get messages
-                    bool got_f_init_messages = pre_receive_();
-                    do_init_ = got_f_init_messages;
-                    do_reuse = got_f_init_messages;
-                }
-            }
-
-#ifdef MUSCLE_ENABLE_MPI
-        }
-        catch (std::exception const & exc) {
-            error = exc;
-        }
-
-        mpi_barrier_.signal();
-        error.bcast(mpi_comm_, mpi_root_);
-        error.throw_if_error();
-
-        int do_reuse_mpi[3] = {do_reuse, do_resume_, do_init_};
-        MPI_Bcast(do_reuse_mpi, 3, MPI_INT, mpi_root_, mpi_comm_);
-    } else {
-        mpi_barrier_.wait();
-        error.bcast(mpi_comm_, mpi_root_);
-        error.throw_if_error();
-
-        int do_reuse_mpi[3];
-        MPI_Bcast(do_reuse_mpi, 3, MPI_INT, mpi_root_, mpi_comm_);
-        do_reuse = do_reuse_mpi[0];
-        do_resume_ = do_reuse_mpi[1];
-        do_init_ = do_reuse_mpi[2];
-    }
-#endif
-
-
-#ifdef MUSCLE_ENABLE_MPI
-    if (mpi_barrier_.is_root()) {
-        auto soverlay_data = Data(settings_manager_.overlay);
-        msgpack::sbuffer sbuf;
-        msgpack::pack(sbuf, soverlay_data);
-        int size = sbuf.size();
-        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
-        MPI_Bcast(sbuf.data(), size, MPI_CHAR, mpi_root_, mpi_comm_);
-    }
-    else {
-        int size = 0;
-        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
-        std::vector<char> buf(size);
-        MPI_Bcast(&buf[0], size, MPI_CHAR, mpi_root_, mpi_comm_);
-        auto zone = std::make_shared<msgpack::zone>();
-        DataConstRef soverlay_data = mcp::unpack_data(zone, &buf[0], size);
-        settings_manager_.overlay = soverlay_data.as<Settings>();
-    }
-#endif
-
-    return do_reuse;
 }
 
 /** Save a snapshot to disk and notify manager.

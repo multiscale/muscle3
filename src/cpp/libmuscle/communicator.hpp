@@ -133,10 +133,6 @@ class Communicator {
          */
         void shutdown();
 
-        /** Prepare the timeline manager for the next reuse loop.
-         */
-        void finish_reuse_iteration();
-
         /** Return the current state of the timeline manager, for saving in a
          * snapshot.
          */

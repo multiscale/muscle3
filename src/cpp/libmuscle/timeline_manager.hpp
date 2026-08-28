@@ -326,16 +326,17 @@ class TimelineManager {
          */
         void reset();
 
-        /** Check if the current reuse loop iteration has finished and reset
-         * for the next one.
+        /** Called at the start of the reuse loop.
          *
+         * If this is not the first run, checks if the previous reuse loop is complete:
          * The reuse loop iteration is complete once every main-timeline port
          * has participated and every sub-timeline has either completed a
          * sub-iteration or wasn't used at all this reuse loop iteration.
          * 
-         * @return Iteration count of the finished reuse loop. 
+         * @return Iteration count of the finished reuse loop or None if this is the
+         *      first run.
          */
-        IterationCount finish_reuse_iteration();
+        Optional<IterationCount> start_reuse_iteration();
 
         /** Return the main timeline's iteration and participation, and every
          * sub-timeline's state, for saving in a snapshot. */

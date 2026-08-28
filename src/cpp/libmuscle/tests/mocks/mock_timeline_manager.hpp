@@ -21,7 +21,7 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
             NAME_MOCK_MEM_FUN(MockTimelineManager, check_receive);
             NAME_MOCK_MEM_FUN(MockTimelineManager, record_received_message);
             NAME_MOCK_MEM_FUN(MockTimelineManager, reset);
-            NAME_MOCK_MEM_FUN(MockTimelineManager, finish_reuse_iteration);
+            NAME_MOCK_MEM_FUN(MockTimelineManager, start_reuse_iteration);
             NAME_MOCK_MEM_FUN(MockTimelineManager, get_state);
             NAME_MOCK_MEM_FUN(MockTimelineManager, restore_state);
         }
@@ -49,7 +49,7 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
 
         MockFun<Void> reset;
 
-        MockFun<Val<IterationCount>> finish_reuse_iteration;
+        MockFun<Val<Optional<IterationCount>>> start_reuse_iteration;
 
         MockFun<Val<TimelineState>> get_state;
 

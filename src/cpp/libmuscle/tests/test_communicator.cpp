@@ -61,6 +61,7 @@ using libmuscle::_MUSCLE_IMPL_NS::MockMPPClient;
 using libmuscle::_MUSCLE_IMPL_NS::MockMPPServer;
 using libmuscle::_MUSCLE_IMPL_NS::MockPortManager;
 using libmuscle::_MUSCLE_IMPL_NS::MockProfiler;
+using libmuscle::_MUSCLE_IMPL_NS::MockTimelineManager;
 using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using libmuscle::_MUSCLE_IMPL_NS::Optional;
 using libmuscle::_MUSCLE_IMPL_NS::PeerDims;
@@ -94,6 +95,7 @@ struct libmuscle_communicator
         : communicator_("component", {}, connected_port_manager_, profiler_, manager_)
     {
         port_manager_.settings_in_connected.return_value = false;
+        MockTimelineManager::return_value.start_reuse_iteration.return_value = Optional<IterationCount>();
     }
 };
 

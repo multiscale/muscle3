@@ -6,7 +6,7 @@ import pytest
 from ymmsl.v0_2 import Checkpoints, Operator, Settings
 from ymmsl.v0_2 import Reference as Ref
 
-from libmuscle.communicator import PortClosed
+from libmuscle.communicator import Message, PortClosed
 from libmuscle.instance import Instance, InstanceFlags
 from libmuscle.peer_info import PeerInfo
 
@@ -442,11 +442,13 @@ def test_reuse_set_overlay(
 
 
 def test_reuse_closed_port(instance, communicator):
+    assert instance.reuse_instance() is True  # First iteration: should always reuse
     communicator.pre_receive_f_init.side_effect = PortClosed()
     assert instance.reuse_instance() is False
 
 
 def test_reuse_no_closed_port(instance, communicator):
+    communicator.pre_receive_f_init.return_value = {("in", None): Message(1)}
     for _ in range(20):
         assert instance.reuse_instance() is True
     communicator.pre_receive_f_init.side_effect = PortClosed()
@@ -460,16 +462,11 @@ def test_reuse_no_f_init_ports(instance, connected_port_manager, communicator):
     assert instance.reuse_instance() is False
 
 
-def test_reuse_subsequent_iteration_finishes_reuse_iteration(
-    instance, connected_port_manager, communicator
-):
+def test_reuse_always_pre_receives(instance, connected_port_manager, communicator):
     connected_port_manager.has_f_init_connections.return_value = False
 
     instance.reuse_instance()
-    communicator.finish_reuse_iteration.assert_not_called()
-
-    instance.reuse_instance()
-    communicator.finish_reuse_iteration.assert_called_once()
+    communicator.pre_receive_f_init.assert_called_once()
 
 
 def test_send_message(instance, settings_manager, communicator):

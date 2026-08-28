@@ -58,12 +58,6 @@ void Communicator::set_peer_info(PeerInfo const & peer_info) {
     timeline_manager_ = std::make_unique<TimelineManager>(port_manager_);
 }
 
-void Communicator::finish_reuse_iteration() {
-    assert(timeline_manager_);
-    IterationCount finished_iteration = timeline_manager_->finish_reuse_iteration();
-    broadcast_milestone_(Milestone(finished_iteration), true);
-}
-
 TimelineState Communicator::get_state() const {
     assert(timeline_manager_);
     return timeline_manager_->get_state();
@@ -135,6 +129,11 @@ void Communicator::send_message(
 }
 
 Communicator::FInitCacheType Communicator::pre_receive_f_init() {
+    assert(timeline_manager_);
+    auto finished_iteration = timeline_manager_->start_reuse_iteration();
+    if (finished_iteration.is_set())
+        broadcast_milestone_(Milestone(finished_iteration.get()), true);
+
     FInitCacheType cache;
 
     auto pre_receive = [&](std::string & port_name, Optional<int> slot) {
@@ -195,7 +194,7 @@ Communicator::FInitCacheType Communicator::pre_receive_f_init() {
             "report an issue."
         );
     }
-    if (milestone_iterations.at(0).is_set()) {
+    if (!milestone_iterations.empty() && milestone_iterations.at(0).is_set()) {
         // Propagate milestone
         Milestone milestone(milestone_iterations.at(0).get());
         broadcast_milestone_(milestone, false);

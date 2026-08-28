@@ -583,8 +583,6 @@ class Communicator:
         for operator in (Operator.F_INIT, Operator.S):
             for port in self._port_manager.get_connected_ports(operator):
                 port_name = str(port.name)
-                if not port.is_connected():
-                    continue
                 try:
                     if not port.is_vector():
                         self._drain_incoming_port(port_name)

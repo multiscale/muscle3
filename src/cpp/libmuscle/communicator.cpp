@@ -457,8 +457,6 @@ void Communicator::drain_incoming_vector_port_(std::string const & port_name) {
 void Communicator::close_incoming_ports_() {
     for (auto op : {Operator::F_INIT, Operator::S}) {
         for (Port const & port : port_manager_.get_connected_ports(op, {})) {
-            if (!port.is_connected())
-                continue;
             try {
                 if (port.is_vector())
                     drain_incoming_vector_port_(port.name);

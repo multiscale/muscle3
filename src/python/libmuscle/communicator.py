@@ -153,8 +153,9 @@ class Communicator:
         self._receive_timeout = receive_timeout
 
     def get_state(self) -> CommunicatorState:
-        """Return the current state of the timeline manager, for saving in a
-        snapshot.
+        """Return the current internal state for checkpointing.
+
+        This includes states for the communicator, port manager and timeline manager.
         """
         return CommunicatorState(
             self._port_manager.get_message_counts(),
@@ -162,7 +163,7 @@ class Communicator:
         )
 
     def restore_state(self, state: CommunicatorState) -> None:
-        """Restore the timeline manager to a previously saved state.
+        """Restore a previously saved state.
 
         Args:
             state: The state to restore, as returned by get_state().

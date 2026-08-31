@@ -106,5 +106,5 @@ TEST(test_mcp_message, iteration_roundtrip) {
             );
 
     auto m_out = MPPMessage::from_bytes(m.encoded());
-    ASSERT_EQ(m_out.iteration.get(), IterationCount({0, 2}));
+    ASSERT_EQ(m_out.iteration, IterationCount({0, 2}));
 }

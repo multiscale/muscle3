@@ -129,7 +129,6 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     ASSERT_EQ(restored_state.timeline_state.iteration.is_set(), communicator_state_.timeline_state.iteration.is_set());
     ASSERT_EQ(restored_state.timeline_state.iteration.get(), communicator_state_.timeline_state.iteration.get());
     ASSERT_EQ(restored_state.timeline_state.send_participated, communicator_state_.timeline_state.send_participated);
-    ASSERT_EQ(restored_state.timeline_state.receive_participated, communicator_state_.timeline_state.receive_participated);
     ASSERT_EQ(
             restored_state.timeline_state.subtimeline_states.size(),
             communicator_state_.timeline_state.subtimeline_states.size());

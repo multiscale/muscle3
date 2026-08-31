@@ -187,7 +187,6 @@ TEST_P(libmuscle_repeater_communicator, repeater_filters) {
     ASSERT_EQ(decode_iteration(cache.at("unfiltered").data()).get(), IterationCount({0, 0}));
     ASSERT_EQ(decode_iteration(cache.at("repeated").data()).get(), IterationCount({0}));
     ASSERT_EQ(decode_iteration(cache.at("twicerepeated").data()).get(), IterationCount({}));
-    communicator_.finish_reuse_iteration();
 
     cache = communicator_.pre_receive();
     ASSERT_EQ(decode_iteration(cache.at("unfiltered").data()).get(), IterationCount({0, 1}));
@@ -198,7 +197,6 @@ TEST_P(libmuscle_repeater_communicator, repeater_filters) {
         ASSERT_EQ(decode_iteration(cache.at("repeated").data()).get(), IterationCount({0}));
         ASSERT_EQ(decode_iteration(cache.at("twicerepeated").data()).get(), IterationCount({}));
     }
-    communicator_.finish_reuse_iteration();
 
     cache = communicator_.pre_receive();
     ASSERT_EQ(decode_iteration(cache.at("unfiltered").data()).get(), IterationCount({2, 0}));
@@ -208,7 +206,6 @@ TEST_P(libmuscle_repeater_communicator, repeater_filters) {
     } else {
         ASSERT_EQ(decode_iteration(cache.at("twicerepeated").data()).get(), IterationCount({}));
     }
-    communicator_.finish_reuse_iteration();
 
     ASSERT_THROW(communicator_.pre_receive(), PortClosed);
 }
@@ -254,7 +251,6 @@ TEST_P(libmuscle_repeater_communicator, repeater_filters_discard_messages) {
     ASSERT_EQ(decode_iteration(cache.at("unfiltered").data()).get(), IterationCount({2, 0, 0}));
     ASSERT_EQ(decode_iteration(cache.at("repeated").data()).get(), IterationCount({2, 0}));
     ASSERT_EQ(decode_iteration(cache.at("twicerepeated").data()).get(), IterationCount({2}));
-    communicator_.finish_reuse_iteration();
 
     cache = communicator_.pre_receive();
     ASSERT_EQ(decode_iteration(cache.at("unfiltered").data()).get(), IterationCount({2, 1, 0}));
@@ -264,7 +260,6 @@ TEST_P(libmuscle_repeater_communicator, repeater_filters_discard_messages) {
     } else {
         ASSERT_EQ(decode_iteration(cache.at("twicerepeated").data()).get(), IterationCount({2}));
     }
-    communicator_.finish_reuse_iteration();
 
     cache = communicator_.pre_receive();
     ASSERT_EQ(decode_iteration(cache.at("unfiltered").data()).get(), IterationCount({2, 1, 1}));
@@ -275,7 +270,6 @@ TEST_P(libmuscle_repeater_communicator, repeater_filters_discard_messages) {
         ASSERT_EQ(decode_iteration(cache.at("repeated").data()).get(), IterationCount({2, 1}));
         ASSERT_EQ(decode_iteration(cache.at("twicerepeated").data()).get(), IterationCount({2}));
     }
-    communicator_.finish_reuse_iteration();
 
     ASSERT_THROW(communicator_.pre_receive(), PortClosed);
 }

@@ -143,7 +143,9 @@ class Port : public ::ymmsl::Port {
          */
         void set_resumed(Optional<int> slot = {});
 
+#ifndef LIBMUSCLE_MOCK_PORT_MANAGER // Enable public access for tests:
     PRIVATE:
+#endif
         bool is_connected_;
         int length_;
         bool is_resizable_;

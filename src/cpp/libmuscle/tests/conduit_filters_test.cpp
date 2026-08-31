@@ -38,7 +38,7 @@ void pico(int argc, char * argv[]) {
 
     Instance instance(argc, argv, {{Operator::F_INIT, {"macro", "meso", "micro"}}});
 
-    int reused = 0;
+    std::size_t reused = 0;
     while (instance.reuse_instance()) {
         auto macro = instance.receive("macro");
         auto meso = instance.receive("meso");
@@ -75,7 +75,7 @@ void repeat_s(int argc, char * argv[]) {
         {Operator::S, {"macro", "repeated_meso", "micro"}}
     });
 
-    int micro_received = 0;
+    std::size_t micro_received = 0;
     while (instance.reuse_instance()) {
         auto meso = instance.receive("meso");
 
@@ -112,7 +112,7 @@ void checkpointing_A(int argc, char * argv[]) {
         InstanceFlags::KEEPS_NO_STATE_FOR_NEXT_USE);
 
     while (instance.reuse_instance())
-        instance.send("out", Message(4, "xyz"));
+        instance.send("out", Message(5, "xyz"));
 }
 
 // See corresponding Python actor in integration_test/test_filters

@@ -502,7 +502,7 @@ void TimelineManager::check_receive_s(std::string const & port_name, Optional<in
 
 IterationCount const & TimelineManager::record_received_s_message(
         std::string const & port_name, Optional<int> slot,
-        IterationCount const & iteration, int num_repeat_filters) {
+        IterationCount const & iteration, std::size_t num_repeat_filters) {
     Port const & port = port_manager_.get_port(port_name);
     assert(port.oper == Operator::S);
     return submanagers_.at(port.timeline).record_received_message(

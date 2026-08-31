@@ -335,7 +335,7 @@ class TimelineManager {
          */
         IterationCount const & record_received_s_message(
                 std::string const & port_name, Optional<int> slot,
-                IterationCount const & iteration, int num_repeat_filters = 0);
+                IterationCount const & iteration, std::size_t num_repeat_filters = 0);
 
         /** Reset the main timeline and its sub-timelines.
          *

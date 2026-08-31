@@ -13,19 +13,17 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 Snapshot::Snapshot(
             std::vector<std::string> const & triggers,
             double wallclock_time,
-            std::unordered_map<std::string, std::vector<int>> const & port_message_counts,
             bool is_final_snapshot,
             Optional<Message> const & message,
             ::ymmsl::Settings const & settings_overlay,
-            TimelineState const & timeline_state
+            CommunicatorState const & communicator_state
             )
         : triggers(triggers)
         , wallclock_time(wallclock_time)
-        , port_message_counts(port_message_counts)
         , is_final_snapshot(is_final_snapshot)
         , message(message)
         , settings_overlay(settings_overlay)
-        , timeline_state(timeline_state)
+        , communicator_state(communicator_state)
     {}
 
 Snapshot Snapshot::from_bytes(std::vector<char> const & data) {
@@ -38,16 +36,6 @@ Snapshot Snapshot::from_bytes(std::vector<char> const & data) {
     auto data_triggers = dict["triggers"];
     for (std::size_t i=0; i<data_triggers.size(); ++i) {
         triggers.push_back(data_triggers[i].as<std::string>());
-    }
-
-    std::unordered_map<std::string, std::vector<int>> port_message_counts;
-    auto data_pmc = dict["port_message_counts"];
-    for (std::size_t i=0; i<data_pmc.size(); ++i) {
-        std::vector<int> counts;
-        for (std::size_t j=0; j<data_pmc.value(i).size(); ++j) {
-            counts.push_back(data_pmc.value(i)[j].as<int>());
-        }
-        port_message_counts[data_pmc.key(i)] = counts;
     }
 
     Optional<Message> message;
@@ -66,11 +54,10 @@ Snapshot Snapshot::from_bytes(std::vector<char> const & data) {
     return Snapshot(
             triggers,
             dict["wallclock_time"].as<double>(),
-            port_message_counts,
             dict["is_final_snapshot"].as<bool>(),
             message,
             dict["settings_overlay"].as<::ymmsl::Settings>(),
-            TimelineState::from_data(dict["timeline_state"])
+            CommunicatorState::from_data(dict["communicator_state"])
             );
 }
 
@@ -78,15 +65,6 @@ std::vector<char> Snapshot::to_bytes() const {
     Data d_triggers = Data::nils(triggers.size());
     for (std::size_t i=0; i<triggers.size(); ++i) {
         d_triggers[i] = triggers[i];
-    }
-
-    Data pmc = Data::dict();
-    for (const auto & kv : port_message_counts) {
-        Data counts = Data::nils(kv.second.size());
-        for (std::size_t i=0; i<kv.second.size(); ++i) {
-            counts[i] = kv.second[i];
-        }
-        pmc[kv.first] = counts;
     }
 
     msgpack::sbuffer sbuf;
@@ -107,11 +85,10 @@ std::vector<char> Snapshot::to_bytes() const {
         DataConstRef dict = DataConstRef::dict(
             "triggers", d_triggers,
             "wallclock_time", wallclock_time,
-            "port_message_counts", pmc,
             "is_final_snapshot", is_final_snapshot,
             "message", mpp_msg.encoded_as_dcr(),
             "settings_overlay", Data(settings_overlay),
-            "timeline_state", timeline_state.to_data());
+            "communicator_state", communicator_state.to_data());
 
         msgpack::pack(sbuf, dict);
 
@@ -119,11 +96,10 @@ std::vector<char> Snapshot::to_bytes() const {
         DataConstRef dict = DataConstRef::dict(
             "triggers", d_triggers,
             "wallclock_time", wallclock_time,
-            "port_message_counts", pmc,
             "is_final_snapshot", is_final_snapshot,
             "message", Data(),
             "settings_overlay", Data(settings_overlay),
-            "timeline_state", timeline_state.to_data());
+            "communicator_state", communicator_state.to_data());
 
         msgpack::pack(sbuf, dict);
     }
@@ -165,7 +141,7 @@ SnapshotMetadata SnapshotMetadata::from_snapshot(
             snapshot.wallclock_time,
             timestamp,
             next_timestamp,
-            snapshot.port_message_counts,
+            snapshot.communicator_state.port_message_counts,
             snapshot.is_final_snapshot,
             snapshot_filename);
 }

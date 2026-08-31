@@ -25,6 +25,7 @@ void inject_fault(int socket_fd);
 #include <libmuscle/api_guard.cpp>
 #include <libmuscle/checkpoint_triggers.cpp>
 #include <libmuscle/communicator.cpp>
+#include <libmuscle/communicator_state.cpp>
 #include <libmuscle/endpoint.cpp>
 #include <libmuscle/instance.cpp>
 #include <libmuscle/logger.cpp>

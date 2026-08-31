@@ -45,6 +45,7 @@
 
 
 using libmuscle::_MUSCLE_IMPL_NS::APIGuard;
+using libmuscle::_MUSCLE_IMPL_NS::CommunicatorState;
 using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::Instance;
@@ -125,6 +126,7 @@ struct libmuscle_instance_base : ::testing::Test, ConnectedPortManagerFixture {
         mock_comm.get_locations.return_value = std::vector<std::string>(
                 {"tcp:test1,test2", "tcp:test3"});
         mock_comm.get_receive_timeout.return_value = 10.0;
+        mock_comm.get_state.return_value = CommunicatorState();
 
         auto & mock_port_manager = MockPortManager::return_value;
         mock_port_manager.settings_in_connected.return_value = false;

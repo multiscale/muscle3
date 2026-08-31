@@ -6,35 +6,29 @@ import pytest
 from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.communicator import Message
+from libmuscle.communicator_state import CommunicatorState
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.snapshot_manager import SnapshotManager
-from libmuscle.timeline_manager import TimelineState
 
 
 def test_no_checkpointing(tmp_path: Path) -> None:
     manager = MagicMock()
-    port_manager = MagicMock()
-    port_manager.get_message_counts.return_value = {}
     communicator = MagicMock()
-    snapshot_manager = SnapshotManager(
-        Reference("test"), manager, port_manager, communicator
-    )
+    snapshot_manager = SnapshotManager(Reference("test"), manager, communicator)
 
     snapshot_manager.prepare_resume(None, tmp_path)
     assert not snapshot_manager.resuming_from_intermediate()
     assert not snapshot_manager.resuming_from_final()
 
 
-def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> None:
+def test_save_load_snapshot(
+    tmp_path: Path, communicator_state: CommunicatorState
+) -> None:
     manager = MagicMock()
-    port_manager = MagicMock()
-    port_message_counts = {"in": [1], "out": [2], "muscle_settings_in": [0]}
-    port_manager.get_message_counts.return_value = port_message_counts
 
     instance_id = Reference("test[1]")
     communicator = MagicMock()
-    communicator.get_state.return_value = timeline_state
-    snapshot_manager = SnapshotManager(instance_id, manager, port_manager, communicator)
+    snapshot_manager = SnapshotManager(instance_id, manager, communicator)
 
     snapshot_manager.prepare_resume(None, tmp_path)
     assert not snapshot_manager.resuming_from_intermediate()
@@ -47,9 +41,9 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
         13.0,
         None,
         Settings(),
+        communicator_state,
     )
 
-    port_manager.get_message_counts.assert_called_with()
     manager.submit_snapshot_metadata.assert_called()
     (metadata,) = manager.submit_snapshot_metadata.call_args[0]
     assert isinstance(metadata, SnapshotMetadata)
@@ -57,22 +51,19 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
     assert metadata.wallclock_time == 13.0
     assert metadata.timestamp == 0.2
     assert metadata.next_timestamp is None
-    assert metadata.port_message_counts == port_message_counts
+    assert metadata.port_message_counts == communicator_state.port_message_counts
     assert not metadata.is_final_snapshot
     snapshot_path = Path(metadata.snapshot_filename)
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == "test-1_1.pack"
 
-    snapshot_manager2 = SnapshotManager(
-        instance_id, manager, port_manager, communicator
-    )
+    snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
 
     snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
-    port_manager.restore_message_counts.assert_called_with(port_message_counts)
+    communicator.restore_state.assert_called_once_with(communicator_state)
 
     assert snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
-    communicator.restore_state.assert_called_once_with(timeline_state)
     msg = snapshot_manager2.load_snapshot()
     assert msg.timestamp == 0.2
     assert msg.next_timestamp is None
@@ -85,6 +76,7 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
         42.2,
         1.2,
         Settings(),
+        communicator_state,
     )
 
     (metadata,) = manager.submit_snapshot_metadata.call_args[0]
@@ -93,40 +85,35 @@ def test_save_load_snapshot(tmp_path: Path, timeline_state: TimelineState) -> No
     assert metadata.wallclock_time == 42.2
     assert metadata.timestamp == 0.6
     assert metadata.next_timestamp is None
-    assert metadata.port_message_counts == port_message_counts
+    assert metadata.port_message_counts == communicator_state.port_message_counts
     assert metadata.is_final_snapshot
     snapshot_path = Path(metadata.snapshot_filename)
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == "test-1_3.pack"
 
     communicator.restore_state.reset_mock()
-    snapshot_manager3 = SnapshotManager(
-        instance_id, manager, port_manager, communicator
-    )
+    snapshot_manager3 = SnapshotManager(instance_id, manager, communicator)
     snapshot_manager3.prepare_resume(snapshot_path, tmp_path)
+    communicator.restore_state.assert_called_once_with(communicator_state)
     assert snapshot_manager3.resuming_from_final()
-    communicator.restore_state.assert_not_called()
 
 
 def test_save_load_implicit_snapshot(
-    tmp_path: Path, timeline_state: TimelineState
+    tmp_path: Path, communicator_state: CommunicatorState
 ) -> None:
     manager = MagicMock()
-    port_manager = MagicMock()
-    port_message_counts = {"in": [1], "out": [2], "muscle_settings_in": [0]}
-    port_manager.get_message_counts.return_value = port_message_counts
-
     instance_id = Reference("test[1]")
     communicator = MagicMock()
-    communicator.get_state.return_value = timeline_state
-    snapshot_manager = SnapshotManager(instance_id, manager, port_manager, communicator)
+    snapshot_manager = SnapshotManager(instance_id, manager, communicator)
 
     snapshot_manager.prepare_resume(None, tmp_path)
 
     assert not snapshot_manager.resuming_from_intermediate()
     assert not snapshot_manager.resuming_from_final()
     # save implicit snapshot
-    snapshot_manager.save_snapshot(None, True, ["implicit"], 1.0, 1.5, Settings())
+    snapshot_manager.save_snapshot(
+        None, True, ["implicit"], 1.0, 1.5, Settings(), communicator_state
+    )
 
     manager.submit_snapshot_metadata.assert_called_once()
     (metadata,) = manager.submit_snapshot_metadata.call_args[0]
@@ -134,20 +121,19 @@ def test_save_load_implicit_snapshot(
     snapshot_path = Path(metadata.snapshot_filename)
     manager.submit_snapshot_metadata.reset_mock()
 
-    snapshot_manager2 = SnapshotManager(
-        instance_id, manager, port_manager, communicator
-    )
+    snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
 
     snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
-    port_manager.restore_message_counts.assert_called_with(port_message_counts)
+    communicator.restore_state.assert_called_with(communicator_state)
     manager.submit_snapshot_metadata.assert_called_once()
     manager.submit_snapshot_metadata.reset_mock()
 
     assert not snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
 
-    communicator.restore_state.assert_not_called()
-    snapshot_manager2.save_snapshot(None, True, ["implicit"], 12.3, 2.5, Settings())
+    snapshot_manager2.save_snapshot(
+        None, True, ["implicit"], 12.3, 2.5, Settings(), communicator_state
+    )
     manager.submit_snapshot_metadata.assert_called_once()
 
 

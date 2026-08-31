@@ -25,18 +25,17 @@ int main(int argc, char *argv[]) {
 }
 
 /* Fixture */
-struct libmuscle_snapshot : TimelineStateFixture, ::testing::Test {
+struct libmuscle_snapshot : CommunicatorStateFixture, ::testing::Test {
     Snapshot snapshot_;
 
     libmuscle_snapshot()
         : snapshot_(
             {"test triggers"},
             15.3,
-            {{"in", {1}}, {"out", {4}}, {"muscle_settings_in", {0}}},
             true,
             Message(1.2, "test_data"),
             ::ymmsl::Settings({{"test", 1}}),
-            timeline_state_
+            communicator_state_
         ) {}
 };
 
@@ -44,11 +43,6 @@ TEST_F(libmuscle_snapshot, test_snapshot) {
     ASSERT_EQ(snapshot_.triggers.size(), 1);
     ASSERT_STREQ(snapshot_.triggers[0].c_str(), "test triggers");
     ASSERT_DOUBLE_EQ(snapshot_.wallclock_time, 15.3);
-    ASSERT_EQ(snapshot_.port_message_counts.size(), 3);
-    ASSERT_EQ(snapshot_.port_message_counts.at("in"), std::vector<int>({1}));
-    ASSERT_EQ(snapshot_.port_message_counts.at("out"), std::vector<int>({4}));
-    ASSERT_EQ(snapshot_.port_message_counts.at("muscle_settings_in"),
-              std::vector<int>({0}));
     ASSERT_TRUE(snapshot_.is_final_snapshot);
     ASSERT_TRUE(snapshot_.message.is_set());
     ASSERT_DOUBLE_EQ(snapshot_.message.get().timestamp(), 1.2);
@@ -63,30 +57,31 @@ TEST_F(libmuscle_snapshot, test_snapshot) {
 
     ASSERT_EQ(snapshot_.triggers, snapshot2.triggers);
     ASSERT_EQ(snapshot_.wallclock_time, snapshot2.wallclock_time);
-    ASSERT_EQ(snapshot_.port_message_counts, snapshot2.port_message_counts);
     ASSERT_EQ(snapshot_.is_final_snapshot, snapshot2.is_final_snapshot);
     ASSERT_EQ(snapshot_.message.get().timestamp(),
               snapshot2.message.get().timestamp());
     ASSERT_EQ(snapshot_.message.get().data().as<std::string>(),
               snapshot2.message.get().data().as<std::string>());
     ASSERT_EQ(snapshot_.settings_overlay, snapshot2.settings_overlay);
-    ASSERT_EQ(snapshot_.timeline_state.iteration.is_set(),
-              snapshot2.timeline_state.iteration.is_set());
-    ASSERT_EQ(snapshot_.timeline_state.iteration.get(),
-              snapshot2.timeline_state.iteration.get());
-    ASSERT_EQ(snapshot_.timeline_state.send_participated,
-              snapshot2.timeline_state.send_participated);
-    ASSERT_EQ(snapshot_.timeline_state.receive_participated,
-              snapshot2.timeline_state.receive_participated);
-    ASSERT_EQ(snapshot_.timeline_state.subtimeline_states.size(),
-              snapshot2.timeline_state.subtimeline_states.size());
+    ASSERT_EQ(snapshot_.communicator_state.port_message_counts,
+              snapshot2.communicator_state.port_message_counts);
+    ASSERT_EQ(snapshot_.communicator_state.timeline_state.iteration.is_set(),
+              snapshot2.communicator_state.timeline_state.iteration.is_set());
+    ASSERT_EQ(snapshot_.communicator_state.timeline_state.iteration.get(),
+              snapshot2.communicator_state.timeline_state.iteration.get());
+    ASSERT_EQ(snapshot_.communicator_state.timeline_state.send_participated,
+              snapshot2.communicator_state.timeline_state.send_participated);
+    ASSERT_EQ(snapshot_.communicator_state.timeline_state.receive_participated,
+              snapshot2.communicator_state.timeline_state.receive_participated);
+    ASSERT_EQ(snapshot_.communicator_state.timeline_state.subtimeline_states.size(),
+              snapshot2.communicator_state.timeline_state.subtimeline_states.size());
 }
 
 TEST_F(libmuscle_snapshot, test_snapshot_metadata) {
     auto metadata = SnapshotMetadata::from_snapshot(snapshot_, "test");
     ASSERT_EQ(metadata.triggers, snapshot_.triggers);
     ASSERT_EQ(metadata.wallclock_time, snapshot_.wallclock_time);
-    ASSERT_EQ(metadata.port_message_counts, snapshot_.port_message_counts);
+    ASSERT_EQ(metadata.port_message_counts, snapshot_.communicator_state.port_message_counts);
     ASSERT_EQ(metadata.is_final_snapshot, snapshot_.is_final_snapshot);
     ASSERT_EQ(metadata.timestamp, snapshot_.message.get().timestamp());
     ASSERT_EQ(metadata.next_timestamp.is_set(),
@@ -99,7 +94,7 @@ TEST_F(libmuscle_snapshot, test_message_with_settings) {
     settings["b"] = true;
     Message message(1.0, 2.0, "test_data", settings);
     Snapshot snapshot (
-            {}, 0, {}, false, message, {}, timeline_state_);
+            {}, 0, false, message, {}, communicator_state_);
     ASSERT_TRUE(snapshot.message.get().settings().at("b").as<bool>());
 
     auto binary_snapshot = snapshot.to_bytes();
@@ -111,7 +106,7 @@ TEST_F(libmuscle_snapshot, test_message_with_settings) {
 TEST_F(libmuscle_snapshot, test_implicit_snapshot) {
     Optional<Message> message;
     Snapshot snapshot(
-            {}, 0, {}, true, message, {}, timeline_state_);
+            {}, 0, true, message, {}, communicator_state_);
     ASSERT_FALSE(snapshot.message.is_set());
 
 

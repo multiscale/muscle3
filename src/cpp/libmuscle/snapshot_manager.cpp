@@ -25,11 +25,9 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 SnapshotManager::SnapshotManager(
             ymmsl::Reference const & instance_id,
             MMPClient & manager,
-            PortManager & port_manager,
             Communicator & communicator)
         : instance_id_(instance_id)
         , manager_(manager)
-        , port_manager_(port_manager)
         , communicator_(communicator)
         , resume_from_snapshot_()
         , resume_overlay_()
@@ -96,14 +94,7 @@ Optional<double> SnapshotManager::prepare_resume(
         }
         resume_overlay_ = snapshot.settings_overlay;
 
-        port_manager_.restore_message_counts(snapshot.port_message_counts);
-        if (!snapshot.is_final_snapshot) {
-            // A final snapshot's timeline state includes a look-ahead
-            // F_INIT receive done to determine whether the instance would
-            // be reused. Resuming always redoes that receive, so restoring
-            // it here would make it look like it already happened.
-            communicator_.restore_state(snapshot.timeline_state);
-        }
+        communicator_.restore_state(snapshot.communicator_state);
         // Store a copy of the snapshot in the current run directory
         auto path = store_snapshot_(snapshot);
         auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);
@@ -133,36 +124,12 @@ double SnapshotManager::save_snapshot(
         Optional<Message> message, bool is_final,
         std::vector<std::string> const & triggers, double wallclock_time,
         Optional<double> f_init_max_timestamp,
-        ::ymmsl::Settings settings_overlay) {
-    auto port_message_counts = port_manager_.get_message_counts();
-
-    if (is_final &&
-            std::find(triggers.begin(), triggers.end(), "at_end") == triggers.end()) {
-        // Decrease F_INIT port counts by one: F_INIT messages are already
-        // pre-received, but not yet processed by the user code. Therefore,
-        // the snapshot state should treat these as not-received.
-        // N.B. For a snapshot at the end of the simulation, there were no F_INIT
-        // messages, so we do not decrease.
-        auto all_ports = port_manager_.list_ports();
-        auto ports = all_ports.find(::ymmsl::Operator::F_INIT);
-        if (ports != all_ports.end()) {
-            for (auto const & port_name : ports->second) {
-                for (auto & count : port_message_counts[port_name]) {
-                    --count;
-                }
-            }
-        }
-        if (port_manager_.settings_in_connected()) {
-            for (auto & count : port_message_counts["muscle_settings_in"]) {
-                --count;
-            }
-        }
-    }
-
-    TimelineState timeline_state = communicator_.get_state();
+        ::ymmsl::Settings settings_overlay,
+        CommunicatorState const & communicator_state)
+{
     Snapshot snapshot(
-            triggers, wallclock_time, port_message_counts, is_final, message,
-            settings_overlay, timeline_state);
+            triggers, wallclock_time, is_final, message,
+            settings_overlay, communicator_state);
 
     auto path = store_snapshot_(snapshot);
     auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);

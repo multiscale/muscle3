@@ -10,6 +10,7 @@ from ymmsl.v0_2 import Identifier, Operator, Port, Reference, Settings, SettingV
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager
 from libmuscle.communicator import Communicator, FInitCacheType, Message, PortClosed
+from libmuscle.communicator_state import CommunicatorState
 from libmuscle.logging import LogLevel
 from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mmp_client import MMPClient
@@ -142,6 +143,13 @@ class Instance:
         )
         """Communicator for this instance."""
 
+        self._communicator_state: Optional[CommunicatorState] = None
+        """Stored communicator state for final snapshots.
+
+        This allows us to store (and later restore) the communicator state before
+        pre-receiving messages.
+        """
+
         self._declared_ports = ports
         """Declared ports for this instance."""
 
@@ -149,7 +157,7 @@ class Instance:
         """Settings for this instance."""
 
         self._snapshot_manager = SnapshotManager(
-            self._instance_id, self.__manager, self._port_manager, self._communicator
+            self._instance_id, self.__manager, self._communicator
         )
         """Resumes, loads and saves snapshots."""
 
@@ -268,6 +276,7 @@ class Instance:
                     # store a None instead of a Message
                     self._save_snapshot(None, True, self.__f_init_max_timestamp)
 
+        self._communicator_state = None
         self._first_run = False
         if not do_reuse:
             self.__shutdown()
@@ -897,6 +906,13 @@ class Instance:
                 one
             f_init_max_timestamp: Timestamp for final snapshots
         """
+        if final:
+            assert self._communicator_state is not None
+            communicator_state = self._communicator_state
+        else:
+            assert self._communicator_state is None
+            communicator_state = self._communicator.get_state()
+
         triggers = self._trigger_manager.get_triggers()
         walltime = self._trigger_manager.elapsed_walltime()
         timestamp = self._snapshot_manager.save_snapshot(
@@ -906,6 +922,7 @@ class Instance:
             walltime,
             f_init_max_timestamp,
             self._settings_manager.overlay,
+            communicator_state,
         )
         self._trigger_manager.update_checkpoints(timestamp)
 
@@ -1089,6 +1106,7 @@ class Instance:
         Returns:
             True if new F_INIT messages were received.
         """
+        self._communicator_state = self._communicator.get_state()
         sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
 
         try:

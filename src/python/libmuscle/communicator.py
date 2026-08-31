@@ -3,6 +3,7 @@ from typing import Any, Optional, cast
 
 from ymmsl.v0_2 import Operator, Reference, Settings
 
+from libmuscle.communicator_state import CommunicatorState
 from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.tcp_util import SocketClosed
 from libmuscle.mmp_client import MMPClient
@@ -15,7 +16,7 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
-from libmuscle.timeline_manager import IterationCount, TimelineManager, TimelineState
+from libmuscle.timeline_manager import IterationCount, TimelineManager
 from libmuscle.util import port_desc
 
 _logger = logging.getLogger(__name__)
@@ -151,19 +152,24 @@ class Communicator:
         """
         self._receive_timeout = receive_timeout
 
-    def get_state(self) -> TimelineState:
-        """Return the current state of the timeline manager, for saving in a
-        snapshot.
-        """
-        return self._timeline_manager.get_state()
+    def get_state(self) -> CommunicatorState:
+        """Return the current internal state for checkpointing.
 
-    def restore_state(self, state: TimelineState) -> None:
-        """Restore the timeline manager to a previously saved state.
+        This includes states for the communicator, port manager and timeline manager.
+        """
+        return CommunicatorState(
+            self._port_manager.get_message_counts(),
+            self._timeline_manager.get_state(),
+        )
+
+    def restore_state(self, state: CommunicatorState) -> None:
+        """Restore a previously saved state.
 
         Args:
             state: The state to restore, as returned by get_state().
         """
-        self._timeline_manager.restore_state(state)
+        self._port_manager.restore_message_counts(state.port_message_counts)
+        self._timeline_manager.restore_state(state.timeline_state)
 
     def send_message(
         self,

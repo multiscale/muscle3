@@ -230,10 +230,8 @@ def snapshot(snapshot_files: Sequence[Path], data: bool, verbose: bool) -> None:
             ]
         )
         if verbose:
-            properties.update(
-                [
-                    ("Internal: Port message counts", snapshot.port_message_counts),
-                ]
+            properties["Internal: Port message counts"] = (
+                snapshot.communicator_state.port_message_counts,
             )
         for prop_name, prop_value in properties.items():
             click.secho(f"{prop_name}: ", nl=False, bold=True)

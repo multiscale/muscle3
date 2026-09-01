@@ -16,7 +16,7 @@ from libmuscle.timeline_manager import (
     ReuseLoopIncomplete,
     TimelineManager,
     get_most_nested_iteration,
-    is_subiteration,
+    is_subiteration_or_equal,
 )
 
 
@@ -108,12 +108,12 @@ def check_received(
 
 
 def test_is_subiteration():
-    assert is_subiteration([], [])
-    assert is_subiteration([1, 2], [1, 2])
-    assert is_subiteration([1, 2], [1])
-    assert is_subiteration([1, 2], [])
-    assert not is_subiteration([1, 2], [1, 2, 3])
-    assert not is_subiteration([1, 2], [1, 1])
+    assert is_subiteration_or_equal([], [])
+    assert is_subiteration_or_equal([1, 2], [1, 2])
+    assert is_subiteration_or_equal([1, 2], [1])
+    assert is_subiteration_or_equal([1, 2], [])
+    assert not is_subiteration_or_equal([1, 2], [1, 2, 3])
+    assert not is_subiteration_or_equal([1, 2], [1, 1])
 
 
 def test_get_most_nested_iteration():

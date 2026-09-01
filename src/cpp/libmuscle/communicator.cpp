@@ -292,7 +292,6 @@ Message Communicator::receive_s_message(
         if (is_milestone(message.data)) {
             if (Milestone(message.data).is_final_milestone())
                 throw PortClosed();
-            // TODO: handle milestone, if needed
         } else {
             timeline_manager_->record_received_s_message(
                     port_name, slot, message.iteration);

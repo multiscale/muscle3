@@ -411,7 +411,6 @@ class Communicator:
             if isinstance(message.data, Milestone):
                 if message.data.is_final_milestone():
                     raise PortClosed()
-                # TODO: handle milestone, if needed
             else:
                 self._timeline_manager.record_received_s_message(
                     port_name, slot, message.iteration

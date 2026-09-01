@@ -41,7 +41,7 @@ Optional<IterationCount> decode_iteration(DataConstRef const & data);
  * @example
  *      `[1, 2, 3]` is a subiteration of `[1, 2]`, `[1]` and `[]`, but not of `[0]`.
  */
-bool is_subiteration(IterationCount const & it1, IterationCount const & it2);
+bool is_subiteration_or_equal(IterationCount const & it1, IterationCount const & it2);
 
 /** Return the most nested iteration in the list, i.e. the one with the most items.
  * 

@@ -13,7 +13,7 @@ IterationCount: TypeAlias = list[int]  # nested iteration counts of a message
 ExpectedActions: TypeAlias = list[tuple[str, Port, list[int]]]
 
 
-def is_subiteration(it1: IterationCount, it2: IterationCount) -> bool:
+def is_subiteration_or_equal(it1: IterationCount, it2: IterationCount) -> bool:
     """Check if it1 is a subiteration of it2, or if both counts are equal.
 
     Example:
@@ -39,7 +39,7 @@ def get_most_nested_iteration(iterations: list[IterationCount]) -> IterationCoun
         raise ValueError("iterations is an empty list")
     iterations.sort()
     for i in range(len(iterations) - 1):
-        if not is_subiteration(iterations[i + 1], iterations[i]):
+        if not is_subiteration_or_equal(iterations[i + 1], iterations[i]):
             raise ValueError(
                 f"{iterations[i + 1]} is not a subiteration of {iterations[i]}"
             )

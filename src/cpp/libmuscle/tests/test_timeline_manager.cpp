@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
 
 using libmuscle::_MUSCLE_IMPL_NS::get_most_nested_iteration;
-using libmuscle::_MUSCLE_IMPL_NS::is_subiteration;
+using libmuscle::_MUSCLE_IMPL_NS::is_subiteration_or_equal;
 using libmuscle::_MUSCLE_IMPL_NS::AlreadyParticipated;
 using libmuscle::_MUSCLE_IMPL_NS::ExpectedActions;
 using libmuscle::_MUSCLE_IMPL_NS::IterationCount;
@@ -164,14 +164,14 @@ struct libmuscle_vector_timeline_manager : libmuscle_timeline_manager {
 
 // Test support methods
 
-TEST(libmuscle_timeline, is_subiteration) {
-    ASSERT_TRUE(is_subiteration({}, {}));
-    ASSERT_TRUE(is_subiteration({1, 2}, {1, 2}));
-    ASSERT_TRUE(is_subiteration({1, 2}, {1}));
-    ASSERT_TRUE(is_subiteration({1, 2}, {}));
-    ASSERT_FALSE(is_subiteration({1, 2}, {1, 2, 3}));
-    ASSERT_FALSE(is_subiteration({1, 2}, {1, 1}));
-    ASSERT_FALSE(is_subiteration({}, {1, 1}));
+TEST(libmuscle_timeline, is_subiteration_or_equal) {
+    ASSERT_TRUE(is_subiteration_or_equal({}, {}));
+    ASSERT_TRUE(is_subiteration_or_equal({1, 2}, {1, 2}));
+    ASSERT_TRUE(is_subiteration_or_equal({1, 2}, {1}));
+    ASSERT_TRUE(is_subiteration_or_equal({1, 2}, {}));
+    ASSERT_FALSE(is_subiteration_or_equal({1, 2}, {1, 2, 3}));
+    ASSERT_FALSE(is_subiteration_or_equal({1, 2}, {1, 1}));
+    ASSERT_FALSE(is_subiteration_or_equal({}, {1, 1}));
 }
 
 TEST(libmuscle_timeline, get_most_nested_iteration) {

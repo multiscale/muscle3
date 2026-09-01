@@ -60,7 +60,7 @@ Optional<IterationCount> decode_iteration(DataConstRef const & data) {
     return result;
 }
 
-bool is_subiteration(IterationCount const & it1, IterationCount const & it2) {
+bool is_subiteration_or_equal(IterationCount const & it1, IterationCount const & it2) {
     if (it1.size() < it2.size())
         return false;
     for (std::size_t i = 0; i < it2.size(); ++i) {
@@ -90,7 +90,7 @@ IterationCount const & get_most_nested_iteration(std::vector<IterationCount> con
                 return lhs.get() < rhs.get();   // lexicographical vector comparison
             });
     for (std::size_t i = 0; i < iterations.size() - 1; ++i) {
-        if (!is_subiteration(sorted[i + 1], sorted[i]))
+        if (!is_subiteration_or_equal(sorted[i + 1], sorted[i]))
             throw std::logic_error(
                 to_string(sorted[i+1]) + " is not a subiteration of "
                 + to_string(sorted[i]));

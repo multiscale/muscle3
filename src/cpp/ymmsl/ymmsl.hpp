@@ -13,6 +13,10 @@ namespace ymmsl {
     using impl::allows_receiving;
     using impl::operator_name;
     using impl::operator_for_name;
+    using impl::is_reducer;
+    using impl::is_repeater;
+    using impl::conduit_filter_name;
+    using impl::conduit_filter_for_name;
     using impl::Conduit;
     using impl::ConduitFilter;
     using impl::Identifier;

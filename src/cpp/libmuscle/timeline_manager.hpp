@@ -36,6 +36,20 @@ using IterationCount = std::vector<int>;
 Data encode_iteration(Optional<IterationCount> const & iteration);
 Optional<IterationCount> decode_iteration(DataConstRef const & data);
 
+/** Check if it1 is a subiteration of it2, or if both counts are equal.
+ * 
+ * @example
+ *      `[1, 2, 3]` is a subiteration of `[1, 2]`, `[1]` and `[]`, but not of `[0]`.
+ */
+bool is_subiteration_or_equal(IterationCount const & it1, IterationCount const & it2);
+
+/** Return the most nested iteration in the list, i.e. the one with the most items.
+ * 
+ * @throw std::logic_error if iterations is an empty list or if the iterations are
+ *      incompatible with one another.
+ */
+IterationCount const & get_most_nested_iteration(std::vector<IterationCount> const & iterations);
+
 /** A single expected next action: send or receive on the given port, and if
  * the port is a vector port, the slots that are still expected ([] for a
  * scalar port). */
@@ -60,13 +74,11 @@ struct SubTimelineState {
  *
  * Returned by TimelineManager::get_state() for saving in a snapshot, and
  * passed back into TimelineManager::restore_state() to resume from one.
- * iteration is unset if the main timeline has not started yet (or has been
- * reset).
+ * iteration is unset if the main timeline has not started yet.
  */
 struct TimelineState {
     Optional<IterationCount> iteration;
     std::vector<PortAndSlot> send_participated;
-    std::vector<PortAndSlot> receive_participated;
     std::unordered_map<std::string, SubTimelineState> subtimeline_states;
 
     Data to_data() const;
@@ -210,12 +222,15 @@ class SubTimelineManager {
         /** Record that a message has been received on the given S port.
          *
          * @param port The S port a message was received on.
-         * @param slot The slot the message was received on, if this is a
-         *      vector port.
+         * @param slot The slot the message was received on, if this is a vector port.
          * @param iteration The iteration the received message was sent with.
+         * @param component_iteration The current iteration of the component.
+         * @param num_repeat_filters Number of repeater filters applied to this message.
+         * @return Current iteration count of the subtimeline.
          */
-        void record_received_message(
-                Port const & port, Optional<int> slot, IterationCount const & iteration);
+        IterationCount const & record_received_message(
+                Port const & port, Optional<int> slot, IterationCount const & iteration,
+                IterationCount const & component_iteration, int num_repeat_filters);
 
         /** Reset this sub-timeline once the main timeline's reuse loop
          * iteration completes. */
@@ -293,30 +308,34 @@ class TimelineManager {
         IterationCount check_send_message(
                 std::string const & port_name, Optional<int> slot = {});
 
-        /** Check that receiving on the given port is currently allowed.
+        /** Check if the iteration counts of pre-received messages are consistent.
+         * 
+         * @return The iteration count for the upcoming reuse loop.
+         * @throw std::logic_error if the iteration counts are inconsistent.
+         */
+        IterationCount check_pre_received_iteration_counts(
+                std::vector<IterationCount> const & iterations);
+
+        /** Check that receiving on the given S port is currently allowed.
          *
-         * An F_INIT port may receive once after the reuse loop starts and
-         * before any other ports are used. Whether an S port may receive is
-         * delegated to the corresponding SubTimelineManager.
-         *
-         * @param port_name Name of the F_INIT or S port about to receive.
+         * @param port_name Name of the S port about to receive.
          * @param slot The slot being received on, if this is a vector port.
          */
-        void check_receive(std::string const & port_name, Optional<int> slot = {});
+        void check_receive_s(std::string const & port_name, Optional<int> slot = {});
 
-        /** Record that a message has been received on the given port.
+        /** Record that a message has been received on the given S port.
          *
-         * check_receive already established that this receive is allowed.
+         * check_receive_s already established that this receive is allowed.
          *
-         * @param port_name Name of the F_INIT or S port a message was
-         *      received on.
-         * @param slot The slot the message was received on, if this is a
-         *      vector port.
+         * @param port_name Name of the S port a message was received on.
+         * @param slot The slot the message was received on, if this is a vector port.
          * @param iteration The iteration the received message was sent with.
+         * @param num_repeat_filters Number of repeat filters applied to this S port.
+         * @return New iteration count for the subtimeline of the S port.
          */
-        void record_received_message(
+        IterationCount const & record_received_s_message(
                 std::string const & port_name, Optional<int> slot,
-                IterationCount const & iteration);
+                IterationCount const & iteration, std::size_t num_repeat_filters = 0);
 
         /** Reset the main timeline and its sub-timelines.
          *

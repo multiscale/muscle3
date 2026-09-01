@@ -51,9 +51,9 @@ def communicator_state() -> CommunicatorState:
         timeline_state=TimelineState(
             iteration=[1],
             send_participated=[],
-            receive_participated=[["in", None]],
             subtimeline_states={},
         ),
+        message_cache={},
     )
 
 
@@ -112,7 +112,15 @@ def mock_ports():
 
 
 @pytest.fixture
-def connected_port_manager(port_manager, declared_ports, mock_ports):
+def settings_in_connected(request):
+    # Allow indirectly parametrizing settings_in_connected
+    return getattr(request, "param", False)
+
+
+@pytest.fixture
+def connected_port_manager(
+    port_manager, declared_ports, mock_ports, settings_in_connected
+):
 
     def get_port(name):
         if name == "muscle_settings_in":
@@ -128,8 +136,9 @@ def connected_port_manager(port_manager, declared_ports, mock_ports):
 
     port_manager._ports = mock_ports
     port_manager._muscle_settings_in = Port(
-        "muscle_settings_in", Operator.F_INIT, None, False, True, 0, []
+        "muscle_settings_in", Operator.F_INIT, None, False, settings_in_connected, 0, []
     )
+    port_manager.settings_in_connected.return_value = settings_in_connected
     port_manager.get_port = get_port
     port_manager.get_connected_ports = get_connected_ports
     port_manager.list_ports.return_value = declared_ports

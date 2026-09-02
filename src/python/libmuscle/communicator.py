@@ -155,6 +155,18 @@ class Communicator:
         self._message_cache: MPPCacheType = {}
         """Message cache for pre-received messages."""
 
+        self._reduce_count: dict[Reference, int] = {}
+        """Reduce count for each peer port (component + port_name).
+        
+        The reduce count is relative to the component timeline:
+        - 0: send once per reuse loop
+        - 1: send once per parent reuse loop
+        - 2: send once per grandparent reuse loop
+        - etc.
+        """
+        self._reducer_cache: dict[Reference, MPPMessage] = {}
+        """Message cache for reducer filters."""
+
     def get_locations(self) -> list[str]:
         """Returns a list of locations that we can be reached at.
 
@@ -278,7 +290,11 @@ class Communicator:
             )
             encoded_message = mpp_message.encoded()
             profile_event.message_size = len(memoryview(encoded_message))
-            self._server.deposit(recv_endpoint.ref(), encoded_message)
+            peer_port = recv_endpoint.kernel + recv_endpoint.port
+            if peer_port in self._reduce_count:
+                self._handle_reducer_filter_on_send(recv_endpoint, mpp_message)
+            else:
+                self._server.deposit(recv_endpoint.ref(), encoded_message)
 
         profile_event.stop()
         if port.is_vector():
@@ -288,6 +304,54 @@ class Communicator:
             port.increment_num_messages(slot)
         elif message.data.is_final_milestone():
             port.set_closed(slot)
+
+    def _handle_reducer_filter_on_send(
+        self, recv_endpoint: Endpoint, message: MPPMessage
+    ) -> None:
+        """Send a message on Conduits with a reducer filter applied."""
+        message.message_number = -1  # Disabled checkpointing for reducer filter GH#411
+
+        peer_port = recv_endpoint.kernel + recv_endpoint.port
+        reduce_count = self._reduce_count[peer_port]
+        component_count = len(self._timeline_manager.get_iteration())
+
+        if not isinstance(message.data, Milestone):  # User-provided message: cache it
+            # mpp_message.iteration = Milestone when this message should be sent:
+            message.iteration = message.iteration[: component_count - reduce_count]
+            self._reducer_cache[recv_endpoint.ref()] = message
+
+        else:
+            # Decide whether to send the milestone, ignore it, or send a cached message.
+            # For example, if our current iteration is [1, 2, 3], we can have:
+            # - Milestone([1, 2, 3]):
+            #   - reduce_count=0 (last of O_I): we need to send the last message from
+            #     the cache (message [1, 2, 3]). The peer doesn't need the milestone, so
+            #     we do not send that.
+            #   - reduce_count>0 (last last of O_I / last of O_F): don't send anything,
+            #     our peer expects [1, 2] as next message.
+            # - Milestone([1, 2]):
+            #   - reduce_count=0 (last of O_I): we need to send the milestone
+            #   - reduce_count=1 (last last of O_I / last of O_F): send the cached
+            #     message
+            #   - reduce_count>1 don't send anything
+            # etc.
+            n_milestone = len(message.data.iteration)
+            if n_milestone + reduce_count < component_count:  # Send the milestone
+                self._server.deposit(recv_endpoint.ref(), message.encoded())
+            elif n_milestone + reduce_count > component_count:  # Ignore the milestone
+                pass
+            else:  # Send cached message
+                cached_msg = self._reducer_cache.pop(recv_endpoint.ref(), None)
+                if cached_msg is None:
+                    _logger.info(
+                        "No cached message available to send because this instance did "
+                        "not run. Sending an empty message instead to %s.",
+                        recv_endpoint.ref(),
+                    )
+                    cached_msg = message
+                    cached_msg.data = None
+                assert cached_msg.iteration == message.iteration
+                self._server.deposit(recv_endpoint.ref(), cached_msg.encoded())
 
     def pre_receive(self) -> FInitCacheType:
         """Pre-receive on all connected F_INIT ports and S ports with repeat filters.
@@ -314,8 +378,6 @@ class Communicator:
                     for key, message in self._message_cache.items()
                     if message.iteration != milestone_iteration
                 }
-
-                # TODO: send buffered message for reducer filters
 
                 if milestone.is_final_milestone():
                     raise PortClosed()
@@ -529,7 +591,10 @@ class Communicator:
             self._profiler.record_event(receive_event)
 
         expected_message_number = port.get_num_messages(slot)
-        if expected_message_number != mpp_message.message_number:
+        if (
+            mpp_message.message_number >= 0  # GH#411: negative for reducer filters
+            and expected_message_number != mpp_message.message_number
+        ):
             if (
                 expected_message_number - 1 == mpp_message.message_number
                 and port.is_resuming(slot)
@@ -685,12 +750,11 @@ class Communicator:
         """Check which ports are connected with a conduit filter and initialize the
         associated logic.
         """
+        peer_info = self._peer_info
         # Repeater filters
         for operator in (Operator.F_INIT, Operator.S):
             for port in self._port_manager.get_connected_ports(operator):
-                filters = self._peer_info.get_filters_for_receiver(
-                    self._kernel + port.name
-                )
+                filters = peer_info.get_filters_for_receiver(self._kernel + port.name)
                 # Only keep the repeater filters, the sending component handles reducers
                 filters = [filter for filter in filters if filter.is_repeater()]
                 if filters:
@@ -698,7 +762,18 @@ class Communicator:
                 if operator is Operator.F_INIT or filters:
                     self._pre_receive_ports.append(port)
 
-        # TODO: reducer filters
+        # Reducer filters
+        for operator in (Operator.O_I, Operator.O_F):
+            for port in self._port_manager.get_connected_ports(operator):
+                for peer_port in peer_info.get_peer_ports(port.name):
+                    filters = peer_info.get_filters_for_receiver(peer_port)
+                    # Count the reducer filters, receiving component handles repeaters
+                    n_filters = sum(1 for filter in filters if filter.is_reducer())
+                    if n_filters:
+                        if operator is Operator.O_I:
+                            self._reduce_count[peer_port] = n_filters - 1
+                        else:
+                            self._reduce_count[peer_port] = n_filters
 
     def _pad_message(
         self, cur_iteration: IterationCount, filters: list[ConduitFilter]

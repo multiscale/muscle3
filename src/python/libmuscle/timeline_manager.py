@@ -272,6 +272,11 @@ class TimelineManager:
         self._iteration: Optional[IterationCount] = None
         """Current component iteration count. Is None before the first reuse loop."""
 
+    def get_iteration(self) -> IterationCount:
+        """Get the current component iteration count."""
+        assert self._iteration is not None
+        return self._iteration
+
     def check_send_message(
         self, port_name: str, slot: Optional[int] = None
     ) -> IterationCount:

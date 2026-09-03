@@ -196,6 +196,11 @@ TEST_F(libmuscle_full_timeline_manager, record_received_message_f_init_raises_on
     ASSERT_THROW(tm_->check_pre_received_iteration_counts({{3}, {4}}), std::logic_error);
 }
 
+TEST_F(libmuscle_full_timeline_manager, check_pre_receive_counts_match_timeline) {
+    ASSERT_THROW(tm_->check_pre_received_iteration_counts({{}}), std::runtime_error);
+    ASSERT_THROW(tm_->check_pre_received_iteration_counts({{1, 2}}), std::runtime_error);
+}
+
 TEST_F(libmuscle_timeline_manager, o_f_can_send_immediately_when_no_f_init_connections) {
     create(PortsDescription{{Operator::O_F, {"out_f"}}});
     tm_->check_pre_received_iteration_counts({});

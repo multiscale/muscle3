@@ -155,14 +155,17 @@ class Communicator:
         self._message_cache: MPPCacheType = {}
         """Message cache for pre-received messages."""
 
-        self._reduce_count: dict[Reference, int] = {}
-        """Reduce count for each peer port (component + port_name).
-        
-        The reduce count is relative to the component timeline:
-        - 0: send once per reuse loop
-        - 1: send once per parent reuse loop
-        - 2: send once per grandparent reuse loop
-        - etc.
+        self._reduced_count: dict[Reference, int] = {}
+        """Size of IterationCount, after applying the reducer filters, per peer port.
+
+        Keys are references to peer ports: ``component + port``. The reduced count is
+        the size of the IterationCount after applying the reducer filters and determines
+        in which (parent) timeline these messages are sent.
+
+        If our timeline is ":macro:micro" then:
+        - reduced_count = 0: send on the root (":") timeline
+        - reduced_count = 1: send on the ":macro" timeline
+        - reduced_count = 2: send on the ":macro:micro" timeline
         """
         self._reducer_cache: dict[Reference, MPPMessage] = {}
         """Message cache for reducer filters."""
@@ -189,6 +192,7 @@ class Communicator:
         Args:
             peer_info: Information about the peers.
         """
+        self._timeline = self._manager.get_timeline()
         self._peer_info = peer_info
         self._timeline_manager = TimelineManager(self._port_manager)
         self._prepare_conduit_filters()
@@ -289,13 +293,15 @@ class Communicator:
                 message.data,
                 iteration,
             )
+            peer_port = recv_endpoint.kernel + recv_endpoint.port
+            if peer_port in self._reduced_count:
+                result = self._apply_reduce_filters(peer_port, mpp_message)
+                if result is None:
+                    continue
+                mpp_message = result
             encoded_message = mpp_message.encoded()
             profile_event.message_size = len(memoryview(encoded_message))
-            peer_port = recv_endpoint.kernel + recv_endpoint.port
-            if peer_port in self._reduce_count:
-                self._handle_reducer_filter_on_send(recv_endpoint, mpp_message)
-            else:
-                self._server.deposit(recv_endpoint.ref(), encoded_message)
+            self._server.deposit(recv_endpoint.ref(), encoded_message)
 
         profile_event.stop()
         if port.is_vector():
@@ -306,53 +312,64 @@ class Communicator:
         elif message.data.is_final_milestone():
             port.set_closed(slot)
 
-    def _handle_reducer_filter_on_send(
-        self, recv_endpoint: Endpoint, message: MPPMessage
-    ) -> None:
-        """Send a message on Conduits with a reducer filter applied."""
-        message.message_number = -1  # Disabled checkpointing for reducer filter GH#411
+    def _apply_reduce_filters(
+        self, peer_port: Reference, message: MPPMessage
+    ) -> Optional[MPPMessage]:
+        """Apply reduce filters to a message sent on a conduit with reduce filters.
 
-        peer_port = recv_endpoint.kernel + recv_endpoint.port
-        reduce_count = self._reduce_count[peer_port]
-        component_count = len(self._timeline_manager.get_iteration())
+        User-provided messages (through instance.send()) will be stored (overwriting any
+        existing message). For milestones this method decides if the milestone should be
+        sent, or a cached message, or nothing at all.
 
-        if not isinstance(message.data, Milestone):  # User-provided message: cache it
-            # mpp_message.iteration = Milestone when this message should be sent:
-            message.iteration = message.iteration[: component_count - reduce_count]
-            self._reducer_cache[recv_endpoint.ref()] = message
+        Args:
+            recv_endpoint: The Endpoint to send to.
+            message: MPPMessage to be checked.
+
+        Returns:
+            The MPPMessage to send, or None if we do not need to send anything.
+        """
+        message.message_number = -1  # GH#411: Disabled checkpointing for reducer filter
+
+        reduced_count = self._reduced_count[peer_port]
+
+        if not isinstance(message.data, Milestone):
+            # Reduce the message iteration count to match with the timeline we send to
+            message.iteration = message.iteration[:reduced_count]
+            self._reducer_cache[message.receiver] = message
+            _logger.debug("Message for %s stored in cache", message.receiver)
+            return None
+
+        # Decide whether to send the milestone, ignore it, or send a cached message.
+        n_milestone = len(message.data.iteration)
+        if n_milestone < reduced_count:
+            # Milestone from ancestor timeline: send it
+            return message
+
+        elif n_milestone == reduced_count:
+            # This is the target timeline after reduce filters applied: we need to
+            # send the cached message (or make up an empty one) and discard the
+            # milestone:
+            cached_msg = self._reducer_cache.pop(message.receiver, None)
+            if cached_msg is None:
+                _logger.info(
+                    "No cached message available to send because this instance did "
+                    "not run. Sending an empty message to %s instead.",
+                    message.receiver,
+                )
+                message.data = None
+                return message
+
+            assert cached_msg.iteration == message.iteration
+            _logger.debug("Sending cached message to %s", message.receiver)
+            return cached_msg
 
         else:
-            # Decide whether to send the milestone, ignore it, or send a cached message.
-            # For example, if our current iteration is [1, 2, 3], we can have:
-            # - Milestone([1, 2, 3]):
-            #   - reduce_count=0 (last of O_I): we need to send the last message from
-            #     the cache (message [1, 2, 3]). The peer doesn't need the milestone, so
-            #     we do not send that.
-            #   - reduce_count>0 (last last of O_I / last of O_F): don't send anything,
-            #     our peer expects [1, 2] as next message.
-            # - Milestone([1, 2]):
-            #   - reduce_count=0 (last of O_I): we need to send the milestone
-            #   - reduce_count=1 (last last of O_I / last of O_F): send the cached
-            #     message
-            #   - reduce_count>1 don't send anything
-            # etc.
-            n_milestone = len(message.data.iteration)
-            if n_milestone + reduce_count < component_count:  # Send the milestone
-                self._server.deposit(recv_endpoint.ref(), message.encoded())
-            elif n_milestone + reduce_count > component_count:  # Ignore the milestone
-                pass
-            else:  # Send cached message
-                cached_msg = self._reducer_cache.pop(recv_endpoint.ref(), None)
-                if cached_msg is None:
-                    _logger.info(
-                        "No cached message available to send because this instance did "
-                        "not run. Sending an empty message instead to %s.",
-                        recv_endpoint.ref(),
-                    )
-                    cached_msg = message
-                    cached_msg.data = None
-                assert cached_msg.iteration == message.iteration
-                self._server.deposit(recv_endpoint.ref(), cached_msg.encoded())
+            _logger.debug(
+                "Ignored %s for %s because of LAST filters.",
+                message.data,
+                message.receiver,
+            )
+            return None
 
     def pre_receive(self) -> FInitCacheType:
         """Pre-receive on all connected F_INIT ports and S ports with repeat filters.
@@ -769,12 +786,11 @@ class Communicator:
                 for peer_port in peer_info.get_peer_ports(port.name):
                     filters = peer_info.get_filters_for_receiver(peer_port)
                     # Count the reducer filters, receiving component handles repeaters
-                    n_filters = sum(1 for filter in filters if filter.is_reducer())
-                    if n_filters:
-                        if operator is Operator.O_I:
-                            self._reduce_count[peer_port] = n_filters - 1
-                        else:
-                            self._reduce_count[peer_port] = n_filters
+                    n_reducers = sum(1 for filter in filters if filter.is_reducer())
+                    if n_reducers > 0:
+                        self._reduced_count[peer_port] = (
+                            len(self._timeline) + len(port.timeline) - n_reducers
+                        )
 
     def _pad_message(
         self, cur_iteration: IterationCount, filters: list[ConduitFilter]

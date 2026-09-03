@@ -2,7 +2,7 @@ from typing import Union
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
-from ymmsl.v0_2 import Conduit, ConduitFilter, Operator, Port, Settings
+from ymmsl.v0_2 import Conduit, ConduitFilter, Operator, Port, Settings, Timeline
 from ymmsl.v0_2 import Identifier as Id
 from ymmsl.v0_2 import Reference as Ref
 
@@ -72,8 +72,10 @@ def repeater_communicator(repeat_filter, mpp_client):
 @pytest.fixture
 def reducer_communicator(mpp_client, mpp_server):
     port_manager = PortManager([], None)
+    mock_manager = MagicMock()
+    mock_manager.get_timeline.return_value = Timeline(":parent")
     communicator = Communicator(
-        Ref("component"), [], port_manager, MagicMock(), MagicMock()
+        Ref("component"), [], port_manager, MagicMock(), mock_manager
     )
     peer_info = PeerInfo(
         Ref("component"),
@@ -93,16 +95,16 @@ def reducer_communicator(mpp_client, mpp_server):
         {Ref("parent"): [], Ref("aunt"): [], Ref("uncle"): [], Ref("sibling"): []},
         [
             Port(Id("init"), Operator.F_INIT),
-            Port(Id("out"), Operator.O_I),
+            Port(Id("out"), Operator.O_I, Timeline("component")),
             Port(Id("final"), Operator.O_F),
         ],
     )
     port_manager.connect_ports(peer_info)
     communicator.set_peer_info(peer_info)
-    assert communicator._reduce_count == {
-        "sibling.in": 0,
-        "aunt.init": 1,
-        "uncle.init": 1,
+    assert communicator._reduced_count == {
+        "sibling.in": 1,
+        "aunt.init": 0,
+        "uncle.init": 0,
     }
     yield communicator
     communicator.shutdown()

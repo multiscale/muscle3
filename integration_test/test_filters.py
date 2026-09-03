@@ -129,8 +129,8 @@ def postprocess() -> None:
             assert meso.data is None
             assert micro.data is None
         else:
-            assert meso.data[1] == macro.data[1] - 1
-            assert micro.data[1] == 1
+            assert meso.data[-1] == macro.data[-1] - 1
+            assert micro.data[-1] == 1
 
 
 config = """

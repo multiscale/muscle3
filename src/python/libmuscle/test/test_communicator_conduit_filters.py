@@ -1,5 +1,5 @@
 from typing import Union
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
 from ymmsl.v0_2 import Conduit, ConduitFilter, Operator, Port, Settings, Timeline
@@ -314,7 +314,10 @@ def test_reducer_filters(reducer_communicator, mpp_client, mpp_server):
         mpp_server.deposit.assert_not_called()
     # Send on O_F
     reducer_communicator.send_message("final", Message(5, data="data"))
-    mpp_server.deposit.assert_called_with("sibling.in2", ANY)
+    assert mpp_server.deposit.call_args_list == [
+        call("parent.in", ANY),
+        call("sibling.in2", ANY),
+    ]
     mpp_server.deposit.reset_mock()
 
     # Pre-receive will send cached LAST message to sibling.in
@@ -329,7 +332,10 @@ def test_reducer_filters(reducer_communicator, mpp_client, mpp_server):
 
     # Skip O_I and send on O_F
     reducer_communicator.send_message("final", Message(10, data="data"))
-    mpp_server.deposit.assert_called_with("sibling.in2", ANY)
+    assert mpp_server.deposit.call_args_list == [
+        call("parent.in", ANY),
+        call("sibling.in2", ANY),
+    ]
     mpp_server.deposit.reset_mock()
 
     # Pre-receive will first send cached LAST message to sibling.in, then receive
@@ -342,9 +348,9 @@ def test_reducer_filters(reducer_communicator, mpp_client, mpp_server):
     assert mpp_server.deposit.call_count == 6
 
     messages_per_peer_port = {}
-    for call in mpp_server.deposit.call_args_list:
-        msg = MPPMessage.from_bytes(call.args[1])
-        messages_per_peer_port.setdefault(call.args[0], []).append(msg)
+    for item in mpp_server.deposit.call_args_list:
+        msg = MPPMessage.from_bytes(item.args[1])
+        messages_per_peer_port.setdefault(item.args[0], []).append(msg)
 
     # O_I -> last -> sibling.in
     assert len(messages_per_peer_port["sibling.in"]) == 2

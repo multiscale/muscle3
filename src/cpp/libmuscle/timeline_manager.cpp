@@ -438,8 +438,9 @@ void SubTimelineManager::missing_actions(ExpectedActions & result) const {
 // when a test mocks TimelineManager but still includes this file for them.
 #ifndef LIBMUSCLE_MOCK_TIMELINE_MANAGER
 
-TimelineManager::TimelineManager(PortManager const & port_manager)
-    : port_manager_(port_manager)
+TimelineManager::TimelineManager(PortManager const & port_manager, Timeline const & timeline)
+    : timeline_(timeline)
+    , port_manager_(port_manager)
     , receive_(port_manager.get_connected_ports(Operator::F_INIT, Optional<Timeline>()))
     , send_(port_manager.get_connected_ports(Operator::O_F, Optional<Timeline>()))
     , submanagers_()
@@ -472,6 +473,11 @@ IterationCount TimelineManager::check_pre_received_iteration_counts(
         throw std::runtime_error(
             "Internal error: received F_INIT iteration count " + to_string(new_iteration)
             + " is not newer than the previous iteration " + to_string(iteration_.get()));
+    if (new_iteration.size() != timeline_.size())
+        throw std::runtime_error(
+            "Received unexpected F_INIT iteration count: " + to_string(new_iteration)
+            + ". Was expecting an iteration count with " + std::to_string(timeline_.size())
+            + " elements, since we are in timeline " + std::string(timeline_));
     iteration_ = new_iteration;
     return new_iteration;
 }

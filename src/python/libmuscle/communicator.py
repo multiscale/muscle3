@@ -322,7 +322,7 @@ class Communicator:
         sent, or a cached message, or nothing at all.
 
         Args:
-            recv_endpoint: The Endpoint to send to.
+            peer_port: Peer port (component + port) to send to.
             message: MPPMessage to be checked.
 
         Returns:

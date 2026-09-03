@@ -46,11 +46,11 @@ class ImplementationTester:
         self._instance._communicator.set_receive_timeout(default_timeout)
         self._instance.reuse_instance()
 
-        # We have a __settings_out__ port if the tested component doesn't have F_INIT
+        # We have a __settings_in__ port if the tested component doesn't have F_INIT
         # ports: send an empty message on it to make the timeline logic work out:
-        if "__settings_out__" in test_model.ports:
+        if "__settings_in__" in test_model.ports:
             msg = Message(float("-inf"), data=Settings())
-            self._instance.send("__settings_out__", msg)
+            self._instance.send("__settings_in__", msg)
 
     def send(
         self, port_name: str, message: Message, slot: Optional[int] = None

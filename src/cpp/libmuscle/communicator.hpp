@@ -135,12 +135,15 @@ class Communicator {
          */
         void shutdown();
 
-        /** Return the current state of the timeline manager, for saving in a
-         * snapshot.
+        /** Return the current internal state for checkpointing.
+         * 
+         * This includes state for the communicator, port manager and timeline manager.
          */
         CommunicatorState get_state() const;
 
-        /** Restore the timeline manager to a previously saved state.
+        /** Restore a previously saved state.
+         * 
+         * @param state: The state to restore, as returned by get_state()
          */
         void restore_state(CommunicatorState const & state);
 

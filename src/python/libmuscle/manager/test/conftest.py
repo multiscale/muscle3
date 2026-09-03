@@ -1,5 +1,13 @@
 import pytest
-from ymmsl.v0_2 import Component, Conduit, Configuration, Model, Ports, Reference
+from ymmsl.v0_2 import (
+    Component,
+    Conduit,
+    Configuration,
+    Model,
+    Ports,
+    Reference,
+    resolve_timelines,
+)
 
 from libmuscle.manager.deadlock_detector import DeadlockDetector
 from libmuscle.manager.instance_registry import InstanceRegistry
@@ -20,7 +28,7 @@ def logger(tmp_path):
 
 @pytest.fixture
 def mmp_configuration():
-    return Configuration(
+    config = Configuration(
         "mmp_configuration",
         [],
         [
@@ -49,6 +57,8 @@ def mmp_configuration():
             )
         ],
     )
+    resolve_timelines(config.models["test_model"])
+    return config
 
 
 @pytest.fixture

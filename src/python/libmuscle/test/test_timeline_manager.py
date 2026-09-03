@@ -31,7 +31,14 @@ def include_settings(request: pytest.FixtureRequest) -> bool:
 
 
 @pytest.fixture
-def timeline_manager(has_f_init: bool, include_settings: bool) -> TimelineManager:
+def timeline(request: pytest.FixtureRequest) -> Timeline:
+    return getattr(request, "param", Timeline(":"))
+
+
+@pytest.fixture
+def timeline_manager(
+    has_f_init: bool, include_settings: bool, timeline: Timeline
+) -> TimelineManager:
     conduits = [
         Conduit("component.out_f", "peer_f.in"),
         Conduit("component.out_a1", "peer_a1.in"),
@@ -69,20 +76,20 @@ def timeline_manager(has_f_init: bool, include_settings: bool) -> TimelineManage
     peer_info = PeerInfo(Ref("component"), [], conduits, peer_dims, {}, ymmsl_ports)
     pm.connect_ports(peer_info)
 
-    tm = TimelineManager(pm)
+    tm = TimelineManager(pm, timeline)
     assert tm.start_reuse_iteration() is None
     return tm
 
 
 @pytest.fixture
-def vector_timeline_manager() -> TimelineManager:
+def vector_timeline_manager(timeline: Timeline) -> TimelineManager:
     declared_ports = {Operator.O_F: ["out_v[]"]}
     pm = PortManager([], declared_ports)
     conduits = [Conduit("component.out_v", "peer.in")]
     peer_info = PeerInfo(Ref("component"), [], conduits, {Ref("peer"): [3]}, {}, [])
     pm.connect_ports(peer_info)
 
-    tm = TimelineManager(pm)
+    tm = TimelineManager(pm, timeline)
     assert tm.start_reuse_iteration() is None
     assert tm.check_pre_received_iteration_counts([]) == []
     return tm
@@ -274,6 +281,7 @@ def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
     )
 
 
+@pytest.mark.parametrize("timeline", [Timeline(":a:b:c")], indirect=True)
 def test_check_pre_receive_increments(timeline_manager: TimelineManager) -> None:
     assert timeline_manager.check_pre_received_iteration_counts(
         [[1, 2, 3], [1, 2], [1], [], [1, 2, 3], [1, 2]]
@@ -288,6 +296,14 @@ def test_check_pre_receive_increments(timeline_manager: TimelineManager) -> None
     ) == [1, 2, 4]
 
 
+def test_check_pre_receive_counts_match_timeline(
+    timeline_manager: TimelineManager,
+) -> None:
+    with pytest.raises(RuntimeError, match="iteration count with 0 elements"):
+        timeline_manager.check_pre_received_iteration_counts([[1]])
+
+
+@pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)
 def test_check_pre_receive_iterations_when_iteration_differs(
     timeline_manager: TimelineManager,
 ) -> None:
@@ -391,6 +407,7 @@ def test_check_receive_message_s_blocked_when_s_leads_and_incomplete(
     )
 
 
+@pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)
 def test_finish_reuse_iteration_resets_when_complete(
     timeline_manager: TimelineManager,
 ) -> None:
@@ -415,6 +432,7 @@ def test_finish_reuse_iteration_resets_when_complete(
     )
 
 
+@pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)
 def test_finish_reuse_iteration_raises_when_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
@@ -436,6 +454,7 @@ def test_finish_reuse_iteration_raises_when_incomplete(
     )
 
 
+@pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)
 def test_get_state_and_restore_state_round_trip(
     timeline_manager: TimelineManager,
 ) -> None:
@@ -449,7 +468,7 @@ def test_get_state_and_restore_state_round_trip(
     # Restore into a fresh TimelineManager, as would happen after loading a
     # snapshot in a new process, from an independent but identically
     # configured PortManager.
-    restored = TimelineManager(timeline_manager._port_manager)
+    restored = TimelineManager(timeline_manager._port_manager, Timeline(":"))
     restored.restore_state(timeline_state)
 
     assert restored.get_state() == timeline_state

@@ -252,7 +252,7 @@ class TimelineManager:
     ports that receive (F_INIT or S).
     """
 
-    def __init__(self, port_manager: PortManager) -> None:
+    def __init__(self, port_manager: PortManager, timeline: Timeline) -> None:
         """Create a TimelineManager.
 
         The port_manager must already have its ports connected to their peers, since
@@ -263,6 +263,7 @@ class TimelineManager:
         Args:
             port_manager: The (already connected) port manager for this instance.
         """
+        self._timeline = timeline
         self._port_manager = port_manager
         self._send = TimelinePorts(port_manager.get_connected_ports(Operator.O_F))
         subtimelines = port_manager.list_subtimelines()
@@ -271,11 +272,6 @@ class TimelineManager:
         }
         self._iteration: Optional[IterationCount] = None
         """Current component iteration count. Is None before the first reuse loop."""
-
-    def get_iteration(self) -> IterationCount:
-        """Get the current component iteration count."""
-        assert self._iteration is not None
-        return self._iteration
 
     def check_send_message(
         self, port_name: str, slot: Optional[int] = None
@@ -324,6 +320,12 @@ class TimelineManager:
             raise RuntimeError(
                 f"Internal error: received F_INIT iteration count {new_iteration} "
                 f"is not newer than the previous iteration {self._iteration}."
+            )
+        if len(new_iteration) != len(self._timeline):
+            raise RuntimeError(
+                f"Received unexpected F_INIT iteration count: {new_iteration}. Was "
+                f"expecting an iteration count with {len(self._timeline)} elements, "
+                f"since we are in timeline {self._timeline}"
             )
         self._iteration = new_iteration
         return self._iteration

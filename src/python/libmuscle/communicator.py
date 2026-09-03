@@ -194,7 +194,7 @@ class Communicator:
         """
         self._timeline = self._manager.get_timeline()
         self._peer_info = peer_info
-        self._timeline_manager = TimelineManager(self._port_manager)
+        self._timeline_manager = TimelineManager(self._port_manager, self._timeline)
         self._prepare_conduit_filters()
 
     def set_receive_timeout(self, receive_timeout: float) -> None:

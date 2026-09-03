@@ -33,8 +33,10 @@ def repeat_filter(request):
 @pytest.fixture()
 def repeater_communicator(repeat_filter, mpp_client):
     port_manager = PortManager([], None)
+    mock_manager = MagicMock()
+    mock_manager.get_timeline.return_value = Timeline(":parent3:parent2:parent1")
     communicator = Communicator(
-        Ref("component"), [], port_manager, MagicMock(), MagicMock()
+        Ref("component"), [], port_manager, MagicMock(), mock_manager
     )
     peer_info = PeerInfo(
         Ref("component"),
@@ -152,16 +154,17 @@ def mock_receive_messages(
 
 
 def test_repeater_filters(repeater_communicator, mpp_client, repeat_filter):
-    twicerepeated_messages = [[], Milestone([])]
-    repeated_messages = [[0], [1], [2], Milestone([])]
+    twicerepeated_messages = [[0], Milestone([])]
+    repeated_messages = [[0, 0], [0, 1], [0, 2], Milestone([0]), Milestone([])]
     unfiltered_messages = [
-        [0, 0],
-        [0, 1],
-        Milestone([0]),
+        [0, 0, 0],
+        [0, 0, 1],
+        Milestone([0, 0]),
         # parent is allowed to send 0 messages on its O_I port in an iteration
-        Milestone([1]),
-        [2, 0],
-        Milestone([2]),
+        Milestone([0, 1]),
+        [0, 2, 0],
+        Milestone([0, 2]),
+        Milestone([0]),
         Milestone([]),
     ]
     mock_receive_messages(
@@ -177,19 +180,19 @@ def test_repeater_filters(repeater_communicator, mpp_client, repeat_filter):
     is_padded = repeat_filter == "pad"
 
     cache = repeater_communicator.pre_receive()
-    assert cache[("unfiltered", None)].data == [0, 0]
-    assert cache[("repeated", None)].data == [0]
-    assert cache[("twicerepeated", None)].data == []
+    assert cache[("unfiltered", None)].data == [0, 0, 0]
+    assert cache[("repeated", None)].data == [0, 0]
+    assert cache[("twicerepeated", None)].data == [0]
 
     cache = repeater_communicator.pre_receive()
-    assert cache[("unfiltered", None)].data == [0, 1]
-    assert cache[("repeated", None)].data == (None if is_padded else [0])
-    assert cache[("twicerepeated", None)].data == (None if is_padded else [])
+    assert cache[("unfiltered", None)].data == [0, 0, 1]
+    assert cache[("repeated", None)].data == (None if is_padded else [0, 0])
+    assert cache[("twicerepeated", None)].data == (None if is_padded else [0])
 
     cache = repeater_communicator.pre_receive()
-    assert cache[("unfiltered", None)].data == [2, 0]
-    assert cache[("repeated", None)].data == [2]
-    assert cache[("twicerepeated", None)].data == (None if is_padded else [])
+    assert cache[("unfiltered", None)].data == [0, 2, 0]
+    assert cache[("repeated", None)].data == [0, 2]
+    assert cache[("twicerepeated", None)].data == (None if is_padded else [0])
 
     with pytest.raises(PortClosed):
         repeater_communicator.pre_receive()

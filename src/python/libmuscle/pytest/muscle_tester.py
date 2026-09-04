@@ -117,12 +117,12 @@ class MuscleTester:
             # We'll connect muscle_settings_in to make the timeline logic work
             tester_model.conduits.append(
                 Conduit(
-                    f"{tester_name}.__settings_out__",
+                    f"{tester_name}.__settings_in__",
                     f"{implementation_name}.muscle_settings_in",
                 )
             )
             tester_ports.append(
-                Port(Identifier("__settings_out__"), Operator.O_I, tester_timeline)
+                Port(Identifier("__settings_in__"), Operator.O_I, tester_timeline)
             )
 
         tester_model.components[Reference(tester_name)] = Component(

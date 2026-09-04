@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 from ymmsl import save as save_ymmsl
-from ymmsl.v0_2 import Configuration
+from ymmsl.v0_2 import Configuration, resolve_timelines
 
 import libmuscle
 from libmuscle.manager.deadlock_detector import DeadlockDetector
@@ -45,6 +45,16 @@ class Manager:
             configuration: The simulation configuration.
             run_dir: Main working directory.
         """
+        # TEMP: check for checkpoints combined with reducer filters:
+        if configuration.checkpoints and any(
+            any(filter.is_reducer() for filter in conduit.filters)
+            for conduit in configuration.root_model().conduits
+        ):
+            raise NotImplementedError(
+                "This version of MUSCLE3 does not support checkpoints when using "
+                "reducer filters. See https://github.com/multiscale/muscle3/issues/411"
+            )
+
         self._configuration = configuration
         self._run_dir = run_dir
         log_dir = self._run_dir.path if self._run_dir else Path.cwd()
@@ -55,6 +65,9 @@ class Manager:
         self._deadlock_detector = DeadlockDetector()
 
         _logger.info("libmuscle version: %s", libmuscle.__version__)
+
+        # Ensure timelines are consistent
+        resolve_timelines(configuration.root_model())
 
         if run_dir is not None:
             snapshot_dir = run_dir.snapshot_dir()

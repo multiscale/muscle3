@@ -46,6 +46,7 @@ class Communicator {
     public:
         using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
         using FInitCacheType = std::unordered_map<::ymmsl::Reference, Message>;
+        using MPPCacheType = std::unordered_map<::ymmsl::Reference, MPPMessage>;
 
         /** Create a Communicator.
          *
@@ -101,11 +102,11 @@ class Communicator {
                 Message const & message,
                 Optional<int> slot = {});
 
-        /** Receive on all connected F_INIT port (including muscle_settings_in).
+        /** Pre-receive on all connected F_INIT ports and S ports with repeat filters.
          * 
-         * @return The received messages.
+         * @return The received messages on F_INIT ports (including muscle_settings_in).
          */
-        FInitCacheType pre_receive_f_init();
+        FInitCacheType pre_receive();
 
         /** Receive a message and attached settings overlay on an "S" port.
          *
@@ -164,10 +165,23 @@ class Communicator {
 
         /** Implementation for receive_message.
          */
-        Message receive_message_(
+        MPPMessage receive_message_(
                 std::string const & port_name,
                 Optional<int> slot = {}
                 );
+
+        /** Apply reduce filters to a message sent on a conduit with reduce filters.
+         * 
+         * User-provided messages (through instance.send()) will be stored (overwriting any
+         * existing message). For milestones this method decides if the milestone should be
+         * sent, or a cached message, or nothing at all.
+         * 
+         * @param peer_port Peer port (component + port) to send to.
+         * @param message MPPMessage to be checked.
+         * @return The encoded MPPMessage to send, or an empty vector if we do not need to send anything.
+         */
+        std::vector<char> apply_reduce_filters_(
+                ymmsl::Reference const & peer_port, MPPMessage && message);
 
         ymmsl::Reference instance_id_() const;
         MPPClient & get_client_(ymmsl::Reference const & instance);
@@ -217,6 +231,20 @@ class Communicator {
          */
         void close_ports_();
 
+        /** Check which ports are connected with a conduit filter and initialize the
+         * associated logic.
+         */
+        void prepare_conduit_filters_();
+
+        /** Check if we should pad the message in the current iteration, based on the
+         * configured pad/repeat filters.
+         * 
+         * @return true if the mesage data should be nilled, false otherwise.
+         */
+        bool pad_message_(
+                IterationCount const & cur_iteration,
+                std::vector<::ymmsl::ConduitFilter> const & filters);
+
         ymmsl::Reference kernel_;
         std::vector<int> index_;
         PortManager & port_manager_;
@@ -227,6 +255,25 @@ class Communicator {
         Optional<PeerInfo> peer_info_;
         double receive_timeout_;
         std::unique_ptr<TimelineManager> timeline_manager_;
+        Optional<ymmsl::Timeline> timeline_;
+
+        PortManager::PortReferences pre_receive_ports_;
+        std::unordered_map<std::string, std::vector<::ymmsl::ConduitFilter>> repeat_filters_;
+        MPPCacheType message_cache_;
+
+        /** Size of IterationCount, after applying the reducer filters, per peer port.
+         * 
+         * Keys are references to peer ports: ``component + port``. The reduced count is
+         * the size of the IterationCount after applying the reducer filters and determines
+         * in which (parent) timeline these messages are sent.
+         * If our timeline is ":macro:micro" then:
+         * - reduced_count = 0: send on the root (":") timeline
+         * - reduced_count = 1: send on the ":macro" timeline
+         * - reduced_count = 2: send on the ":macro:micro" timeline
+         */
+        std::unordered_map<::ymmsl::Reference, std::size_t> reduced_count_;
+        /** Message cache for reducer filters */
+        MPPCacheType reducer_cache_;
 };
 
 } }

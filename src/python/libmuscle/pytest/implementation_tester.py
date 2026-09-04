@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-from ymmsl.v0_2 import Configuration, Operator, Reference
+from ymmsl.v0_2 import Configuration, Operator, Reference, Settings
 
 from libmuscle import Instance, Message
 
@@ -46,6 +46,12 @@ class ImplementationTester:
         self._instance._communicator.set_receive_timeout(default_timeout)
         self._instance.reuse_instance()
 
+        # We have a __settings_in__ port if the tested component doesn't have F_INIT
+        # ports: send an empty message on it to make the timeline logic work out:
+        if "__settings_in__" in test_model.ports:
+            msg = Message(float("-inf"), data=Settings())
+            self._instance.send("__settings_in__", msg)
+
     def send(
         self, port_name: str, message: Message, slot: Optional[int] = None
     ) -> None:
@@ -53,7 +59,7 @@ class ImplementationTester:
         Send a message on the specified port.
 
         Args:
-            port_name: Name of the port to send on (without 'send_' prefix).
+            port_name: Name of the port to send on.
             message: The message to send.
             slot: Optional slot number for vector ports.
         """
@@ -70,7 +76,7 @@ class ImplementationTester:
         Receive a message from the specified port.
 
         Args:
-            port_name: Name of the port to receive from (without 'receive_' prefix).
+            port_name: Name of the port to receive from.
             slot: Optional slot number for vector ports.
             timeout: Timeout in seconds. If None, uses default_timeout.
 

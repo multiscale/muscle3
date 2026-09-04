@@ -139,7 +139,7 @@ models:
       implementation: main_component
     cacheA:
       ports:
-        f_init: in1
+        f_init: in1 in2
         o_i: sub_out1 sub_out2
         s: sub_in1 sub_in2
         o_f: out1 out2
@@ -155,7 +155,7 @@ models:
       implementation: cache_component
     cacheC:
       ports:
-        f_init: in1
+        f_init: in1 in2
         o_i: sub_out1 sub_out2
         s: sub_in1
         o_f: out1

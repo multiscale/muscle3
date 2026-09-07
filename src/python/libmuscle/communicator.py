@@ -347,7 +347,7 @@ class Communicator:
                 ) from exc
 
         # Update current iteration
-        new_iteration = self._timeline_manager.check_pre_received_iteration_counts(
+        new_iteration = self._timeline_manager.record_pre_received_iteration_counts(
             [msg.iteration for msg in self._message_cache.values()]
         )
 

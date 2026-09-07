@@ -299,7 +299,7 @@ class TimelineManager:
             port, slot, self._iteration
         )
 
-    def check_pre_received_iteration_counts(
+    def record_pre_received_iteration_counts(
         self, iterations: list[IterationCount]
     ) -> IterationCount:
         """Check if the iteration counts of pre-received messages are consistent.
@@ -582,7 +582,7 @@ class SubTimelineManager:
         port: Port,
         slot: Optional[int],
         iteration: IterationCount,
-        component_iteration: IterationCount,
+        instance_iteration: IterationCount,
         num_repeat_filters: int,
     ) -> IterationCount:
         """Record that a message has been received on the given S port.
@@ -602,7 +602,7 @@ class SubTimelineManager:
             port: The S port a message was received on.
             slot: The slot the message was received on, if this is a vector port.
             iteration: The iteration the received message was sent with.
-            component_iteration: The current iteration of the component.
+            instance_iteration: The current iteration of the component.
             num_repeat_filters: Number of repeater filters applied to this message.
 
         Returns:
@@ -624,7 +624,7 @@ class SubTimelineManager:
                 # - cached message iteration count: [2], with 2 repeat filters
                 # - component iteration count: [2, 1]
                 # Our iteration count needs to become [2, 1, 0]
-                iteration = component_iteration + [0]
+                iteration = instance_iteration + [0]
             self._iteration = iteration
             self._first_operator = Operator.S
         elif not self._receive.has_participated(port_name, slot):

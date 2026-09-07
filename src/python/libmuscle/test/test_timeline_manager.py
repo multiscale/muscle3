@@ -84,7 +84,7 @@ def vector_timeline_manager() -> TimelineManager:
 
     tm = TimelineManager(pm)
     assert tm.start_reuse_iteration() is None
-    assert tm.check_pre_received_iteration_counts([]) == []
+    assert tm.record_pre_received_iteration_counts([]) == []
     return tm
 
 
@@ -129,7 +129,7 @@ def test_get_most_nested_iteration():
 def test_o_f_can_send_immediately_when_no_f_init_connections(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([])  # no F_INIT messages
+    timeline_manager.record_pre_received_iteration_counts([])  # no F_INIT messages
     assert timeline_manager.check_send_message("out_f") == []
 
 
@@ -137,7 +137,7 @@ def test_check_send_message_o_f_blocked_when_subtimeline_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
     # receive on the F_INIT ports
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so the :A1 sub-timeline is incomplete
 
@@ -153,7 +153,7 @@ def test_check_send_message_o_f_raises_already_participated_when_sent_twice(
     timeline_manager: TimelineManager,
 ) -> None:
     # receive on the F_INIT ports
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     # skipping the subtimelines is allowed
     timeline_manager.check_send_message("out_f")
 
@@ -168,7 +168,7 @@ def test_check_send_message_o_f_raises_already_participated_when_sent_twice(
 def test_check_send_message_o_f_marks_participated_and_returns_iteration(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
 
     assert not timeline_manager._send.has_participated("out_f", None)
     iteration = timeline_manager.check_send_message("out_f")
@@ -180,7 +180,7 @@ def test_check_send_message_o_f_marks_participated_and_returns_iteration(
 def test_check_send_message_o_i_starts_subtimeline_with_o_i_leading(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
 
     iteration = timeline_manager.check_send_message("out_a1")
 
@@ -194,7 +194,7 @@ def test_check_send_message_o_i_starts_subtimeline_with_o_i_leading(
 def test_check_send_message_o_i_blocked_when_s_leads_and_not_all_s_received(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a1", None, [0])
     # "in_a1_2" never received, so S hasn't fully led :A1 yet
 
@@ -209,7 +209,7 @@ def test_check_send_message_o_i_blocked_when_s_leads_and_not_all_s_received(
 def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a1", None, [0])
 
     timeline_manager.check_receive_s("in_a1_2")
@@ -241,7 +241,7 @@ def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
 def test_check_send_message_o_i_when_o_i_leads_and_complete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
 
     first_iteration = timeline_manager.check_send_message("out_a1")
     timeline_manager.check_receive_s("in_a1")
@@ -262,7 +262,7 @@ def test_check_send_message_o_i_when_o_i_leads_and_complete(
 def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so the sub-iteration is incomplete
 
@@ -275,15 +275,15 @@ def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
 
 
 def test_check_pre_receive_increments(timeline_manager: TimelineManager) -> None:
-    assert timeline_manager.check_pre_received_iteration_counts(
+    assert timeline_manager.record_pre_received_iteration_counts(
         [[1, 2, 3], [1, 2], [1], [], [1, 2, 3], [1, 2]]
     ) == [1, 2, 3]
 
     with pytest.raises(RuntimeError, match="not newer"):
         # Iteration count should increase
-        timeline_manager.check_pre_received_iteration_counts([[1, 2, 3]])
+        timeline_manager.record_pre_received_iteration_counts([[1, 2, 3]])
 
-    assert timeline_manager.check_pre_received_iteration_counts(
+    assert timeline_manager.record_pre_received_iteration_counts(
         [[1, 2, 4], [1, 2], [1], [], [1, 2, 4], [1, 2]]
     ) == [1, 2, 4]
 
@@ -294,13 +294,13 @@ def test_check_pre_receive_iterations_when_iteration_differs(
     """Once the main timeline has started, an F_INIT message for a different
     iteration is rejected."""
     with pytest.raises(ValueError, match="not a subiteration"):
-        timeline_manager.check_pre_received_iteration_counts([[3], [4]])
+        timeline_manager.record_pre_received_iteration_counts([[3], [4]])
 
 
 def test_check_receive_message_s_starts_subtimeline_with_s_leading(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a2", None, [0])
 
     stm = timeline_manager._submanagers[Timeline(":A2")]
@@ -312,7 +312,7 @@ def test_check_receive_message_s_starts_subtimeline_with_s_leading(
 def test_check_receive_message_s_blocked_when_o_i_leads_and_not_all_o_i_sent(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     timeline_manager.check_send_message("out_a2")
     # "out_a2_2" never sent, so O_I hasn't fully led :A2 yet
 
@@ -327,7 +327,7 @@ def test_check_receive_message_s_blocked_when_o_i_leads_and_not_all_o_i_sent(
 def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     timeline_manager.check_send_message("out_a2")
     timeline_manager.check_send_message("out_a2_2")
 
@@ -351,7 +351,7 @@ def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
 def test_check_receive_message_s_when_s_leads_and_complete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a2", None, [1])
 
     stm = timeline_manager._submanagers[Timeline(":A2")]
@@ -379,7 +379,7 @@ def test_check_receive_message_s_when_s_leads_and_complete(
 def test_check_receive_message_s_blocked_when_s_leads_and_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[], []])
+    timeline_manager.record_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a2", None, [1])
     # neither "out_a2" nor "out_a2_2" received, so the sub-iteration is incomplete
 
@@ -396,7 +396,7 @@ def test_finish_reuse_iteration_resets_when_complete(
 ) -> None:
     # Drive one full reuse loop iteration, using :A1's sub-timeline, to
     # completion.
-    timeline_manager.check_pre_received_iteration_counts([[3], [3]])
+    timeline_manager.record_pre_received_iteration_counts([[3], [3]])
     timeline_manager.check_send_message("out_a1")
     check_received(timeline_manager, "in_a1", None, [3, 0])
     check_received(timeline_manager, "in_a1_2", None, [3, 0])
@@ -420,7 +420,7 @@ def test_finish_reuse_iteration_raises_when_incomplete(
 ) -> None:
     # Start a reuse loop iteration but leave it incomplete: :A1's
     # sub-timeline is started but never finishes, and O_F never sends.
-    timeline_manager.check_pre_received_iteration_counts([[4], [4]])
+    timeline_manager.record_pre_received_iteration_counts([[4], [4]])
     timeline_manager.check_send_message("out_a1")
     # neither "in_a1" nor "in_a1_2" received, so :A1 is incomplete, and
     # "out_f" is never sent either
@@ -439,7 +439,7 @@ def test_finish_reuse_iteration_raises_when_incomplete(
 def test_get_state_and_restore_state_round_trip(
     timeline_manager: TimelineManager,
 ) -> None:
-    timeline_manager.check_pre_received_iteration_counts([[3], [3]])
+    timeline_manager.record_pre_received_iteration_counts([[3], [3]])
     timeline_manager.check_send_message("out_a1")
     check_received(timeline_manager, "in_a1", None, [3, 0])
     # "in_a1_2" not yet received, so :A1 is incomplete, and "out_f" not yet sent

@@ -18,7 +18,7 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
         MockTimelineManager(ReturnValue) {
             NAME_MOCK_MEM_FUN(MockTimelineManager, constructor);
             NAME_MOCK_MEM_FUN(MockTimelineManager, check_send_message);
-            NAME_MOCK_MEM_FUN(MockTimelineManager, check_pre_received_iteration_counts);
+            NAME_MOCK_MEM_FUN(MockTimelineManager, record_pre_received_iteration_counts);
             NAME_MOCK_MEM_FUN(MockTimelineManager, check_receive_s);
             NAME_MOCK_MEM_FUN(MockTimelineManager, record_received_s_message_mock);
             NAME_MOCK_MEM_FUN(MockTimelineManager, reset);
@@ -44,7 +44,7 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
 
         MockFun<
             Val<IterationCount>,
-            Val<std::vector<IterationCount>>> check_pre_received_iteration_counts;
+            Val<std::vector<IterationCount>>> record_pre_received_iteration_counts;
 
         MockFun<Void, Val<std::string const &>, Val<Optional<int>>> check_receive_s;
 

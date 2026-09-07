@@ -123,7 +123,7 @@ IterationOrMilestone I(IterationCount iteration) {
 
 
 
-/** Helper method to mock MPPClient.receiev ,so it gives data with correct message
+/** Helper method to mock MPPClient.receive ,so it gives data with correct message
  * numbers and iteration counts.
  */
 void mock_receive_messages(

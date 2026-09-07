@@ -372,7 +372,7 @@ void SubTimelineManager::check_receive(Port const & port, Optional<int> slot) {
 
 IterationCount const & SubTimelineManager::record_received_message(
         Port const & port, Optional<int> slot, IterationCount const & iteration,
-        IterationCount const & component_iteration, int num_repeat_filters) {
+        IterationCount const & instance_iteration, int num_repeat_filters) {
     std::string port_name = std::string(port.name);
 
     if (!iteration_.is_set()) {
@@ -381,7 +381,7 @@ IterationCount const & SubTimelineManager::record_received_message(
             // - cached message iteration count: [2], with 2 repeat filters
             // - component iteration count: [2, 1]
             // Our iteration count needs to become [2, 1, 0]
-            iteration_ = component_iteration;
+            iteration_ = instance_iteration;
             iteration_.get().push_back(0);
         } else {
             iteration_ = iteration;
@@ -459,7 +459,7 @@ IterationCount TimelineManager::check_send_message(
     return submanagers_.at(port.timeline).check_send_message(port, slot, iteration_.get());
 }
 
-IterationCount TimelineManager::check_pre_received_iteration_counts(
+IterationCount TimelineManager::record_pre_received_iteration_counts(
         std::vector<IterationCount> const & iterations)
 {
     IterationCount new_iteration;

@@ -300,7 +300,7 @@ def test_check_pre_receive_counts_match_timeline(
     timeline_manager: TimelineManager,
 ) -> None:
     with pytest.raises(RuntimeError, match="iteration count with 0 elements"):
-        timeline_manager.check_pre_received_iteration_counts([[1]])
+        timeline_manager.record_pre_received_iteration_counts([[1]])
 
 
 @pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)

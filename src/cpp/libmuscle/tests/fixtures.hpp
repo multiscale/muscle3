@@ -206,8 +206,6 @@ struct CommunicatorStateFixture {
 
             communicator_state_.timeline_state.iteration = IterationCount({1});
             communicator_state_.timeline_state.send_participated = {};
-            communicator_state_.timeline_state.receive_participated = {
-                    PortAndSlot("in", OptionalSlot())};
             communicator_state_.timeline_state.subtimeline_states = {};
         }
 };

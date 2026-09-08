@@ -55,7 +55,7 @@ std::vector<char> MPPMessage::encoded() const {
     return bytes;
 }
 
-DataConstRef MPPMessage::encoded_as_dcr() const {
+Data MPPMessage::encoded_as_data() const {
     DataConstRef msg_dict = as_dict_();
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, msg_dict);

@@ -1110,7 +1110,7 @@ class Instance:
         sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
 
         try:
-            self._f_init_cache = self._communicator.pre_receive_f_init()
+            self._f_init_cache = self._communicator.pre_receive()
         except PortClosed:
             self._profiler.record_event(sw_event)
             self._f_init_cache.clear()

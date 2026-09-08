@@ -980,7 +980,7 @@ bool Instance::Impl::pre_receive_() {
     ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
 
     try {
-        f_init_cache_ = communicator_->pre_receive_f_init();
+        f_init_cache_ = communicator_->pre_receive();
     } catch (PortClosed &err) {
         profiler_->record_event(std::move(sw_event));
         f_init_cache_.clear();

@@ -86,7 +86,7 @@ std::vector<char> Snapshot::to_bytes() const {
             "triggers", d_triggers,
             "wallclock_time", wallclock_time,
             "is_final_snapshot", is_final_snapshot,
-            "message", mpp_msg.encoded_as_dcr(),
+            "message", mpp_msg.encoded_as_data(),
             "settings_overlay", Data(settings_overlay),
             "communicator_state", communicator_state.to_data());
 

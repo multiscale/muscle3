@@ -96,7 +96,7 @@ struct libmuscle_communicator
         connected_port_manager_.settings_in_connected.return_value = settings_in_connected;
         MockTimelineManager::return_value.start_reuse_iteration.return_value = Optional<IterationCount>();
         MockTimelineManager::return_value.record_received_s_message_mock.return_value = IterationCount();
-        MockTimelineManager::return_value.check_pre_received_iteration_counts.side_effect = [](
+        MockTimelineManager::return_value.record_pre_received_iteration_counts.side_effect = [](
                 auto iterations) -> auto { return iterations.at(0); };
     }
 };

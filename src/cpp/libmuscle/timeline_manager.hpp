@@ -224,13 +224,13 @@ class SubTimelineManager {
          * @param port The S port a message was received on.
          * @param slot The slot the message was received on, if this is a vector port.
          * @param iteration The iteration the received message was sent with.
-         * @param component_iteration The current iteration of the component.
+         * @param instance_iteration The current iteration of the component.
          * @param num_repeat_filters Number of repeater filters applied to this message.
          * @return Current iteration count of the subtimeline.
          */
         IterationCount const & record_received_message(
                 Port const & port, Optional<int> slot, IterationCount const & iteration,
-                IterationCount const & component_iteration, int num_repeat_filters);
+                IterationCount const & instance_iteration, int num_repeat_filters);
 
         /** Reset this sub-timeline once the main timeline's reuse loop
          * iteration completes. */
@@ -314,7 +314,7 @@ class TimelineManager {
          * @return The iteration count for the upcoming reuse loop.
          * @throw std::logic_error if the iteration counts are inconsistent.
          */
-        IterationCount check_pre_received_iteration_counts(
+        IterationCount record_pre_received_iteration_counts(
                 std::vector<IterationCount> const & iterations);
 
         /** Check that receiving on the given S port is currently allowed.

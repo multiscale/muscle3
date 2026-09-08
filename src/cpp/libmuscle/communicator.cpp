@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -36,9 +37,10 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 namespace {
 
 /** Helper method to construct a Message from an MPPMessage.
- * 
- * N.B. since C++ enforces only const access to .settings and .data, we don't need to
- * make a copy (unlike the Python equivalent).
+ *
+ * N.B. unlike the Python equivalent, no explicit copy is needed: the Message
+ * constructor already copies mpp_msg's settings and data, and mutators like
+ * set_data() reseat Message's own reference rather than modify mpp_msg's data.
  */
 Message make_message(MPPMessage const & mpp_msg) {
     Message message(
@@ -52,12 +54,10 @@ Message make_message(MPPMessage const & mpp_msg) {
 }
 
 
-/** Helper template method to execute code for each slot of the given port.
- * 
- * Expects a function with arguments (Optional<int> slot, Reference port_ref)
- */
-template<typename F>
-void for_each_slot(Port const & port, F&& f) {
+/** Helper method to execute code for each slot of the given port. */
+void for_each_slot(
+        Port const & port,
+        std::function<void(Optional<int> slot, Reference port_ref)> const & f) {
     Reference port_name(port.name);
     if (!port.is_vector()) {
         f({}, port_name);
@@ -297,7 +297,7 @@ Communicator::FInitCacheType Communicator::pre_receive() {
     std::vector<IterationCount> received_iterations;
     for (auto & item : message_cache_)
         received_iterations.push_back(item.second.iteration);
-    auto new_iteration = timeline_manager_->check_pre_received_iteration_counts(
+    auto new_iteration = timeline_manager_->record_pre_received_iteration_counts(
             received_iterations);
 
     // Sanity check: we should not have any milestones left in the cache at this point

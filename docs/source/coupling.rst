@@ -342,7 +342,7 @@ that changes is the ``conduits`` section:
 .. literalinclude:: examples/conduit_filters_bypass.ymmsl
    :caption: ``docs/source/examples/conduit_filters_bypass.ymmsl``
    :language: yaml
-   :start-at: "conduits:"
+   :start-at: conduits:
 
 .. figure:: conduit_filters_bypass.svg
    :align: center

@@ -236,7 +236,6 @@ become O_I-led, and the subsequent receive that establishes the peer's
 initial state would be rejected with a ``PortBlocked`` error rather than
 silently doing the wrong thing.
 
-
 Multicast
 ---------
 

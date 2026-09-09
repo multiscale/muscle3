@@ -111,18 +111,19 @@ class MuscleTester:
             tester_model.conduits.append(conduit)
             tester_ports.append(Port(port.name, tester_operator, timeline))
 
-        # Always connect muscle_settings_in: it can be used to override settings
-        # from test code, and (for implementations without any other F_INIT port) to
-        # make the timeline logic work.
-        tester_model.conduits.append(
-            Conduit(
-                f"{tester_name}.__settings_in__",
-                f"{implementation_name}.muscle_settings_in",
+        if not any(
+            p.operator is Operator.F_INIT for p in implementation.ports.values()
+        ):
+            # We'll connect muscle_settings_in to make the timeline logic work
+            tester_model.conduits.append(
+                Conduit(
+                    f"{tester_name}.__settings_in__",
+                    f"{implementation_name}.muscle_settings_in",
+                )
             )
-        )
-        tester_ports.append(
-            Port(Identifier("__settings_in__"), Operator.O_I, tester_timeline)
-        )
+            tester_ports.append(
+                Port(Identifier("__settings_in__"), Operator.O_I, tester_timeline)
+            )
 
         tester_model.components[Reference(tester_name)] = Component(
             name=tester_name,

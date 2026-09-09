@@ -336,11 +336,13 @@ connecting ``macro`` and ``micro`` directly instead. Since ``macro``'s
 ``F_INIT``/``O_F`` ports live on ``:macro:meso``, this conduit connects
 ports that don't live on the same timeline, and the same is true the other way
 around, for a message travelling from ``micro`` back to ``macro`` without going
-through ``meso``:
+through ``meso``. ``meso`` no longer needs the relay ports, and the only part
+that changes is the ``conduits`` section:
 
 .. literalinclude:: examples/conduit_filters_bypass.ymmsl
    :caption: ``docs/source/examples/conduit_filters_bypass.ymmsl``
    :language: yaml
+   :start-at: "conduits:"
 
 .. figure:: conduit_filters_bypass.svg
    :align: center

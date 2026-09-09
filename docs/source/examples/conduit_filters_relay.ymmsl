@@ -4,19 +4,16 @@ models:
   relay:
     components:
       macro:
-        description: Drives meso in a loop
         ports:
           o_i: bc_out bypass_out
           s: bc_in bypass_in
       meso:
-        description: Drives micro in a loop, relays bypass data unchanged
         ports:
           f_init: init_in bypass_in
           o_i: bc_out relay_out
           s: bc_in relay_in
           o_f: final_out bypass_out
       micro:
-        description: Driven by meso, also reached through meso's relay ports
         ports:
           f_init: init_in bypass_in
           o_f: final_out bypass_out

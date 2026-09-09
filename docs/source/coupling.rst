@@ -308,15 +308,31 @@ filter.
 
 Extending the macro-meso-micro example above: the conduit from ``macro`` to
 ``meso``, and the one from ``meso`` to ``micro``, each connect ports that
-live on the same timeline — ``macro``'s ``O_I``/``S`` and ``meso``'s
+live on the same timeline, ``macro``'s ``O_I``/``S`` and ``meso``'s
 ``F_INIT``/``O_F`` both live on ``:macro``, and ``meso``'s ``O_I``/``S`` and
 ``micro``'s ``F_INIT``/``O_F`` both live on ``:macro:meso``.
 
 Now say ``macro`` produces a message that ``micro`` needs directly, with
-``meso`` doing nothing with it along the way. We could route it through
-``meso`` and have ``meso`` relay it on unchanged, but a conduit filter lets
-us instead connect ``macro`` and ``micro`` directly, skipping ``meso``.
-Since ``macro``'s ``O_I``/``S`` ports live on ``:macro`` and ``micro``'s
+``meso`` doing nothing with it along the way. Without conduit filters, we'd
+have to route it through ``meso``: give ``meso`` extra ports, and write code
+that takes the single message it gets on ``bypass_in`` and resends it to
+``micro`` on every one of ``meso``'s calls to it, and takes the many messages
+``micro`` sends back and forwards only the last one to ``macro``:
+
+.. literalinclude:: examples/conduit_filters_relay.ymmsl
+   :caption: ``docs/source/examples/conduit_filters_relay.ymmsl``
+   :language: yaml
+
+.. figure:: conduit_filters_relay.svg
+   :align: center
+   :alt: macro and micro each have an extra pair of ports connected to a
+         relay port pair on meso, instead of being connected to each other.
+
+   Visualized with `ymmsl2svg <https://github.com/multiscale/ymmsl2svg>`__.
+
+A conduit filter lets us skip ``meso`` and that relay code entirely, by
+connecting ``macro`` and ``micro`` directly instead. Since ``macro``'s
+``O_I``/``S`` ports live on ``:macro`` and ``micro``'s
 ``F_INIT``/``O_F`` ports live on ``:macro:meso``, this conduit connects
 ports that don't live on the same timeline, and the same is true the other way
 around, for a message travelling from ``micro`` back to ``macro`` without going
@@ -327,6 +343,7 @@ through ``meso``:
    :language: yaml
 
 .. figure:: conduit_filters_bypass.svg
+   :align: center
    :alt: macro and micro have an extra pair of ports directly connecting
          them, bypassing meso, labeled "repeat" and "last".
 
@@ -356,6 +373,4 @@ reduce ``micro``'s many messages down to the one ``macro`` needs:
 
     yMMSL documentation on :external+ymmsl:ref:`Conduit filters` for how to
     declare ``repeat``, ``pad`` and ``last`` filters in a yMMSL file.
-
-    yMMSL API reference: :external:py:class:`ymmsl.v0_2.ConduitFilter`.
 

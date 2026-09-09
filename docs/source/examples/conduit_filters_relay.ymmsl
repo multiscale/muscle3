@@ -1,0 +1,31 @@
+ymmsl_version: v0.2
+description: macro-meso-micro relaying bypass data through meso by hand
+models:
+  relay:
+    components:
+      macro:
+        description: Drives meso in a loop
+        ports:
+          o_i: bc_out bypass_out
+          s: bc_in bypass_in
+      meso:
+        description: Drives micro in a loop, relays bypass data unchanged
+        ports:
+          f_init: init_in bypass_in
+          o_i: bc_out relay_out
+          s: bc_in relay_in
+          o_f: final_out bypass_out
+      micro:
+        description: Driven by meso, also reached through meso's relay ports
+        ports:
+          f_init: init_in bypass_in
+          o_f: final_out bypass_out
+    conduits:
+      macro.bc_out: meso.init_in
+      macro.bypass_out: meso.bypass_in
+      meso.final_out: macro.bc_in
+      meso.bypass_out: macro.bypass_in
+      meso.bc_out: micro.init_in
+      meso.relay_out: micro.bypass_in
+      micro.final_out: meso.bc_in
+      micro.bypass_out: meso.relay_in

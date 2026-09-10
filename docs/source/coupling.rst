@@ -26,7 +26,7 @@ turn calls a micro model in its own loop:
 .. figure:: timelines_macro_meso_micro.svg
    :align: center
 
-Nesting in the figure mirrors nesting in time: ``meso``'s box sits inside 
+Nesting in the figure mirrors nesting in time: ``meso``'s box sits inside
 ``macro``'s, and ``micro``'s sits inside ``meso``'s.
 
 Applying the two rules above gives three timelines: the root timeline ``:``
@@ -40,10 +40,6 @@ A component isn't limited to driving a single loop, either: it can own more
 than one independent ``O_I``/``S`` subtimeline at once, for example when it
 calls two other components that run at different rates. Take ``macro``
 driving ``micro1`` and ``micro2`` each in their own loop:
-
-.. literalinclude:: examples/timelines_two_subtimelines.ymmsl
-   :caption: ``docs/source/examples/timelines_two_subtimelines.ymmsl``
-   :language: yaml
 
 .. figure:: timelines_two_subtimelines.svg
    :align: center
@@ -61,71 +57,39 @@ own pace without interfering with each other.
    a ``timeline <name>:`` heading in a yMMSL file.
 
 
-Send/receive order
-``````````````````
-
-Placing ports on timelines like this isn't just bookkeeping: it also fixes
-the order in which a component is allowed to call ``send``/``receive`` on
-them. A component first receives once on each of its ``F_INIT`` ports, then works
-through every ``O_I``/``S`` subtimeline it drives. A subtimeline doesn't
-have to be used on every iteration, though: a component may skip one
-entirely, going straight from ``F_INIT`` to ``O_F`` without ever sending or
-receiving on it, but once it does send or receive a message on a
-subtimeline, it has to finish it: every port on that subtimeline must have
-sent or received a message before it counts as done. In the two-subtimeline
-example above, ``macro`` could, say, run its ``tl1`` loop with ``micro1``
-on every iteration of its own outer loop, but only run ``tl2`` with
-``micro2`` on some of them, skipping it on the rest.
-
-Each subtimeline fixes its own order independently of the others: whichever
-action a component performs first on it, sending on ``O_I`` or receiving on
-``S``, decides the order, sending on every ``O_I`` port before receiving on any
-``S`` port, or the other way around, receiving on every ``S`` port before
-sending on any ``O_I`` port. In the macro/meso/micro example above, every
-subtimeline happens to start with a send: ``macro`` sends on ``O_I`` before it
-ever receives on ``S``, and ``meso`` and ``micro`` each do the same one level
-down. The two-subtimeline example above makes the same choice for both of
-``macro``'s loops. Starting with a receive instead of a send is what a
-**timeline bridge** does instead, see
-:ref:`Interact coupling and timeline bridges` below.
-
-Only once a component is done with every subtimeline it drives, does it send on
-its ``O_F`` ports.
-
-A component that calls send/receive out of that order, e.g. sending twice
-on ``O_I`` before ``S`` has replied, or sending on ``O_F`` before every
-subtimeline has finished, gets a clear error explaining what it was
-expected to do instead.
-
-
 Types of coupling
 ------------------
 
 MUSCLE3 distinguishes three ways in which two components can be coupled:
-*call/release*, *dispatch*, and *interact*. Which one applies is entirely
-determined by which ports you connect to which — there's no separate setting
-to choose a coupling type. This section shows the yMMSL for each; if you also
-want to see exactly how messages and simulation time interleave step by step
-(and how that interacts with checkpointing), see
-:ref:`Consistency for simulation time checkpoints`.
+*call/release*, *dispatch*, and *interact*. Each one also has a direct
+consequence for timelines, from sharing a single timeline to nesting one inside
+the other, noted below for each.
 
-Call/release coupling (macro-micro)
-````````````````````````````````````
+Call/release coupling
+``````````````````````
 
-The most common pattern: a macro component's ``O_I``/``S`` ports are wired to
-a micro component's ``F_INIT``/``O_F`` ports. Macro calls micro once per
-iteration, waits for its result, and continues — this is the pattern that
-creates a nested timeline, as described above.
-
-.. literalinclude:: examples/coupling_call_release.ymmsl
-   :caption: ``docs/source/examples/coupling_call_release.ymmsl``
-   :language: yaml
+The most common pattern: Component 1's ``O_I``/``S`` ports are wired to
+Component 2's ``F_INIT``/``O_F`` ports. Component 1 calls Component 2 once
+per iteration, waits for its result, and continues. The two don't share a
+timeline: this is the pattern that creates a nested one, as described
+above, Component 2 lives one level deeper, on the subtimeline Component
+1's loop opens.
 
 .. figure:: coupling_call_release.svg
-   :alt: macro's O_I/S ports connect to micro's F_INIT/O_F ports.
+   :alt: component1's O_I/S ports connect to component2's F_INIT/O_F ports.
 
-   Visualized with `ymmsl2svg <https://github.com/multiscale/ymmsl2svg>`__.
+Dispatch coupling 
+``````````````````
 
+A component's ``O_F`` port connects directly to another component's
+``F_INIT`` port: the second component's single run is dispatched once the
+first one finishes, rather than being called repeatedly from inside a loop.
+This is how you build a pipeline of components that each run once, in
+sequence. Since there's no ``O_I``/``S`` loop involved, no nesting happens
+either: both components live on the very same timeline as each other.
+
+.. figure:: coupling_dispatch.svg
+   :alt: macro's O_F port connects to analysis's F_INIT port.
 
 Interact coupling and timeline bridges
 `````````````````````````````````````````
@@ -217,6 +181,45 @@ If a bridge implementation sent first by mistake, that sub-timeline would
 become O_I-led, and the subsequent receive that establishes the peer's
 initial state would be rejected with a ``PortBlocked`` error rather than
 silently doing the wrong thing.
+
+
+Send/receive order
+-------------------
+
+Placing ports on timelines like this isn't just bookkeeping: it also fixes
+the order in which a component is allowed to call ``send``/``receive`` on
+them. A component first receives once on each of its ``F_INIT`` ports, then works
+through every ``O_I``/``S`` subtimeline it drives. A subtimeline doesn't
+have to be used on every iteration, though: a component may skip one
+entirely, going straight from ``F_INIT`` to ``O_F`` without ever sending or
+receiving on it, but once it does send or receive a message on a
+subtimeline, it has to finish it: every port on that subtimeline must have
+sent or received a message before it counts as done. In the two-subtimeline
+example above, ``macro`` could, say, run its ``tl1`` loop with ``micro1``
+on every iteration of its own outer loop, but only run ``tl2`` with
+``micro2`` on some of them, skipping it on the rest.
+
+Each subtimeline fixes its own order independently of the others: whichever
+action a component performs first on it, sending on ``O_I`` or receiving on
+``S``, decides the order, sending on every ``O_I`` port before receiving on any
+``S`` port, or the other way around, receiving on every ``S`` port before
+sending on any ``O_I`` port. In the macro/meso/micro example above, every
+subtimeline happens to start with a send: ``macro`` sends on ``O_I`` before it
+ever receives on ``S``, and ``meso`` and ``micro`` each do the same one level
+down. The two-subtimeline example above makes the same choice for both of
+``macro``'s loops. Starting with a receive instead of a send is what a
+**timeline bridge** does instead, see
+:ref:`Interact coupling and timeline bridges` above.
+
+Only once a component is done with every subtimeline it drives, does it send on
+its ``O_F`` ports.
+
+A component that calls send/receive out of that order, e.g. sending twice
+on ``O_I`` before ``S`` has replied, or sending on ``O_F`` before every
+subtimeline has finished, gets a clear error explaining what it was
+expected to do instead.
+
+
 
 Multicast
 ---------

@@ -39,6 +39,7 @@ class MockMMPClient : public MockClass<MockMMPClient> {
             NAME_MOCK_MEM_FUN(MockMMPClient, waiting_for_receive);
             NAME_MOCK_MEM_FUN(MockMMPClient, waiting_for_receive_done);
             NAME_MOCK_MEM_FUN(MockMMPClient, is_deadlocked);
+            NAME_MOCK_MEM_FUN(MockMMPClient, get_timeline);
 
             // Create some empty return objects for return values with a complex
             // structure, to make it easier to set them in the tests or fixtures.
@@ -55,6 +56,8 @@ class MockMMPClient : public MockClass<MockMMPClient> {
                             "simulation_time", Data::list()),
                     Optional<std::string>(),
                     Optional<std::string>());
+            
+            get_timeline.return_value = ::ymmsl::Timeline(":");
         }
 
         MockMMPClient() {
@@ -102,6 +105,8 @@ class MockMMPClient : public MockClass<MockMMPClient> {
             > waiting_for_receive_done;
 
         MockFun<Val<bool>> is_deadlocked;
+
+        MockFun<Val<::ymmsl::Timeline>> get_timeline;
 };
 
 using MMPClient = MockMMPClient;

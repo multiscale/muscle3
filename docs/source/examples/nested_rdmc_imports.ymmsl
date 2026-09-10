@@ -9,8 +9,9 @@ models:
     components:
       uq:
         ports:
-          o_i: settings_out   # vector port, Settings
-          s: final_state_in   # vecotr port, 1D array
+          timeline mc:rr:
+            o_i: settings_out   # vector port, Settings
+            s: final_state_in   # vecotr port, 1D array
         description: |
           Implements a quasi-Monte Carlo uncertainty quantification method.
         implementation: qmc

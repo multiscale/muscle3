@@ -7,7 +7,7 @@ from libmuscle.mmp_client import MMPClient
 
 
 def test_registration(log_file_in_tmpdir, mmp_server):
-    instance_name = Reference("test_instance")
+    instance_name = Reference("macro")
     client = MMPClient(instance_name, mmp_server.get_location())
     port = Port(Reference("test_in"), Operator.S)
 

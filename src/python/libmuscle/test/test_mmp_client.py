@@ -82,7 +82,7 @@ def test_get_settings(mocked_mmp_client, profile_data) -> None:
 def test_register_instance(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
 
-    result = [ResponseType.SUCCESS.value]
+    result = [ResponseType.SUCCESS.value, ":"]
     stub.call.return_value = (msgpack.packb(result, use_bin_type=True), profile_data)
 
     client.register_instance(

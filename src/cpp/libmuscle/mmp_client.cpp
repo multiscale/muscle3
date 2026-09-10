@@ -196,6 +196,8 @@ void MMPClient::register_instance(
     if (response[0].as<int>() == static_cast<int>(ResponseType::error))
         throw std::runtime_error(
                 "Error registering instance: " + response[1].as<std::string>());
+
+    timeline_ = ymmsl::Timeline(response[1].as<std::string>());
 }
 
 ymmsl::Settings MMPClient::get_settings() {
@@ -361,6 +363,12 @@ bool MMPClient::is_deadlocked() {
 
     auto response = call_manager_(request);
     return response[1].as<bool>();
+}
+
+ymmsl::Timeline const & MMPClient::get_timeline() const {
+    if (!timeline_.is_set())
+        throw std::logic_error("Cannot get timeline before instance is registered.");
+    return timeline_.get();
 }
 
 DataConstRef MMPClient::call_manager_(DataConstRef const & request, bool timid) {

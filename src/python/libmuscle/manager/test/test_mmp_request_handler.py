@@ -100,7 +100,7 @@ def test_get_settings(mmp_configuration, mmp_request_handler):
 def test_register_instance(mmp_request_handler, instance_registry):
     request = [
         RequestType.REGISTER_INSTANCE.value,
-        "test_instance",
+        "macro",
         ["tcp://localhost:10000"],
         [["test_in", "F_INIT"]],
         libmuscle.__version__,
@@ -111,17 +111,17 @@ def test_register_instance(mmp_request_handler, instance_registry):
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.SUCCESS.value
-    assert instance_registry._locations["test_instance"] == ["tcp://localhost:10000"]
+    assert instance_registry._locations["macro"] == ["tcp://localhost:10000"]
 
     registered_ports = instance_registry._ports
-    assert registered_ports["test_instance"][0].name == "test_in"
-    assert registered_ports["test_instance"][0].operator == Operator.F_INIT
+    assert registered_ports["macro"][0].name == "test_in"
+    assert registered_ports["macro"][0].operator == Operator.F_INIT
 
 
 def test_register_instance_no_version(mmp_request_handler):
     request = [
         RequestType.REGISTER_INSTANCE.value,
-        "test_instance",
+        "macro",
         ["tcp://localhost:10000"],
         [["test_in", "F_INIT"]],
     ]
@@ -137,7 +137,7 @@ def test_register_instance_no_version(mmp_request_handler):
 def test_register_instance_version_mismatch(mmp_request_handler):
     request = [
         RequestType.REGISTER_INSTANCE.value,
-        "test_instance",
+        "macro",
         ["tcp://localhost:10000"],
         [["test_in", "F_INIT"]],
         libmuscle.__version__ + "dev",
@@ -153,12 +153,12 @@ def test_register_instance_version_mismatch(mmp_request_handler):
 
 def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
     resume_path = Path("/path/to/resume.pack")
-    mmp_configuration.resume = {Reference("test_instance"): resume_path}
+    mmp_configuration.resume = {Reference("macro"): resume_path}
     mmp_configuration.checkpoints = Checkpoints(
         True, [CheckpointRangeRule(every=10), CheckpointAtRule([1, 2, 3.0])]
     )
 
-    request = [RequestType.GET_CHECKPOINT_INFO.value, "test_instance"]
+    request = [RequestType.GET_CHECKPOINT_INFO.value, "macro"]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
     result = mmp_request_handler.handle_request(encoded_request)
@@ -189,7 +189,7 @@ def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
 
 
 def test_get_checkpoint_info2(registered_mmp_request_handler2, tmp_path):
-    request = [RequestType.GET_CHECKPOINT_INFO.value, "test_instance"]
+    request = [RequestType.GET_CHECKPOINT_INFO.value, "macro"]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
     result = registered_mmp_request_handler2.handle_request(encoded_request)
@@ -197,13 +197,13 @@ def test_get_checkpoint_info2(registered_mmp_request_handler2, tmp_path):
 
     assert decoded_result[0] == ResponseType.SUCCESS.value
     snapshot_directory = decoded_result[4]
-    assert snapshot_directory == (str(tmp_path) + "/instances/test_instance/snapshots")
+    assert snapshot_directory == (str(tmp_path) + "/instances/macro/snapshots")
 
 
 def test_double_register_instance(mmp_request_handler):
     request = [
         RequestType.REGISTER_INSTANCE.value,
-        "test_instance",
+        "macro",
         ["tcp://localhost:10000"],
         [["test_in", "F_INIT"]],
         libmuscle.__version__,
@@ -219,7 +219,7 @@ def test_double_register_instance(mmp_request_handler):
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.ERROR.value
-    assert "test_instance" in decoded_result[1]
+    assert "macro" in decoded_result[1]
 
 
 def test_deregister_instance(registered_mmp_request_handler, instance_registry):
@@ -266,7 +266,7 @@ def test_request_peers_fanout(registered_mmp_request_handler):
         assert name == f"micro[{i // 10}][{i % 10}]"
         assert locs == [f"direct:{name}"]
 
-    assert ports == [["out", "O_I", ""], ["in", "S", ""]]
+    assert ports == [["out", "O_I", "macro"], ["in", "S", "macro"]]
 
 
 def test_request_peers_fanin(registered_mmp_request_handler):

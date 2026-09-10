@@ -133,11 +133,15 @@ class MMPClient {
         /** Ask the manager if we're part of a deadlock. */
         bool is_deadlocked();
 
+        ymmsl::Timeline const & get_timeline() const;
+
     private:
         ymmsl::Reference instance_id_;
         mcp::TcpTransportClient transport_client_;
         mutable std::recursive_timed_mutex mutex_;
         std::thread::id cur_owner_;
+
+        Optional<ymmsl::Timeline> timeline_;
 
         /* Helper function that encodes/decodes and calls the manager.
          */

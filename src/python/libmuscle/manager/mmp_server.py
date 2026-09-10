@@ -201,9 +201,10 @@ class MMPRequestHandler(RequestHandler):
         instance = Reference(instance_id)
         try:
             self._instance_registry.add(instance, locations, port_objs)
+            timeline = self._topology_store.get_timeline(instance)
 
             _logger.info(f"Registered instance {instance_id}")
-            return [ResponseType.SUCCESS.value]
+            return [ResponseType.SUCCESS.value, str(timeline)]
         except AlreadyRegistered:
             return [
                 ResponseType.ERROR.value,

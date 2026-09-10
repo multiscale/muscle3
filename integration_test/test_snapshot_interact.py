@@ -80,8 +80,9 @@ models:
       implementation: component
     comp2:
       ports:
-        o_i: o_i
-        s: s
+        timeline comp1:
+          o_i: o_i
+          s: s
       description: The second component
       implementation: component
   conduits:
@@ -145,10 +146,10 @@ models:
       implementation: component
     coupler:
       ports:
-        timeline timeline_a:
+        timeline comp1:
           o_i: a_in
           s: a_out
-        timeline timeline_b:
+        timeline comp2:
           o_i: b_in
           s: b_out
       description: >

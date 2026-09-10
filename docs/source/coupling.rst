@@ -70,26 +70,26 @@ Call/release coupling
 
 The most common pattern: Component 1's ``O_I``/``S`` ports are wired to
 Component 2's ``F_INIT``/``O_F`` ports. Component 1 calls Component 2 once
-per iteration, waits for its result, and continues. The two don't share a
-timeline: this is the pattern that creates a nested one, as described
-above, Component 2 lives one level deeper, on the subtimeline Component
-1's loop opens.
+per iteration, waits for its result, and continues. This is the pattern that
+creates a nested one, as described above, Component 2 lives one level deeper,
+on the subtimeline Component 1's loop opens.
 
 .. figure:: coupling_call_release.svg
+   :align: center
    :alt: component1's O_I/S ports connect to component2's F_INIT/O_F ports.
 
 Dispatch coupling 
 ``````````````````
 
-A component's ``O_F`` port connects directly to another component's
-``F_INIT`` port: the second component's single run is dispatched once the
-first one finishes, rather than being called repeatedly from inside a loop.
-This is how you build a pipeline of components that each run once, in
-sequence. Since there's no ``O_I``/``S`` loop involved, no nesting happens
-either: both components live on the very same timeline as each other.
+Component 1's ``O_F`` port connects directly to Component 2's ``F_INIT``
+port: Component 2's single run is dispatched once Component 1 finishes,
+rather than being called repeatedly from inside a loop. This is how you
+build a pipeline of components that each run once, in sequence, so they
+live in the same timeline.
 
 .. figure:: coupling_dispatch.svg
-   :alt: macro's O_F port connects to analysis's F_INIT port.
+   :align: center
+   :alt: component1's O_F port connects to component2's F_INIT port.
 
 Interact coupling and timeline bridges
 `````````````````````````````````````````
@@ -98,16 +98,20 @@ Two components can also interact as peers: component A's ``O_I`` port
 connects to component B's ``S`` port, and B's ``O_I`` connects back to A's
 ``S``. If both components take steps at exactly the same pace, this works in
 lock-step without anything else needed — every send on one side is matched by
-a receive on the other, one message at a time.
+a receive on the other, one message at a time. A and B share a single
+timeline in this case, exactly like an ordinary conduit requires.
 
 Real coupled models rarely take equal-sized steps, though. If A and B step at
 different (and possibly variable) rates, a plain conduit no longer works:
 sometimes A needs a value before B has produced a new one, and sometimes B
 produces several values while A is still working on its current step. What
-you need is a third component sitting in between that owns *two* independent
-sub-timelines, one talking to A and one talking to B, and that interpolates
-or otherwise reconciles the difference in pace. We call this a **timeline
-bridge** (or *scale bridge*).
+you need is a third component sitting in between — a **timeline bridge** (or
+*scale bridge*) — that owns *two* independent sub-timelines, one talking to
+A and one talking to B. Reconciling the difference in pace is then up to
+whatever method the bridge's implementation picks: interpolating between a
+peer's two most recent messages, as the example below does, is one option,
+but any method that produces a sensible value for the timestamp being
+requested will do.
 
 .. note::
 
@@ -151,6 +155,12 @@ driven by the bridge itself:
       right.boundary_out: coupler.b_in
       coupler.a_out: left.boundary_in
       coupler.b_out: right.boundary_in
+
+``coupler`` shares one subtimeline with ``left`` and a separate, independent
+one with ``right`` — the same as the two-independent-loops case earlier,
+except each subtimeline is led by the peer's send rather than the bridge's.
+``left`` and ``right`` themselves never share a timeline at all; the bridge
+is the only thing connecting them.
 
 Unlike call/release or dispatch, a bridge's implementation does not have
 clearly separated ``O_I`` and ``S`` phases: it sends and receives in whatever
@@ -219,6 +229,43 @@ on ``O_I`` before ``S`` has replied, or sending on ``O_F`` before every
 subtimeline has finished, gets a clear error explaining what it was
 expected to do instead.
 
+
+Putting it together
+--------------------
+
+A larger example ties everything above together: extend the macro/meso/micro
+chain with a second micro, so ``meso`` drives both ``micro`` and ``micro2``,
+each in its own loop:
+
+.. figure:: timelines_combined_example.svg
+   :align: center
+
+   ``meso`` is nested one level inside ``macro``, exactly as before; its two
+   subtimelines, one per micro, are then nested one level inside ``meso`` in
+   turn, drawn side by side.
+
+This single model combines everything covered above:
+
+- ``macro`` calls ``meso`` via call/release coupling, so ``meso`` (and
+  everything it drives) is nested one level inside ``macro``'s timeline,
+  ``:macro``.
+- ``meso`` in turn calls both ``micro`` and ``micro2``, each in its own
+  loop, so they end up on two independent subtimelines nested inside
+  ``meso``'s own: ``:macro:meso.tl1`` for ``micro`` and
+  ``:macro:meso.tl2`` for ``micro2``.
+- Both of those subtimelines happen to be led by a send here, since
+  ``meso`` sends before it ever receives on either of them, but as covered
+  in `Send/receive order`_, that's a choice made independently for each
+  subtimeline, not a requirement.
+- ``meso`` doesn't have to run both loops on every one of its own
+  iterations either: it could run its ``micro`` loop every time while only
+  occasionally running its ``micro2`` loop, skipping the latter on the
+  rest, exactly as described above.
+
+Everything MUSCLE3 checks — which timeline each port lives on, and in what
+order sends and receives on it are allowed — falls out of this wiring
+automatically; nothing here needs to be declared explicitly beyond the
+``timeline tl1:``/``timeline tl2:`` headings on ``meso``'s ports.
 
 
 Multicast
@@ -304,9 +351,6 @@ that takes the single message it gets on ``bypass_in`` and resends it to
 ``micro`` on every one of ``meso``'s calls to it, and takes the many messages
 ``micro`` sends back and forwards only the last one to ``macro``:
 
-.. literalinclude:: examples/conduit_filters_relay.ymmsl
-   :language: yaml
-
 .. figure:: conduit_filters_relay.svg
    :align: center
    :alt: macro and micro each have an extra pair of ports connected to a
@@ -321,10 +365,6 @@ ports that don't live on the same timeline, and the same is true the other way
 around, for a message travelling from ``micro`` back to ``macro`` without going
 through ``meso``. ``meso`` no longer needs the relay ports, and the only part
 that changes is the ``conduits`` section:
-
-.. literalinclude:: examples/conduit_filters_bypass.ymmsl
-   :language: yaml
-   :start-at: conduits:
 
 .. figure:: conduit_filters_bypass.svg
    :align: center
@@ -356,4 +396,3 @@ reduce ``micro``'s many messages down to the one ``macro`` needs:
 
     yMMSL documentation on :external+ymmsl:ref:`Conduit filters` for how to
     declare ``repeat``, ``pad`` and ``last`` filters in a yMMSL file.
-

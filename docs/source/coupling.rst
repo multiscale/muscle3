@@ -105,11 +105,16 @@ opens its *own* new subtimeline, nested inside that component's own. Component
 reject the conduits between them. To actually share one, both need the same
 explicit ``timeline <name>:`` heading grouping these ports.
 
-Both component's have to send on their ``O_I`` port before either receives on
+Both components have to send on their ``O_I`` port before either receives on
 ``S``. If both components take steps at exactly the same pace, this works in
 lock-step, every send on one side is matched by a receive on the other, one
-message at a time.
+message at a time:
 
+.. figure:: coupling_interact.svg
+   :align: center
+   :alt: component1's O_I port connects to component2's S port, and
+         component2's O_I port connects back to component1's S port, both
+         inside a single shared timeline.
 
 .. note::
 

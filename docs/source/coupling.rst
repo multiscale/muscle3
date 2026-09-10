@@ -25,8 +25,6 @@ turn calls a micro model in its own loop:
 
 .. figure:: timelines_macro_meso_micro.svg
    :align: center
-   :alt: macro connects to meso through it's O_I/S ports, and meso
-         connects to micro the same way, producing three nested timelines.
 
    Nesting in the figure mirrors nesting in time: ``meso``'s box sits inside
    ``macro``'s, and ``micro``'s sits inside ``meso``'s.
@@ -49,8 +47,6 @@ driving ``micro1`` and ``micro2`` each in their own loop:
 
 .. figure:: timelines_two_subtimelines.svg
    :align: center
-   :alt: macro has two separate pairs of O_I/S ports, one connecting down to
-         micro1 and one connecting down to micro2, side by side.
 
    ``macro``'s two subtimelines are drawn side by side beneath it, each with
    its own pair of ports, one leading to ``micro1`` and the other to
@@ -130,23 +126,6 @@ creates a nested timeline, as described above.
 
    Visualized with `ymmsl2svg <https://github.com/multiscale/ymmsl2svg>`__.
 
-Dispatch coupling (pipelines)
-```````````````````````````````
-
-A component's ``O_F`` port connects directly to another component's
-``F_INIT`` port: the second component's single run is dispatched once the
-first one finishes, rather than being called repeatedly from inside a loop.
-This is how you build a pipeline of components that each run once, in
-sequence, on the very same timeline (no new nesting is introduced).
-
-.. literalinclude:: examples/coupling_dispatch.ymmsl
-   :caption: ``docs/source/examples/coupling_dispatch.ymmsl``
-   :language: yaml
-
-.. figure:: coupling_dispatch.svg
-   :alt: macro's O_F port connects to analysis's F_INIT port.
-
-   Visualized with `ymmsl2svg <https://github.com/multiscale/ymmsl2svg>`__.
 
 Interact coupling and timeline bridges
 `````````````````````````````````````````

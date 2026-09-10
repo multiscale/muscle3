@@ -65,6 +65,7 @@ MUSCLE3 distinguishes three ways in which two components can be coupled:
 consequence for timelines, from sharing a single timeline to nesting one inside
 the other, noted below for each.
 
+
 Call/release coupling
 ``````````````````````
 
@@ -77,6 +78,7 @@ on the subtimeline Component 1's loop opens.
 .. figure:: coupling_call_release.svg
    :align: center
    :alt: component1's O_I/S ports connect to component2's F_INIT/O_F ports.
+
 
 Dispatch coupling 
 ``````````````````
@@ -91,27 +93,23 @@ live in the same timeline.
    :align: center
    :alt: component1's O_F port connects to component2's F_INIT port.
 
+
 Interact coupling and timeline bridges
 `````````````````````````````````````````
 
-Two components can also interact as peers: component A's ``O_I`` port
-connects to component B's ``S`` port, and B's ``O_I`` connects back to A's
-``S``. If both components take steps at exactly the same pace, this works in
-lock-step without anything else needed — every send on one side is matched by
-a receive on the other, one message at a time. A and B share a single
-timeline in this case, exactly like an ordinary conduit requires.
+Two components can also interact as peers: Component 1's ``O_I`` port
+connects to Component 2's ``S`` port, and Component 2's ``O_I`` connects
+back to Component 1's ``S``. By default each component's ``O_I``/``S`` pair
+opens its *own* new subtimeline, nested inside that component's own. Component
+1 and Component 2 would end up on two different subtimelines and MUSCLE3 would
+reject the conduits between them. To actually share one, both need the same
+explicit ``timeline <name>:`` heading grouping these ports.
 
-Real coupled models rarely take equal-sized steps, though. If A and B step at
-different (and possibly variable) rates, a plain conduit no longer works:
-sometimes A needs a value before B has produced a new one, and sometimes B
-produces several values while A is still working on its current step. What
-you need is a third component sitting in between — a **timeline bridge** (or
-*scale bridge*) — that owns *two* independent sub-timelines, one talking to
-A and one talking to B. Reconciling the difference in pace is then up to
-whatever method the bridge's implementation picks: interpolating between a
-peer's two most recent messages, as the example below does, is one option,
-but any method that produces a sensible value for the timestamp being
-requested will do.
+Both component's have to send on their ``O_I`` port before either receives on
+``S``. If both components take steps at exactly the same pace, this works in
+lock-step, every send on one side is matched by a receive on the other, one
+message at a time.
+
 
 .. note::
 

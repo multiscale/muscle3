@@ -63,6 +63,8 @@ class ImplementationTester:
             message: The message to send.
             slot: Optional slot number for vector ports.
         """
+        if port_name == "muscle_settings_in":
+            port_name = "__settings_in__"
         self._instance.send(port_name, message, slot)
 
     def receive(

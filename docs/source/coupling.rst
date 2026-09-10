@@ -320,7 +320,6 @@ that takes the single message it gets on ``bypass_in`` and resends it to
 ``micro`` sends back and forwards only the last one to ``macro``:
 
 .. literalinclude:: examples/conduit_filters_relay.ymmsl
-   :caption: ``docs/source/examples/conduit_filters_relay.ymmsl``
    :language: yaml
 
 .. figure:: conduit_filters_relay.svg
@@ -328,7 +327,6 @@ that takes the single message it gets on ``bypass_in`` and resends it to
    :alt: macro and micro each have an extra pair of ports connected to a
          relay port pair on meso, instead of being connected to each other.
 
-   Visualized with `ymmsl2svg <https://github.com/multiscale/ymmsl2svg>`__.
 
 A conduit filter lets us skip ``meso`` and that relay code entirely, by
 connecting ``macro`` and ``micro`` directly instead. Since ``macro``'s
@@ -340,7 +338,6 @@ through ``meso``. ``meso`` no longer needs the relay ports, and the only part
 that changes is the ``conduits`` section:
 
 .. literalinclude:: examples/conduit_filters_bypass.ymmsl
-   :caption: ``docs/source/examples/conduit_filters_bypass.ymmsl``
    :language: yaml
    :start-at: conduits:
 
@@ -349,7 +346,6 @@ that changes is the ``conduits`` section:
    :alt: macro and micro have an extra pair of ports directly connecting
          them, bypassing meso, labeled "repeat" and "last".
 
-   Visualized with `ymmsl2svg <https://github.com/multiscale/ymmsl2svg>`__.
 
 Connecting ``macro`` and ``micro`` directly means we now have to handle the
 pace mismatch between them explicitly, rather than leaving it to ``meso``,

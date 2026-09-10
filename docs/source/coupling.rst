@@ -1,19 +1,6 @@
 Coupling your model
 ===================
 
-MUSCLE3 connects components by wiring an output port on one component to an
-input port on another using a conduit. What that wiring actually means for the
-simulation — who calls whom, at what pace, and in what order — is the subject
-of this page. We'll look at timelines (how MUSCLE3 keeps track of "when" each
-component is), the three ways components can be coupled together, multicast
-conduits, conduit filters, and how to write a component that bridges between
-two independently-paced parts of a simulation.
-
-If you're not yet familiar with the ``F_INIT``, ``O_I``, ``S`` and ``O_F``
-operators used throughout this page, have a look at :ref:`The reuse loop`
-first.
-
-
 Timelines
 ---------
 
@@ -21,82 +8,98 @@ Different components of a coupled simulation typically run at their own pace:
 a fast, detailed micro model may take many small steps for every single step
 of the macro model driving it, while a meso model may sit somewhere in
 between the two. MUSCLE3 calls this idea of "running at a different pace" a
-*timeline*, and every ``O_I``/``S`` and ``F_INIT``/``O_F`` message a component
-sends or receives happens on one.
+*timeline*.
 
-What are timelines
-```````````````````
-
-A component that nobody calls sits on the outermost, root timeline, written
-``:``. If that component has its own ``O_I``/``S`` loop, calling something
-else, that loop runs on a timeline nested one level inside the root, named
-after the component by default (``:macro``). Whatever component is called
-through that loop's ``O_I``/``S`` ports (i.e. whose ``F_INIT``/``O_F`` ports
-are connected to them) has its own ``F_INIT``/``O_F`` on that same nested
-timeline, and if it in turn has its own ``O_I``/``S`` loop, that one is nested
-one level deeper still.
+Every port lives on a timeline, and two rules decide which one: a
+component's ``F_INIT`` and ``O_F`` ports always live on the same timeline as
+the component itself, while its ``O_I`` and ``S`` ports, if it has any, live
+one level deeper, on one or more subtimelines nested inside it. Whatever
+component is called through one of those subtimelines' ``O_I``/``S`` ports (i.e.
+whose ``F_INIT``/``O_F`` ports are connected to them) has its own
+``F_INIT``/``O_F`` right there on that same subtimeline, and if it in turn has
+its own ``O_I``/``S`` loop, that one is nested one level deeper still, nesting
+one level for every loop in the chain.
 
 Take a macro model that calls a meso model in a loop, where that meso model in
 turn calls a micro model in its own loop:
 
-.. literalinclude:: examples/timelines_macro_meso_micro.ymmsl
-   :caption: ``docs/source/examples/timelines_macro_meso_micro.ymmsl``
-   :language: yaml
-
 .. figure:: timelines_macro_meso_micro.svg
-   :alt: macro connects to meso through F_INIT/O_F and O_I/S ports, and meso
+   :align: center
+   :alt: macro connects to meso through it's O_I/S ports, and meso
          connects to micro the same way, producing three nested timelines.
 
-   Visualized with `ymmsl2svg <https://github.com/multiscale/ymmsl2svg>`__.
    Nesting in the figure mirrors nesting in time: ``meso``'s box sits inside
    ``macro``'s, and ``micro``'s sits inside ``meso``'s.
 
-This produces three timelines: the root timeline ``:`` (where ``macro``'s
-``F_INIT``/``O_F`` would be, if it had any), ``:macro`` (where ``meso``'s
-``F_INIT``/``O_F`` and ``macro``'s ``O_I``/``S`` live), and ``:macro:meso``
-(where ``micro``'s ``F_INIT``/``O_F`` and ``meso``'s ``O_I``/``S`` live).
-MUSCLE3 works this out automatically from how components are wired together
-with conduits — you never write a timeline name into a conduit yourself.
+Applying the two rules above gives three timelines: the root timeline ``:``
+(where ``macro``'s ``F_INIT``/``O_F`` would be, if it had any), ``:macro``
+(``meso``'s ``F_INIT``/``O_F``, and ``macro``'s ``O_I``/``S`` one level
+deeper), and ``:macro:meso`` (``micro``'s ``F_INIT``/``O_F``, and ``meso``'s
+``O_I``/``S`` one level deeper still). yMMSL works this out automatically
+from how components are wired together with conduits.
 
-Internally, this is also how MUSCLE3 checks that your component is calling
-``send``/``receive`` in a sane order: each (sub-)timeline tracks its own
-iteration count, and a component that tries to send or receive out of turn
-(e.g. twice on ``O_I`` before ``S`` has replied, or before every port on a
-timeline has taken its turn) gets a clear error explaining what it was
-supposed to do instead, rather than a silent deadlock.
-
-How to use it
-``````````````
-
-Most of the time, you don't have to think about timelines at all: they follow
-directly from your ``conduits`` section. There's one situation where you do
-need to say something explicit, though: a single component can drive more
-than one independent loop, for example when it calls two other components
-that run at different rates, or the same component multiple times with
-independent state. Since there's more than one loop to keep apart, each one
-needs an explicit name — group the ports that belong together under a
-``timeline <name>:`` heading, one per loop:
+A component isn't limited to driving a single loop, either: it can own more
+than one independent ``O_I``/``S`` subtimeline at once, for example when it
+calls two other components that run at different rates. Take ``macro``
+driving ``micro1`` and ``micro2`` each in their own loop:
 
 .. literalinclude:: examples/timelines_two_subtimelines.ymmsl
    :caption: ``docs/source/examples/timelines_two_subtimelines.ymmsl``
    :language: yaml
 
 .. figure:: timelines_two_subtimelines.svg
+   :align: center
    :alt: macro has two separate pairs of O_I/S ports, one connecting down to
          micro1 and one connecting down to micro2, side by side.
 
-   ``macro``'s two named timelines are drawn side by side beneath it, each
-   with its own pair of ports, one leading to ``micro1`` and the other to
-   ``micro2``. Without the ``timeline tl1:``/``timeline tl2:`` grouping,
-   MUSCLE3 wouldn't know which of ``macro``'s four ports belong to the same
-   loop.
+   ``macro``'s two subtimelines are drawn side by side beneath it, each with
+   its own pair of ports, one leading to ``micro1`` and the other to
+   ``micro2``. ``micro1`` and ``micro2`` end up on two independent
+   subtimelines nested inside ``macro``'s own (``:macro.tl1`` and
+   ``:macro.tl2``) rather than a shared one, so they can each run at their
+   own pace without interfering with each other.
 
-Without the two loops being told apart like this, MUSCLE3 would try to treat
-all four ports as one loop and reject the mismatched send/receive pattern.
-``micro1`` and ``micro2`` end up on two independent sub-timelines nested
-inside ``macro``'s own (``:macro.tl1`` and ``:macro.tl2``) rather than on a
-shared one, so they can each run at their own pace without interfering with
-each other.
+.. seealso::
+
+   yMMSL documentation on :external+ymmsl:ref:`Timelines` for how to declare
+   a ``timeline <name>:`` heading in a yMMSL file.
+
+
+Send/receive order
+``````````````````
+
+Placing ports on timelines like this isn't just bookkeeping: it also fixes
+the order in which a component is allowed to call ``send``/``receive`` on
+them. A component first receives once on each of its ``F_INIT`` ports, then works
+through every ``O_I``/``S`` subtimeline it drives. A subtimeline doesn't
+have to be used on every iteration, though: a component may skip one
+entirely, going straight from ``F_INIT`` to ``O_F`` without ever sending or
+receiving on it, but once it does send or receive a message on a
+subtimeline, it has to finish it: every port on that subtimeline must have
+sent or received a message before it counts as done. In the two-subtimeline
+example above, ``macro`` could, say, run its ``tl1`` loop with ``micro1``
+on every iteration of its own outer loop, but only run ``tl2`` with
+``micro2`` on some of them, skipping it on the rest.
+
+Each subtimeline fixes its own order independently of the others: whichever
+action a component performs first on it, sending on ``O_I`` or receiving on
+``S``, decides the order, sending on every ``O_I`` port before receiving on any
+``S`` port, or the other way around, receiving on every ``S`` port before
+sending on any ``O_I`` port. In the macro/meso/micro example above, every
+subtimeline happens to start with a send: ``macro`` sends on ``O_I`` before it
+ever receives on ``S``, and ``meso`` and ``micro`` each do the same one level
+down. The two-subtimeline example above makes the same choice for both of
+``macro``'s loops. Starting with a receive instead of a send is what a
+**timeline bridge** does instead, see
+:ref:`Interact coupling and timeline bridges` below.
+
+Only once a component is done with every subtimeline it drives, does it send on
+its ``O_F`` ports.
+
+A component that calls send/receive out of that order, e.g. sending twice
+on ``O_I`` before ``S`` has replied, or sending on ``O_F`` before every
+subtimeline has finished, gets a clear error explaining what it was
+expected to do instead.
 
 
 Types of coupling

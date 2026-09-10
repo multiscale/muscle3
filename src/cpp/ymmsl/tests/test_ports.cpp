@@ -26,6 +26,15 @@ TEST(ymmsl_timeline, hash_consistent_with_equality) {
     ASSERT_EQ(hasher(Timeline(":A1")), hasher(Timeline(":A1")));
 }
 
+TEST(ymmsl_timeline, size) {
+    ASSERT_EQ(Timeline("").size(), 0);
+    ASSERT_EQ(Timeline(":").size(), 0);
+    ASSERT_EQ(Timeline("a").size(), 1);
+    ASSERT_EQ(Timeline(":a").size(), 1);
+    ASSERT_EQ(Timeline("a:b").size(), 2);
+    ASSERT_EQ(Timeline(":a:b").size(), 2);
+}
+
 TEST(ymmsl_port, test_port) {
     auto ep1 = Port(Identifier("test_in"), Operator::F_INIT);
 

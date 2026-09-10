@@ -55,6 +55,10 @@ class Timeline {
          */
         bool operator==(Timeline const & rhs) const;
 
+        /** Return the number of parts in the Timeline.
+         */
+        std::size_t size() const;
+
     private:
         std::string timeline_;
 };

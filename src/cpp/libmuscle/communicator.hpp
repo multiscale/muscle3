@@ -170,6 +170,19 @@ class Communicator {
                 Optional<int> slot = {}
                 );
 
+        /** Apply reduce filters to a message sent on a conduit with reduce filters.
+         * 
+         * User-provided messages (through instance.send()) will be stored (overwriting any
+         * existing message). For milestones this method decides if the milestone should be
+         * sent, or a cached message, or nothing at all.
+         * 
+         * @param peer_port Peer port (component + port) to send to.
+         * @param message MPPMessage to be checked.
+         * @return The encoded MPPMessage to send, or an empty vector if we do not need to send anything.
+         */
+        std::vector<char> apply_reduce_filters_(
+                ymmsl::Reference const & peer_port, MPPMessage && message);
+
         ymmsl::Reference instance_id_() const;
         MPPClient & get_client_(ymmsl::Reference const & instance);
 
@@ -242,10 +255,25 @@ class Communicator {
         Optional<PeerInfo> peer_info_;
         double receive_timeout_;
         std::unique_ptr<TimelineManager> timeline_manager_;
+        Optional<ymmsl::Timeline> timeline_;
 
         PortManager::PortReferences pre_receive_ports_;
         std::unordered_map<std::string, std::vector<::ymmsl::ConduitFilter>> repeat_filters_;
         MPPCacheType message_cache_;
+
+        /** Size of IterationCount, after applying the reducer filters, per peer port.
+         * 
+         * Keys are references to peer ports: ``component + port``. The reduced count is
+         * the size of the IterationCount after applying the reducer filters and determines
+         * in which (parent) timeline these messages are sent.
+         * If our timeline is ":macro:micro" then:
+         * - reduced_count = 0: send on the root (":") timeline
+         * - reduced_count = 1: send on the ":macro" timeline
+         * - reduced_count = 2: send on the ":macro:micro" timeline
+         */
+        std::unordered_map<::ymmsl::Reference, std::size_t> reduced_count_;
+        /** Message cache for reducer filters */
+        MPPCacheType reducer_cache_;
 };
 
 } }

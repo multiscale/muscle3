@@ -96,8 +96,9 @@ std::vector<std::string> Communicator::get_locations() const {
 }
 
 void Communicator::set_peer_info(PeerInfo const & peer_info) {
+    timeline_ = manager_.get_timeline();
     peer_info_ = peer_info;
-    timeline_manager_ = std::make_unique<TimelineManager>(port_manager_);
+    timeline_manager_ = std::make_unique<TimelineManager>(port_manager_, timeline_.get());
     prepare_conduit_filters_();
 }
 
@@ -161,8 +162,16 @@ void Communicator::send_message(
 
         if (message.has_next_timestamp())
             mpp_message.next_timestamp = message.next_timestamp();
-
-        auto message_bytes = mpp_message.encoded();
+        
+        std::vector<char> message_bytes;
+        auto peer_port = recv_endpoint.kernel + recv_endpoint.port;
+        if (reduced_count_.count(peer_port) > 0) {
+            message_bytes = apply_reduce_filters_(peer_port, std::move(mpp_message));
+            if (message_bytes.empty())
+                continue;
+        } else {
+            message_bytes = mpp_message.encoded();
+        }
         profile_event.message_size = message_bytes.size();
         server_.deposit(recv_endpoint.ref(), std::move(message_bytes));
     }
@@ -175,6 +184,57 @@ void Communicator::send_message(
         port.increment_num_messages(slot);
     } else if (Milestone(message.data()).is_final_milestone())
         port.set_closed(slot);
+}
+
+std::vector<char> Communicator::apply_reduce_filters_(
+        ymmsl::Reference const & peer_port, MPPMessage && message) {
+    message.message_number = -1;  // GH#411: Disabled checkpointing for reducer filter
+
+    auto reduced_count = reduced_count_.at(peer_port);
+
+    if (!is_milestone(message.data)) {
+        // Reduce the message iteration count to match with the timeline we send to
+        message.iteration.resize(reduced_count);
+        auto it = reducer_cache_.find(message.receiver);
+        if (it != reducer_cache_.end())
+            reducer_cache_.erase(it);  // Remove existing entry
+        reducer_cache_.emplace(message.receiver, message);
+        log_debug("Message for ", message.receiver, " stored in cache");
+        return {};
+    }
+
+    // Decide whether to send the milestone, ignore it, or send a cached message.
+    std::size_t n_milestone = message.iteration.size();
+    if (n_milestone < reduced_count) {
+        // Milestone from ancestor timeline: send it
+        return message.encoded();
+    } else if (n_milestone == reduced_count) {
+        // This is the target timeline after reduce filters applied: we need to
+        // send the cached message (or make up an empty one) and discard the
+        // milestone:
+        auto it = reducer_cache_.find(message.receiver);
+        if (it == reducer_cache_.end()) {
+            log_info(
+                    "No cached message available to send because this instance did ",
+                    "not run. Sending an empty message to ", message.receiver, " instead.");
+            return MPPMessage(
+                    message.sender, message.receiver, message.port_length,
+                    message.timestamp, message.next_timestamp, message.settings_overlay,
+                    message.message_number, Data(), message.iteration
+                    ).encoded();
+        }
+
+        assert(it->second.iteration == message.iteration);        
+        log_debug("Sending cached message to ", message.receiver);
+        auto encoded = it->second.encoded();
+        reducer_cache_.erase(it);
+        return encoded;
+    } else {
+        log_debug(
+                "Ignored milestone for ", message.receiver,
+                " because of LAST filters.");
+        return {};
+    }
 }
 
 Communicator::FInitCacheType Communicator::pre_receive() {
@@ -376,7 +436,10 @@ MPPMessage Communicator::receive_message_(
     }
 
     int expected_message_number = port.get_num_messages(slot);
-    if (expected_message_number != mpp_message.message_number) {
+    if (
+        mpp_message.message_number >= 0  // GH#411: negative for reducer filters
+        && expected_message_number != mpp_message.message_number
+    ) {
         if (expected_message_number - 1 == mpp_message.message_number and
                 port.is_resuming(slot)) {
             log_debug("Discarding received message on ", port_and_slot,
@@ -560,7 +623,21 @@ void Communicator::prepare_conduit_filters_() {
         }
     }
 
-    // TODO: reducer filters
+    // Reducer filters
+    for (auto op : {Operator::O_I, Operator::O_F}) {
+        for (Port const & port : port_manager_.get_connected_ports(op, {})) {
+            for (auto & peer_port : peer_info_.get().get_peer_ports(port.name)) {
+                auto & filters = peer_info_.get().get_filters_for_receiver(peer_port);
+                // Count the reducer filters, receiving component handles repeaters
+                auto n_reducers = std::count_if(
+                        filters.begin(), filters.end(), ::ymmsl::is_reducer);
+                if (n_reducers > 0) {
+                    std::size_t reduced_count = timeline_.get().size() + port.timeline.size() - n_reducers;
+                    reduced_count_.emplace(peer_port, reduced_count);
+                }
+            }
+        }
+    }
 }
 
 

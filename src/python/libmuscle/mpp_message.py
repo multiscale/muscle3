@@ -206,7 +206,7 @@ class MPPMessage:
         self.message_number = message_number
         self.iteration = iteration
         if isinstance(data, np.ndarray):
-            self.data = Grid(data)
+            self.data: Any = Grid(data)
         else:
             self.data = data
 

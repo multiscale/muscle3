@@ -112,15 +112,13 @@ def test_create_communicator(communicator, mpp_server):
     pass
 
 
-def test_set_peer_info_creates_timeline_manager(
-    communicator, connected_port_manager, timeline_manager
-):
+def test_set_peer_info_creates_timeline_manager(communicator, timeline_manager):
     peer_info = MagicMock()
 
     communicator.set_peer_info(peer_info)
 
     assert communicator._peer_info == peer_info
-    timeline_manager.assert_called_once_with(connected_port_manager)
+    timeline_manager.assert_called_once()
     assert communicator._timeline_manager == timeline_manager.return_value
 
 

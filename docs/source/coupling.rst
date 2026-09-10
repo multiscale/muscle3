@@ -26,8 +26,8 @@ turn calls a micro model in its own loop:
 .. figure:: timelines_macro_meso_micro.svg
    :align: center
 
-   Nesting in the figure mirrors nesting in time: ``meso``'s box sits inside
-   ``macro``'s, and ``micro``'s sits inside ``meso``'s.
+Nesting in the figure mirrors nesting in time: ``meso``'s box sits inside 
+``macro``'s, and ``micro``'s sits inside ``meso``'s.
 
 Applying the two rules above gives three timelines: the root timeline ``:``
 (where ``macro``'s ``F_INIT``/``O_F`` would be, if it had any), ``:macro``
@@ -48,12 +48,12 @@ driving ``micro1`` and ``micro2`` each in their own loop:
 .. figure:: timelines_two_subtimelines.svg
    :align: center
 
-   ``macro``'s two subtimelines are drawn side by side beneath it, each with
-   its own pair of ports, one leading to ``micro1`` and the other to
-   ``micro2``. ``micro1`` and ``micro2`` end up on two independent
-   subtimelines nested inside ``macro``'s own (``:macro.tl1`` and
-   ``:macro.tl2``) rather than a shared one, so they can each run at their
-   own pace without interfering with each other.
+``macro``'s two subtimelines are drawn side by side beneath it, each with
+its own pair of ports, one leading to ``micro1`` and the other to
+``micro2``. ``micro1`` and ``micro2`` end up on two independent
+subtimelines nested inside ``macro``'s own (``:macro.tl1`` and
+``:macro.tl2``) rather than a shared one, so they can each run at their
+own pace without interfering with each other.
 
 .. seealso::
 

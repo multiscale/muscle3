@@ -289,44 +289,6 @@ subtimeline has finished, gets a clear error explaining what it was
 expected to do instead.
 
 
-Putting it together
---------------------
-
-A larger example ties everything above together: extend the macro/meso/micro
-chain with a second micro, so ``meso`` drives both ``micro`` and ``micro2``,
-each in its own loop:
-
-.. figure:: timelines_combined_example.svg
-   :align: center
-
-   ``meso`` is nested one level inside ``macro``, exactly as before; its two
-   subtimelines, one per micro, are then nested one level inside ``meso`` in
-   turn, drawn side by side.
-
-This single model combines everything covered above:
-
-- ``macro`` calls ``meso`` via call/release coupling, so ``meso`` (and
-  everything it drives) is nested one level inside ``macro``'s timeline,
-  ``:macro``.
-- ``meso`` in turn calls both ``micro`` and ``micro2``, each in its own
-  loop, so they end up on two independent subtimelines nested inside
-  ``meso``'s own: ``:macro:meso.tl1`` for ``micro`` and
-  ``:macro:meso.tl2`` for ``micro2``.
-- Both of those subtimelines happen to be led by a send here, since
-  ``meso`` sends before it ever receives on either of them, but as covered
-  in `Send/receive order`_, that's a choice made independently for each
-  subtimeline, not a requirement.
-- ``meso`` doesn't have to run both loops on every one of its own
-  iterations either: it could run its ``micro`` loop every time while only
-  occasionally running its ``micro2`` loop, skipping the latter on the
-  rest, exactly as described above.
-
-Everything MUSCLE3 checks — which timeline each port lives on, and in what
-order sends and receives on it are allowed — falls out of this wiring
-automatically; nothing here needs to be declared explicitly beyond the
-``timeline tl1:``/``timeline tl2:`` headings on ``meso``'s ports.
-
-
 Conduit filters
 ----------------
 

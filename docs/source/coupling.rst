@@ -116,6 +116,43 @@ own pace without interfering with each other.
    a ``timeline <name>:`` heading in a yMMSL file.
 
 
+Send/receive order
+-------------------
+
+Placing ports on timelines like this isn't just bookkeeping: it also fixes
+the order in which a component is allowed to call ``send``/``receive`` on
+them. A component first receives once on each of its ``F_INIT`` ports, then works
+through every ``O_I``/``S`` subtimeline it drives. A subtimeline doesn't
+have to be used on every iteration, though: a component may skip one
+entirely, going straight from ``F_INIT`` to ``O_F`` without ever sending or
+receiving on it, but once it does send or receive a message on a
+subtimeline, it has to finish it: every port on that subtimeline must have
+sent or received a message before it counts as done. In the two-subtimeline
+example above, ``macro`` could, say, run its ``tl1`` loop with ``micro1``
+on every iteration of its own outer loop, but only run ``tl2`` with
+``micro2`` on some of them, skipping it on the rest.
+
+Each subtimeline fixes its own order independently of the others: whichever
+action a component performs first on it, sending on ``O_I`` or receiving on
+``S``, decides the order, sending on every ``O_I`` port before receiving on any
+``S`` port, or the other way around, receiving on every ``S`` port before
+sending on any ``O_I`` port. In the macro/meso/micro example above, every
+subtimeline happens to start with a send: ``macro`` sends on ``O_I`` before it
+ever receives on ``S``, and ``meso`` and ``micro`` each do the same one level
+down. The two-subtimeline example above makes the same choice for both of
+``macro``'s loops. Starting with a receive instead of a send is what a
+**timeline bridge** does instead, see
+:ref:`Interact coupling and timeline bridges` below.
+
+Only once a component is done with every subtimeline it drives, does it send on
+its ``O_F`` ports.
+
+A component that calls send/receive out of that order, e.g. sending twice
+on ``O_I`` before ``S`` has replied, or sending on ``O_F`` before every
+subtimeline has finished, gets a clear error explaining what it was
+expected to do instead.
+
+
 Types of coupling
 ------------------
 
@@ -226,73 +263,28 @@ by the bridge itself. This is what that looks like in a yMMSL:
          component1's O_I/S ports to timeline_bridge's
          a_out/a_in, and component2's O_I/S ports to its b_out/b_in.
 
+Its general job is to keep passing values between the two sides despite
+them never actually running in step: say Component 1 steps in increments
+of 5 (``t=0, 5, 10, ...``) while Component 2 steps in increments of 13
+(``t=0, 13, 26, ...``). When Component 1 asks for a value at ``t=5``,
+Component 2 has only produced a message for ``t=0`` so far, with its next
+one not due until ``t=13``, so the bridge has to determine a sensible
+value for ``t=5`` itself. ``docs/source/examples/python/interact_coupling.py``
+in the MUSCLE3 source contains a complete, runnable example of exactly
+this component (``temporal_coupler``): its ``DataCache`` keeps the last
+two messages it received from a peer and interpolates between them, so
+once it has Component 2's messages for ``t=0`` and ``t=13``, it can answer
+Component 1's request for ``t=5`` by interpolating between the two.
 
-Unlike call/release or dispatch, a bridge's implementation does not have
-clearly separated ``O_I`` and ``S`` phases: it sends and receives in whatever
-order is needed to keep both peers fed, based on the timestamps carried in
-their messages. ``docs/source/examples/python/interact_coupling.py`` in the
-MUSCLE3 source contains a complete, runnable example of exactly this
-component (``temporal_coupler``), including a small ``DataCache`` that
-interpolates between the two most recent messages from a peer. Its main loop:
-
-.. literalinclude:: examples/python/interact_coupling.py
-   :pyobject: temporal_coupler
-
-**Why the bridge must receive first.** A sub-timeline is led by whichever
-operation happens first on it: if a component's first action on a
-sub-timeline is a *send* on ``O_I``, that sub-timeline becomes "O_I-led" and
-every following sub-iteration must go ``O_I`` then ``S``; if its first action
-is instead a *receive* on ``S``, the sub-timeline becomes "S-led" and the
-order flips to ``S`` then ``O_I``. A bridge has nothing to send until it knows
-what its peer's first message looks like, so it must receive before it sends
-on each of its sub-timelines — the ``Peer`` class in the example above does
-exactly this in its constructor, receiving an initial message before the main
-loop ever calls ``send``:
-
-.. literalinclude:: examples/python/interact_coupling.py
-   :pyobject: Peer.__init__
-
-If a bridge implementation sent first by mistake, that sub-timeline would
-become O_I-led, and the subsequent receive that establishes the peer's
-initial state would be rejected with a ``PortBlocked`` error rather than
-silently doing the wrong thing.
-
-
-Send/receive order
--------------------
-
-Placing ports on timelines like this isn't just bookkeeping: it also fixes
-the order in which a component is allowed to call ``send``/``receive`` on
-them. A component first receives once on each of its ``F_INIT`` ports, then works
-through every ``O_I``/``S`` subtimeline it drives. A subtimeline doesn't
-have to be used on every iteration, though: a component may skip one
-entirely, going straight from ``F_INIT`` to ``O_F`` without ever sending or
-receiving on it, but once it does send or receive a message on a
-subtimeline, it has to finish it: every port on that subtimeline must have
-sent or received a message before it counts as done. In the two-subtimeline
-example above, ``macro`` could, say, run its ``tl1`` loop with ``micro1``
-on every iteration of its own outer loop, but only run ``tl2`` with
-``micro2`` on some of them, skipping it on the rest.
-
-Each subtimeline fixes its own order independently of the others: whichever
-action a component performs first on it, sending on ``O_I`` or receiving on
-``S``, decides the order, sending on every ``O_I`` port before receiving on any
-``S`` port, or the other way around, receiving on every ``S`` port before
-sending on any ``O_I`` port. In the macro/meso/micro example above, every
-subtimeline happens to start with a send: ``macro`` sends on ``O_I`` before it
-ever receives on ``S``, and ``meso`` and ``micro`` each do the same one level
-down. The two-subtimeline example above makes the same choice for both of
-``macro``'s loops. Starting with a receive instead of a send is what a
-**timeline bridge** does instead, see
-:ref:`Interact coupling and timeline bridges` above.
-
-Only once a component is done with every subtimeline it drives, does it send on
-its ``O_F`` ports.
-
-A component that calls send/receive out of that order, e.g. sending twice
-on ``O_I`` before ``S`` has replied, or sending on ``O_F`` before every
-subtimeline has finished, gets a clear error explaining what it was
-expected to do instead.
+As covered in :ref:`Send/receive order`, whichever action happens first on a
+subtimeline decides its order for the rest of the run. Before it has received
+anything at all, though, the bridge has no messages to interpolate
+between and so nothing sensible to send, unlike most other couplings,
+which send first a bridge has to receive on ``S``
+before it ever sends on ``O_I``, on each of its subtimelines. The
+``Peer`` class in ``interact_coupling.py`` does exactly this in its
+constructor, receiving an initial message before its main loop ever calls
+``send``.
 
 
 Conduit filters

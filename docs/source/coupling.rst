@@ -220,6 +220,12 @@ by the bridge itself. This is what that looks like in a yMMSL:
       timeline_bridge.a_out: component1.boundary_in
       timeline_bridge.b_out: component2.boundary_in
 
+.. figure:: coupling_interact_bridge.svg
+   :align: center
+   :alt: component1 and component2 each connect to timeline_bridge, 
+         component1's O_I/S ports to timeline_bridge's
+         a_out/a_in, and component2's O_I/S ports to its b_out/b_in.
+
 
 Unlike call/release or dispatch, a bridge's implementation does not have
 clearly separated ``O_I`` and ``S`` phases: it sends and receives in whatever

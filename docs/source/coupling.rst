@@ -186,54 +186,40 @@ their own timeline. A **timeline bridge** does exactly that: it has two
 to Component 1, and another that lives on timeline 2 and connects to Component
 2 the same way, bridging the two timelines by owning a subtimeline on each side.
 
-.. note::
-
-   ``ymmsl2svg`` cannot yet render this coupling shape (it raises
-   ``NotImplementedError: Visualization for interact coupling is not yet
-   implemented.``), so there's no figure here for now — see the ASCII-art
-   timelines in :ref:`Interact coupling` and in
-   :ref:`Consistency for simulation time checkpoints` for a byte-level view of
-   how a bridge's messages interleave with its two peers.
-
-A bridge component groups its ports under two ``timeline <name>:`` headings,
-exactly like the independent-sub-timelines case above, except that here each
-sub-timeline is driven by a *different* peer component rather than both being
-driven by the bridge itself:
+Just like that, one subtimeline per component it connects to, a bridge
+component groups its ports under two ``timeline <name>:`` headings, except
+here each subtimeline is driven by the component on that side rather than
+by the bridge itself. This is what that looks like in a yMMSL:
 
 .. code-block:: yaml
-    :caption: yMMSL for a timeline bridge connecting two peers, ``left`` and ``right``
+    :caption: yMMSL for a timeline bridge connecting ``component1`` and ``component2``
 
     components:
-      left:
+      component1:
         ports:
           o_i: boundary_out
           s: boundary_in
         implementation: model
-      right:
+      component2:
         ports:
           o_i: boundary_out
           s: boundary_in
         implementation: model
-      coupler:
+      timeline_bridge:
         ports:
-          timeline left:
+          timeline component1:
             o_i: a_out
             s: a_in
-          timeline right:
+          timeline component2:
             o_i: b_out
             s: b_in
         implementation: temporal_coupler
     conduits:
-      left.boundary_out: coupler.a_in
-      right.boundary_out: coupler.b_in
-      coupler.a_out: left.boundary_in
-      coupler.b_out: right.boundary_in
+      component1.boundary_out: timeline_bridge.a_in
+      component2.boundary_out: timeline_bridge.b_in
+      timeline_bridge.a_out: component1.boundary_in
+      timeline_bridge.b_out: component2.boundary_in
 
-``coupler`` shares one subtimeline with ``left`` and a separate, independent
-one with ``right`` — the same as the two-independent-loops case earlier,
-except each subtimeline is led by the peer's send rather than the bridge's.
-``left`` and ``right`` themselves never share a timeline at all; the bridge
-is the only thing connecting them.
 
 Unlike call/release or dispatch, a bridge's implementation does not have
 clearly separated ``O_I`` and ``S`` phases: it sends and receives in whatever

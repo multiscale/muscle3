@@ -1,6 +1,65 @@
 Coupling your model
 ===================
 
+Multicast
+---------
+
+With MUSCLE3 you can connect an output port to multiple input ports.
+When a submodel sends a message on a port that is connected to
+multiple input ports, the message is copied and sent to each connected port.
+
+.. note::
+
+    It is not allowed to connect multiple output ports to a single input port.
+
+Example
+```````
+
+.. tabs::
+
+    .. code-tab:: yaml Basic macro/micro model configuration
+
+        ymmsl_version: v0.2
+        models:
+          multicast:
+            components:
+              macro:
+                description: A macro model
+                implementation: macro
+              micro:
+                description: A micro model
+                implementation: micro
+            conduits:
+              macro.state_out: micro.state_in
+              micro.state_out: macro.state_in
+
+    .. code-tab:: yaml Extended configuration with multicast
+
+        ymmsl_version: v0.2
+        models:
+          multicast:
+            components:
+              macro:
+                description: A macro model
+                implementation: macro
+              micro:
+                description: A micro model
+                implementation: micro
+              printer:
+                description: Prints messages for debugging
+                implementation: printer
+            conduits:
+              macro.state_out: micro.state_in
+              micro.state_out:
+              - macro.state_in
+              - printer.in
+
+In the second tab, a new component `printer` is added and wired to the
+``state_out`` port of the micro model. Whenever the micro model sends a message
+on that port, one copy is sent to the macro model to continue the simulation.
+Another copy is sent to the printer component, which (for example) prints a
+summary of the state.
+
 Timelines
 ---------
 
@@ -115,6 +174,17 @@ message at a time:
    :alt: component1's O_I port connects to component2's S port, and
          component2's O_I port connects back to component1's S port, both
          inside a single shared timeline.
+
+If Component 1 and Component 2 don't take equal-sized steps, they run at a
+different pace, and by the definition of a timeline, that means they don't
+actually run on the same one: say Component 1's ``O_I``/``S`` ports live on
+timeline 1, and Component 2's live on a different timeline 2. Since a conduit
+only ever connects ports on the same timeline, wiring them directly together
+does not work, we need something in between that can talk to each of them on
+their own timeline. A **timeline bridge** does exactly that: it has two
+``O_I``/``S`` port pairs of its own, one that lives on timeline 1 and connects
+to Component 1, and another that lives on timeline 2 and connects to Component
+2 the same way, bridging the two timelines by owning a subtimeline on each side.
 
 .. note::
 
@@ -269,66 +339,6 @@ Everything MUSCLE3 checks — which timeline each port lives on, and in what
 order sends and receives on it are allowed — falls out of this wiring
 automatically; nothing here needs to be declared explicitly beyond the
 ``timeline tl1:``/``timeline tl2:`` headings on ``meso``'s ports.
-
-
-Multicast
----------
-
-With MUSCLE3 you can connect an output port to multiple input ports.
-When a submodel sends a message on a port that is connected to
-multiple input ports, the message is copied and sent to each connected port.
-
-.. note::
-
-    It is not allowed to connect multiple output ports to a single input port.
-
-Example
-```````
-
-.. tabs::
-
-    .. code-tab:: yaml Basic macro/micro model configuration
-
-        ymmsl_version: v0.2
-        models:
-          multicast:
-            components:
-              macro:
-                description: A macro model
-                implementation: macro
-              micro:
-                description: A micro model
-                implementation: micro
-            conduits:
-              macro.state_out: micro.state_in
-              micro.state_out: macro.state_in
-
-    .. code-tab:: yaml Extended configuration with multicast
-
-        ymmsl_version: v0.2
-        models:
-          multicast:
-            components:
-              macro:
-                description: A macro model
-                implementation: macro
-              micro:
-                description: A micro model
-                implementation: micro
-              printer:
-                description: Prints messages for debugging
-                implementation: printer
-            conduits:
-              macro.state_out: micro.state_in
-              micro.state_out:
-              - macro.state_in
-              - printer.in
-
-In the second tab, a new component `printer` is added and wired to the
-``state_out`` port of the micro model. Whenever the micro model sends a message
-on that port, one copy is sent to the macro model to continue the simulation.
-Another copy is sent to the printer component, which (for example) prints a
-summary of the state.
 
 
 Conduit filters

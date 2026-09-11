@@ -69,15 +69,19 @@ of the macro model driving it, while a meso model may sit somewhere in
 between the two. MUSCLE3 calls this idea of "running at a different pace" a
 *timeline*.
 
-Every port lives on a timeline, and two rules decide which one: a
-component's ``F_INIT`` and ``O_F`` ports always live on the same timeline as
-the component itself, while its ``O_I`` and ``S`` ports, if it has any, live
-one level deeper, on one or more subtimelines nested inside it. Whatever
-component is called through one of those subtimelines' ``O_I``/``S`` ports (i.e.
-whose ``F_INIT``/``O_F`` ports are connected to them) has its own
-``F_INIT``/``O_F`` right there on that same subtimeline, and if it in turn has
-its own ``O_I``/``S`` loop, that one is nested one level deeper still, nesting
-one level for every loop in the chain.
+Every port lives on a timeline, and two rules decide which one:
+
+- A component's ``F_INIT`` and ``O_F`` ports always live on the same
+  timeline as the component itself.
+- A component's ``O_I`` and ``S`` ports, if it has any, live one level
+  deeper, on one or more subtimelines nested inside it.
+
+These two rules chain together: whatever component is called through one of
+those subtimelines (i.e. whose ``F_INIT``/``O_F`` ports are connected to a
+component's ``O_I``/``S`` ports) has its own ``F_INIT``/``O_F`` right there
+on that same subtimeline. If that component in turn has its own ``O_I``/``S``
+loop, that loop is nested one level deeper still, one level for every loop
+in the chain.
 
 Take a macro model that calls a meso model in a loop, where that meso model in
 turn calls a micro model in its own loop:
@@ -88,12 +92,17 @@ turn calls a micro model in its own loop:
 Nesting in the figure mirrors nesting in time: ``meso``'s box sits inside
 ``macro``'s, and ``micro``'s sits inside ``meso``'s.
 
-Applying the two rules above gives three timelines: the root timeline ``:``
-(where ``macro``'s ``F_INIT``/``O_F`` would be, if it had any), ``:macro``
-(``meso``'s ``F_INIT``/``O_F``, and ``macro``'s ``O_I``/``S`` one level
-deeper), and ``:macro:meso`` (``micro``'s ``F_INIT``/``O_F``, and ``meso``'s
-``O_I``/``S`` one level deeper still). yMMSL works this out automatically
-from how components are wired together with conduits.
+Applying the two rules above gives three timelines:
+
+- the root timeline ``:``, where ``macro``'s ``F_INIT``/``O_F`` would be, if
+  it had any;
+- ``:macro``, holding ``meso``'s ``F_INIT``/``O_F`` and, one level deeper,
+  ``macro``'s ``O_I``/``S``;
+- ``:macro:meso``, holding ``micro``'s ``F_INIT``/``O_F`` and, one level
+  deeper still, ``meso``'s ``O_I``/``S``.
+
+yMMSL works this out automatically from how components are wired together
+with conduits.
 
 A component isn't limited to driving a single loop, either: it can own more
 than one independent ``O_I``/``S`` subtimeline at once, for example when it
@@ -332,14 +341,16 @@ that changes is the ``conduits`` section:
 
 
 Connecting ``macro`` and ``micro`` directly means we now have to handle the
-pace mismatch between them explicitly, rather than leaving it to ``meso``,
-``micro`` gets called many times for every single time ``macro``
-runs, so it needs many ``bypass_in`` messages for the one
-``bypass_out`` message ``macro`` sends, and the other way around, ``micro``
-produces many ``bypass_out`` messages while ``macro`` only needs one
-``bypass_in`` message per call. A filter tells the conduit how to erpeat or
-pad ``macro``'s single message to cover ``micro``'s many calls, or how to
-reduce ``micro``'s many messages down to the one ``macro`` needs:
+pace mismatch between them explicitly, rather than leaving it to ``meso``.
+``micro`` gets called many times for every single time ``macro`` runs, so
+the conduit going from ``macro`` to ``micro`` needs to turn ``macro``'s one
+``bypass_out`` message into the many ``bypass_in`` messages ``micro``
+expects. Going the other way, the conduit needs to turn ``micro``'s many
+``bypass_out`` messages into the single ``bypass_in`` message ``macro``
+expects per call. A filter tells the conduit how to do either:
+``repeat`` and ``pad`` turn one message into many, for the
+``macro``-to-``micro`` direction, while ``last`` turns many messages into
+one, for the ``micro``-to-``macro`` direction.
 
 - ``repeat`` resends the single message ``macro`` sends on ``bypass_out``
   unchanged to ``micro`` on every one of its calls, until a new message

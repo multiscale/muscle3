@@ -133,6 +133,27 @@ def postprocess() -> None:
             assert micro.data[-1] == 1
 
 
+def combined(filters: str) -> None:
+    is_padded = filters.split()[-1] == "pad"
+
+    instance = Instance({Operator.F_INIT: ["trigger"], Operator.S: ["in"]})
+
+    reused = 0
+    while instance.reuse_instance():
+        instance.receive("trigger")
+
+        last_value = None if reused == 0 else ["macro", reused, "meso", reused - 1]
+        for i in range(3):
+            msg = instance.receive("in")
+            if i and is_padded:
+                assert msg.data is None
+            else:
+                assert msg.data == last_value
+        reused += 1
+
+    assert reused == 4
+
+
 config = """
 ymmsl_version: v0.2
 models:
@@ -172,18 +193,26 @@ models:
         ports:
           f_init: macro meso micro
         implementation: postprocess
+      combined:
+        description: Receives meso.out with a combined reducer and repeater filter
+        ports:
+          f_init: trigger
+          s: in
+        implementation: combined
     conduits:
       macro.out:
       - meso.in
       - {filters} pico.macro
       - {filters} repeat_s.macro
       - postprocess.macro
+      - combined.trigger
       meso.out:
       - micro.in
       - repeat pico.meso
       - repeat_s.meso
       - repeat repeat_s.repeated_meso
       - last postprocess.meso
+      - last {combined_filter} combined.in
       micro.out:
       - pico.micro
       - repeat_s.micro
@@ -200,8 +229,13 @@ def test_repeater_filters(tmp_path, filters):
         "repeat_s": ("python", repeat_s, filters),
         "pico": ("python", pico, filters),
         "postprocess": ("python", postprocess),
+        "combined": ("python", combined, filters),
     }
-    run_manager_with_actors(config.format(filters=filters), tmp_path, actors)
+    run_manager_with_actors(
+        config.format(filters=filters, combined_filter=filters.split()[-1]),
+        tmp_path,
+        actors,
+    )
 
 
 @skip_if_python_only
@@ -214,8 +248,13 @@ def test_repeater_filters_cpp(tmp_path, filters):
         "repeat_s": ("cpp", "conduit_filters_test", "repeat_s", filters),
         "pico": ("cpp", "conduit_filters_test", "pico", filters),
         "postprocess": ("python", postprocess),
+        "combined": ("python", combined, filters),
     }
-    run_manager_with_actors(config.format(filters=filters), tmp_path, actors)
+    run_manager_with_actors(
+        config.format(filters=filters, combined_filter=filters.split()[-1]),
+        tmp_path,
+        actors,
+    )
 
 
 checkpoint_config = """

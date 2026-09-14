@@ -155,17 +155,17 @@ class Communicator:
         self._message_cache: MPPCacheType = {}
         """Message cache for pre-received messages."""
 
-        self._reduced_count: dict[Reference, int] = {}
+        self._outgoing_timeline_length: dict[Reference, int] = {}
         """Size of IterationCount, after applying the reducer filters, per peer port.
 
-        Keys are references to peer ports: ``component + port``. The reduced count is
-        the size of the IterationCount after applying the reducer filters and determines
-        in which (parent) timeline these messages are sent.
+        Keys are references to peer ports: ``component + port``. The outgoing timeline
+        length is the size of the IterationCount after applying the reducer filters and
+        determines in which (parent) timeline these messages are sent.
 
         If our timeline is ":macro:micro" then:
-        - reduced_count = 0: send on the root (":") timeline
-        - reduced_count = 1: send on the ":macro" timeline
-        - reduced_count = 2: send on the ":macro:micro" timeline
+        - outgoing_timeline_length = 0: send on the root (":") timeline
+        - outgoing_timeline_length = 1: send on the ":macro" timeline
+        - outgoing_timeline_length = 2: send on the ":macro:micro" timeline
         """
         self._reducer_cache: dict[Reference, MPPMessage] = {}
         """Message cache for reducer filters."""
@@ -294,7 +294,7 @@ class Communicator:
                 iteration,
             )
             peer_port = recv_endpoint.kernel + recv_endpoint.port
-            if peer_port in self._reduced_count:
+            if peer_port in self._outgoing_timeline_length:
                 result = self._apply_reduce_filters(peer_port, mpp_message)
                 if result is None:
                     continue
@@ -330,7 +330,7 @@ class Communicator:
         """
         message.message_number = -1  # GH#411: Disabled checkpointing for reducer filter
 
-        reduced_count = self._reduced_count[peer_port]
+        reduced_count = self._outgoing_timeline_length[peer_port]
 
         if not isinstance(message.data, Milestone):
             # Reduce the message iteration count to match with the timeline we send to
@@ -788,7 +788,7 @@ class Communicator:
                     # Count the reducer filters, receiving component handles repeaters
                     n_reducers = sum(1 for filter in filters if filter.is_reducer())
                     if n_reducers > 0:
-                        self._reduced_count[peer_port] = (
+                        self._outgoing_timeline_length[peer_port] = (
                             len(self._timeline) + len(port.timeline) - n_reducers
                         )
 

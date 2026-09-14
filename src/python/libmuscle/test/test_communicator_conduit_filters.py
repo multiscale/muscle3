@@ -103,13 +103,55 @@ def reducer_communicator(mpp_client, mpp_server):
     )
     port_manager.connect_ports(peer_info)
     communicator.set_peer_info(peer_info)
-    assert communicator._reduced_count == {
+    assert communicator._outgoing_timeline_length == {
         "sibling.in": 1,
         "aunt.init": 0,
         "uncle.init": 0,
     }
     yield communicator
     communicator.shutdown()
+
+
+@pytest.fixture
+def repeater_reducer_communicator(repeat_filter, mpp_client, mpp_server):
+    conduit = Conduit("component.out", "sibling.in", "last " + repeat_filter)
+
+    port_manager = PortManager([], None)
+    mock_manager = MagicMock()
+    mock_manager.get_timeline.return_value = Timeline(":")
+    component = Communicator(
+        Ref("component"), [], port_manager, MagicMock(), mock_manager
+    )
+    peer_info = PeerInfo(
+        Ref("component"),
+        [],
+        [conduit],
+        {Ref("sibling"): []},
+        {Ref("sibling"): []},
+        [Port(Id("out"), Operator.O_I, Timeline("component"))],
+    )
+    port_manager.connect_ports(peer_info)
+    component.set_peer_info(peer_info)
+
+    sibling_port_manager = PortManager([], None)
+    sibling = Communicator(
+        Ref("sibling"), [], sibling_port_manager, MagicMock(), MagicMock()
+    )
+    sibling_peer_info = PeerInfo(
+        Ref("sibling"),
+        [],
+        [conduit],
+        {Ref("component"): []},
+        {Ref("component"): []},
+        [Port(Id("in"), Operator.S)],
+    )
+    sibling_port_manager.connect_ports(sibling_peer_info)
+    sibling.set_peer_info(sibling_peer_info)
+    assert sibling._repeat_filters == {"in": [ConduitFilter(repeat_filter)]}
+
+    component.pre_receive()
+    yield component, sibling
+    component.shutdown()
 
 
 def mock_receive_messages(
@@ -373,3 +415,28 @@ def test_reducer_filters(reducer_communicator, mpp_client, mpp_server):
     # O_F -> last -> aunt.init
     assert len(messages_per_peer_port["aunt.init"]) == 1
     assert messages_per_peer_port["aunt.init"][0].timestamp == 10
+
+
+def test_combined_reducer_and_repeater_filters(
+    repeater_reducer_communicator, mpp_client, mpp_server, repeat_filter
+):
+    component, sibling = repeater_reducer_communicator
+
+    for i in range(3):
+        component.send_message("out", Message(i, data=f"value_{i}"))
+    mpp_server.deposit.assert_not_called()  # messages are cached, not yet forwarded
+
+    # Closing broadcasts the closing milestone, which releases the cached last message.
+    component._close_outgoing_ports()
+    assert mpp_server.deposit.call_count == 1
+    peer, encoded = mpp_server.deposit.call_args.args
+    assert peer == "sibling.in"
+
+    # Feed the bytes "component" put on the wire into "sibling"'s receive.
+    mpp_client.receive.return_value = (encoded, MagicMock())
+    sibling.pre_receive()
+
+    is_padded = repeat_filter == "pad"
+    for i in range(3):
+        msg = sibling.receive_s_message("in")
+        assert msg.data == (None if i and is_padded else "value_2")

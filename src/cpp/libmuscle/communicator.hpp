@@ -262,16 +262,17 @@ class Communicator {
         MPPCacheType message_cache_;
 
         /** Size of IterationCount, after applying the reducer filters, per peer port.
-         * 
-         * Keys are references to peer ports: ``component + port``. The reduced count is
-         * the size of the IterationCount after applying the reducer filters and determines
-         * in which (parent) timeline these messages are sent.
+         *
+         * Keys are references to peer ports: ``component + port``. The outgoing
+         * timeline length is the size of the IterationCount after applying the
+         * reducer filters and determines in which (parent) timeline these messages
+         * are sent.
          * If our timeline is ":macro:micro" then:
-         * - reduced_count = 0: send on the root (":") timeline
-         * - reduced_count = 1: send on the ":macro" timeline
-         * - reduced_count = 2: send on the ":macro:micro" timeline
+         * - outgoing_timeline_length = 0: send on the root (":") timeline
+         * - outgoing_timeline_length = 1: send on the ":macro" timeline
+         * - outgoing_timeline_length = 2: send on the ":macro:micro" timeline
          */
-        std::unordered_map<::ymmsl::Reference, std::size_t> reduced_count_;
+        std::unordered_map<::ymmsl::Reference, std::size_t> outgoing_timeline_length_;
         /** Message cache for reducer filters */
         MPPCacheType reducer_cache_;
 };

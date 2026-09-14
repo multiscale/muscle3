@@ -165,7 +165,7 @@ void Communicator::send_message(
         
         std::vector<char> message_bytes;
         auto peer_port = recv_endpoint.kernel + recv_endpoint.port;
-        if (reduced_count_.count(peer_port) > 0) {
+        if (outgoing_timeline_length_.count(peer_port) > 0) {
             message_bytes = apply_reduce_filters_(peer_port, std::move(mpp_message));
             if (message_bytes.empty())
                 continue;
@@ -190,7 +190,7 @@ std::vector<char> Communicator::apply_reduce_filters_(
         ymmsl::Reference const & peer_port, MPPMessage && message) {
     message.message_number = -1;  // GH#411: Disabled checkpointing for reducer filter
 
-    auto reduced_count = reduced_count_.at(peer_port);
+    auto reduced_count = outgoing_timeline_length_.at(peer_port);
 
     if (!is_milestone(message.data)) {
         // Reduce the message iteration count to match with the timeline we send to
@@ -633,7 +633,7 @@ void Communicator::prepare_conduit_filters_() {
                         filters.begin(), filters.end(), ::ymmsl::is_reducer);
                 if (n_reducers > 0) {
                     std::size_t reduced_count = timeline_.get().size() + port.timeline.size() - n_reducers;
-                    reduced_count_.emplace(peer_port, reduced_count);
+                    outgoing_timeline_length_.emplace(peer_port, reduced_count);
                 }
             }
         }

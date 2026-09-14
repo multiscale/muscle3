@@ -31,7 +31,8 @@ class MockTimelineManager : public MockClass<MockTimelineManager> {
             init_from_return_value();
         }
 
-        explicit MockTimelineManager(PortManager const & port_manager) {
+        explicit MockTimelineManager(
+                PortManager const & port_manager, ::ymmsl::Timeline const & timeline) {
             init_from_return_value();
             constructor(&port_manager);
         }

@@ -290,7 +290,8 @@ class TimelineManager {
          * @param port_manager The (already connected) port manager for this
          *      instance.
          */
-        explicit TimelineManager(PortManager const & port_manager);
+        explicit TimelineManager(
+                PortManager const & port_manager, ::ymmsl::Timeline const & timeline);
 
         /** Check and update the timeline state before sending on the given
          * port.
@@ -371,6 +372,7 @@ class TimelineManager {
     private:
         IterationCount check_send_o_f_(Port const & port, Optional<int> slot);
 
+        ::ymmsl::Timeline timeline_;
         PortManager const & port_manager_;
         TimelinePorts receive_;
         TimelinePorts send_;

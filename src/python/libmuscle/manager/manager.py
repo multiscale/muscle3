@@ -45,6 +45,16 @@ class Manager:
             configuration: The simulation configuration.
             run_dir: Main working directory.
         """
+        # TEMP: check for checkpoints combined with reducer filters:
+        if configuration.checkpoints and any(
+            any(filter.is_reducer() for filter in conduit.filters)
+            for conduit in configuration.root_model().conduits
+        ):
+            raise NotImplementedError(
+                "This version of MUSCLE3 does not support checkpoints when using "
+                "reducer filters. See https://github.com/multiscale/muscle3/issues/411"
+            )
+
         self._configuration = configuration
         self._run_dir = run_dir
         log_dir = self._run_dir.path if self._run_dir else Path.cwd()

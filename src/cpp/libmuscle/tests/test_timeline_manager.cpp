@@ -119,9 +119,9 @@ struct libmuscle_timeline_manager : ::testing::Test {
     void create(
             PortsDescription const & declared_ports,
             std::unordered_map<std::string, Timeline> const & timelines = {},
-            bool include_settings = false) {
+            bool include_settings = false, Timeline timeline = Timeline(":")) {
         port_manager_ = make_port_manager(declared_ports, timelines, {}, include_settings);
-        tm_ = std::make_unique<TimelineManager>(*port_manager_);
+        tm_ = std::make_unique<TimelineManager>(*port_manager_, timeline);
         ASSERT_FALSE(tm_->start_reuse_iteration().is_set());
     }
 };
@@ -146,7 +146,8 @@ struct libmuscle_full_timeline_manager : libmuscle_timeline_manager {
                     {"out_a2_2", Timeline(":A2")},
                     {"in_a2", Timeline(":A2")},
                 },
-                true);
+                true,
+                Timeline(":a"));
     }
 };
 
@@ -155,7 +156,7 @@ struct libmuscle_vector_timeline_manager : libmuscle_timeline_manager {
     libmuscle_vector_timeline_manager() {
         port_manager_ = make_port_manager(
                 PortsDescription{{Operator::O_F, {"out_v[]"}}}, {}, {{"out_v", {3}}});
-        tm_ = std::make_unique<TimelineManager>(*port_manager_);
+        tm_ = std::make_unique<TimelineManager>(*port_manager_, Timeline(":"));
         tm_->start_reuse_iteration();
         EXPECT_EQ(tm_->record_pre_received_iteration_counts({}), IterationCount());
     }
@@ -193,6 +194,11 @@ TEST_F(libmuscle_full_timeline_manager, record_received_message_f_init_adopts_it
 
 TEST_F(libmuscle_full_timeline_manager, record_received_message_f_init_raises_on_mismatch) {
     ASSERT_THROW(tm_->record_pre_received_iteration_counts({{3}, {4}}), std::logic_error);
+}
+
+TEST_F(libmuscle_full_timeline_manager, check_pre_receive_counts_match_timeline) {
+    ASSERT_THROW(tm_->record_pre_received_iteration_counts({{}}), std::runtime_error);
+    ASSERT_THROW(tm_->record_pre_received_iteration_counts({{1, 2}}), std::runtime_error);
 }
 
 TEST_F(libmuscle_timeline_manager, o_f_can_send_immediately_when_no_f_init_connections) {
@@ -340,7 +346,7 @@ TEST_F(libmuscle_full_timeline_manager, get_state_and_restore_state_round_trip) 
 
     TimelineState state = tm_->get_state();
 
-    TimelineManager restored(*port_manager_);
+    TimelineManager restored(*port_manager_, Timeline(":a"));
     restored.restore_state(state);
 
     TimelineState restored_state = restored.get_state();

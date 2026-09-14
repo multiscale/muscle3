@@ -49,7 +49,7 @@ class MPPMessage {
 
         /** Encode the message and return as a byte buffer.
          */
-        DataConstRef encoded_as_dcr() const;
+        Data encoded_as_data() const;
 
         /** Create an MCP Message from an encoded buffer.
          *
@@ -69,7 +69,7 @@ class MPPMessage {
         DataConstRef settings_overlay;
         int message_number;
         DataConstRef data;
-        Optional<IterationCount> iteration;
+        IterationCount iteration;
 
     private:
         static MPPMessage from_dict_(DataConstRef const & dict);

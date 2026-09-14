@@ -2,12 +2,12 @@ import logging
 from pathlib import Path
 from typing import Optional, cast
 
-from ymmsl.v0_2 import Operator, Reference, Settings
+from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.communicator import Communicator, Message
+from libmuscle.communicator_state import CommunicatorState
 from libmuscle.mmp_client import MMPClient
-from libmuscle.port_manager import PortManager
-from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
+from libmuscle.snapshot import Snapshot, SnapshotMetadata
 
 _logger = logging.getLogger(__name__)
 
@@ -30,7 +30,6 @@ class SnapshotManager:
         self,
         instance_id: Reference,
         manager: MMPClient,
-        port_manager: PortManager,
         communicator: Communicator,
     ) -> None:
         """Create a new snapshot manager
@@ -45,7 +44,6 @@ class SnapshotManager:
         # replace identifier[i] by identifier-i to use in snapshot file name
         # using a dash (-) because that is not allowed in Identifiers
         self._safe_id = str(instance_id).replace("[", "-").replace("]", "")
-        self._port_manager = port_manager
         self._communicator = communicator
         self._manager = manager
 
@@ -82,13 +80,7 @@ class SnapshotManager:
                 result = snapshot.message.timestamp
             self.resume_overlay = snapshot.settings_overlay
 
-            self._port_manager.restore_message_counts(snapshot.port_message_counts)
-            if not snapshot.is_final_snapshot:
-                # A final snapshot's timeline state includes a look-ahead
-                # F_INIT receive done to determine whether the instance would
-                # be reused. Resuming always redoes that receive, so restoring
-                # it here would make it look like it already happened.
-                self._communicator.restore_state(snapshot.timeline_state)
+            self._communicator.restore_state(snapshot.communicator_state)
             # Store a copy of the snapshot in the current run directory
             path = self.__store_snapshot(snapshot)
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
@@ -131,6 +123,7 @@ class SnapshotManager:
         wallclock_time: float,
         f_init_max_timestamp: Optional[float],
         settings_overlay: Settings,
+        communicator_state: CommunicatorState,
     ) -> float:
         """Save a (final) snapshot.
 
@@ -145,26 +138,13 @@ class SnapshotManager:
         Returns:
             Simulation time at which the snapshot was made.
         """
-        port_message_counts = self._port_manager.get_message_counts()
-        if final and "at_end" not in triggers:
-            # Decrease F_INIT port counts by one: F_INIT messages are already
-            # pre-received, but not yet processed by the user code. Therefore,
-            # the snapshot state should treat these as not-received.
-            # N.B. For a snapshot at the end of the simulation, there were no F_INIT
-            # messages, so we do not decrease.
-            for port in self._port_manager.get_connected_ports(Operator.F_INIT):
-                port_name = str(port.name)
-                new_counts = [i - 1 for i in port_message_counts[port_name]]
-                port_message_counts[port_name] = new_counts
-
-        snapshot = MsgPackSnapshot(
+        snapshot = Snapshot(
             triggers,
             wallclock_time,
-            port_message_counts,
             final,
             msg,
             settings_overlay,
-            self._communicator.get_state(),
+            communicator_state,
         )
 
         path = self.__store_snapshot(snapshot)
@@ -198,8 +178,8 @@ class SnapshotManager:
             version = snapshot_file.read(1)
             data = snapshot_file.read()
 
-            if version == MsgPackSnapshot.SNAPSHOT_VERSION_BYTE:
-                return MsgPackSnapshot.from_bytes(data)
+            if version == Snapshot.SNAPSHOT_VERSION_BYTE:
+                return Snapshot.from_bytes(data)
             raise RuntimeError(
                 "Unable to load snapshot from"
                 f" {snapshot_location}: unknown version of"

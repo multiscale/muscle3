@@ -20,6 +20,8 @@ int main(int argc, char *argv[]) {
 }
 
 
+using libmuscle::_MUSCLE_IMPL_NS::get_most_nested_iteration;
+using libmuscle::_MUSCLE_IMPL_NS::is_subiteration_or_equal;
 using libmuscle::_MUSCLE_IMPL_NS::AlreadyParticipated;
 using libmuscle::_MUSCLE_IMPL_NS::ExpectedActions;
 using libmuscle::_MUSCLE_IMPL_NS::IterationCount;
@@ -99,12 +101,12 @@ std::unique_ptr<PortManager> make_port_manager(
     return port_manager;
 }
 
-/* check_receive + record_received_message, as Communicator::receive_message does. */
+/* check_receive_s + record_received_message, as Communicator::receive_message does. */
 void check_received(
         TimelineManager & tm, std::string const & port_name, Optional<int> slot,
         IterationCount const & iteration) {
-    tm.check_receive(port_name, slot);
-    tm.record_received_message(port_name, slot, iteration);
+    tm.check_receive_s(port_name, slot);
+    tm.record_received_s_message(port_name, slot, iteration);
 }
 
 }   // anonymous namespace
@@ -117,9 +119,10 @@ struct libmuscle_timeline_manager : ::testing::Test {
     void create(
             PortsDescription const & declared_ports,
             std::unordered_map<std::string, Timeline> const & timelines = {},
-            bool include_settings = false) {
+            bool include_settings = false, Timeline timeline = Timeline(":")) {
         port_manager_ = make_port_manager(declared_ports, timelines, {}, include_settings);
-        tm_ = std::make_unique<TimelineManager>(*port_manager_);
+        tm_ = std::make_unique<TimelineManager>(*port_manager_, timeline);
+        ASSERT_FALSE(tm_->start_reuse_iteration().is_set());
     }
 };
 
@@ -143,7 +146,8 @@ struct libmuscle_full_timeline_manager : libmuscle_timeline_manager {
                     {"out_a2_2", Timeline(":A2")},
                     {"in_a2", Timeline(":A2")},
                 },
-                true);
+                true,
+                Timeline(":a"));
     }
 };
 
@@ -152,39 +156,54 @@ struct libmuscle_vector_timeline_manager : libmuscle_timeline_manager {
     libmuscle_vector_timeline_manager() {
         port_manager_ = make_port_manager(
                 PortsDescription{{Operator::O_F, {"out_v[]"}}}, {}, {{"out_v", {3}}});
-        tm_ = std::make_unique<TimelineManager>(*port_manager_);
+        tm_ = std::make_unique<TimelineManager>(*port_manager_, Timeline(":"));
+        tm_->start_reuse_iteration();
+        EXPECT_EQ(tm_->record_pre_received_iteration_counts({}), IterationCount());
     }
 };
 
 
+// Test support methods
+
+TEST(libmuscle_timeline, is_subiteration_or_equal) {
+    ASSERT_TRUE(is_subiteration_or_equal({}, {}));
+    ASSERT_TRUE(is_subiteration_or_equal({1, 2}, {1, 2}));
+    ASSERT_TRUE(is_subiteration_or_equal({1, 2}, {1}));
+    ASSERT_TRUE(is_subiteration_or_equal({1, 2}, {}));
+    ASSERT_FALSE(is_subiteration_or_equal({1, 2}, {1, 2, 3}));
+    ASSERT_FALSE(is_subiteration_or_equal({1, 2}, {1, 1}));
+    ASSERT_FALSE(is_subiteration_or_equal({}, {1, 1}));
+}
+
+TEST(libmuscle_timeline, get_most_nested_iteration) {
+    ASSERT_EQ(
+        get_most_nested_iteration({{1, 2, 3}, {1}, {1, 2, 3, 4}}),
+        IterationCount({1, 2, 3, 4}));
+    ASSERT_THROW(get_most_nested_iteration({}), std::logic_error);
+    ASSERT_THROW(get_most_nested_iteration({{1}, {2}}), std::logic_error);
+}
+
 // -- Main timeline: F_INIT / O_F --
-
-TEST_F(libmuscle_full_timeline_manager, f_init_receive_allowed_once) {
-    check_received(*tm_, "in_f", {}, {});
-    ASSERT_THROW(tm_->check_receive("in_f"), AlreadyParticipated);
-}
-
-TEST_F(libmuscle_full_timeline_manager, settings_in_receive_allowed_once) {
-    check_received(*tm_, "muscle_settings_in", {}, {});
-    ASSERT_THROW(tm_->check_receive("muscle_settings_in"), AlreadyParticipated);
-}
 
 TEST_F(libmuscle_full_timeline_manager, record_received_message_f_init_adopts_iteration) {
     IterationCount first = {3};
-    check_received(*tm_, "in_f", {}, first);
-    check_received(*tm_, "muscle_settings_in", {}, first);
+    tm_->record_pre_received_iteration_counts({first, first});
 
     ASSERT_EQ(tm_->check_send_message("out_f"), first);
 }
 
 TEST_F(libmuscle_full_timeline_manager, record_received_message_f_init_raises_on_mismatch) {
-    check_received(*tm_, "in_f", {}, {3});
-    ASSERT_THROW(
-            tm_->record_received_message("muscle_settings_in", {}, {4}), MessageOutOfSync);
+    ASSERT_THROW(tm_->record_pre_received_iteration_counts({{3}, {4}}), std::logic_error);
+}
+
+TEST_F(libmuscle_full_timeline_manager, check_pre_receive_counts_match_timeline) {
+    ASSERT_THROW(tm_->record_pre_received_iteration_counts({{}}), std::runtime_error);
+    ASSERT_THROW(tm_->record_pre_received_iteration_counts({{1, 2}}), std::runtime_error);
 }
 
 TEST_F(libmuscle_timeline_manager, o_f_can_send_immediately_when_no_f_init_connections) {
     create(PortsDescription{{Operator::O_F, {"out_f"}}});
+    tm_->record_pre_received_iteration_counts({});
 
     IterationCount iteration = tm_->check_send_message("out_f");
     ASSERT_EQ(iteration, IterationCount());
@@ -192,8 +211,7 @@ TEST_F(libmuscle_timeline_manager, o_f_can_send_immediately_when_no_f_init_conne
 }
 
 TEST_F(libmuscle_full_timeline_manager, o_f_blocked_while_subtimeline_incomplete) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     tm_->check_send_message("out_a1");  // starts :A1, but doesn't complete it
 
@@ -201,8 +219,7 @@ TEST_F(libmuscle_full_timeline_manager, o_f_blocked_while_subtimeline_incomplete
 }
 
 TEST_F(libmuscle_full_timeline_manager, o_f_send_records_iteration_and_participation) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     IterationCount iteration = tm_->check_send_message("out_f");
     ASSERT_EQ(iteration, IterationCount({3}));
@@ -213,16 +230,14 @@ TEST_F(libmuscle_full_timeline_manager, o_f_send_records_iteration_and_participa
 // -- Sub-timeline O_I/S leadership races --
 
 TEST_F(libmuscle_full_timeline_manager, o_i_leads_first_send_starts_subtimeline_at_zero) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     IterationCount iteration = tm_->check_send_message("out_a1");
     ASSERT_EQ(iteration, IterationCount({3, 0}));
 }
 
 TEST_F(libmuscle_full_timeline_manager, o_i_leads_second_send_blocked_until_all_s_received) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     tm_->check_send_message("out_a1");
     check_received(*tm_, "in_a1", {}, {3, 0});
@@ -232,8 +247,7 @@ TEST_F(libmuscle_full_timeline_manager, o_i_leads_second_send_blocked_until_all_
 }
 
 TEST_F(libmuscle_full_timeline_manager, o_i_leads_advances_once_all_s_received) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     IterationCount first = tm_->check_send_message("out_a1");
     check_received(*tm_, "in_a1", {}, first);
@@ -245,17 +259,15 @@ TEST_F(libmuscle_full_timeline_manager, o_i_leads_advances_once_all_s_received) 
 }
 
 TEST_F(libmuscle_full_timeline_manager, s_leads_first_receive_starts_subtimeline) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     check_received(*tm_, "in_a1", {}, {7});
     // second receive on the same port before O_I sends anything is blocked
-    ASSERT_THROW(tm_->check_receive("in_a1"), PortBlocked);
+    ASSERT_THROW(tm_->check_receive_s("in_a1"), PortBlocked);
 }
 
 TEST_F(libmuscle_full_timeline_manager, s_leads_o_i_blocked_until_all_s_received) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     check_received(*tm_, "in_a1", {}, {7});
     // in_a1_2 hasn't received yet, so S hasn't fully led :A1 yet
@@ -264,8 +276,7 @@ TEST_F(libmuscle_full_timeline_manager, s_leads_o_i_blocked_until_all_s_received
 }
 
 TEST_F(libmuscle_full_timeline_manager, s_leads_advances_on_strictly_later_iteration) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     check_received(*tm_, "in_a1", {}, {7});
     check_received(*tm_, "in_a1_2", {}, {7});
@@ -273,16 +284,15 @@ TEST_F(libmuscle_full_timeline_manager, s_leads_advances_on_strictly_later_itera
     tm_->check_send_message("out_a1");
 
     // an equal-or-earlier iteration on the already-participated S port is out of sync
-    tm_->check_receive("in_a1");
-    ASSERT_THROW(tm_->record_received_message("in_a1", {}, {7}), MessageOutOfSync);
+    tm_->check_receive_s("in_a1");
+    ASSERT_THROW(tm_->record_received_s_message("in_a1", {}, {7}), MessageOutOfSync);
 
     // a strictly later one advances the sub-iteration
     check_received(*tm_, "in_a1", {}, {8});
 }
 
 TEST_F(libmuscle_full_timeline_manager, many_o_i_one_s_mirror_scenario) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
 
     // :A2 has two O_I ports (out_a2, out_a2_2) and one S port (in_a2)
     tm_->check_send_message("out_a2");
@@ -299,63 +309,56 @@ TEST_F(libmuscle_full_timeline_manager, many_o_i_one_s_mirror_scenario) {
 // -- Reuse loop completion / reset --
 
 TEST_F(libmuscle_full_timeline_manager, finish_reuse_iteration_raises_when_incomplete) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
     // out_f never sent
 
-    ASSERT_THROW(tm_->finish_reuse_iteration(), ReuseLoopIncomplete);
+    ASSERT_THROW(tm_->start_reuse_iteration(), ReuseLoopIncomplete);
 }
 
 TEST_F(libmuscle_full_timeline_manager, finish_reuse_iteration_resets_when_complete) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
     tm_->check_send_message("out_f");
 
-    tm_->finish_reuse_iteration();
+    tm_->start_reuse_iteration();
 
     // fully reset: the same sequence works again from scratch
-    check_received(*tm_, "in_f", {}, {4});
-    check_received(*tm_, "muscle_settings_in", {}, {4});
+    tm_->record_pre_received_iteration_counts({{4}, {4}});
     IterationCount iteration = tm_->check_send_message("out_f");
     ASSERT_EQ(iteration, IterationCount({4}));
 }
 
 TEST_F(libmuscle_full_timeline_manager, finish_reuse_iteration_ok_when_subtimeline_unused) {
     // a sub-timeline never touched this iteration doesn't block completion
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
     tm_->check_send_message("out_f");
 
-    ASSERT_NO_THROW(tm_->finish_reuse_iteration());
+    ASSERT_NO_THROW(tm_->start_reuse_iteration());
 }
 
 
 // -- Snapshot state round-trip --
 
 TEST_F(libmuscle_full_timeline_manager, get_state_and_restore_state_round_trip) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
     tm_->check_send_message("out_a1");
     check_received(*tm_, "in_a1", {}, {3, 0});
     // in_a1_2 not yet received, so :A1 is incomplete, and out_f not yet sent
 
     TimelineState state = tm_->get_state();
 
-    TimelineManager restored(*port_manager_);
+    TimelineManager restored(*port_manager_, Timeline(":a"));
     restored.restore_state(state);
 
     TimelineState restored_state = restored.get_state();
     ASSERT_EQ(state.iteration.is_set(), restored_state.iteration.is_set());
     ASSERT_EQ(state.iteration.get(), restored_state.iteration.get());
     ASSERT_EQ(state.send_participated, restored_state.send_participated);
-    ASSERT_EQ(state.receive_participated, restored_state.receive_participated);
     ASSERT_EQ(
             state.subtimeline_states.size(), restored_state.subtimeline_states.size());
 }
 
 TEST_F(libmuscle_full_timeline_manager, state_data_round_trip_through_msgpack_shape) {
-    check_received(*tm_, "in_f", {}, {3});
-    check_received(*tm_, "muscle_settings_in", {}, {3});
+    tm_->record_pre_received_iteration_counts({{3}, {3}});
     tm_->check_send_message("out_a1");
     check_received(*tm_, "in_a1", {}, {3, 0});
 
@@ -366,7 +369,6 @@ TEST_F(libmuscle_full_timeline_manager, state_data_round_trip_through_msgpack_sh
     ASSERT_EQ(state.iteration.is_set(), round_tripped.iteration.is_set());
     ASSERT_EQ(state.iteration.get(), round_tripped.iteration.get());
     ASSERT_EQ(state.send_participated, round_tripped.send_participated);
-    ASSERT_EQ(state.receive_participated, round_tripped.receive_participated);
     ASSERT_EQ(
             state.subtimeline_states.size(), round_tripped.subtimeline_states.size());
 }
@@ -385,7 +387,7 @@ TEST_F(libmuscle_vector_timeline_manager, each_slot_participates_independently) 
 TEST_F(libmuscle_vector_timeline_manager, reuse_loop_incomplete_lists_missing_slots) {
     tm_->check_send_message("out_v", 0);
 
-    ASSERT_THROW(tm_->finish_reuse_iteration(), ReuseLoopIncomplete);
+    ASSERT_THROW(tm_->start_reuse_iteration(), ReuseLoopIncomplete);
 }
 
 TEST_F(libmuscle_vector_timeline_manager, finish_reuse_iteration_ok_once_all_slots_sent) {
@@ -393,5 +395,5 @@ TEST_F(libmuscle_vector_timeline_manager, finish_reuse_iteration_ok_once_all_slo
     tm_->check_send_message("out_v", 1);
     tm_->check_send_message("out_v", 2);
 
-    ASSERT_NO_THROW(tm_->finish_reuse_iteration());
+    ASSERT_NO_THROW(tm_->start_reuse_iteration());
 }

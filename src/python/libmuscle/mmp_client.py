@@ -262,6 +262,7 @@ class MMPClient:
         response = self._call_manager(request)
         if response[0] == ResponseType.ERROR.value:
             raise RuntimeError(f"Error registering instance: {response[1]}")
+        self._timeline = Timeline(response[1])
 
     def request_peers(self) -> PeerInfo:
         """Request connection information about peers.
@@ -359,6 +360,10 @@ class MMPClient:
         request = [RequestType.IS_DEADLOCKED.value, str(self._instance_id)]
         response = self._call_manager(request)
         return bool(response[1])
+
+    def get_timeline(self) -> Timeline:
+        """Ask the manager what our (absolute) timeline is."""
+        return self._timeline
 
     def _call_manager(self, request: Any, timid: bool = False) -> Any:
         """Call the manager and do en/decoding.

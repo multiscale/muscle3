@@ -50,7 +50,7 @@ def ls_snapshots(run_dir, instance=None):
     )
 
 
-def _python_wrapper(tmpdir, instance_name, muscle_manager, callable):
+def _python_wrapper(tmpdir, instance_name, muscle_manager, callable, *args):
     sys.argv.append(f"--muscle-instance={instance_name}")
     sys.argv.append(f"--muscle-manager={muscle_manager}")
 
@@ -70,7 +70,7 @@ def _python_wrapper(tmpdir, instance_name, muscle_manager, callable):
             root_logger.setLevel(logging.DEBUG)
 
             try:
-                callable()
+                callable(*args)
             except Exception as e:
                 root_logger.exception(e)
                 raise
@@ -88,8 +88,9 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
             Language can be ``"python"``, ``"cpp"``, ``"mpi_cpp"`` or ``"fortran"``.
             Details differ per language.
 
-            For python actors, details is a single callable which is executed
-            in a ``multiprocessing.Process``.
+            For python actors, details is a callable which is executed
+            in a ``multiprocessing.Process``. Additional positional arguments can be
+            supplied as well.
 
             For cpp actors, details is an executable path with optional arguments.
             The executable paths are assumed to be relative to
@@ -129,7 +130,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
                 # start python actor
                 proc = mp.Process(
                     target=_python_wrapper,
-                    args=(tmpdir, instance_name, env["MUSCLE_MANAGER"], actor),
+                    args=(tmpdir, instance_name, env["MUSCLE_MANAGER"], actor, *args),
                     name=instance_name,
                 )
                 proc.start()

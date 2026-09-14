@@ -31,16 +31,15 @@ class MockSnapshotManager : public MockClass<MockSnapshotManager> {
         MockSnapshotManager(
                 ymmsl::Reference const & instance_id,
                 MMPClient & manager,
-                PortManager & port_manager,
                 Communicator & communicator)
         {
             init_from_return_value();
-            constructor(instance_id, manager, port_manager, communicator);
+            constructor(instance_id, manager, communicator);
         }
 
         MockFun<
             Void, Val<ymmsl::Reference const &>, Obj<MMPClient &>,
-            Obj<PortManager &>, Obj<Communicator &>> constructor;
+            Obj<Communicator &>> constructor;
 
         MockFun<
             Val<Optional<double>>, Val<Optional<std::string> const &>,
@@ -57,7 +56,7 @@ class MockSnapshotManager : public MockClass<MockSnapshotManager> {
         MockFun<
             Val<double>, Val<Optional<Message>>, Val<bool>,
             Val<std::vector<std::string> const &>, Val<double>, Val<Optional<double>>,
-            Val<::ymmsl::Settings>> save_snapshot;
+            Val<::ymmsl::Settings>, Val<CommunicatorState>> save_snapshot;
 
         MockFun<Val<Snapshot>, Val<std::string const &>> load_snapshot_from_file;
 };

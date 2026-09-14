@@ -127,6 +127,7 @@ def test_settings_overlays(log_file_in_tmpdir):
                 ("test4", True),
                 ("test5", [2.3, 5.6]),
                 ("test6", [[1.0, 2.0], [3.0, 1.0]]),
+                ("muscle_remote_log_level", "DEBUG"),
             ]
         )
     )

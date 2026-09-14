@@ -35,7 +35,6 @@ class SnapshotManager {
         SnapshotManager(
                 ymmsl::Reference const & instance_id,
                 MMPClient & manager,
-                PortManager & port_manager,
                 Communicator & communicator);
 
         /** Apply checkpoint info received from the manager.
@@ -90,7 +89,8 @@ class SnapshotManager {
                 Optional<Message> message, bool is_final,
                 std::vector<std::string> const & triggers, double wallclock_time,
                 Optional<double> f_init_max_timestamp,
-                ::ymmsl::Settings settings_overlay);
+                ::ymmsl::Settings settings_overlay,
+                CommunicatorState const & communicator_state);
 
         /** Load a previously stored snapshot from the filesystem.
          *
@@ -102,7 +102,6 @@ class SnapshotManager {
     private:
         ymmsl::Reference const & instance_id_;
         MMPClient & manager_;
-        PortManager & port_manager_;
         Communicator & communicator_;
         Optional<Snapshot> resume_from_snapshot_;
         ::ymmsl::Settings resume_overlay_;

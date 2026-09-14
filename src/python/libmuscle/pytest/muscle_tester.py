@@ -14,17 +14,21 @@ from ymmsl.v0_2 import (
     Conduit,
     Configuration,
     ExecutionModel,
+    Identifier,
     Implementation,
     Model,
+    Operator,
+    Port,
     Ports,
     Program,
     Reference,
-    ThreadedResReq,
+    Timeline,
 )
 
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.mcp.tcp_transport_client import RECONNECT_TIMEOUT
+from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mmp_client import PEER_TIMEOUT
 from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.receive_timeout_handler import ReceiveTimeoutHandler
@@ -82,33 +86,48 @@ class MuscleTester:
             )
 
         tester_name = "muscle3_implementation_tester"
+        tester_timeline = Timeline(tester_name)
+        tester_ports: list[Port] = []
         test_model_name = "muscle3_test_model"
-        tester_o_i_ports = []
-        tester_s_ports = []
 
         tester_model = Model(name=test_model_name)
 
-        # Inputs of target → tester sends (O_I)
-        for port_name in implementation.ports.receiving_port_names():
-            tester_o_i_ports.append(f"{port_name}")
+        # Generate ports and conduits
+        for port in implementation.ports.values():
+            tester_port = f"{tester_name}.{port.name}"
+            implementation_port = f"{implementation_name}.{port.name}"
+            if port.operator.allows_receiving():
+                conduit = Conduit(tester_port, implementation_port)
+                tester_operator = Operator.O_I
+            else:
+                conduit = Conduit(implementation_port, tester_port)
+                tester_operator = Operator.S
+            if port.operator in (Operator.O_I, Operator.S):
+                port_timeline = port.timeline or Timeline(implementation_name)
+                timeline = tester_timeline + port_timeline
+            else:
+                timeline = tester_timeline
+
+            tester_model.conduits.append(conduit)
+            tester_ports.append(Port(port.name, tester_operator, timeline))
+
+        if not any(
+            p.operator is Operator.F_INIT for p in implementation.ports.values()
+        ):
+            # We'll connect muscle_settings_in to make the timeline logic work
             tester_model.conduits.append(
                 Conduit(
-                    f"{tester_name}.{port_name}", f"{implementation_name}.{port_name}"
+                    f"{tester_name}.__settings_in__",
+                    f"{implementation_name}.muscle_settings_in",
                 )
             )
-
-        # Outputs of target → tester receives (S)
-        for port_name in implementation.ports.sending_port_names():
-            tester_s_ports.append(f"{port_name}")
-            tester_model.conduits.append(
-                Conduit(
-                    f"{implementation_name}.{port_name}", f"{tester_name}.{port_name}"
-                )
+            tester_ports.append(
+                Port(Identifier("__settings_in__"), Operator.O_I, tester_timeline)
             )
 
         tester_model.components[Reference(tester_name)] = Component(
             name=tester_name,
-            ports=Ports(o_i=tester_o_i_ports, s=tester_s_ports),
+            ports=Ports(tester_ports),
             description="Tester component for implementation testing",
             implementation=tester_name,
             optional=False,
@@ -124,13 +143,9 @@ class MuscleTester:
 
         config.programs[Reference(tester_name)] = Program(
             name=tester_name,
-            ports=Ports(o_i=tester_o_i_ports, s=tester_s_ports),
+            ports=Ports(tester_ports),
             execution_model=ExecutionModel.MANUAL,
             description="Manual tester program for implementation testing",
-        )
-
-        config.resources[Reference(tester_name)] = ThreadedResReq(
-            name=Reference(tester_name), threads=1
         )
 
         config.models[Reference(test_model_name)] = tester_model
@@ -191,6 +206,18 @@ class MuscleTester:
         self._exitstack.enter_context(
             patch(
                 "libmuscle.mmp_client.PEER_TIMEOUT", min(PEER_TIMEOUT, default_timeout)
+            )
+        )
+        # Ensure we won't wait forever on our outboxes
+        self._exitstack.enter_context(
+            patch("libmuscle.post_office.PostOffice.wait_for_receivers")
+        )
+        # And we close() our TCP Servers ungracefully
+        origclose = TcpTransportServer.close
+        self._exitstack.enter_context(
+            patch.multiple(
+                TcpTransportServer,
+                close=lambda self, _=True: origclose(self, False),
             )
         )
         self.implementation_tester = ImplementationTester(

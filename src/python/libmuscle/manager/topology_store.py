@@ -1,4 +1,4 @@
-from ymmsl.v0_2 import Conduit, Configuration, Ports, Reference
+from ymmsl.v0_2 import Conduit, Configuration, Ports, Reference, Timeline
 
 from libmuscle.util import generate_indices, instance_indices
 
@@ -45,7 +45,7 @@ class TopologyStore:
         for conduit in self.model.conduits:
             if conduit.sending_component() == component:
                 ret.append(conduit)
-            if conduit.receiving_component() == component:
+            elif conduit.receiving_component() == component:
                 ret.append(conduit)
         return ret
 
@@ -108,3 +108,10 @@ class TopologyStore:
                 for peer_indices in generate_indices(peer_dims[len(dims) :]):
                     peers.append(base + peer_indices)
         return peers
+
+    def get_timeline(self, instance: Reference) -> Timeline:
+        """Get the timeline for the provided instance."""
+        component = instance.without_trailing_ints()
+        timeline = self.model.components[component].timeline
+        assert timeline is not None
+        return timeline

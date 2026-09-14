@@ -7,6 +7,7 @@ from ymmsl.v0_2 import Operator, Reference, Settings
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.communicator import Message
+from libmuscle.communicator_state import CommunicatorState
 from libmuscle.mcp.transport_client import ProfileData
 from libmuscle.mmp_client import MMPClient
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
@@ -44,12 +45,15 @@ def profile_data() -> ProfileData:
 
 
 @pytest.fixture
-def timeline_state() -> TimelineState:
-    return TimelineState(
-        iteration=[1],
-        send_participated=[],
-        receive_participated=[["in", None]],
-        subtimeline_states={},
+def communicator_state() -> CommunicatorState:
+    return CommunicatorState(
+        port_message_counts={"in": [1], "out": [4], "muscle_settings_in": [0]},
+        timeline_state=TimelineState(
+            iteration=[1],
+            send_participated=[],
+            subtimeline_states={},
+        ),
+        message_cache={},
     )
 
 
@@ -108,7 +112,15 @@ def mock_ports():
 
 
 @pytest.fixture
-def connected_port_manager(port_manager, declared_ports, mock_ports):
+def settings_in_connected(request):
+    # Allow indirectly parametrizing settings_in_connected
+    return getattr(request, "param", False)
+
+
+@pytest.fixture
+def connected_port_manager(
+    port_manager, declared_ports, mock_ports, settings_in_connected
+):
 
     def get_port(name):
         if name == "muscle_settings_in":
@@ -124,8 +136,9 @@ def connected_port_manager(port_manager, declared_ports, mock_ports):
 
     port_manager._ports = mock_ports
     port_manager._muscle_settings_in = Port(
-        "muscle_settings_in", Operator.F_INIT, None, False, True, 0, []
+        "muscle_settings_in", Operator.F_INIT, None, False, settings_in_connected, 0, []
     )
+    port_manager.settings_in_connected.return_value = settings_in_connected
     port_manager.get_port = get_port
     port_manager.get_connected_ports = get_connected_ports
     port_manager.list_ports.return_value = declared_ports

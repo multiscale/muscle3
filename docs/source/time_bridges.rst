@@ -12,12 +12,13 @@ port on the other program, and vice versa, because the two programs send and rec
 same number of messages for any given section of simulated time.
 
 If the two programs do not run on exactly the same timeline, but one has somewhat
-smaller or larger time steps than the other or the size of the steps varies, then this
-will no longer work, because the number of messages sent by one side will not match the
-number of times the other tries to receive. This leads to clock skew (where information
-from the past or the future is used instead of from the present), or in the case of
-bidirectional communication to deadlock, where the simulation halts because the programs
-are waiting for each other.
+smaller or larger time steps than the other, then we will get clock skew, where the
+simulation time in the two components doesn't match anymore and information from the
+past or the future is used rather than from the present.
+
+If the number of messages sent doesn't match the number of messages received and
+there's bidirectional communication then we can get a deadlock, where the simulation
+halts because the programs are waiting for each other.
 
 Time bridges exist to solve these problems, and allow connecting programs (or entire
 models) if the time lines are neither identical nor nested, but similar and possibly
@@ -26,7 +27,7 @@ variable depending on how the simulation progresses.
 Connecting components using a time bridge
 -----------------------------------------
 
-The standard MUSCLE3 time bridge provides for unidirectional communication between two
+The simplest MUSCLE3 time bridge provides for unidirectional communication between two
 instances' O_I and S ports. The sending side needs to have an O_I port sending the data
 needed by the receiver, and the receiver needs the corresponding S port to receive it.
 Furthermore, the receiving side needs an O_I port on which arbitrary data is sent on
@@ -62,9 +63,9 @@ time point `t_r_next` attached.
 
 The time bridge will ignore the contents of that message, but it will use the timestamps
 to decide which input messages to send to the receiver in its next message. It will then
-receive those messages from the sender if needed and available, collate them into a
-list, and send that list to the receiver, after which it will receive the next clock
-message and repeat.
+receive those messages from the sender if needed and available, collate the selected
+ones (see below) into a list, and send that list to the receiver, after which it will
+receive the next clock message and repeat.
 
 Deciding which data to send
 ---------------------------

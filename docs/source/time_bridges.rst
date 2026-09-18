@@ -157,6 +157,16 @@ all three outputs are enabled):
 |         i         |        9        |     10      |        10        |
 +-------------------+-----------------+-------------+------------------+
 
+If only ``recv_last_before_cur`` or ``recv_last_before_next`` is selected, then at most
+one message will be sent to the receiver. In that case, you may want to set the setting
+``recv_list`` to ``false`` (it is ``true`` by default), to tell the time bridge to just
+send that value directly, or a ``nil`` value if no data is available.
+
+In some cases, you may want to process the data sent by the time bridge before passing
+it to the receiver. This can be done by adding an additional component which receives
+the list (or value) from the time bridge on an ``F_INIT`` port, processes it, and sends
+some value expected by the receiver on an ``O_F`` port.
+
 
 Variable timestepping
 ---------------------

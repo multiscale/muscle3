@@ -788,8 +788,9 @@ class Communicator:
                     # Count the reducer filters, receiving component handles repeaters
                     n_reducers = sum(1 for filter in filters if filter.is_reducer())
                     if n_reducers > 0:
+                        op_tl_shift = -1 if operator == Operator.O_F else 0
                         self._outgoing_timeline_length[peer_port] = (
-                            len(self._timeline) + len(port.timeline) - n_reducers
+                            len(self._timeline) + op_tl_shift - n_reducers
                         )
 
     def _pad_message(

@@ -100,7 +100,9 @@ def test_python_tcp_reconnect(tcp_fault_injection, log_file_in_tmpdir):
 
     conduits = [Conduit("macro.out", "micro.init"), Conduit("micro.result", "macro.in")]
 
-    model = Model("test_python_tcp_reconnect", None, "", None, components, conduits)
+    model = Model(
+        "test_python_tcp_reconnect", None, "", None, components, None, conduits
+    )
     settings = Settings()
     settings["muscle_remote_log_level"] = "warning"
     settings["muscle_local_log_level"] = "debug"

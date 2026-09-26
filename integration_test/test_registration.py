@@ -35,7 +35,7 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
     assert Conduit("micro.out", "macro.in") in peer_info._conduits
 
     assert peer_info._peer_dims[Reference("macro")] == []
-    assert peer_info._peer_locations["macro"] == ["direct:macro"]
+    assert peer_info._peer_locations[Reference("macro")] == ["direct:macro"]
 
     with (
         patch("libmuscle.mmp_client.PEER_TIMEOUT", 0.1),

@@ -49,7 +49,7 @@ def cache_component(max_channels=2):
 
         if cur_t - cache_t >= max_cache_age:
             # Cached value is no longer valid, run submodel for updated data
-            for msg, port in zip(msgs, ports[Operator.O_I]):
+            for msg, port in zip(msgs, ports[Operator.O_I], strict=True):
                 instance.send(port, Message(cur_t, data=msg.data))
             cache_data = [
                 instance.receive(port, default=nil_msg).data
@@ -58,7 +58,7 @@ def cache_component(max_channels=2):
             cache_t = cur_t
             max_cache_age = random.uniform(*cache_valid_range)
 
-        for data, port in zip(cache_data, ports[Operator.O_F]):
+        for data, port in zip(cache_data, ports[Operator.O_F], strict=True):
             instance.send(port, Message(cur_t, data=data))
 
         if instance.should_save_final_snapshot():
@@ -73,7 +73,9 @@ def echo_component(max_channels=2):
     instance = Instance(ports, KEEPS_NO_STATE_FOR_NEXT_USE)
 
     while instance.reuse_instance():
-        for p_in, p_out in zip(ports[Operator.F_INIT], ports[Operator.O_F]):
+        for p_in, p_out in zip(
+            ports[Operator.F_INIT], ports[Operator.O_F], strict=True
+        ):
             if instance.is_connected(p_in):
                 instance.send(p_out, instance.receive(p_in))
 

@@ -1,6 +1,5 @@
 from enum import Enum
 from time import perf_counter_ns, time_ns
-from typing import Optional
 
 from ymmsl.v0_2 import Port
 
@@ -33,7 +32,7 @@ class ProfileTimestamp:
 
     _time_ref = time_ns() - perf_counter_ns()
 
-    def __init__(self, nanoseconds: Optional[int] = None) -> None:
+    def __init__(self, nanoseconds: int | None = None) -> None:
         """Create a timestamp representing now.
 
         Args:
@@ -84,14 +83,14 @@ class ProfileEvent:
     def __init__(
         self,
         event_type: ProfileEventType,
-        start_time: Optional[ProfileTimestamp] = None,
-        stop_time: Optional[ProfileTimestamp] = None,
-        port: Optional[Port] = None,
-        port_length: Optional[int] = None,
-        slot: Optional[int] = None,
-        message_number: Optional[int] = None,
-        message_size: Optional[int] = None,
-        message_timestamp: Optional[float] = None,
+        start_time: ProfileTimestamp | None = None,
+        stop_time: ProfileTimestamp | None = None,
+        port: Port | None = None,
+        port_length: int | None = None,
+        slot: int | None = None,
+        message_number: int | None = None,
+        message_size: int | None = None,
+        message_timestamp: float | None = None,
     ) -> None:
 
         self.event_type = event_type

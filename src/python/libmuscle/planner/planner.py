@@ -482,7 +482,7 @@ class ResourceAssignment:
             return NotImplemented
 
         return len(self.by_rank) == len(other.by_rank) and all(
-            [snr == onr for snr, onr in zip(self.by_rank, other.by_rank)]
+            [snr == onr for snr, onr in zip(self.by_rank, other.by_rank, strict=True)]
         )
 
     def __str__(self) -> str:
@@ -636,7 +636,7 @@ class Planner:
         """
         cmp_names = map(Reference.without_trailing_ints, instances)
         reqs = map(lambda n: requirements[model_name + n], cmp_names)
-        instances_reqs = list(zip(instances, reqs))
+        instances_reqs = list(zip(instances, reqs, strict=True))
         threaded = [
             (i, r.threads) for i, r in instances_reqs if isinstance(r, ThreadedResReq)
         ]

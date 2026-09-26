@@ -5,7 +5,6 @@ from contextlib import ExitStack, contextmanager
 from multiprocessing.connection import Connection
 from pathlib import Path
 from types import TracebackType
-from typing import Optional, Union
 from unittest.mock import patch
 
 import ymmsl.v0_2
@@ -48,7 +47,7 @@ class MuscleTester:
     def __init__(self, run_dir: Path) -> None:
         self.run_dir = run_dir
         self.run_dir.mkdir(parents=True, exist_ok=True)
-        self.implementation_tester: Optional[ImplementationTester] = None
+        self.implementation_tester: ImplementationTester | None = None
         self._exitstack = ExitStack()
 
     def __enter__(self) -> "MuscleTester":
@@ -57,9 +56,9 @@ class MuscleTester:
 
     def __exit__(
         self,
-        typ: Optional[type[BaseException]],
-        exc: Optional[BaseException],
-        tb: Optional[TracebackType],
+        typ: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
     ) -> None:
         """Allows usage in a with-statement"""
         self.cleanup()
@@ -153,7 +152,7 @@ class MuscleTester:
 
     def start_implementation(
         self,
-        ymmsl_source: Union[str, Path],
+        ymmsl_source: str | Path,
         implementation: str,
         *,
         default_timeout: float = 60,

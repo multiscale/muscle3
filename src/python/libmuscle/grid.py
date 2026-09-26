@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 
 
@@ -19,7 +17,7 @@ class Grid:
         indexes (Optional[list[str]]): The names of the array's indexes.
     """
 
-    def __init__(self, array: np.ndarray, indexes: Optional[list[str]] = None) -> None:
+    def __init__(self, array: np.ndarray, indexes: list[str] | None = None) -> None:
         """Creates a Grid object.
 
         A Grid object represents an multi-dimensional array of data. It

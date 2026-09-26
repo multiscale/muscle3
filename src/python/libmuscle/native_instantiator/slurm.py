@@ -3,7 +3,7 @@ import os
 import subprocess
 from collections.abc import Sequence
 from itertools import product
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from parsimonious import Grammar, NodeVisitor
 from parsimonious.nodes import Node
@@ -364,7 +364,7 @@ class SlurmInfo:
         return int(version[0]), int(version[1])
 
 
-slurm_: Optional[SlurmInfo] = None
+slurm_: SlurmInfo | None = None
 
 
 def slurm() -> SlurmInfo:

@@ -91,7 +91,7 @@ class SnapshotMetadata:
     triggers: list[str]
     wallclock_time: float
     timestamp: float
-    next_timestamp: Optional[float]
+    next_timestamp: float | None
     port_message_counts: dict[str, list[int]]
     is_final_snapshot: bool
     # storing as str, because Path cannot be serialized by msgpack

@@ -5,7 +5,6 @@ import sys
 import traceback
 from pathlib import Path
 from time import sleep
-from typing import Optional
 
 from ymmsl.v0_2 import (
     MPICoresResReq,
@@ -140,7 +139,11 @@ class NativeInstantiator(mp.Process):
         agent_res = self._agent_manager.get_resources()
 
         env_ncpus = dict(
-            zip(global_resources().nodes, global_resources().logical_cpus_per_node)
+            zip(
+                global_resources().nodes,
+                global_resources().logical_cpus_per_node,
+                strict=True,
+            )
         )
 
         for node_name in env_ncpus:
@@ -254,7 +257,7 @@ class NativeInstantiator(mp.Process):
             self._processes[name].error_msg = f"Instance failed to start: {e}"
 
     def _write_run_script(
-        self, request: InstantiationRequest, rankfile: Optional[Path]
+        self, request: InstantiationRequest, rankfile: Path | None
     ) -> Path:
         """Create and write out the run script and return its location."""
         # TODO: Only write out once for each program
@@ -289,7 +292,7 @@ class NativeInstantiator(mp.Process):
         env["MUSCLE_THREADS"] = str(num_threads)
         env["OMP_NUM_THREADS"] = str(num_threads)
 
-        num_mpi_processes: Optional[int] = None
+        num_mpi_processes: int | None = None
         if isinstance(res_req, MPICoresResReq):
             num_mpi_processes = res_req.mpi_processes
         elif isinstance(res_req, MPINodesResReq):

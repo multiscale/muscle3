@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Optional
 
 from ymmsl.v0_2 import Configuration, Operator, Reference, Settings
 
@@ -52,9 +51,7 @@ class ImplementationTester:
             msg = Message(float("-inf"), data=Settings())
             self._instance.send("__settings_in__", msg)
 
-    def send(
-        self, port_name: str, message: Message, slot: Optional[int] = None
-    ) -> None:
+    def send(self, port_name: str, message: Message, slot: int | None = None) -> None:
         """
         Send a message on the specified port.
 
@@ -70,9 +67,9 @@ class ImplementationTester:
     def receive(
         self,
         port_name: str,
-        slot: Optional[int] = None,
+        slot: int | None = None,
         *,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> Message:
         """
         Receive a message from the specified port.

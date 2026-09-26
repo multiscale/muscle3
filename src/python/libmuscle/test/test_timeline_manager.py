@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pytest
 from ymmsl.v0_2 import Conduit, Operator, Port, Timeline
 from ymmsl.v0_2 import Identifier as Id
@@ -107,7 +105,7 @@ def expected(
 def check_received(
     timeline_manager: TimelineManager,
     port: str,
-    slot: Optional[int],
+    slot: int | None,
     iteration: IterationCount,
 ) -> None:
     timeline_manager.check_receive_s(port, slot)

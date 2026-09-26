@@ -1,5 +1,3 @@
-from typing import Optional
-
 import msgpack
 from typing_extensions import Buffer
 from ymmsl.v0_2 import Reference
@@ -26,7 +24,7 @@ class MPPClient:
         Args:
             locations: The peer's location strings
         """
-        client: Optional[TransportClient] = None
+        client: TransportClient | None = None
         for ClientType in transport_client_types:
             for location in locations:
                 if ClientType.can_connect_to(location):
@@ -43,7 +41,7 @@ class MPPClient:
         self._transport_client = client
 
     def receive(
-        self, receiver: Reference, timeout_handler: Optional[TimeoutHandler]
+        self, receiver: Reference, timeout_handler: TimeoutHandler | None
     ) -> tuple[Buffer, ProfileData]:
         """Receive a message from a port this client connects to.
 

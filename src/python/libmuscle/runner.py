@@ -10,9 +10,10 @@ import multiprocessing as mp
 import multiprocessing.connection as mpc
 import sys
 import traceback
+from collections.abc import Callable
 from pathlib import Path
 from time import sleep
-from typing import Callable, cast
+from typing import cast
 from warnings import catch_warnings, filterwarnings
 
 import ymmsl.v0_1 as v0_1
@@ -278,7 +279,7 @@ def run_instances(instances: dict[str, Callable], manager_location: str) -> None
             f"Instance(s) {failed_names} failed to shut down cleanly. Here is the"
             " final bit of the output:"
         )
-        for name, output in zip(failed_names, outputs):
+        for name, output in zip(failed_names, outputs, strict=True):
             msg += "\n ---------- " + name + " ----------\n"
             msg += output + "\n"
             msg += f"See muscle3.{name}.log for the complete output\n"

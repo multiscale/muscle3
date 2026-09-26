@@ -1,7 +1,6 @@
 import bisect
 import logging
 import time
-from typing import Optional, Union
 
 from ymmsl.v0_2 import (
     CheckpointAtRule,
@@ -16,7 +15,7 @@ _logger = logging.getLogger(__name__)
 class CheckpointTrigger:
     """Represents a trigger for creating snapshots"""
 
-    def next_checkpoint(self, cur_time: float) -> Optional[float]:
+    def next_checkpoint(self, cur_time: float) -> float | None:
         """Calculate the next checkpoint time
 
         Args:
@@ -28,7 +27,7 @@ class CheckpointTrigger:
         """
         raise NotImplementedError()
 
-    def previous_checkpoint(self, cur_time: float) -> Optional[float]:
+    def previous_checkpoint(self, cur_time: float) -> float | None:
         """Calculate the previous checkpoint time
 
         Args:
@@ -55,13 +54,13 @@ class AtCheckpointTrigger(CheckpointTrigger):
         """
         self._at = sorted([a for r in at_rules for a in r.at])
 
-    def next_checkpoint(self, cur_time: float) -> Optional[float]:
+    def next_checkpoint(self, cur_time: float) -> float | None:
         if cur_time >= self._at[-1]:
             return None  # no future checkpoint left
         idx = bisect.bisect(self._at, cur_time)
         return self._at[idx]
 
-    def previous_checkpoint(self, cur_time: float) -> Optional[float]:
+    def previous_checkpoint(self, cur_time: float) -> float | None:
         if cur_time < self._at[0]:
             return None  # no previous checkpoint
         idx = bisect.bisect(self._at, cur_time)
@@ -92,13 +91,13 @@ class RangeCheckpointTrigger(CheckpointTrigger):
         self._start = range.start
         self._stop = range.stop
         self._every = range.every
-        self._last: Union[int, float, None] = None
+        self._last: int | float | None = None
         if self._stop is not None:
             start = 0 if self._start is None else self._start
             diff = self._stop - start
             self._last = start + (diff // self._every) * self._every
 
-    def next_checkpoint(self, cur_time: float) -> Optional[float]:
+    def next_checkpoint(self, cur_time: float) -> float | None:
         if self._start is not None and cur_time < self._start:
             return float(self._start)
         if self._last is not None and cur_time >= self._last:
@@ -107,7 +106,7 @@ class RangeCheckpointTrigger(CheckpointTrigger):
         diff = cur_time - start
         return float(start + (diff // self._every + 1) * self._every)
 
-    def previous_checkpoint(self, cur_time: float) -> Optional[float]:
+    def previous_checkpoint(self, cur_time: float) -> float | None:
         if self._start is not None and cur_time < self._start:
             return None
         if self._last is not None and cur_time > self._last:
@@ -139,7 +138,7 @@ class CombinedCheckpointTriggers(CheckpointTrigger):
         if at_rules:
             self._triggers.append(AtCheckpointTrigger(at_rules))
 
-    def next_checkpoint(self, cur_time: float) -> Optional[float]:
+    def next_checkpoint(self, cur_time: float) -> float | None:
         checkpoints = (trigger.next_checkpoint(cur_time) for trigger in self._triggers)
         # return earliest of all not-None next-checkpoints
         return min(
@@ -147,7 +146,7 @@ class CombinedCheckpointTriggers(CheckpointTrigger):
             default=None,
         )  # return None if all triggers return None
 
-    def previous_checkpoint(self, cur_time: float) -> Optional[float]:
+    def previous_checkpoint(self, cur_time: float) -> float | None:
         checkpoints = (
             trigger.previous_checkpoint(cur_time) for trigger in self._triggers
         )
@@ -180,11 +179,11 @@ class TriggerManager:
 
         self._wall = CombinedCheckpointTriggers(checkpoints.wallclock_time)
         self._prevwall = 0.0
-        self._nextwall: Optional[float] = self._wall.next_checkpoint(0.0)
+        self._nextwall: float | None = self._wall.next_checkpoint(0.0)
 
         self._sim = CombinedCheckpointTriggers(checkpoints.simulation_time)
-        self._prevsim: Optional[float] = None
-        self._nextsim: Optional[float] = None
+        self._prevsim: float | None = None
+        self._nextsim: float | None = None
 
     def elapsed_walltime(self) -> float:
         """Returns elapsed wallclock_time in seconds."""
@@ -198,7 +197,7 @@ class TriggerManager:
         return self.__should_save(timestamp)
 
     def should_save_final_snapshot(
-        self, do_reuse: bool, f_init_max_timestamp: Optional[float]
+        self, do_reuse: bool, f_init_max_timestamp: float | None
     ) -> bool:
         """Handles instance.should_save_final_snapshot"""
         if not self._has_checkpoints:

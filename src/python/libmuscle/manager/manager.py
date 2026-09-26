@@ -2,7 +2,6 @@ import logging
 import sys
 import traceback
 from pathlib import Path
-from typing import Optional
 
 from ymmsl import save as save_ymmsl
 from ymmsl.v0_2 import Configuration, resolve_timelines
@@ -31,8 +30,8 @@ class Manager:
     def __init__(
         self,
         configuration: Configuration,
-        run_dir: Optional[RunDir] = None,
-        log_level: Optional[str] = None,
+        run_dir: RunDir | None = None,
+        log_level: str | None = None,
     ) -> None:
         """Create a Manager.
 
@@ -91,7 +90,7 @@ class Manager:
             ]
         )
 
-        self._instance_manager: Optional[InstanceManager] = None
+        self._instance_manager: InstanceManager | None = None
         if self._run_dir is not None:
             self._instance_manager = InstanceManager(
                 configuration, self._run_dir, self._instance_registry

@@ -3,7 +3,7 @@ import sys
 import time
 from collections.abc import Generator
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 from ymmsl.v0_2 import Reference
 
@@ -41,7 +41,7 @@ def instance_indices(instance: Reference) -> list[int]:
     return [cast(int, instance[j]) for j in range(i, len(instance))]
 
 
-def port_desc(port_name: str, slot: Optional[int]) -> str:
+def port_desc(port_name: str, slot: int | None) -> str:
     """Return a human-readable label for a port, including its slot if given.
 
     Args:
@@ -69,7 +69,7 @@ def generate_indices(dims: list[int]) -> Generator[list[int], None, None]:
         yield list(index)
 
 
-def extract_log_file_location(filename: str) -> Optional[Path]:
+def extract_log_file_location(filename: str) -> Path | None:
     """Gets the log file location from the command line.
 
     Extracts the --muscle-log-file=<path> argument to tell the

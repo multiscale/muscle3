@@ -1,14 +1,13 @@
 from dataclasses import dataclass
-from typing import Optional, TypedDict
+from typing import TypeAlias, TypedDict
 
-from typing_extensions import TypeAlias
 from ymmsl.v0_2 import Operator, Timeline
 
 from libmuscle.port import Port
 from libmuscle.port_manager import PortManager
 from libmuscle.util import port_desc
 
-PortAndSlot: TypeAlias = tuple[str, Optional[int]]  # (port_name, slot)
+PortAndSlot: TypeAlias = tuple[str, int | None]  # (port_name, slot)
 IterationCount: TypeAlias = list[int]  # nested iteration counts of a message
 ExpectedActions: TypeAlias = list[tuple[str, Port, list[int]]]
 
@@ -50,8 +49,8 @@ class SubTimelineState(TypedDict):
     """A single sub-timeline's state, as returned by
     SubTimelineManager.get_state() for saving in a snapshot."""
 
-    iteration: Optional[IterationCount]
-    first_operator: Optional[str]
+    iteration: IterationCount | None
+    first_operator: str | None
     send_participated: list[PortAndSlot]
     receive_participated: list[PortAndSlot]
 
@@ -66,7 +65,7 @@ class TimelineState:
     iteration is None if the main timeline has not started yet.
     """
 
-    iteration: Optional[IterationCount]
+    iteration: IterationCount | None
     send_participated: list[PortAndSlot]
     subtimeline_states: dict[str, SubTimelineState]
 
@@ -101,9 +100,7 @@ class PortBlocked(TimelineError):
     """The given port cannot send/receive yet: other ports must send or
     receive a message first."""
 
-    def __init__(
-        self, port: Port, slot: Optional[int], expected: ExpectedActions
-    ) -> None:
+    def __init__(self, port: Port, slot: int | None, expected: ExpectedActions) -> None:
         self.action = "send" if port.operator.allows_sending() else "receive"
         self.port = port
         self.slot = slot
@@ -125,7 +122,7 @@ class AlreadyParticipated(TimelineError):
     """The given port already sent/received a message this reuse loop
     iteration."""
 
-    def __init__(self, port: Port, slot: Optional[int]) -> None:
+    def __init__(self, port: Port, slot: int | None) -> None:
         self.action = "send" if port.operator.allows_sending() else "receive"
         self.port = port
         self.slot = slot
@@ -144,7 +141,7 @@ class MessageOutOfSync(TimelineError):
     The timeline manager's bookkeeping should never let this state be reached. Seeing
     this means there is probably a bug in MUSCLE3."""
 
-    def __init__(self, port: Port, slot: Optional[int]) -> None:
+    def __init__(self, port: Port, slot: int | None) -> None:
         self.port = port
         self.slot = slot
         slots = [slot] if slot is not None else []
@@ -168,11 +165,11 @@ class TimelinePorts:
         self.ports = ports
         self.participated: set[PortAndSlot] = set()
 
-    def participate(self, port_name: str, slot: Optional[int]) -> None:
+    def participate(self, port_name: str, slot: int | None) -> None:
         """Record that the given port/slot has participated."""
         self.participated.add((port_name, slot))
 
-    def has_participated(self, port_name: str, slot: Optional[int]) -> bool:
+    def has_participated(self, port_name: str, slot: int | None) -> bool:
         """Return whether the given port/slot has already participated."""
         return (port_name, slot) in self.participated
 
@@ -216,8 +213,8 @@ class TimelinePorts:
 
 
 def _expected_actions(
-    send: Optional[TimelinePorts] = None,
-    receive: Optional[TimelinePorts] = None,
+    send: TimelinePorts | None = None,
+    receive: TimelinePorts | None = None,
     *,
     missing_only: bool = True,
 ) -> ExpectedActions:
@@ -270,11 +267,11 @@ class TimelineManager:
         self._submanagers = {
             tl: SubTimelineManager(tl, self._port_manager) for tl in subtimelines
         }
-        self._iteration: Optional[IterationCount] = None
+        self._iteration: IterationCount | None = None
         """Current component iteration count. Is None before the first reuse loop."""
 
     def check_send_message(
-        self, port_name: str, slot: Optional[int] = None
+        self, port_name: str, slot: int | None = None
     ) -> IterationCount:
         """Check and update the timeline state before sending on the given port.
 
@@ -330,7 +327,7 @@ class TimelineManager:
         self._iteration = new_iteration
         return self._iteration
 
-    def _check_send_o_f(self, port: Port, slot: Optional[int]) -> IterationCount:
+    def _check_send_o_f(self, port: Port, slot: int | None) -> IterationCount:
         """Check the O_F-specific send conditions, update state, and return
         the iteration to embed in the outgoing message.
 
@@ -363,7 +360,7 @@ class TimelineManager:
 
         return self._iteration
 
-    def check_receive_s(self, port_name: str, slot: Optional[int] = None) -> None:
+    def check_receive_s(self, port_name: str, slot: int | None = None) -> None:
         """Check that receiving on the given S port is currently allowed.
 
         Args:
@@ -377,7 +374,7 @@ class TimelineManager:
     def record_received_s_message(
         self,
         port_name: str,
-        slot: Optional[int],
+        slot: int | None,
         iteration: IterationCount,
         num_repeat_filters: int = 0,
     ) -> IterationCount:
@@ -412,7 +409,7 @@ class TimelineManager:
         for stm in self._submanagers.values():
             stm.reset()
 
-    def start_reuse_iteration(self) -> Optional[IterationCount]:
+    def start_reuse_iteration(self) -> IterationCount | None:
         """Called at the start of the reuse loop.
 
         If this is not the first run, checks if the previous reuse loop is complete:
@@ -480,8 +477,8 @@ class SubTimelineManager:
                 belonging to this sub-timeline.
         """
         self._timeline = timeline
-        self._iteration: Optional[IterationCount] = None
-        self._first_operator: Optional[Operator] = None
+        self._iteration: IterationCount | None = None
+        self._first_operator: Operator | None = None
 
         self._send = TimelinePorts(
             port_manager.get_connected_ports(Operator.O_I, timeline)
@@ -504,7 +501,7 @@ class SubTimelineManager:
         return True
 
     def check_send_message(
-        self, port: Port, slot: Optional[int], parent_iteration: IterationCount
+        self, port: Port, slot: int | None, parent_iteration: IterationCount
     ) -> IterationCount:
         """Check and update this sub-timeline's iteration state before sending.
 
@@ -551,7 +548,7 @@ class SubTimelineManager:
         self._send.participate(port_name, slot)
         return list(self._iteration)
 
-    def check_receive(self, port: Port, slot: Optional[int] = None) -> None:
+    def check_receive(self, port: Port, slot: int | None = None) -> None:
         """Check that receiving on the given S port is currently allowed.
 
         If this S port has not yet received for the current sub-iteration, it may do so
@@ -587,7 +584,7 @@ class SubTimelineManager:
     def record_received_message(
         self,
         port: Port,
-        slot: Optional[int],
+        slot: int | None,
         iteration: IterationCount,
         instance_iteration: IterationCount,
         num_repeat_filters: int,

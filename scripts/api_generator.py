@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import abc
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from copy import copy
 from textwrap import dedent, indent
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, Optional, cast
 
 error_codes = {
     "success": 0,
@@ -172,7 +172,7 @@ class Par(abc.ABC):
         return ""
 
     def _regular_type(
-        self, short_type: Union[str, list[Union[str, tuple[str, str]]]]
+        self, short_type: str | list[str | tuple[str, str]]
     ) -> list[tuple[str, str]]:
         """Converts brief type description to more regular format.
 
@@ -718,7 +718,7 @@ class VecString(Par):
 
 
 class Array(Par):
-    def __init__(self, ndims: int, elem_type: Par, name: Optional[str] = None) -> None:
+    def __init__(self, ndims: int, elem_type: Par, name: str | None = None) -> None:
         """Create an array parameter description.
 
         Args:
@@ -1480,7 +1480,7 @@ class Member(abc.ABC):
     def __init__(self, name: str) -> None:
         self.c_prefix = self.f_prefix = ""
         self.name = name
-        self.public: Optional[bool] = None
+        self.public: bool | None = None
         self.class_name = ""
 
     def set_class_name(self, class_name: str) -> None:
@@ -1492,7 +1492,7 @@ class Member(abc.ABC):
     def set_ns_prefix(self, ns_for_name: dict[str, tuple[str, str]]) -> None:
         self.c_prefix, self.f_prefix = ns_for_name[self.class_name]
 
-    def set_public(self, public: Optional[bool]) -> None:
+    def set_public(self, public: bool | None) -> None:
         self.public = public
 
     @abc.abstractmethod
@@ -1516,14 +1516,14 @@ class MemFun(Member):
         self,
         ret_type: Par,
         name: str,
-        params: Optional[list[Par]] = None,
+        params: list[Par] | None = None,
         may_throw: bool = False,
         *,
-        cpp_func_name: Optional[str] = None,
-        cpp_chain_call: Optional[Callable[..., str]] = None,
-        fc_override: Optional[str] = None,
-        fc_chain_call: Optional[Callable[..., str]] = None,
-        f_override: Optional[str] = None,
+        cpp_func_name: str | None = None,
+        cpp_chain_call: Callable[..., str] | None = None,
+        fc_override: str | None = None,
+        fc_chain_call: Callable[..., str] | None = None,
+        f_override: str | None = None,
     ) -> None:
         """Create a member function description.
 
@@ -1941,7 +1941,7 @@ class Constructor(MemFun):
     """
 
     def __init__(
-        self, params: Optional[list[Par]] = None, name: str = "create", **args: Any
+        self, params: list[Par] | None = None, name: str = "create", **args: Any
     ) -> None:
         if params is None:
             params = list()
@@ -2251,7 +2251,7 @@ class MultiMemFun(Member):
         for instance in self.instances:
             instance.reset_class_name(class_name)
 
-    def set_public(self, public: Optional[bool]) -> None:
+    def set_public(self, public: bool | None) -> None:
         for instance in self.instances:
             instance.set_public(public)
 
@@ -2290,7 +2290,7 @@ class MemFunTmplInstance(MemFun):
         ret_type: Par,
         name: str,
         targ: Par,
-        params: Optional[list[Par]] = None,
+        params: list[Par] | None = None,
         may_throw: bool = False,
         **args: Any,
     ) -> None:
@@ -2362,7 +2362,7 @@ class MemFunTmpl(MultiMemFun):
         types: list[Par],
         ret_type: Par,
         name: str,
-        params: Optional[list[Par]] = None,
+        params: list[Par] | None = None,
         may_throw: bool = False,
         **args: Any,
     ) -> None:
@@ -2555,9 +2555,9 @@ class OverloadSetTmpl(MultiMemFun):
 
 class NamespaceMember(abc.ABC):
     def __init__(self, name: str):
-        self.c_prefix: Optional[str] = None
-        self.f_prefix: Optional[str] = None
-        self.public: Optional[bool] = None
+        self.c_prefix: str | None = None
+        self.f_prefix: str | None = None
+        self.public: bool | None = None
         self.name = name
 
     def set_ns_prefix(self, ns_for_name: dict[str, tuple[str, str]]) -> None:
@@ -2568,7 +2568,7 @@ class NamespaceMember(abc.ABC):
         """
         self.c_prefix, self.f_prefix = ns_for_name[self.name]
 
-    def set_public(self, public: Optional[bool]) -> None:
+    def set_public(self, public: bool | None) -> None:
         """Sets whether this class should be public.
 
         Public objects are usable by the Fortran program; this sets
@@ -2638,7 +2638,7 @@ class Class(NamespaceMember):
         for member in self.members:
             member.set_ns_prefix(ns_for_name)
 
-    def set_public(self, public: Optional[bool]) -> None:
+    def set_public(self, public: bool | None) -> None:
         super().set_public(public)
         for member in self.members:
             member.set_public(public)
@@ -2773,7 +2773,7 @@ class Namespace:
     def __init__(
         self,
         name: str,
-        public: Optional[bool],
+        public: bool | None,
         c_prefix: str,
         f_prefix: str,
         members: Sequence[NamespaceMember],

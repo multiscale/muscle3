@@ -1,7 +1,6 @@
 import logging
 from enum import Enum
 from socket import gethostname
-from typing import Optional
 
 import psutil
 
@@ -68,7 +67,7 @@ class GlobalResources:
         return agent_cmd
 
 
-_global_resources: Optional[GlobalResources] = None
+_global_resources: GlobalResources | None = None
 """Global resources object.
 
 This is a singleton, and that's fine because it's created once and then read-only. Also,

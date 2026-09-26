@@ -1,6 +1,6 @@
 import sqlite3
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -75,7 +75,7 @@ def plot_resources(performance_file: Path) -> None:
         bottom = 0.0
         for instance, time in sorted(stats[core].items(), key=lambda x: -x[1]):
             if instance not in seen_instances:
-                label: Optional[str] = instance
+                label: str | None = instance
                 seen_instances.add(instance)
             else:
                 label = "_"
@@ -165,7 +165,7 @@ class TimelinePlot:
         # Y axis
         self._cur = sqlite3.connect(performance_file).cursor()
         self._cur.execute("SELECT oid, name FROM instances ORDER BY oid")
-        instance_ids, instance_names = zip(*self._cur.fetchall())
+        instance_ids, instance_names = zip(*self._cur.fetchall(), strict=True)
 
         ax.set_yticks(instance_ids)
         ax.set_yticklabels(instance_names)
@@ -289,7 +289,7 @@ class TimelinePlot:
 
     def get_data(
         self, event_type: str, xmin: float, xmax: float
-    ) -> tuple[list[int], list[float], list[float], Optional[float]]:
+    ) -> tuple[list[int], list[float], list[float], float | None]:
         """Get events from the database
 
         Returns three lists with instance oid, start time and duration, and
@@ -327,9 +327,9 @@ class TimelinePlot:
             return list(), list(), list(), None
 
         if len(results) == _MAX_EVENTS:
-            return tuple(zip(*results)) + (results[-1][1],)  # type: ignore
+            return tuple(zip(*results, strict=True)) + (results[-1][1],)  # type: ignore
 
-        return tuple(zip(*results)) + (None,)  # type: ignore
+        return tuple(zip(*results, strict=True)) + (None,)  # type: ignore
 
     def update_data(self, ax: Axes) -> None:
         """Update the plot after the axes have changed
@@ -377,7 +377,7 @@ class TimelinePlot:
                     self._cutoff_warning.set_visible(False)
 
 
-tplot = None  # type: Optional[TimelinePlot]
+tplot: TimelinePlot | None = None
 
 
 def plot_timeline(performance_file: Path) -> None:

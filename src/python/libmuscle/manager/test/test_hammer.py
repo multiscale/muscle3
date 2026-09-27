@@ -1,6 +1,9 @@
+from textwrap import dedent
+
 import pytest
-from ymmsl import load
-from ymmsl.v0_2 import Conduit, Model, Reference, resolve
+import ymmsl
+from ymmsl import load, load_as
+from ymmsl.v0_2 import Conduit, Model, Reference, Timeline, resolve, resolve_timelines
 
 from libmuscle.manager.hammer import Plate, flatten
 
@@ -116,6 +119,8 @@ def test_flatten_simple() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -192,6 +197,8 @@ def test_flatten_deep() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -278,6 +285,8 @@ def test_flatten_nested_ensemble() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -400,6 +409,8 @@ def test_flatten_conduit_filters() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -510,6 +521,8 @@ def test_flatten_multicast() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -581,6 +594,8 @@ def test_flatten_passthrough_overload() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -598,6 +613,8 @@ def test_flatten_passthrough_overload() -> None:
     nested_config = load(nested_config_yaml)
     nested_config.custom_implementations[Reference("framework.c2")] = Reference("p2")
     resolve(Reference([]), nested_config)  # apply custom_implementations
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -652,6 +669,8 @@ def test_remove_no_implementation() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -668,6 +687,8 @@ def test_remove_no_implementation() -> None:
         "p2"
     )
     resolve(Reference([]), nested_config)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -692,6 +713,8 @@ def test_remove_no_implementation() -> None:
     ].implementation = Reference("p2")
     nested_config.custom_implementations[Reference("optional_micro.micro")] = None
     resolve(Reference([]), nested_config)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -767,6 +790,8 @@ def test_nested_custom_implementations() -> None:
     )
     nested_config = load(nested_config_yaml)
     resolve(Reference([]), nested_config)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     flat_model = flat_config.models["outer"]

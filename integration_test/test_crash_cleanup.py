@@ -61,6 +61,8 @@ resources:
 """
 
     config = ymmsl.load(ymmsl_text)
+    assert isinstance(config, ymmsl.v0_2.Configuration)
+    ymmsl.v0_2.resolve_timelines(config.models[ymmsl.v0_2.Reference("test_model")])
 
     # set up
     run_dir = RunDir(tmppath / "run")

@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 import ymmsl
-from ymmsl.v0_2 import Operator, Port, Reference
+from ymmsl.v0_2 import Operator, Port, Reference, resolve_timelines
 
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
@@ -50,6 +50,8 @@ def do_mmp_client_test(tmpdir, caplog):
 
     # create server
     ymmsl_doc = ymmsl.load(ymmsl_text)
+    assert isinstance(ymmsl_doc, ymmsl.v0_2.Configuration)
+    resolve_timelines(ymmsl_doc.models[Reference("test_model")])
     manager = Manager(ymmsl_doc, RunDir(Path(tmpdir)), "DEBUG")
 
     # mock the deregistration

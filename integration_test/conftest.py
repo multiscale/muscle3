@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 import yatiml
 import ymmsl
+from ymmsl.v0_2 import resolve_timelines
 
 from libmuscle.manager.manager import Manager
 from libmuscle.pytest.muscle_tester import make_server_process
@@ -108,6 +109,9 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
     """
     env = os.environ.copy()
     ymmsl_doc = ymmsl.load(ymmsl_text)
+    assert isinstance(ymmsl_doc, ymmsl.v0_2.Configuration)
+    for model in ymmsl_doc.models.values():
+        resolve_timelines(model)
     build_dir = Path(__file__).parents[1] / "build"
     cpp_build_dir = build_dir / "cpp" / "libmuscle" / "tests"
     fortran_build_dir = build_dir / "fortran" / "libmuscle" / "tests"
@@ -242,7 +246,10 @@ def mmp_server_config(yatiml_log_warning):
 
 @pytest.fixture
 def mmp_server_process(mmp_server_config, tmpdir):
-    ymmsl_doc = ymmsl.load(mmp_server_config)
+    ymmsl_doc = ymmsl.load_as(ymmsl.v0_2.Configuration, mmp_server_config)
+    for model in ymmsl_doc.models.values():
+        resolve_timelines(model)
+
     with make_server_process(ymmsl_doc, Path(tmpdir), False) as addr:
         yield addr
 
@@ -297,13 +304,18 @@ def mmp_server_config_simple_python(mmp_server_config_simple):
 @pytest.fixture
 def mmp_server_process_simple(mmp_server_config_simple, tmpdir):
     ymmsl_doc = ymmsl.load(mmp_server_config_simple)
+    for model in ymmsl_doc.models.values():
+        resolve_timelines(model)
+
     with make_server_process(ymmsl_doc, Path(tmpdir), False) as addr:
         yield addr
 
 
 @pytest.fixture
 def mmp_server(mmp_server_config_simple, yatiml_log_warning):
-    ymmsl_doc = ymmsl.load(mmp_server_config_simple)
+    ymmsl_doc = ymmsl.load_as(ymmsl.v0_2.Configuration, mmp_server_config_simple)
+    for model in ymmsl_doc.models.values():
+        resolve_timelines(model)
 
     manager = Manager(ymmsl_doc)
     yield manager._server

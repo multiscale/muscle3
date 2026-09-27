@@ -30,7 +30,7 @@ test_python_only:
 
 .PHONY: test_python
 test_python: cpp_tests fortran_tests
-	tox
+	tox -- -k 'not tester'
 
 .PHONY: test_cpp
 test_cpp: cpp

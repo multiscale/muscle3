@@ -451,7 +451,7 @@ def hwthread_to_core():
     hwthread_ids = get_values(cpuinfo, "processor")
     core_ids = get_values(cpuinfo, "core id")
 
-    table = dict(zip(hwthread_ids, core_ids))
+    table = dict(zip(hwthread_ids, core_ids, strict=True))
 
     def convert(aff_ids):
         cores = {table[i] for i in map(int, aff_ids.split(","))}

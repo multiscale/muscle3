@@ -1,5 +1,4 @@
 from copy import deepcopy
-from typing import Optional
 
 from ymmsl.v0_2 import Conduit, Configuration, Model, Ports, Reference
 
@@ -238,7 +237,7 @@ def glue_partial_conduits(
 
 
 def flatten(
-    nested_config: Configuration, model: Optional[Reference] = None
+    nested_config: Configuration, model: Reference | None = None
 ) -> Configuration:
     """Creates a flat version of the given configuration.
 

@@ -1,7 +1,7 @@
 import errno
 import logging
 import time
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import msgpack
 from typing_extensions import Buffer
@@ -101,7 +101,7 @@ class MMPRequestHandler(RequestHandler):
         topology_store: TopologyStore,
         snapshot_registry: SnapshotRegistry,
         deadlock_detector: DeadlockDetector,
-        run_dir: Optional[RunDir],
+        run_dir: RunDir | None,
     ) -> None:
         """Create an MMPRequestHandler.
 
@@ -415,7 +415,7 @@ class MMPRequestHandler(RequestHandler):
         instance_id: str,
         peer_instance_id: str,
         port_name: str,
-        slot: Optional[int],
+        slot: int | None,
     ) -> Any:
         """Indicate that the instance is waiting to receive a message.
 
@@ -434,7 +434,7 @@ class MMPRequestHandler(RequestHandler):
         instance_id: str,
         peer_instance_id: str,
         port_name: str,
-        slot: Optional[int],
+        slot: int | None,
     ) -> Any:
         """Indicate that the instance is done waiting to receive a message.
 
@@ -471,7 +471,7 @@ class MMPServer:
         topology_store: TopologyStore,
         snapshot_registry: SnapshotRegistry,
         deadlock_detector: DeadlockDetector,
-        run_dir: Optional[RunDir],
+        run_dir: RunDir | None,
     ) -> None:
         """Create an MMPServer.
 

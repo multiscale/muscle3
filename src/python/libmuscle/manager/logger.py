@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Optional
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.util import extract_log_file_location
@@ -48,7 +47,7 @@ class Logger:
     """
 
     def __init__(
-        self, log_dir: Optional[Path] = None, log_level: Optional[str] = None
+        self, log_dir: Path | None = None, log_level: str | None = None
     ) -> None:
         """Create a Logger.
 

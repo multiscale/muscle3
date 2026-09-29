@@ -1,6 +1,5 @@
 import logging
 from threading import Lock
-from typing import Optional
 
 _logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class DeadlockDetector:
         """Mutex that should be locked before accessing instance variables."""
         self._waiting_instances: dict[str, str] = {}
         """Maps instance IDs to the peer instance IDs they are waiting for."""
-        self._waiting_instance_ports: dict[str, tuple[str, Optional[int]]] = {}
+        self._waiting_instance_ports: dict[str, tuple[str, int | None]] = {}
         """Maps instance IDs to the port/slot they are waiting for.."""
 
     def waiting_for_receive(
@@ -30,7 +29,7 @@ class DeadlockDetector:
         instance_id: str,
         peer_instance_id: str,
         port_name: str,
-        slot: Optional[int],
+        slot: int | None,
     ) -> None:
         """Process a WAITING_FOR_RECEIVE message from an instance.
 
@@ -55,7 +54,7 @@ class DeadlockDetector:
         instance_id: str,
         peer_instance_id: str,
         port_name: str,
-        slot: Optional[int],
+        slot: int | None,
     ) -> None:
         """Process a WAITING_FOR_RECEIVE_DONE message from an instance.
 

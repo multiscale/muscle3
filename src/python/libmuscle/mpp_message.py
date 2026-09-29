@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import msgpack
 import numpy as np
@@ -164,9 +164,9 @@ class MPPMessage:
         self,
         sender: Reference,
         receiver: Reference,
-        port_length: Optional[int],
+        port_length: int | None,
         timestamp: float,
-        next_timestamp: Optional[float],
+        next_timestamp: float | None,
         settings_overlay: Settings,
         message_number: int,
         data: Any,

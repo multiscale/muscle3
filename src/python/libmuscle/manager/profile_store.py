@@ -4,7 +4,7 @@ from pathlib import Path
 from queue import Queue
 from sqlite3 import Cursor
 from threading import Thread
-from typing import Optional, cast
+from typing import cast
 
 from ymmsl.v0_2 import Operator, Reference
 
@@ -48,7 +48,7 @@ class ProfileStore(ProfileDatabase):
         self._init_database()
 
         # 500 batches is about 250MB
-        Item = Optional[tuple[Reference, Iterable[ProfileEvent]]]
+        Item = tuple[Reference, Iterable[ProfileEvent]] | None
         self._queue: Queue[Item] = Queue(500)
         self._confirmation_queue: Queue[None] = Queue()
         self._thread = Thread(target=self._storage_thread, daemon=True)
@@ -131,13 +131,13 @@ class ProfileStore(ProfileDatabase):
             int,
             float,
             float,
-            Optional[str],
-            Optional[int],
-            Optional[int],
-            Optional[int],
-            Optional[int],
-            Optional[int],
-            Optional[float],
+            str | None,
+            int | None,
+            int | None,
+            int | None,
+            int | None,
+            int | None,
+            float | None,
         ]
 
         def to_tuple(e: ProfileEvent) -> Record:

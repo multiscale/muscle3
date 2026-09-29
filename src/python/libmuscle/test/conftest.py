@@ -1,5 +1,4 @@
 from copy import copy
-from typing import Union
 from unittest.mock import patch
 
 import pytest
@@ -152,7 +151,7 @@ def core(hwthread_id: int) -> Core:
     return Core(hwthread_id, {hwthread_id})
 
 
-def on_node_resources(node_name: str, cores: Union[int, set[int]]) -> OnNodeResources:
+def on_node_resources(node_name: str, cores: int | set[int]) -> OnNodeResources:
     """Helper that defines resources on a node from the name and a CPU core."""
     if isinstance(cores, int):
         cores = {cores}

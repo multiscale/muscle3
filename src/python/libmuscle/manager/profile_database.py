@@ -3,7 +3,7 @@ import threading
 from collections import defaultdict
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 from warnings import warn
 
 
@@ -14,7 +14,7 @@ class ProfileDatabase:
     analysis functionality.
     """
 
-    def __init__(self, db_file: Union[str, Path]) -> None:
+    def __init__(self, db_file: str | Path) -> None:
         """Open a ProfileDatabase.
 
         This opens the database file and creates a ProfileDatabase
@@ -35,7 +35,7 @@ class ProfileDatabase:
         self._db_file = db_file
         self._local = threading.local()
 
-        self._smallest_timestamp: Optional[float] = None
+        self._smallest_timestamp: float | None = None
 
     def close(self) -> None:
         """Close the connection to the database.
@@ -174,7 +174,10 @@ class ProfileDatabase:
             for i in complete_instances
         ]
         wait_times = [(wait[i] if i in wait else 0) * 1e-9 for i in complete_instances]
-        run_times = [t - c - w for t, c, w in zip(total_times, comm_times, wait_times)]
+        run_times = [
+            t - c - w
+            for t, c, w in zip(total_times, comm_times, wait_times, strict=True)
+        ]
 
         return complete_instances, run_times, comm_times, wait_times
 
@@ -196,7 +199,9 @@ class ProfileDatabase:
         """
         instances, run_times, comm_times, _ = self.instance_stats()
 
-        active_times = {i: r + c for i, r, c in zip(instances, run_times, comm_times)}
+        active_times = {
+            i: r + c for i, r, c in zip(instances, run_times, comm_times, strict=True)
+        }
 
         cur = self._get_cursor()
         cur.execute("BEGIN TRANSACTION")
@@ -223,14 +228,14 @@ class ProfileDatabase:
         self,
         *,
         etype: str,
-        instance: Optional[str] = None,
-        port: Optional[str] = None,
-        slot: Optional[int] = None,
-        time: Optional[str] = "start",
-        etype2: Optional[str] = None,
-        port2: Optional[str] = None,
-        slot2: Optional[int] = None,
-        time2: Optional[str] = "stop",
+        instance: str | None = None,
+        port: str | None = None,
+        slot: int | None = None,
+        time: str | None = "start",
+        etype2: str | None = None,
+        port2: str | None = None,
+        slot2: int | None = None,
+        time2: str | None = "stop",
         aggregate: str = "mean",
     ) -> float:
         """Calculate time of and between events.
@@ -405,11 +410,11 @@ class ProfileDatabase:
 
         def get_sum_count(
             cur: sqlite3.Cursor,
-            etype: Optional[str],
+            etype: str | None,
             timestamp: str,
-            instance: Optional[str],
-            port: Optional[str],
-            slot: Optional[int],
+            instance: str | None,
+            port: str | None,
+            slot: int | None,
         ) -> tuple[int, int, int]:
             """Get sums and count for one time point."""
             cur.execute("BEGIN TRANSACTION")
@@ -474,9 +479,9 @@ class ProfileDatabase:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         self.close()
 

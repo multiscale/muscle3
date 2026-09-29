@@ -1,4 +1,3 @@
-from typing import Union
 from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
@@ -155,7 +154,7 @@ def repeater_reducer_communicator(repeat_filter, mpp_client, mpp_server):
 
 
 def mock_receive_messages(
-    mpp_client, data: dict[str, list[Union[IterationCount, Milestone]]]
+    mpp_client, data: dict[str, list[IterationCount | Milestone]]
 ):
     """Helper method to mock MPPClient.receive, so it gives data with correct message
     numbers and iteration counts.
@@ -167,7 +166,7 @@ def mock_receive_messages(
             non-Milestone messages sent so far.
     """
 
-    def message_maker(data: list[Union[IterationCount, Milestone]]):
+    def message_maker(data: list[IterationCount | Milestone]):
         num = 0
         for item in data:
             iteration = item.iteration if isinstance(item, Milestone) else item

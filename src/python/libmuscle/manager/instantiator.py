@@ -4,7 +4,6 @@ import multiprocessing as mp
 import os
 import traceback
 from pathlib import Path
-from typing import Optional
 
 from ymmsl.v0_2 import BaseEnv, Program, Reference, ResourceRequirements
 
@@ -53,8 +52,8 @@ class Process:
         self.instance = instance
         self.resources = resources
         self.status = ProcessStatus.STARTED
-        self.exit_code: Optional[int] = None
-        self.error_msg: Optional[str] = None
+        self.exit_code: int | None = None
+        self.error_msg: str | None = None
 
 
 class InstantiatorRequest:
@@ -128,7 +127,7 @@ class CancelAllRequest(InstantiatorRequest):
 class CrashedResult:
     """Signals that the instantiator process crashed."""
 
-    def __init__(self, exception: Optional[BaseException] = None) -> None:
+    def __init__(self, exception: BaseException | None = None) -> None:
         self.exception = exception
 
 

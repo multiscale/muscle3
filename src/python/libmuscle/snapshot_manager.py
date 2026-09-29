@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 from ymmsl.v0_2 import Reference, Settings
 
@@ -47,13 +47,13 @@ class SnapshotManager:
         self._communicator = communicator
         self._manager = manager
 
-        self._resume_from_snapshot: Optional[Snapshot] = None
-        self.resume_overlay: Optional[Settings] = None
+        self._resume_from_snapshot: Snapshot | None = None
+        self.resume_overlay: Settings | None = None
         self._next_snapshot_num = 1
 
     def prepare_resume(
-        self, resume_snapshot: Optional[Path], snapshot_directory: Optional[Path]
-    ) -> Optional[float]:
+        self, resume_snapshot: Path | None, snapshot_directory: Path | None
+    ) -> float | None:
         """Apply checkpoint info received from the manager.
 
         If there is a snapshot to resume from, this loads it and does
@@ -69,7 +69,7 @@ class SnapshotManager:
         Returns:
             Time at which the initial snapshot was saved, if resuming.
         """
-        result: Optional[float] = None
+        result: float | None = None
         self._snapshot_directory = snapshot_directory or Path.cwd()
         if resume_snapshot is not None:
             snapshot = self.load_snapshot_from_file(resume_snapshot)
@@ -117,11 +117,11 @@ class SnapshotManager:
 
     def save_snapshot(
         self,
-        msg: Optional[Message],
+        msg: Message | None,
         final: bool,
         triggers: list[str],
         wallclock_time: float,
-        f_init_max_timestamp: Optional[float],
+        f_init_max_timestamp: float | None,
         settings_overlay: Settings,
         communicator_state: CommunicatorState,
     ) -> float:

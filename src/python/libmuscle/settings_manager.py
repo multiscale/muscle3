@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ymmsl.v0_2 import Reference, Settings, SettingValue
 
 
@@ -108,7 +106,7 @@ class SettingsManager:
         return sorted(names)
 
     def get_setting(
-        self, instance: Reference, setting_name: Reference, typ: Optional[str] = None
+        self, instance: Reference, setting_name: Reference, typ: str | None = None
     ) -> SettingValue:
         """Returns the value of a setting.
 

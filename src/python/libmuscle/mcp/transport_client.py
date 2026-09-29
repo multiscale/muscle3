@@ -1,5 +1,3 @@
-from typing import Optional
-
 from typing_extensions import Buffer
 
 from libmuscle.profiling import ProfileTimestamp
@@ -50,7 +48,7 @@ class TransportClient:
         raise NotImplementedError()  # pragma: no cover
 
     def call(
-        self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
+        self, request: Buffer, timeout_handler: TimeoutHandler | None = None
     ) -> tuple[Buffer, ProfileData]:
         """Send a request to the server and receive the response.
 

@@ -1,4 +1,4 @@
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 import ymmsl
 from ymmsl.v0_2 import Identifier, Operator, Timeline
@@ -33,7 +33,7 @@ class Port(ymmsl.v0_2.Port):
         self,
         name: str,
         operator: Operator,
-        timeline: Optional[Timeline],
+        timeline: Timeline | None,
         is_vector: bool,
         is_connected: bool,
         our_ndims: int,
@@ -56,7 +56,7 @@ class Port(ymmsl.v0_2.Port):
 
         if is_vector:
             if our_ndims == len(peer_dims):
-                self._length: Optional[int] = 0
+                self._length: int | None = 0
             elif our_ndims + 1 == len(peer_dims):
                 self._length = peer_dims[-1]
             elif our_ndims > len(peer_dims):
@@ -104,7 +104,7 @@ class Port(ymmsl.v0_2.Port):
         """
         return self._is_connected
 
-    def is_open(self, slot: Optional[int] = None) -> bool:
+    def is_open(self, slot: int | None = None) -> bool:
         """Returns whether this port is open."""
         if slot is not None:
             return self._is_open[slot]
@@ -156,7 +156,7 @@ class Port(ymmsl.v0_2.Port):
             _extend_list_to_size(self._num_messages, self._length, 0)
             _extend_list_to_size(self._is_resuming, self._length, False)
 
-    def set_closed(self, slot: Optional[int] = None) -> None:
+    def set_closed(self, slot: int | None = None) -> None:
         """Marks this port as closed."""
         if slot is not None:
             self._is_open[slot] = False
@@ -174,7 +174,7 @@ class Port(ymmsl.v0_2.Port):
         """Get a list of message counts for all slots in this port"""
         return self._num_messages.copy()
 
-    def increment_num_messages(self, slot: Optional[int] = None) -> None:
+    def increment_num_messages(self, slot: int | None = None) -> None:
         """Increment amount of messages sent or received.
 
         Args:
@@ -183,7 +183,7 @@ class Port(ymmsl.v0_2.Port):
         self._num_messages[slot or 0] += 1
         self.set_resumed(slot)
 
-    def get_num_messages(self, slot: Optional[int] = None) -> int:
+    def get_num_messages(self, slot: int | None = None) -> int:
         """Get the amount of messages sent or received.
 
         Args:
@@ -191,7 +191,7 @@ class Port(ymmsl.v0_2.Port):
         """
         return self._num_messages[slot or 0]
 
-    def is_resuming(self, slot: Optional[int] = None) -> bool:
+    def is_resuming(self, slot: int | None = None) -> bool:
         """True when this port has resumed.
 
         After resumption, each port/slot may discard exactly one message.
@@ -202,7 +202,7 @@ class Port(ymmsl.v0_2.Port):
         """
         return self._is_resuming[slot or 0]
 
-    def set_resumed(self, slot: Optional[int] = None) -> None:
+    def set_resumed(self, slot: int | None = None) -> None:
         """Mark that this port has resumed and may no longer discard messages.
 
         Args:

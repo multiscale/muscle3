@@ -2,7 +2,6 @@ import logging
 import select
 import socket
 import time
-from typing import Optional
 
 from typing_extensions import Buffer
 
@@ -53,14 +52,14 @@ class TcpTransportClient(TransportClient):
             location: A location string for the peer.
         """
         self._addresses = location[4:].split(",")
-        self._socket: Optional[socket.SocketType] = None
+        self._socket: socket.SocketType | None = None
         self._session = 0
         self._cur_request = 0
 
         self._reconnect(False)
 
     def call(
-        self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
+        self, request: Buffer, timeout_handler: TimeoutHandler | None = None
     ) -> tuple[Buffer, ProfileData]:
         """Send a request to the server and receive the response.
 
@@ -216,7 +215,7 @@ class TcpTransportClient(TransportClient):
 
         Uses self._addresses and creates a (new) self._socket and self._poll_obj.
         """
-        sock: Optional[socket.SocketType] = None
+        sock: socket.SocketType | None = None
         for address in self._addresses:
             try:
                 sock = self._connect(address)
@@ -234,7 +233,7 @@ class TcpTransportClient(TransportClient):
         self._socket = sock
 
         if hasattr(select, "poll"):
-            self._poll_obj: Optional[select.poll] = select.poll()
+            self._poll_obj: select.poll | None = select.poll()
             self._poll_obj.register(self._socket, select.POLLIN)
         else:
             self._poll_obj = None  # On platforms that don't support select.poll

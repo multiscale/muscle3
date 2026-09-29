@@ -1,7 +1,6 @@
 import logging
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional
 
 from ymmsl.v0_2 import (
     BaseEnv,
@@ -94,7 +93,8 @@ def impi_prep_resources(resources: ResourceAssignment) -> tuple[str, dict[str, s
             i += 1
 
     machinefile = (
-        "\n".join((f"{m}:{c}" for m, c in zip(machine_nodes, proc_counts))) + "\n"
+        "\n".join((f"{m}:{c}" for m, c in zip(machine_nodes, proc_counts, strict=True)))
+        + "\n"
     )
 
     # disable pinning to SLURM-specified resources
@@ -351,7 +351,7 @@ def make_script(
     res_req: ResourceRequirements,
     work_dir: Path,
     local: bool,
-    rankfile: Optional[Path] = None,
+    rankfile: Path | None = None,
 ) -> str:
     """Make a run script for a given program.
 

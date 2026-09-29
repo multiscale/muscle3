@@ -4,7 +4,7 @@ from pathlib import Path
 from random import uniform
 from threading import RLock, get_ident
 from time import perf_counter, sleep
-from typing import Any, Optional
+from typing import Any
 
 import msgpack
 from ymmsl.v0_2 import (
@@ -36,7 +36,7 @@ PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0
 
-_CheckpointInfoType = tuple[float, Checkpoints, Optional[Path], Optional[Path]]
+_CheckpointInfoType = tuple[float, Checkpoints, Path | None, Path | None]
 
 
 def encode_operator(op: Operator) -> str:
@@ -89,8 +89,8 @@ def decode_checkpoint_rule(rule: dict[str, Any]) -> CheckpointRule:
 def decode_checkpoint_info(
     elapsed_time: float,
     checkpoints_dict: dict[str, Any],
-    resume: Optional[str],
-    snapshot_dir: Optional[str],
+    resume: str | None,
+    snapshot_dir: str | None,
 ) -> _CheckpointInfoType:
     """Decode checkpoint info from a MsgPack-compatible value.
 
@@ -330,7 +330,7 @@ class MMPClient:
             raise RuntimeError(f"Error deregistering instance: {response[1]}")
 
     def waiting_for_receive(
-        self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
+        self, peer_instance_id: Reference, port_name: str, slot: int | None
     ) -> None:
         """Notify the manager that we're waiting to receive a message."""
         request = [
@@ -343,7 +343,7 @@ class MMPClient:
         self._call_manager(request)
 
     def waiting_for_receive_done(
-        self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
+        self, peer_instance_id: Reference, port_name: str, slot: int | None
     ) -> None:
         """Notify the manager that we're done waiting to receive a message."""
         request = [

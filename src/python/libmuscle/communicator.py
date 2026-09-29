@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Iterator
 from copy import deepcopy
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from ymmsl.v0_2 import ConduitFilter, Operator, Reference, Settings
 
@@ -58,9 +58,9 @@ class Message:
     def __init__(
         self,
         timestamp: float,
-        next_timestamp: Optional[float] = None,
+        next_timestamp: float | None = None,
         data: MessageObject = None,
-        settings: Optional[Settings] = None,
+        settings: Settings | None = None,
     ) -> None:
         """Create a Message.
 
@@ -96,7 +96,7 @@ def _make_message(mpp_msg: MPPMessage, copy: bool = False) -> Message:
     )
 
 
-def _yield_slots(port: Port) -> Iterator[Optional[int]]:
+def _yield_slots(port: Port) -> Iterator[int | None]:
     """Iterator over the slots in the port."""
     if not port.is_vector():
         yield None
@@ -232,7 +232,7 @@ class Communicator:
         self,
         port_name: str,
         message: Message,
-        slot: Optional[int] = None,
+        slot: int | None = None,
     ) -> None:
         """Send a message and settings to the outside world.
 
@@ -314,7 +314,7 @@ class Communicator:
 
     def _apply_reduce_filters(
         self, peer_port: Reference, message: MPPMessage
-    ) -> Optional[MPPMessage]:
+    ) -> MPPMessage | None:
         """Apply reduce filters to a message sent on a conduit with reduce filters.
 
         User-provided messages (through instance.send()) will be stored (overwriting any
@@ -450,7 +450,7 @@ class Communicator:
 
         return cache
 
-    def receive_s_message(self, port_name: str, slot: Optional[int] = None) -> Message:
+    def receive_s_message(self, port_name: str, slot: int | None = None) -> Message:
         """Receive a message and attached settings overlay on an "S" port.
 
         Receiving is a blocking operation. This function will contact
@@ -497,7 +497,7 @@ class Communicator:
                 )
                 return _make_message(message)
 
-    def _receive_message(self, port_name: str, slot: Optional[int]) -> MPPMessage:
+    def _receive_message(self, port_name: str, slot: int | None) -> MPPMessage:
         """Implementation for receive_message."""
         port = self._port_manager.get_port(port_name)
         port_and_slot = port_desc(port_name, slot)
@@ -560,7 +560,7 @@ class Communicator:
             if port.is_resizable():
                 port.set_length(mpp_message.port_length)
 
-        milestone: Optional[Milestone] = None
+        milestone: Milestone | None = None
         if isinstance(mpp_message.data, Milestone):
             milestone = mpp_message.data
             if milestone.is_final_milestone():
@@ -674,7 +674,7 @@ class Communicator:
         return self._clients[instance]
 
     def _get_endpoints(
-        self, port: Port, slot: Optional[int]
+        self, port: Port, slot: int | None
     ) -> tuple[Endpoint, list[Endpoint]]:
         """Return our endpoint and the peer endpoints for the given port and slot."""
         return (

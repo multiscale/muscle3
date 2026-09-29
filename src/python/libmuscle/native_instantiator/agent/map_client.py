@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import msgpack
 
@@ -51,7 +51,7 @@ class MAPClient:
         ]
         self._call_agent_manager(request)
 
-    def get_command(self) -> Optional[AgentCommand]:
+    def get_command(self) -> AgentCommand | None:
         """Get a command from the agent manager.
 
         Returns:

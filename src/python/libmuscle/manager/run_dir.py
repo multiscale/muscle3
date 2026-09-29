@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 from ymmsl.v0_2 import Reference
 
@@ -65,7 +64,7 @@ class RunDir:
         """
         return self.path / "instances" / str(name)
 
-    def snapshot_dir(self, name: Optional[Reference] = None) -> Path:
+    def snapshot_dir(self, name: Reference | None = None) -> Path:
         """Return the snapshot directory for the workflow or for an instance.
 
         Args:

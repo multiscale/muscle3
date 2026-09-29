@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import cast
 
 from ymmsl.v0_2 import Conduit, ConduitFilter, Identifier, Port, Reference
 
@@ -109,9 +109,7 @@ class PeerInfo:
         """
         return self._peer_locations[peer_instance]
 
-    def get_peer_endpoints(
-        self, port: Identifier, slot: Optional[int]
-    ) -> list[Endpoint]:
+    def get_peer_endpoints(self, port: Identifier, slot: int | None) -> list[Endpoint]:
         """Determine the peer endpoints for the given port and slot.
 
         Args:

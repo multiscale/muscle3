@@ -1,6 +1,6 @@
 import errno
 import logging
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import msgpack
 from typing_extensions import Buffer
@@ -88,7 +88,7 @@ class MAPRequestHandler(RequestHandler):
             node_name: Hostname (name) of the agent's node
         """
         node_ref = Reference("_" + node_name.replace("-", "_"))
-        next_request: Optional[Buffer] = None
+        next_request: Buffer | None = None
         if self._post_office.have_message(node_ref):
             next_request = self._post_office.get_message(node_ref)
 

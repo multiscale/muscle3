@@ -7,7 +7,7 @@ from operator import attrgetter
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 from ymmsl import save
 from ymmsl.v0_2 import Configuration, Identifier, Program, Reference
@@ -19,7 +19,7 @@ _MAX_FILE_EXISTS_CHECK = 100
 
 _SnapshotdictType = dict[Reference, list["SnapshotNode"]]
 _ConnectionType = tuple[Identifier, Identifier, "_ConnectionInfo"]
-_QueueItemType = Optional[tuple[Reference, SnapshotMetadata]]
+_QueueItemType = tuple[Reference, SnapshotMetadata] | None
 _T = TypeVar("_T")
 
 # this snapshot is used as a placeholder for restarting from scratch
@@ -595,7 +595,7 @@ class SnapshotRegistry(Thread):
         return connected_ports
 
     @cache  # noqa: B019
-    def _implementation(self, kernel: Reference) -> Optional[Program]:
+    def _implementation(self, kernel: Reference) -> Program | None:
         """Return the implementation of a kernel.
 
         Args:

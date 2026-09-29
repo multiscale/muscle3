@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from ymmsl.v0_2 import Reference
 
@@ -28,7 +27,7 @@ class ReceiveTimeoutHandler(TimeoutHandler):
         manager: MMPClient,
         peer_instance: Reference,
         port_name: str,
-        slot: Optional[int],
+        slot: int | None,
         timeout: float,
     ) -> None:
         """Initialize a new timeout handler.

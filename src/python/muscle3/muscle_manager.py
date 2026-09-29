@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 from time import sleep
-from typing import Optional, cast
+from typing import cast
 from warnings import catch_warnings, filterwarnings
 
 import click
@@ -101,10 +101,10 @@ from libmuscle.manager.run_dir import RunDir
 def manage_simulation(
     ymmsl_files: Sequence[str],
     start_all: bool,
-    model: Optional[str],
-    run_dir: Optional[str],
-    log_level: Optional[str],
-    location_file: Optional[str],
+    model: str | None,
+    run_dir: str | None,
+    log_level: str | None,
+    location_file: str | None,
 ) -> None:
     """Run the MUSCLE3 Manager.
 
@@ -118,10 +118,10 @@ def manage_simulation(
 def _manage_simulation(
     ymmsl_files: Sequence[str],
     start_all: bool,
-    model: Optional[str],
-    run_dir: Optional[str],
-    log_level: Optional[str],
-    location_file: Optional[str],
+    model: str | None,
+    run_dir: str | None,
+    log_level: str | None,
+    location_file: str | None,
 ) -> None:
     """Run the MUSCLE3 Manager.
 
@@ -161,7 +161,7 @@ def _manage_simulation(
             sys.exit(1)
 
     # find root models, error if multiple
-    model_ref: Optional[v0_2.Reference] = None
+    model_ref: v0_2.Reference | None = None
     if model:
         try:
             model_ref = v0_2.Reference(model)
@@ -301,7 +301,7 @@ def load_files(paths: Sequence[str]) -> list[Document]:
     return docs
 
 
-def create_run_dir(run_dir: Optional[str], model: v0_2.Model) -> RunDir:
+def create_run_dir(run_dir: str | None, model: v0_2.Model) -> RunDir:
     """Create the run directory
 
     Args:

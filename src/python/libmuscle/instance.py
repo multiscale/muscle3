@@ -3,7 +3,7 @@ import os
 import sys
 from copy import copy
 from enum import Flag, auto
-from typing import Literal, Optional, cast, overload
+from typing import Literal, cast, overload
 
 from ymmsl.v0_2 import Identifier, Operator, Port, Reference, Settings, SettingValue
 
@@ -100,7 +100,7 @@ class Instance:
 
     def __init__(
         self,
-        ports: Optional[dict[Operator, list[str]]] = None,
+        ports: dict[Operator, list[str]] | None = None,
         flags: InstanceFlags = _NO_INSTANCE_FLAGS,
     ) -> None:
         """Create an Instance.
@@ -143,7 +143,7 @@ class Instance:
         )
         """Communicator for this instance."""
 
-        self._communicator_state: Optional[CommunicatorState] = None
+        self._communicator_state: CommunicatorState | None = None
         """Stored communicator state for final snapshots.
 
         This allows us to store (and later restore) the communicator state before
@@ -167,7 +167,7 @@ class Instance:
         self._first_run = True
         """Whether this is the first iteration of the reuse loop"""
 
-        self._do_reuse: Optional[bool] = None
+        self._do_reuse: bool | None = None
         """Whether to enter the next iteration of the reuse loop.
 
         Possible values:
@@ -316,27 +316,27 @@ class Instance:
 
     @overload
     def get_setting(
-        self, name: str, typ: Literal["str"], *, default: Optional[str] = None
+        self, name: str, typ: Literal["str"], *, default: str | None = None
     ) -> str: ...
 
     @overload
     def get_setting(
-        self, name: str, typ: Literal["int"], *, default: Optional[int] = None
+        self, name: str, typ: Literal["int"], *, default: int | None = None
     ) -> int: ...
 
     @overload
     def get_setting(
-        self, name: str, typ: Literal["float"], *, default: Optional[float] = None
+        self, name: str, typ: Literal["float"], *, default: float | None = None
     ) -> float: ...
 
     @overload
     def get_setting(
-        self, name: str, typ: Literal["bool"], *, default: Optional[bool] = None
+        self, name: str, typ: Literal["bool"], *, default: bool | None = None
     ) -> bool: ...
 
     @overload
     def get_setting(
-        self, name: str, typ: Literal["[int]"], *, default: Optional[list[int]] = None
+        self, name: str, typ: Literal["[int]"], *, default: list[int] | None = None
     ) -> list[int]: ...
 
     @overload
@@ -345,7 +345,7 @@ class Instance:
         name: str,
         typ: Literal["[float]"],
         *,
-        default: Optional[list[float]] = None,
+        default: list[float] | None = None,
     ) -> list[float]: ...
 
     @overload
@@ -354,20 +354,20 @@ class Instance:
         name: str,
         typ: Literal["[[float]]"],
         *,
-        default: Optional[list[list[float]]] = None,
+        default: list[list[float]] | None = None,
     ) -> list[list[float]]: ...
 
     @overload
     def get_setting(
-        self, name: str, typ: None = None, *, default: Optional[SettingValue] = None
+        self, name: str, typ: None = None, *, default: SettingValue | None = None
     ) -> SettingValue: ...
 
     def get_setting(
         self,
         name: str,
-        typ: Optional[str] = None,
+        typ: str | None = None,
         *,
-        default: Optional[SettingValue] = None,
+        default: SettingValue | None = None,
     ) -> SettingValue:
         """Returns the value of a model setting.
 
@@ -486,9 +486,7 @@ class Instance:
         """
         self._port_manager.get_port(port).set_length(length)
 
-    def send(
-        self, port_name: str, message: Message, slot: Optional[int] = None
-    ) -> None:
+    def send(self, port_name: str, message: Message, slot: int | None = None) -> None:
         """Send a message to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -509,8 +507,8 @@ class Instance:
     def receive(
         self,
         port_name: str,
-        slot: Optional[int] = None,
-        default: Optional[Message] = None,
+        slot: int | None = None,
+        default: Message | None = None,
     ) -> Message:
         """Receive a message from the outside world.
 
@@ -544,8 +542,8 @@ class Instance:
     def receive_with_settings(
         self,
         port_name: str,
-        slot: Optional[int] = None,
-        default: Optional[Message] = None,
+        slot: int | None = None,
+        default: Message | None = None,
     ) -> Message:
         """Receive a message with attached settings overlay.
 
@@ -737,7 +735,7 @@ class Instance:
         self._api_guard.save_final_snapshot_done()
 
     @property
-    def __f_init_max_timestamp(self) -> Optional[float]:
+    def __f_init_max_timestamp(self) -> float | None:
         """Return max timestamp of pre-received F_INIT messages"""
         return max((msg.timestamp for msg in self._f_init_cache.values()), default=None)
 
@@ -894,9 +892,9 @@ class Instance:
 
     def _save_snapshot(
         self,
-        message: Optional[Message],
+        message: Message | None,
         final: bool,
-        f_init_max_timestamp: Optional[float] = None,
+        f_init_max_timestamp: float | None = None,
     ) -> None:
         """Save a snapshot to disk and notify manager.
 
@@ -929,8 +927,8 @@ class Instance:
     def __receive_message(
         self,
         port_name: str,
-        slot: Optional[int],
-        default: Optional[Message],
+        slot: int | None,
+        default: Message | None,
         with_settings: bool,
     ) -> Message:
         """Receives a message on the given port.
@@ -940,7 +938,7 @@ class Instance:
         """
         self.__check_port(port_name, slot, False, True)
 
-        err_msg: Optional[str] = None
+        err_msg: str | None = None
         port = self._port_manager.get_port(port_name)
         if not port.is_connected():
             if default is not None:
@@ -1048,7 +1046,7 @@ class Instance:
     def __check_port(
         self,
         port_name: str,
-        slot: Optional[int],
+        slot: int | None,
         is_send: bool,
         allow_slot_out_of_range: bool = False,
     ) -> None:
@@ -1225,9 +1223,7 @@ class Instance:
             if message.settings is not None:
                 self._settings_manager.overlay = message.settings
 
-    def __check_compatibility(
-        self, port_name: str, overlay: Optional[Settings]
-    ) -> None:
+    def __check_compatibility(self, port_name: str, overlay: Settings | None) -> None:
         """Checks whether a received overlay matches the current one.
 
         Args:
@@ -1247,7 +1243,7 @@ class Instance:
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
-    def __shutdown(self, message: Optional[str] = None) -> None:
+    def __shutdown(self, message: str | None = None) -> None:
         """Shuts down simulation.
 
         This logs the given error message, if any, communicates to the

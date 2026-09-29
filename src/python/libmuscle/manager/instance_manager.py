@@ -4,7 +4,6 @@ from pathlib import Path
 from queue import Empty
 from textwrap import indent
 from threading import Thread
-from typing import Optional, Union
 
 from ymmsl.v0_2 import Configuration, ExecutionModel, Reference
 
@@ -61,7 +60,7 @@ class LogHandlingThread(Thread):
                     break
 
 
-_ResultType = Union[Process, CrashedResult]
+_ResultType = Process | CrashedResult
 
 
 class InstanceManager:
@@ -101,7 +100,7 @@ class InstanceManager:
         self._log_handler = LogHandlingThread(self._log_records_in)
         self._log_handler.start()
 
-        self._allocations: Optional[dict[Reference, ResourceAssignment]] = None
+        self._allocations: dict[Reference, ResourceAssignment] | None = None
 
         resources = self._resources_in.get()
         _logger.debug(f"Got resources {resources}")

@@ -189,7 +189,6 @@ psutil      physical        counted by psutil.cpu_count(logical=False)
 
 from collections.abc import Iterable, Iterator
 from copy import copy, deepcopy
-from typing import Optional
 
 
 class Core:
@@ -498,7 +497,7 @@ class Resources:
         nodes: A collection of nodes to include in this resource set
     """
 
-    def __init__(self, nodes: Optional[Iterable[OnNodeResources]] = None) -> None:
+    def __init__(self, nodes: Iterable[OnNodeResources] | None = None) -> None:
         """Create a Resources object with the given nodes.
 
         Args:

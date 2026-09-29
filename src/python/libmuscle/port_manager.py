@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ymmsl.v0_2 import Identifier, Operator, Timeline
 
 from libmuscle.peer_info import PeerInfo
@@ -10,7 +8,7 @@ class PortManager:
     """Manages sending and receiving ports of the current instance."""
 
     def __init__(
-        self, index: list[int], declared_ports: Optional[dict[Operator, list[str]]]
+        self, index: list[int], declared_ports: dict[Operator, list[str]] | None
     ) -> None:
         """Create a PortManager.
 
@@ -83,7 +81,7 @@ class PortManager:
     def get_connected_ports(
         self,
         operator: Operator,
-        timeline: Optional[Timeline] = None,
+        timeline: Timeline | None = None,
     ) -> list[Port]:
         """Returns the connected ports for the given operator. Includes
         muscle_settings_in for F_INIT.

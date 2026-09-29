@@ -69,55 +69,70 @@ of the macro model driving it, while a meso model may sit somewhere in
 between the two. MUSCLE3 calls this idea of "running at a different pace" a
 *timeline*.
 
-Every port lives on a timeline, and two rules decide which one:
+Each component has two timelines associated with it:
 
-- A component's ``F_INIT`` and ``O_F`` ports always live on the same
-  timeline as the component itself.
-- A component's ``O_I`` and ``S`` ports, if it has any, live one level
-  deeper, on one or more subtimelines nested inside it.
+- Its *parent timeline* is the timeline of whatever calls it. The messages it
+  receives on its ``F_INIT`` ports and sends on its ``O_F`` ports live on this
+  timeline, ``<parent timeline>``. For a component that isn't called by any
+  other component, the parent timeline is empty.
+- Its *component timeline* is the timeline it runs on itself. Its name is the
+  name of the parent timeline followed by the name of the component, joined
+  with a colon, so ``<parent timeline>:<component>``. By default, the messages
+  it sends on its ``O_I`` ports and receives on its ``S`` ports live on this
+  timeline. If you define a timeline explicitly in your yMMSL file, those messages
+  live on that named sub-timeline of the component instead. Its name is the
+  component timeline followed by the name of the timeline, joined with a period, so
+  ``<parent timeline>:<component>.<timeline>``. See the yMMSL documentation on
+  :external+ymmsl:ref:`Timelines` for how to do this.
 
-These two rules chain together: whatever component is called through one of
-those subtimelines (i.e. whose ``F_INIT``/``O_F`` ports are connected to a
-component's ``O_I``/``S`` ports) has its own ``F_INIT``/``O_F`` right there
-on that same subtimeline. If that component in turn has its own ``O_I``/``S``
-loop, that loop is nested one level deeper still, one level for every loop
-in the chain.
+These two rules chain together: when a component's ``O_I``/``S`` ports are
+connected to another component's ``F_INIT``/``O_F`` ports, the caller's
+component timeline becomes the callee's parent timeline. If the callee in turn
+has its own ``O_I``/``S`` loop, its component timeline is nested one level
+deeper still, one level for every loop in the chain, a bit like a folder
+structure.
 
 Take a macro model that calls a meso model in a loop, where that meso model in
 turn calls a micro model in its own loop:
 
 .. figure:: timelines_macro_meso_micro.svg
    :align: center
+   :alt: macro connects to meso through F_INIT/O_F and O_I/S ports, and meso
+         connects to micro the same way, producing three nested timelines.
 
-Nesting in the figure mirrors nesting in time: ``meso``'s box sits inside
-``macro``'s, and ``micro``'s sits inside ``meso``'s.
+The order of the boxes in the figure, from top to bottom, mirrors the nesting
+in time: ``macro`` first, then ``meso`` below it, then ``micro`` below
+``meso``.
 
-Applying the two rules above gives three timelines:
+Applying the two rules above gives three nested timelines:
 
-- the root timeline ``:``, where ``macro``'s ``F_INIT``/``O_F`` would be, if
-  it had any;
-- ``:macro``, holding ``meso``'s ``F_INIT``/``O_F`` and, one level deeper,
-  ``macro``'s ``O_I``/``S``;
-- ``:macro:meso``, holding ``micro``'s ``F_INIT``/``O_F`` and, one level
-  deeper still, ``meso``'s ``O_I``/``S``.
+- ``macro`` isn't called by anything, so its parent timeline is empty and its
+  component timeline is ``macro``. This is where ``macro``'s ``O_I``/``S``
+  messages live, and also ``meso``'s ``F_INIT``/``O_F`` messages.
+- ``meso``'s parent timeline is ``macro`` and its component timeline is
+  ``macro:meso``, where ``meso``'s ``O_I``/``S`` messages and ``micro``'s
+  ``F_INIT``/``O_F`` messages live.
+- ``micro``'s parent timeline is ``macro:meso`` and its component timeline is
+  ``macro:meso:micro``.
 
-yMMSL works this out automatically from how components are wired together
-with conduits.
+A conduit is valid if the messages on both of its ends are on the same
+timeline. The conduit from ``macro``'s ``O_I`` port to ``meso``'s ``F_INIT``
+port is therefore valid, because both are on timeline ``macro``.
 
-A component isn't limited to driving a single loop, either: it can own more
-than one independent ``O_I``/``S`` subtimeline at once, for example when it
-calls two other components that run at different rates. Take ``macro``
-driving ``micro1`` and ``micro2`` each in their own loop:
+The named sub-timelines mentioned above come into play when a component drives
+more than one loop at once, for example when it calls two other components
+that run at different rates. Take ``macro`` driving ``micro1`` and ``micro2``
+each in their own loop:
 
 .. figure:: timelines_two_subtimelines.svg
    :align: center
+   :alt: macro has two separate pairs of O_I/S ports, one connecting down to
+         micro1 and one connecting down to micro2, side by side.
 
-``macro``'s two subtimelines are drawn side by side beneath it, each with
-its own pair of ports, one leading to ``micro1`` and the other to
-``micro2``. ``micro1`` and ``micro2`` end up on two independent
-subtimelines nested inside ``macro``'s own (``:macro.tl1`` and
-``:macro.tl2``) rather than a shared one, so they can each run at their
-own pace without interfering with each other.
+``macro``'s two sub-timelines are drawn side by side beneath it, each with its
+own pair of ports, one leading to ``micro1`` and the other to ``micro2``. These
+two pairs of ports live on ``macro.tl1`` and ``macro.tl2``, so ``micro1`` and
+``micro2`` can each run at their own pace without interfering with each other.
 
 .. seealso::
 
@@ -134,34 +149,34 @@ Send/receive order
 Placing ports on timelines like this isn't just bookkeeping: it also fixes
 the order in which a component is allowed to call ``send``/``receive`` on
 them. A component first receives once on each of its ``F_INIT`` ports, then works
-through every ``O_I``/``S`` subtimeline it drives. A subtimeline doesn't
+through every ``O_I``/``S`` sub-timeline it drives. A sub-timeline doesn't
 have to be used on every iteration, though: a component may skip one
 entirely, going straight from ``F_INIT`` to ``O_F`` without ever sending or
 receiving on it, but once it does send or receive a message on a
-subtimeline, it has to finish it: every port on that subtimeline must have
-sent or received a message before it counts as done. In the two-subtimeline
+sub-timeline, it has to finish it: every port on that sub-timeline must have
+sent or received a message before it counts as done. In the two-sub-timeline
 example above, ``macro`` could, say, run its ``tl1`` loop with ``micro1``
 on every iteration of its own outer loop, but only run ``tl2`` with
 ``micro2`` on some of them, skipping it on the rest.
 
-Each subtimeline fixes its own order independently of the others: whichever
+Each sub-timeline fixes its own order independently of the others: whichever
 action a component performs first on it, sending on ``O_I`` or receiving on
 ``S``, decides the order, sending on every ``O_I`` port before receiving on any
 ``S`` port, or the other way around, receiving on every ``S`` port before
 sending on any ``O_I`` port. In the macro/meso/micro example above, every
-subtimeline happens to start with a send: ``macro`` sends on ``O_I`` before it
+sub-timeline happens to start with a send: ``macro`` sends on ``O_I`` before it
 ever receives on ``S``, and ``meso`` and ``micro`` each do the same one level
-down. The two-subtimeline example above makes the same choice for both of
+down. The two-sub-timeline example above makes the same choice for both of
 ``macro``'s loops. Starting with a receive instead of a send is what a
 **timeline bridge** does instead, see
 :ref:`Interact coupling and timeline bridges` below.
 
-Only once a component is done with every subtimeline it drives, does it send on
+Only once a component is done with every sub-timeline it drives, does it send on
 its ``O_F`` ports.
 
 A component that calls send/receive out of that order, e.g. sending twice
 on ``O_I`` before ``S`` has replied, or sending on ``O_F`` before every
-subtimeline has finished, gets a clear error explaining what it was
+sub-timeline has finished, gets a clear error explaining what it was
 expected to do instead.
 
 

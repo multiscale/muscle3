@@ -465,7 +465,9 @@ parent timeline. ``micro``'s ``F_INIT`` messages live on ``macro``, one level
 deeper, so the conduit from ``init`` to ``micro`` needs a single filter:
 
 - ``repeat`` if ``micro`` needs the data on every call, so that it receives the
-  same message each time.
+  same message each time. Note that ``micro`` must receive on its
+  ``static_in`` port on every call, even if the message is always the same or
+  empty, to keep the models synchronised.
 - ``pad`` if ``micro`` only needs it on its first call, for example because it
   keeps the data itself. On every later call, ``micro`` then receives an empty
   message on that port.

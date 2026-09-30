@@ -323,7 +323,7 @@ ymmsl_version: v0.2
 models:
   interact_coupling:
     description: |
-      A model demonstrating a time scale overlapping coupling, using a time bridge.
+      A model demonstrating a time scale overlapping coupling, using a timeline bridge.
     components:
       left:
         description: One of the interacting components

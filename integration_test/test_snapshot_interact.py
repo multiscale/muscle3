@@ -154,7 +154,7 @@ models:
           o_i: b_in
           s: b_out
       description: >
-        A time bridge to connect the two components together while interpolating
+        A timeline bridge to connect the two components together while interpolating
       implementation: checkpointing_temporal_coupler
   matching_timelines:
     comp1: coupler.comp1

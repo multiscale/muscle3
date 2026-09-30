@@ -877,10 +877,10 @@ def test_matching_timelines_lockstep() -> None:
     }
 
 
-def test_matching_timelines_time_bridge() -> None:
+def test_matching_timelines_timeline_bridge() -> None:
     nested_config_yaml = dedent("""
         ymmsl_version: v0.2
-        description: Testing nested time bridge
+        description: Testing nested timeline bridge
         models:
           outer:
             description: Outer model
@@ -908,7 +908,7 @@ def test_matching_timelines_time_bridge() -> None:
           inner:
             ports:
               s: in
-            description: Inner model with time bridge
+            description: Inner model with timeline bridge
             components:
               bridge:
                 ports:
@@ -917,8 +917,8 @@ def test_matching_timelines_time_bridge() -> None:
                   timeline receiver:
                     o_i: data_out
                     s: clock_in
-                description: Time bridge for c4
-                implementation: time_bridge
+                description: Timeline bridge for c4
+                implementation: timeline_bridge
               c4:
                 ports:
                   o_i: clock_out

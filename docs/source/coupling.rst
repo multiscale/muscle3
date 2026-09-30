@@ -285,7 +285,7 @@ the run entirely. What's needed instead is a component that sits between them an
 transforms each incoming message to the timestep the other side expects.
 A **timeline bridge** does exactly that. The different ways in which a bridge
 can convert messages between the two timelines are described in
-:doc:`time_bridges`.
+:doc:`timeline_bridges`.
 
 The bridge has an ``O_I``/``S`` port pair for each side, each on a separate
 sub-timeline: ``timeline_bridge.component1``, on which it follows the time

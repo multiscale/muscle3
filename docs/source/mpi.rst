@@ -63,8 +63,8 @@ to the non-MPI examples, and you should use those as well when compiling your
 own MPI-based submodels. See the :ref:`Installing` section for details.
 
 The ``resources`` definitions for MPI models are a bit different from those of
-single- or multithreaded models. See `the yMMSL documentation on resources
-<https://ymmsl-python.readthedocs.io/en/master/ymmsl_python.html#resources>`_
+single- or multithreaded models. See :external+ymmsl:ref:`the yMMSL documentation on resources
+<resources>`
 for how to do that.
 
 

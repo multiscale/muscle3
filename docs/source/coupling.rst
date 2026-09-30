@@ -140,7 +140,7 @@ two pairs of ports live on ``macro.tl1`` and ``macro.tl2``, so ``micro1`` and
    a ``timeline <name>:`` heading in a yMMSL file, and on
    :external+ymmsl:ref:`Matching timelines` for how to declare two
    timelines equivalent with ``matching_timelines``, used below for
-   :ref:`Interact coupling and timeline bridges`.
+   :ref:`Interact coupling` and :ref:`Timeline bridges`.
 
 
 Send/receive order
@@ -168,9 +168,7 @@ sub-timeline happens to start with a send: ``macro`` sends on ``O_I`` before it
 ever receives on ``S``, and ``meso`` and ``micro`` each do the same one level
 down. The two-sub-timeline example above makes the same choice for both of
 ``macro``'s loops. Starting with a receive instead of a send is what a
-**timeline bridge** does instead, see
-:ref:`Interact coupling and timeline bridges` below.
-
+**timeline bridge** does instead, see :ref:`Timeline bridges` below.
 Only once a component is done with every sub-timeline it drives, does it send on
 its ``O_F`` ports.
 
@@ -226,8 +224,8 @@ each with its own component timeline: if they are both called by a component
          component1 and component2 are drawn side by side below parent.
 
 
-Interact coupling and timeline bridges
-`````````````````````````````````````````
+Interact coupling
+``````````````````
 
 Two components can also interact as peers: Component 1's ``O_I`` port
 connects to Component 2's ``S`` port, and Component 2's ``O_I`` connects
@@ -244,6 +242,27 @@ boundary back. Each step on ``component1`` therefore lines up with exactly one
 step on ``component2``: the timelines are *equivalent*, even though they are
 not the same.
 
+In that case you can declare the two timelines as matching timelines. Each
+component still has its own timeline, but conduits between ports on matching
+timelines are then allowed. See the yMMSL documentation on
+:external+ymmsl:ref:`matching_timelines <Matching timelines>` for how to
+declare matching timelines in a yMMSL file.
+
+Matching timelines only make a conduit valid if the timelines on both of its
+ends are at the same level of nesting. Connecting timelines at different levels
+still requires :ref:`conduit filters <Conduit filters>`. A match also applies
+only to the timelines that are declared, not to the timelines nested inside
+them. Say Component 1 and Component 2 each call another component in their loop,
+``sub1`` and ``sub2``, which end up on ``component1:sub1`` and
+``component2:sub2``. Matching ``component1`` and ``component2`` allows conduits
+between Component 1 and Component 2, but not between ``sub1`` and ``sub2``: if
+those two interact as well, their timelines have to be declared as matching
+too.
+
+Matching timelines are declared per model, relative to that model. When a
+nested model is connected through its model ports, MUSCLE3 matches the
+timelines on either side of those ports automatically.
+
 Both components have to send on their ``O_I`` port before either receives on
 ``S``. If both components take steps at exactly the same pace, this works in
 lock-step, every send on one side is matched by a receive on the other, one
@@ -254,26 +273,28 @@ message at a time:
    :alt: component1's O_I port connects to component2's S port, and
          component2's O_I port connects back to component1's S port.
 
-If Component 1 and Component 2 don't take equal-sized steps, wiring them
-together directly no longer works: whichever one takes the smaller steps
-would have to wait for a message the other isn't ready to send yet, so the
-two end up waiting on each other, which can hang or deadlock the run
-entirely. What's needed instead is a component that sits between them and
+
+Timeline bridges
+````````````````
+
+If Component 1 and Component 2 from the :ref:`Interact coupling` above don't
+take equal-sized steps, wiring them together directly no longer works: whichever
+one takes the smaller steps would have to wait for a message the other isn't ready
+to send yet, so the two end up waiting on each other, which can hang or deadlock
+the run entirely. What's needed instead is a component that sits between them and
 transforms each incoming message to the timestep the other side expects.
-A **timeline bridge** does exactly that: it has two ``O_I``/``S`` port
-pairs of its own, one that connects to Component 1 and runs at its pace,
-and another that connects to Component 2 and runs at its pace.
+A **timeline bridge** does exactly that. The different ways in which a bridge
+can convert messages between the two timelines are described in
+:doc:`time_bridges`.
 
-.. TODO: once the Time bridge is documented, refer to docs/source/time_bridges.rst here.
-
-Just like that, one subtimeline per component it connects to, a bridge
-component groups its ports under two ``timeline <name>:`` headings, except
-here each subtimeline is driven by the component on that side rather than
-by the bridge itself. Those two subtimelines are the bridge's own, though,
-not Component 1's or Component 2's, so before conduits between the bridge
-and either peer are allowed, each of the bridge's subtimelines needs to be
-declared a ``matching_timelines:`` pair with the peer whose pace it adapts
-to. This is what that looks like in a yMMSL:
+The bridge has an ``O_I``/``S`` port pair for each side, each on a separate
+sub-timeline: ``timeline_bridge.component1``, on which it follows the time
+points of Component 1, and ``timeline_bridge.component2``, on which it follows
+those of Component 2. These sub-timelines are the bridge's own, not Component
+1's or Component 2's, so just like in the interact coupling, the conduits
+between the bridge and its peers are only valid once each of the bridge's
+sub-timelines is declared as matching the timeline of the component on that
+side. This is what that looks like in a yMMSL:
 
 .. code-block:: yaml
     :caption: yMMSL for a timeline bridge connecting ``component1`` and ``component2``
@@ -327,11 +348,11 @@ once it has Component 2's messages for ``t=0`` and ``t=13``, it can answer
 Component 1's request for ``t=5`` by interpolating between the two.
 
 As covered in :ref:`Send/receive order`, whichever action happens first on a
-subtimeline decides its order for the rest of the run. Before it has received
+sub-timeline decides its order for the rest of the run. Before it has received
 anything at all, though, the bridge has no messages to interpolate
 between and so nothing sensible to send, unlike most other couplings,
 which send first a bridge has to receive on ``S``
-before it ever sends on ``O_I``, on each of its subtimelines. The
+before it ever sends on ``O_I``, on each of its sub-timelines. The
 ``Peer`` class in ``interact_coupling.py`` does exactly this in its
 constructor, receiving an initial message before its main loop ever calls
 ``send``.
@@ -340,68 +361,56 @@ constructor, receiving an initial message before its main loop ever calls
 Conduit filters
 ----------------
 
-Recall from `Timelines`_ that every port lives on a timeline, and that an
-ordinary conduit connects two ports that live on the same one, that's what
-call/release and dispatch coupling do. When you want to connect two ports
-that live on different timelines instead, without the message being relayed
-through whatever sits between them, you can connect them with a conduit
-filter.
+An ordinary conduit connects two ports whose messages live on the same
+timeline. A conduit filter lets you connect ports on different, nested
+timelines directly, without relaying the messages through the components in
+between.
 
-Extending the macro-meso-micro example above: the conduit from ``macro`` to
-``meso``, and the one from ``meso`` to ``micro``, each connect ports that
-live on the same timeline, ``macro``'s ``O_I``/``S`` and ``meso``'s
-``F_INIT``/``O_F`` both live on ``:macro``, and ``meso``'s ``O_I``/``S`` and
-``micro``'s ``F_INIT``/``O_F`` both live on ``:macro:meso``.
+Take the macro-meso-micro example from `Timelines`_, extended with a fourth
+level, ``pico``, which is called by ``micro``. Besides the ordinary conduits
+between each component and the one it calls, ``macro`` also has conduits
+directly to ``micro`` and to ``pico``:
 
-Now say ``macro`` produces a message that ``micro`` needs directly, with
-``meso`` doing nothing with it along the way. Without conduit filters, we'd
-have to route it through ``meso``: give ``meso`` extra ports, and write code
-that takes the single message it gets on ``bypass_in`` and resends it to
-``micro`` on every one of ``meso``'s calls to it, and takes the many messages
-``micro`` sends back and forwards only the last one to ``macro``:
-
-.. figure:: conduit_filters_relay.svg
+.. figure:: conduit_filters_multilevel.svg
    :align: center
-   :alt: macro and micro each have an extra pair of ports connected to a
-         relay port pair on meso, instead of being connected to each other.
+   :alt: macro, meso, micro and pico are nested inside each other. Extra pairs
+         of conduits connect macro directly to micro, bypassing meso, and macro
+         directly to pico, bypassing meso and micro.
 
+``macro``'s ``O_I``/``S`` messages live on ``macro``, while ``micro``'s
+``F_INIT``/``O_F`` messages live on ``macro:meso``, one level deeper. ``micro``
+is called many times for every step of ``macro``, so the conduit from ``macro``
+to ``micro`` has to turn one message into many, and the conduit back has to
+turn many messages into one. Without filters, ``meso`` would have to do this
+with extra ports and relay code. With filters, the conduit does it, and
+``meso`` doesn't need to know about these messages at all.
 
-A conduit filter lets us skip ``meso`` and that relay code entirely, by
-connecting ``macro`` and ``micro`` directly instead. Since ``macro``'s
-``O_I``/``S`` ports live on ``:macro`` and ``micro``'s
-``F_INIT``/``O_F`` ports live on ``:macro:meso``, this conduit connects
-ports that don't live on the same timeline, and the same is true the other way
-around, for a message travelling from ``micro`` back to ``macro`` without going
-through ``meso``. ``meso`` no longer needs the relay ports, and the only part
-that changes is the ``conduits`` section:
+There are three filters:
 
-.. figure:: conduit_filters_bypass.svg
-   :align: center
-   :alt: macro and micro have an extra pair of ports directly connecting
-         them, bypassing meso, labeled "repeat" and "last".
+- ``repeat`` goes from the shallower timeline to the deeper one. It resends the
+  single message from the shallower side unchanged on every receive on the
+  deeper side, until a new message replaces it.
+- ``pad`` also goes from the shallower timeline to the deeper one. It passes
+  the message through once, and follows it with empty messages for the
+  remaining receives on the deeper side.
+- ``last`` goes from the deeper timeline to the shallower one. Only the most
+  recently sent message is delivered; the rest are dropped. If nothing was sent
+  on the deeper side at all, for example because the loop in between was
+  skipped, the shallower side receives an empty message instead.
 
+Each filter bridges exactly one level of nesting, so the conduits between
+``macro`` and ``micro`` need a single ``repeat`` and ``last``. The conduits
+between ``macro`` and ``pico`` skip two levels, so they need two filters each.
+On the way down, ``repeat repeat`` repeats ``macro``'s message for every call
+of ``micro``, and then again for every call of ``pico``. On the way back up,
+``last last`` reduces ``pico``'s messages to the last one per call of
+``micro``, and then those to the last one per step of ``macro``. With the wrong
+number of filters, the timelines on the two ends don't match and the yMMSL
+configuration is rejected.
 
-Connecting ``macro`` and ``micro`` directly means we now have to handle the
-pace mismatch between them explicitly, rather than leaving it to ``meso``.
-``micro`` gets called many times for every single time ``macro`` runs, so
-the conduit going from ``macro`` to ``micro`` needs to turn ``macro``'s one
-``bypass_out`` message into the many ``bypass_in`` messages ``micro``
-expects. Going the other way, the conduit needs to turn ``micro``'s many
-``bypass_out`` messages into the single ``bypass_in`` message ``macro``
-expects per call. A filter tells the conduit how to do either:
-``repeat`` and ``pad`` turn one message into many, for the
-``macro``-to-``micro`` direction, while ``last`` turns many messages into
-one, for the ``micro``-to-``macro`` direction.
-
-- ``repeat`` resends the single message ``macro`` sends on ``bypass_out``
-  unchanged to ``micro`` on every one of its calls, until a new message
-  replaces it.
-- ``pad`` also passes that single message through once, but instead of
-  repeating it, follows it with empty messages for ``micro``'s remaining
-  calls.
-- ``last`` goes the other way: of everything ``micro`` sends on
-  ``bypass_out``, only the most recently sent message is delivered to
-  ``macro``'s single ``bypass_in`` receive; the rest are dropped.
+Filters can also be combined with
+:external+ymmsl:ref:`matching timelines <Matching timelines>`, which are taken
+into account after the filters have been applied.
 
 .. seealso::
 

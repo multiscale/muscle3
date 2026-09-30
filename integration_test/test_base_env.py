@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import ymmsl
+from ymmsl.v0_2 import Reference, resolve_timelines
 
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
@@ -61,6 +62,8 @@ resources:
 """
 
     config = ymmsl.load(ymmsl_text)
+    assert isinstance(config, ymmsl.v0_2.Configuration)
+    resolve_timelines(config.models[Reference("test_model")])
 
     # set up
     run_dir = RunDir(tmppath / "run")

@@ -67,6 +67,7 @@ def model(init: Component, macro: Component, micro: Component) -> Model:
         "",
         None,
         [init, macro, micro],
+        None,
         [
             Conduit("init.state_out", "macro.initial_state_in"),
             Conduit("macro.bc_out", "micro.initial_bc_in"),

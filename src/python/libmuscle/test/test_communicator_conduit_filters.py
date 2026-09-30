@@ -33,7 +33,9 @@ def repeat_filter(request):
 def repeater_communicator(repeat_filter, mpp_client):
     port_manager = PortManager([], None)
     mock_manager = MagicMock()
-    mock_manager.get_timeline.return_value = Timeline(":parent3:parent2:parent1")
+    mock_manager.get_timeline.return_value = Timeline(
+        "parent3:parent2:parent1:component"
+    )
     communicator = Communicator(
         Ref("component"), [], port_manager, MagicMock(), mock_manager
     )
@@ -74,7 +76,7 @@ def repeater_communicator(repeat_filter, mpp_client):
 def reducer_communicator(mpp_client, mpp_server):
     port_manager = PortManager([], None)
     mock_manager = MagicMock()
-    mock_manager.get_timeline.return_value = Timeline(":parent")
+    mock_manager.get_timeline.return_value = Timeline("parent:component")
     communicator = Communicator(
         Ref("component"), [], port_manager, MagicMock(), mock_manager
     )
@@ -117,7 +119,7 @@ def repeater_reducer_communicator(repeat_filter, mpp_client, mpp_server):
 
     port_manager = PortManager([], None)
     mock_manager = MagicMock()
-    mock_manager.get_timeline.return_value = Timeline(":")
+    mock_manager.get_timeline.return_value = Timeline("component")
     component = Communicator(
         Ref("component"), [], port_manager, MagicMock(), mock_manager
     )
@@ -133,8 +135,10 @@ def repeater_reducer_communicator(repeat_filter, mpp_client, mpp_server):
     component.set_peer_info(peer_info)
 
     sibling_port_manager = PortManager([], None)
+    sibling_mock_manager = MagicMock()
+    sibling_mock_manager.get_timeline.return_value = Timeline("sibling")
     sibling = Communicator(
-        Ref("sibling"), [], sibling_port_manager, MagicMock(), MagicMock()
+        Ref("sibling"), [], sibling_port_manager, MagicMock(), sibling_mock_manager
     )
     sibling_peer_info = PeerInfo(
         Ref("sibling"),
@@ -314,8 +318,10 @@ def test_repeater_filters_no_finit(mpp_client, repeat_filter):
 
     # Prepare a communicator with only a repeated S port and no F_INIT ports:
     port_manager = PortManager([], None)
+    mock_manager = MagicMock()
+    mock_manager.get_timeline.return_value = Timeline("component")
     communicator = Communicator(
-        Ref("component"), [], port_manager, MagicMock(), MagicMock()
+        Ref("component"), [], port_manager, MagicMock(), mock_manager
     )
     peer_info = PeerInfo(
         Ref("component"),

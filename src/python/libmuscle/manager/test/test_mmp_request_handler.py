@@ -266,7 +266,7 @@ def test_request_peers_fanout(registered_mmp_request_handler):
         assert name == f"micro[{i // 10}][{i % 10}]"
         assert locs == [f"direct:{name}"]
 
-    assert ports == [["out", "O_I", "macro"], ["in", "S", "macro"]]
+    assert ports == [["out", "O_I", ""], ["in", "S", ""]]
 
 
 def test_request_peers_fanin(registered_mmp_request_handler):

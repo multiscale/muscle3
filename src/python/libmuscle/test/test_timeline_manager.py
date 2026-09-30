@@ -30,7 +30,7 @@ def include_settings(request: pytest.FixtureRequest) -> bool:
 
 @pytest.fixture
 def timeline(request: pytest.FixtureRequest) -> Timeline:
-    return getattr(request, "param", Timeline(":"))
+    return getattr(request, "param", Timeline("component"))
 
 
 @pytest.fixture
@@ -55,12 +55,12 @@ def timeline_manager(
     }
     ymmsl_ports = [
         Port(Id("out_f"), Operator.O_F),
-        Port(Id("out_a1"), Operator.O_I, Timeline(":A1")),
-        Port(Id("in_a1"), Operator.S, Timeline(":A1")),
-        Port(Id("in_a1_2"), Operator.S, Timeline(":A1")),
-        Port(Id("out_a2"), Operator.O_I, Timeline(":A2")),
-        Port(Id("out_a2_2"), Operator.O_I, Timeline(":A2")),
-        Port(Id("in_a2"), Operator.S, Timeline(":A2")),
+        Port(Id("out_a1"), Operator.O_I, Timeline("A1")),
+        Port(Id("in_a1"), Operator.S, Timeline("A1")),
+        Port(Id("in_a1_2"), Operator.S, Timeline("A1")),
+        Port(Id("out_a2"), Operator.O_I, Timeline("A2")),
+        Port(Id("out_a2_2"), Operator.O_I, Timeline("A2")),
+        Port(Id("in_a2"), Operator.S, Timeline("A2")),
     ]
     if has_f_init:
         conduits.append(Conduit("peer_init.out", "component.in_f"))
@@ -189,7 +189,7 @@ def test_check_send_message_o_i_starts_subtimeline_with_o_i_leading(
 
     iteration = timeline_manager.check_send_message("out_a1")
 
-    stm = timeline_manager._submanagers[Timeline(":A1")]
+    stm = timeline_manager._submanagers[Timeline("A1")]
     assert stm._first_operator is Operator.O_I
     assert stm._iteration == [0]
     assert iteration == [0]
@@ -227,7 +227,7 @@ def test_check_send_message_o_i_allowed_once_all_led_s_ports_received(
 
     iteration = timeline_manager.check_send_message("out_a1")
 
-    stm = timeline_manager._submanagers[Timeline(":A1")]
+    stm = timeline_manager._submanagers[Timeline("A1")]
     assert stm._first_operator is Operator.S
     assert stm._iteration == [0]
     assert iteration == [0]
@@ -256,7 +256,7 @@ def test_check_send_message_o_i_when_o_i_leads_and_complete(
 
     second_iteration = timeline_manager.check_send_message("out_a1")
 
-    stm = timeline_manager._submanagers[Timeline(":A1")]
+    stm = timeline_manager._submanagers[Timeline("A1")]
     assert first_iteration == [0]
     assert second_iteration == [1]
     assert stm._iteration == [1]
@@ -279,7 +279,7 @@ def test_check_send_message_o_i_blocked_when_o_i_leads_and_incomplete(
     )
 
 
-@pytest.mark.parametrize("timeline", [Timeline(":a:b:c")], indirect=True)
+@pytest.mark.parametrize("timeline", [Timeline("a:b:c:component")], indirect=True)
 def test_check_pre_receive_increments(timeline_manager: TimelineManager) -> None:
     assert timeline_manager.record_pre_received_iteration_counts(
         [[1, 2, 3], [1, 2], [1], [], [1, 2, 3], [1, 2]]
@@ -301,7 +301,7 @@ def test_check_pre_receive_counts_match_timeline(
         timeline_manager.record_pre_received_iteration_counts([[1]])
 
 
-@pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)
+@pytest.mark.parametrize("timeline", [Timeline("a")], indirect=True)
 def test_check_pre_receive_iterations_when_iteration_differs(
     timeline_manager: TimelineManager,
 ) -> None:
@@ -317,7 +317,7 @@ def test_check_receive_message_s_starts_subtimeline_with_s_leading(
     timeline_manager.record_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a2", None, [0])
 
-    stm = timeline_manager._submanagers[Timeline(":A2")]
+    stm = timeline_manager._submanagers[Timeline("A2")]
     assert stm._first_operator is Operator.S
     assert stm._iteration == [0]
     assert stm._receive.has_participated("in_a2", None)
@@ -347,7 +347,7 @@ def test_check_receive_message_s_allowed_once_all_led_o_i_ports_sent(
 
     check_received(timeline_manager, "in_a2", None, [0])
 
-    stm = timeline_manager._submanagers[Timeline(":A2")]
+    stm = timeline_manager._submanagers[Timeline("A2")]
     assert stm._first_operator is Operator.O_I
     assert stm._iteration == [0]
     assert stm._receive.has_participated("in_a2", None)
@@ -368,7 +368,7 @@ def test_check_receive_message_s_when_s_leads_and_complete(
     timeline_manager.record_pre_received_iteration_counts([[], []])
     check_received(timeline_manager, "in_a2", None, [1])
 
-    stm = timeline_manager._submanagers[Timeline(":A2")]
+    stm = timeline_manager._submanagers[Timeline("A2")]
     first_iteration = stm._iteration
 
     timeline_manager.check_send_message("out_a2")
@@ -405,7 +405,7 @@ def test_check_receive_message_s_blocked_when_s_leads_and_incomplete(
     )
 
 
-@pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)
+@pytest.mark.parametrize("timeline", [Timeline("a:component")], indirect=True)
 def test_finish_reuse_iteration_resets_when_complete(
     timeline_manager: TimelineManager,
 ) -> None:
@@ -430,7 +430,7 @@ def test_finish_reuse_iteration_resets_when_complete(
     )
 
 
-@pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)
+@pytest.mark.parametrize("timeline", [Timeline("a:component")], indirect=True)
 def test_finish_reuse_iteration_raises_when_incomplete(
     timeline_manager: TimelineManager,
 ) -> None:
@@ -452,7 +452,7 @@ def test_finish_reuse_iteration_raises_when_incomplete(
     )
 
 
-@pytest.mark.parametrize("timeline", [Timeline(":a")], indirect=True)
+@pytest.mark.parametrize("timeline", [Timeline("a:component")], indirect=True)
 def test_get_state_and_restore_state_round_trip(
     timeline_manager: TimelineManager,
 ) -> None:
@@ -466,7 +466,7 @@ def test_get_state_and_restore_state_round_trip(
     # Restore into a fresh TimelineManager, as would happen after loading a
     # snapshot in a new process, from an independent but identically
     # configured PortManager.
-    restored = TimelineManager(timeline_manager._port_manager, Timeline(":"))
+    restored = TimelineManager(timeline_manager._port_manager, Timeline(""))
     restored.restore_state(timeline_state)
 
     assert restored.get_state() == timeline_state

@@ -318,11 +318,11 @@ class TimelineManager:
                 f"Internal error: received F_INIT iteration count {new_iteration} "
                 f"is not newer than the previous iteration {self._iteration}."
             )
-        if len(new_iteration) != len(self._timeline):
+        if len(new_iteration) != len(self._timeline) - 1:
             raise RuntimeError(
                 f"Received unexpected F_INIT iteration count: {new_iteration}. Was "
-                f"expecting an iteration count with {len(self._timeline)} elements, "
-                f"since we are in timeline {self._timeline}"
+                f"expecting an iteration count with {len(self._timeline) - 1} "
+                f"elements, since we are in timeline {self._timeline}"
             )
         self._iteration = new_iteration
         return self._iteration

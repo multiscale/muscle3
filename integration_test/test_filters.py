@@ -180,8 +180,7 @@ models:
         description: micro with repeaters on S ports
         ports:
           f_init: meso
-          timeline micro:
-            s: macro repeated_meso micro
+          s: macro repeated_meso micro
         implementation: repeat_s
       pico:
         description: pico
@@ -199,6 +198,8 @@ models:
           f_init: trigger
           s: in
         implementation: combined
+    matching_timelines:
+      macro:meso:micro: macro:meso:repeat_s
     conduits:
       macro.out:
       - meso.in

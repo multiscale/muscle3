@@ -42,7 +42,7 @@ def test_multicast(log_file_in_tmpdir):
         Conduit("broadcast.out", "second.in"),
     ]
 
-    model = Model("test_model", None, "", None, elements, conduits)
+    model = Model("test_model", None, "", None, elements, None, conduits)
     settings = Settings()
 
     configuration = Configuration("multicast", None, [model], None, settings)

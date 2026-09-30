@@ -473,10 +473,10 @@ IterationCount TimelineManager::record_pre_received_iteration_counts(
         throw std::runtime_error(
             "Internal error: received F_INIT iteration count " + to_string(new_iteration)
             + " is not newer than the previous iteration " + to_string(iteration_.get()));
-    if (new_iteration.size() != timeline_.size())
+    if (new_iteration.size() != timeline_.size() - 1)
         throw std::runtime_error(
             "Received unexpected F_INIT iteration count: " + to_string(new_iteration)
-            + ". Was expecting an iteration count with " + std::to_string(timeline_.size())
+            + ". Was expecting an iteration count with " + std::to_string(timeline_.size() - 1)
             + " elements, since we are in timeline " + std::string(timeline_));
     iteration_ = new_iteration;
     return new_iteration;

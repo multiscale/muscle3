@@ -35,6 +35,7 @@ s0_model = Model(
         Component("macro", Ports(o_i=["out"]), "", "macro"),
         Component("micro", Ports(f_init=["in"]), "", "micro"),
     ],
+    None,
     [Conduit("macro.out", "micro.in")],
 )
 
@@ -76,6 +77,7 @@ s1_model = Model(
         Component("micro2", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro2"),
         Component("micro3", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro3"),
     ],
+    None,
     [
         Conduit("macro.bc_out", "micro1.bc_in"),
         Conduit("micro1.bc_out", "micro2.bc_in"),
@@ -127,6 +129,7 @@ s2_model = Model(
         Component("micro1", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro1"),
         Component("micro2", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro2"),
     ],
+    None,
     [
         Conduit("macro.bc_out", "micro1.bc_in"),
         Conduit("macro.bc_out", "micro2.bc_in"),
@@ -178,6 +181,7 @@ s3_model = Model(
         Component("b2", Ports(f_init=["in"], o_f=["out"]), "", "b2"),
         Component("c", Ports(f_init=["in"], o_f=["bc_out"]), "", "c"),
     ],
+    None,
     [
         Conduit("a.out", "b1.in"),
         Conduit("a.out", "b2.in"),
@@ -245,6 +249,7 @@ s4_model = Model(
             "micro",
         ),
     ],
+    None,
     [
         Conduit("macro1.bc_out", "micro.bc_in1"),
         Conduit("macro2.bc_out", "micro.bc_in2"),
@@ -305,6 +310,7 @@ s5_model = Model(
             "repeater",
         ),
     ],
+    None,
     [
         Conduit("init.out1", "macro.in"),
         Conduit("init.out2", "repeater.data_in"),
@@ -367,6 +373,7 @@ s6_model = Model(
         Component("tcf", Ports(o_i=["a_out", "b_out"], s=["a_in", "b_in"]), "", "tcf"),
         Component("b", Ports(o_i=["bc_out"], s=["bc_in"]), "", "b"),
     ],
+    None,
     [
         Conduit("a.bc_out", "tcf.a_in"),
         Conduit("tcf.a_out", "a.bc_in"),
@@ -453,6 +460,7 @@ s7_model = Model(
             "micro", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro", False, 10
         ),
     ],
+    None,
     [
         Conduit("mc.pars_out", "init.muscle_settings_in"),
         Conduit("init.state_out", "macro.state_in"),
@@ -560,6 +568,7 @@ s8_model = Model(
         Component("micro1", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro1"),
         Component("micro2", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro2"),
     ],
+    None,
     [
         Conduit("macro.bc_out", "micro1.bc_in"),
         Conduit("micro1.bc_out", "micro2.bc_in"),
@@ -611,6 +620,7 @@ s9_model = Model(
         Component("a", Ports(o_f=["out"]), "", "a"),
         Component("d", Ports(f_init=["in"], o_f=["out"]), "", "d"),
     ],
+    None,
     [
         Conduit("e.out", "b.in1"),
         Conduit("b.out", "c.in"),
@@ -682,6 +692,7 @@ s10_model = Model(
             "micro", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro", False, 8
         ),
     ],
+    None,
     [
         Conduit("mc.pars_out", "rr.front_in"),
         Conduit("rr.back_out", "macro.muscle_settings_in"),
@@ -825,6 +836,7 @@ s11_model = Model(
             "micro2", Ports(f_init=["bc_in"], o_f=["bc_out"]), "", "micro2", False, 3
         ),
     ],
+    None,
     [
         Conduit("macro1.bc_out", "micro1.bc_in"),
         Conduit("micro1.bc_out", "macro1.bc_in"),
@@ -1000,6 +1012,7 @@ s14_model = Model(
         Component("b", Ports(f_init=["in"], o_f=["out"]), "", "b"),
         Component("c", Ports(f_init=["in"], o_f=["out"]), "", "c"),
     ],
+    None,
     [
         Conduit("a.out", "b.in"),
         Conduit("b.out", "c.in"),

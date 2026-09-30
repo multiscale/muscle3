@@ -1,6 +1,9 @@
+from textwrap import dedent
+
 import pytest
-from ymmsl import load
-from ymmsl.v0_2 import Conduit, Model, Reference, resolve
+import ymmsl
+from ymmsl import load, load_as
+from ymmsl.v0_2 import Conduit, Model, Reference, Timeline, resolve, resolve_timelines
 
 from libmuscle.manager.hammer import Plate, flatten
 
@@ -116,6 +119,8 @@ def test_flatten_simple() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -192,6 +197,8 @@ def test_flatten_deep() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -278,6 +285,8 @@ def test_flatten_nested_ensemble() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -400,6 +409,8 @@ def test_flatten_conduit_filters() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -510,6 +521,8 @@ def test_flatten_multicast() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -581,6 +594,8 @@ def test_flatten_passthrough_overload() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -598,6 +613,8 @@ def test_flatten_passthrough_overload() -> None:
     nested_config = load(nested_config_yaml)
     nested_config.custom_implementations[Reference("framework.c2")] = Reference("p2")
     resolve(Reference([]), nested_config)  # apply custom_implementations
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -652,6 +669,8 @@ def test_remove_no_implementation() -> None:
     )
 
     nested_config = load(nested_config_yaml)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -668,6 +687,8 @@ def test_remove_no_implementation() -> None:
         "p2"
     )
     resolve(Reference([]), nested_config)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -692,6 +713,8 @@ def test_remove_no_implementation() -> None:
     ].implementation = Reference("p2")
     nested_config.custom_implementations[Reference("optional_micro.micro")] = None
     resolve(Reference([]), nested_config)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -767,6 +790,8 @@ def test_nested_custom_implementations() -> None:
     )
     nested_config = load(nested_config_yaml)
     resolve(Reference([]), nested_config)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
     flat_config = flatten(nested_config)
 
     flat_model = flat_config.models["outer"]
@@ -776,3 +801,168 @@ def test_nested_custom_implementations() -> None:
     assert len(flat_model.conduits) == 1
     assert flat_model.conduits[0].sender == "c1.c2.c1.out"
     assert flat_model.conduits[0].receiver == "c2.in"
+
+
+def test_matching_timelines_lockstep() -> None:
+    nested_config_yaml = dedent("""
+        ymmsl_version: v0.2
+        description: Testing nested lock-step macros
+        models:
+          outer:
+            description: Outer model
+            components:
+              c1:
+                ports:
+                  o_i: out
+                  s: in
+                description: Component c1
+                implementation: p1
+              c2:
+                ports:
+                  timeline external:
+                    o_i: out
+                    s: in
+                description: Component c2
+                implementation: inner
+            matching_timelines:
+              global: c1 c2.external
+            conduits:
+              c1.out: c2.in
+              c2.out: c1.in
+          inner:
+            ports:
+              timeline external:
+                o_i: out
+                s: in
+            description: Inner model
+            components:
+              c3:
+                ports:
+                  o_i: out1 out2
+                  s: in1 in2
+                description: Component c3
+                implementation: p3
+              c4:
+                ports:
+                  timeline c4tl:
+                    o_i: out
+                    s: in
+                description: Component c4
+                implementation: p4
+            matching_timelines:
+              main: c3 c4.c4tl
+            conduits:
+              in: c3.in1
+              c3.out1: out
+              c3.out2: c4.in
+              c4.out: c3.in2
+        """)
+    nested_config = load_as(ymmsl.v0_2.Configuration, nested_config_yaml)
+    nested_config.check_consistent(False)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
+    flat_config = flatten(nested_config)
+
+    flat_model = flat_config.models["outer"]
+    assert len(flat_model.components) == 3
+
+    assert len(flat_model.matching_timelines) == 1
+    assert flat_model.matching_timelines[0].matches == {
+        Timeline("global"),
+        Timeline("c1"),
+        Timeline("c2.external"),
+        Timeline("c2.main"),
+        Timeline("c2.c3"),
+        Timeline("c2.c4.c4tl"),
+    }
+
+
+def test_matching_timelines_time_bridge() -> None:
+    nested_config_yaml = dedent("""
+        ymmsl_version: v0.2
+        description: Testing nested time bridge
+        models:
+          outer:
+            description: Outer model
+            components:
+              c1:
+                ports:
+                  o_i: out
+                description: Component producing data
+                implementation: p1
+              c2:
+                ports:
+                  s: in
+                description: Component consuming data
+                implementation: inner
+              c3:
+                ports:
+                  s: in
+                description: Component consuming data
+                implementation: inner
+            matching_timelines:
+              c1: c2 c3
+            conduits:
+              c1.out: c2.in
+              c1.out: c3.in
+          inner:
+            ports:
+              s: in
+            description: Inner model with time bridge
+            components:
+              bridge:
+                ports:
+                  timeline sender:
+                    s: data_in
+                  timeline receiver:
+                    o_i: data_out
+                    s: clock_in
+                description: Time bridge for c4
+                implementation: time_bridge
+              c4:
+                ports:
+                  o_i: clock_out
+                  s: in
+                description: Receives data from outside
+                implementation: p4
+            matching_timelines:
+              c4: bridge.receiver
+            conduits:
+              in: bridge.data_in
+              c4.clock_out: bridge.clock_in
+              bridge.data_out: c4.in
+        """)
+    nested_config = load_as(ymmsl.v0_2.Configuration, nested_config_yaml)
+    nested_config.check_consistent(False)
+    for model in nested_config.models.values():
+        resolve_timelines(model)
+    flat_config = flatten(nested_config)
+
+    flat_model = flat_config.models["outer"]
+    assert len(flat_model.components) == 5
+
+    assert len(flat_model.matching_timelines) == 3
+
+    assert {frozenset(mt.matches) for mt in flat_model.matching_timelines} == {
+        frozenset(
+            {
+                Timeline("c1"),
+                Timeline("c2"),
+                Timeline("c3"),
+                Timeline("c2.bridge.sender"),
+                Timeline("c3.bridge.sender"),
+            }
+        ),
+        frozenset(
+            {
+                Timeline("c2.bridge.receiver"),
+                Timeline("c2.c4"),
+            }
+        ),
+        frozenset(
+            {
+                Timeline("c3.c4"),
+                Timeline("c3.bridge.receiver"),
+            }
+        ),
+    }

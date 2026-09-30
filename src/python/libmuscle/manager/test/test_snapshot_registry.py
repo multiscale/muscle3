@@ -42,7 +42,7 @@ def macro_micro(micro_is_stateless: bool) -> Configuration:
         Component("micro", Ports(), "", "micro_impl"),
     ]
     conduits = [Conduit("macro.o_i", "micro.f_i"), Conduit("micro.o_f", "macro.s")]
-    model = Model("macro_micro", None, "", None, components, conduits)
+    model = Model("macro_micro", None, "", None, components, None, conduits)
 
     if micro_is_stateless:
         micro_impl = Program(
@@ -433,7 +433,7 @@ def test_heuristic_rollbacks() -> None:
         for i in range(4)
     ]
     conduits = [Conduit(f"comp{i}.o_f", f"comp{i + 1}.f_i") for i in range(3)]
-    model = Model("linear", None, "", None, components, conduits)
+    model = Model("linear", None, "", None, components, None, conduits)
     programs = [Program(f"impl{i}", script="xyz") for i in range(4)]
     config = Configuration("", [], [model], programs=programs)
 

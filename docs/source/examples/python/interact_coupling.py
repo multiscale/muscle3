@@ -347,6 +347,9 @@ models:
             o_i: b_out
             s: b_in
         implementation: temporal_coupler
+    matching_timelines:
+      left: coupler.left
+      right: coupler.right
     conduits:
       left.boundary_out: coupler.a_in
       right.boundary_out: coupler.b_in

@@ -116,7 +116,7 @@ def test_settings_overlays(log_file_in_tmpdir):
         Conduit("relay2.out", "macro.in"),
     ]
 
-    model = Model("test_model", None, "", None, components, conduits)
+    model = Model("test_model", None, "", None, components, None, conduits)
 
     settings = Settings(
         OrderedDict(

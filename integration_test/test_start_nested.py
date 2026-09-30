@@ -70,13 +70,17 @@ resources:
     threads: 1
 """
 
-    config = flatten(ymmsl.load(ymmsl_text))
+    configuration = ymmsl.load_as(ymmsl.v0_2.Configuration, ymmsl_text)
+    for model in configuration.models.values():
+        ymmsl.v0_2.resolve_timelines(model)
+
+    flat_config = flatten(configuration)
 
     # set up
     run_dir = RunDir(tmppath / "run")
 
     # launch MUSCLE Manager with simulation
-    manager = Manager(config, run_dir, "DEBUG")
+    manager = Manager(flat_config, run_dir, "DEBUG")
     manager.start_instances()
     success = manager.wait()
 

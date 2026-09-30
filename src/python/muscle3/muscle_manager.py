@@ -155,7 +155,7 @@ def _manage_simulation(
 
     for model_obj in configuration.models.values():
         try:
-            v0_2.check_timelines(model_obj)
+            v0_2.resolve_timelines(model_obj)
         except RuntimeError as exc:
             print(exc, file=sys.stderr)
             sys.exit(1)

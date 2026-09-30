@@ -53,6 +53,7 @@ def mmp_configuration():
                         [10, 10],
                     ),
                 ],
+                None,
                 [Conduit("macro.out", "micro.in"), Conduit("micro.out", "macro.in")],
             )
         ],
@@ -178,6 +179,7 @@ def mmp_configuration2():
                         [5, 10],
                     ),
                 ],
+                None,
                 [
                     Conduit("macro.out", "meso.init"),
                     Conduit("meso.out", "micro.init"),

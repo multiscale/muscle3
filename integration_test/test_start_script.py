@@ -1,7 +1,9 @@
 from pathlib import Path
 
 import ymmsl
+from ymmsl.v0_2 import resolve_timelines
 
+from libmuscle.manager.hammer import flatten
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 
@@ -69,13 +71,16 @@ resources:
     mpi_processes: 2
 """
 
-    config = ymmsl.load(ymmsl_text)
+    config = ymmsl.load_as(ymmsl.v0_2.Configuration, ymmsl_text)
+    for model in config.models.values():
+        resolve_timelines(model)
+    flat_config = flatten(config)
 
     # set up
     run_dir = RunDir(tmppath / "run")
 
     # launch MUSCLE Manager with simulation
-    manager = Manager(config, run_dir, "DEBUG")
+    manager = Manager(flat_config, run_dir, "DEBUG")
     try:
         manager.start_instances()
     except:  # noqa

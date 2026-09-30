@@ -72,7 +72,7 @@ struct libmuscle_repeater_communicator
     : ::testing::TestWithParam<std::string>
 {
     RESET_MOCKS(MockLogger, MockMMPClient, MockMPPClient, MockMPPServer, MockProfiler);
-    
+
     MockProfiler profiler_;
     MockMMPClient manager_;
 
@@ -83,7 +83,7 @@ struct libmuscle_repeater_communicator
         : port_manager_({}, {})
         , communicator_("component", {}, port_manager_, profiler_, manager_)
     {
-        manager_.get_timeline.return_value = Timeline(":parent3:parent2:parent1");
+        manager_.get_timeline.return_value = Timeline("parent3:parent2:parent1:component");
         std::string repeat_filter = GetParam();
         PeerInfo peer_info(
             "component",
@@ -114,7 +114,7 @@ struct libmuscle_reducer_communicator
     : ::testing::Test
 {
     RESET_MOCKS(MockLogger, MockMMPClient, MockMPPClient, MockMPPServer, MockProfiler);
-    
+
     MockProfiler profiler_;
     MockMMPClient manager_;
 
@@ -125,7 +125,7 @@ struct libmuscle_reducer_communicator
         : port_manager_({}, {})
         , communicator_("component", {}, port_manager_, profiler_, manager_)
     {
-        manager_.get_timeline.return_value = Timeline(":parent");
+        manager_.get_timeline.return_value = Timeline("parent:component");
         PeerInfo peer_info(
             "component",
             {},
@@ -198,7 +198,7 @@ void mock_receive_messages(
         auto iteration_or_milestone = data.at(ref).at(idx);
         auto & iteration = iteration_or_milestone.iteration;
 
-        DataConstRef dcr = iteration_or_milestone.is_milestone ? 
+        DataConstRef dcr = iteration_or_milestone.is_milestone ?
             DataConstRef(Milestone(iteration)) : DataConstRef(encode_iteration(iteration));
 
         MPPMessage msg("snd", "recv", {}, 0.0, {}, Settings(), num, dcr, iteration);

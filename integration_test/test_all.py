@@ -100,7 +100,7 @@ def test_all(log_file_in_tmpdir, tmp_path):
 
     conduits = [Conduit("macro.out", "micro.in"), Conduit("micro.out", "macro.in")]
 
-    model = Model("test_model", None, "", None, components, conduits)
+    model = Model("test_model", None, "", None, components, None, conduits)
     settings = Settings(
         OrderedDict(
             [

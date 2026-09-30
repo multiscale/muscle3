@@ -162,7 +162,7 @@ void Communicator::send_message(
 
         if (message.has_next_timestamp())
             mpp_message.next_timestamp = message.next_timestamp();
-        
+
         std::vector<char> message_bytes;
         auto peer_port = recv_endpoint.kernel + recv_endpoint.port;
         if (outgoing_timeline_length_.count(peer_port) > 0) {
@@ -632,7 +632,8 @@ void Communicator::prepare_conduit_filters_() {
                 auto n_reducers = std::count_if(
                         filters.begin(), filters.end(), ::ymmsl::is_reducer);
                 if (n_reducers > 0) {
-                    std::size_t reduced_count = timeline_.get().size() + port.timeline.size() - n_reducers;
+                    int op_tl_shift = (op == Operator::O_F) ? -1 : 0;
+                    std::size_t reduced_count = timeline_.get().size() + op_tl_shift - n_reducers;
                     outgoing_timeline_length_.emplace(peer_port, reduced_count);
                 }
             }

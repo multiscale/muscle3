@@ -18,7 +18,7 @@ from warnings import catch_warnings, filterwarnings
 
 import ymmsl.v0_1 as v0_1
 from ymmsl import Document, convert_to
-from ymmsl.v0_2 import Configuration, Identifier, Reference
+from ymmsl.v0_2 import Configuration, Identifier, Reference, resolve_timelines
 
 from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
@@ -317,6 +317,8 @@ def run_simulation(
         )
 
     configuration.check_consistent(False)
+    for model in configuration.models.values():
+        resolve_timelines(model)
     configuration = flatten(configuration)
 
     model = configuration.root_model()

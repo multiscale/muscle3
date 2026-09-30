@@ -119,7 +119,7 @@ struct libmuscle_timeline_manager : ::testing::Test {
     void create(
             PortsDescription const & declared_ports,
             std::unordered_map<std::string, Timeline> const & timelines = {},
-            bool include_settings = false, Timeline timeline = Timeline(":")) {
+            bool include_settings = false, Timeline timeline = Timeline("component")) {
         port_manager_ = make_port_manager(declared_ports, timelines, {}, include_settings);
         tm_ = std::make_unique<TimelineManager>(*port_manager_, timeline);
         ASSERT_FALSE(tm_->start_reuse_iteration().is_set());
@@ -139,15 +139,15 @@ struct libmuscle_full_timeline_manager : libmuscle_timeline_manager {
                     {Operator::O_I, {"out_a1", "out_a2", "out_a2_2"}},
                     {Operator::S, {"in_a1", "in_a1_2", "in_a2"}}},
                 {
-                    {"out_a1", Timeline(":A1")},
-                    {"in_a1", Timeline(":A1")},
-                    {"in_a1_2", Timeline(":A1")},
-                    {"out_a2", Timeline(":A2")},
-                    {"out_a2_2", Timeline(":A2")},
-                    {"in_a2", Timeline(":A2")},
+                    {"out_a1", Timeline("A1")},
+                    {"in_a1", Timeline("A1")},
+                    {"in_a1_2", Timeline("A1")},
+                    {"out_a2", Timeline("A2")},
+                    {"out_a2_2", Timeline("A2")},
+                    {"in_a2", Timeline("A2")},
                 },
                 true,
-                Timeline(":a"));
+                Timeline("a:component"));
     }
 };
 
@@ -156,7 +156,7 @@ struct libmuscle_vector_timeline_manager : libmuscle_timeline_manager {
     libmuscle_vector_timeline_manager() {
         port_manager_ = make_port_manager(
                 PortsDescription{{Operator::O_F, {"out_v[]"}}}, {}, {{"out_v", {3}}});
-        tm_ = std::make_unique<TimelineManager>(*port_manager_, Timeline(":"));
+        tm_ = std::make_unique<TimelineManager>(*port_manager_, Timeline("component"));
         tm_->start_reuse_iteration();
         EXPECT_EQ(tm_->record_pre_received_iteration_counts({}), IterationCount());
     }
@@ -346,7 +346,7 @@ TEST_F(libmuscle_full_timeline_manager, get_state_and_restore_state_round_trip) 
 
     TimelineState state = tm_->get_state();
 
-    TimelineManager restored(*port_manager_, Timeline(":a"));
+    TimelineManager restored(*port_manager_, Timeline("a"));
     restored.restore_state(state);
 
     TimelineState restored_state = restored.get_state();

@@ -4,7 +4,7 @@ import traceback
 from pathlib import Path
 
 from ymmsl import save as save_ymmsl
-from ymmsl.v0_2 import Configuration, resolve_timelines
+from ymmsl.v0_2 import Configuration
 
 import libmuscle
 from libmuscle.manager.deadlock_detector import DeadlockDetector
@@ -41,7 +41,7 @@ class Manager:
         The configuration must be flattened, containing a single top model.
 
         Args:
-            configuration: The simulation configuration.
+            configuration: The simulation configuration, with timelines resolved.
             run_dir: Main working directory.
         """
         # TEMP: check for checkpoints combined with reducer filters:
@@ -64,9 +64,6 @@ class Manager:
         self._deadlock_detector = DeadlockDetector()
 
         _logger.info("libmuscle version: %s", libmuscle.__version__)
-
-        # Ensure timelines are consistent
-        resolve_timelines(configuration.root_model())
 
         if run_dir is not None:
             snapshot_dir = run_dir.snapshot_dir()

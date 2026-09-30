@@ -54,7 +54,9 @@ resources:
     threads: 1
 """
 
-    config = ymmsl.load(ymmsl_text)
+    config = ymmsl.load_as(ymmsl.v0_2.Configuration, ymmsl_text)
+    for model in config.models.values():
+        ymmsl.v0_2.resolve_timelines(model)
 
     # set up
     run_dir = RunDir(tmppath / "run")

@@ -80,11 +80,12 @@ models:
       implementation: component
     comp2:
       ports:
-        timeline comp1:
-          o_i: o_i
-          s: s
+        o_i: o_i
+        s: s
       description: The second component
       implementation: component
+  matching_timelines:
+    common: comp1 comp2
   conduits:
     comp1.o_i: comp2.s
     comp2.o_i: comp1.s
@@ -155,6 +156,9 @@ models:
       description: >
         A time bridge to connect the two components together while interpolating
       implementation: checkpointing_temporal_coupler
+  matching_timelines:
+    comp1: coupler.comp1
+    comp2: coupler.comp2
   conduits:
     comp1.o_i: coupler.a_in
     coupler.a_out: comp1.s

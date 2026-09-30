@@ -48,7 +48,7 @@ def test_duplication_mapper(log_file_in_tmpdir):
 
     conduits = [Conduit("dm.out", "first.in"), Conduit("dm.out2", "second.in")]
 
-    model = Model("test_model", None, "", None, components, conduits)
+    model = Model("test_model", None, "", None, components, None, conduits)
     settings = Settings()
 
     configuration = Configuration("test_dm", None, [model], None, settings)

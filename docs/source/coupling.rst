@@ -195,8 +195,9 @@ Call/release coupling
 The most common pattern: Component 1's ``O_I``/``S`` ports are wired to
 Component 2's ``F_INIT``/``O_F`` ports. Component 1 calls Component 2 once
 per iteration, waits for its result, and continues. This is the pattern that
-creates a nested one, as described above, Component 2 lives one level deeper,
-on the subtimeline Component 1's loop opens.
+creates nested timelines, as described above: Component 1's component timeline
+becomes Component 2's parent timeline, so Component 2's component timeline is
+nested one level deeper.
 
 .. figure:: coupling_call_release.svg
    :align: center
@@ -209,12 +210,20 @@ Dispatch coupling
 Component 1's ``O_F`` port connects directly to Component 2's ``F_INIT``
 port: Component 2's single run is dispatched once Component 1 finishes,
 rather than being called repeatedly from inside a loop. This is how you
-build a pipeline of components that each run once, in sequence, so they
-live in the same timeline.
+build a pipeline of components that each run once, in sequence.
+
+A dispatch coupling does not add a level of nesting. The messages sent on
+Component 1's ``O_F`` port are on its parent timeline, so Component 2 gets
+that same parent timeline. The two components therefore end up side by side,
+each with its own component timeline: if they are both called by a component
+``parent``, say, they are on ``parent:component1`` and ``parent:component2``.
 
 .. figure:: coupling_dispatch.svg
    :align: center
-   :alt: component1's O_F port connects to component2's F_INIT port.
+   :alt: parent's O_I port connects to component1's F_INIT port,
+         component1's O_F port connects to component2's F_INIT port, and
+         component2's O_F port connects back to parent's S port.
+         component1 and component2 are drawn side by side below parent.
 
 
 Interact coupling and timeline bridges
@@ -222,13 +231,18 @@ Interact coupling and timeline bridges
 
 Two components can also interact as peers: Component 1's ``O_I`` port
 connects to Component 2's ``S`` port, and Component 2's ``O_I`` connects
-back to Component 1's ``S``. By default each component's ``O_I``/``S`` pair
-opens its *own* new subtimeline, nested inside that component's own. Component
-1 and Component 2 would therefore end up on two different subtimelines, and
-since a conduit only ever connects ports on the same timeline, yMMSL would
-reject the conduits between them. Declaring the two timelines a
-:external+ymmsl:ref:`matching_timelines <Matching timelines>` pair is what
-makes this work, see the yMMSL documentation linked there for details.
+back to Component 1's ``S``. Each component's ``O_I``/``S`` ports are on its
+*own* component timeline, ``component1`` and ``component2``.
+
+Say Component 1 and Component 2 simulate the left and right halves of the same
+domain, each in its own time loop. Neither calls the other, so neither
+timeline is nested inside the other: they are two separate timelines, and a
+conduit between their ``O_I`` and ``S`` ports would normally be rejected. Both
+halves do however step through the same time points, ``t=0, 1, 2, ...``, and on
+every step each half sends its boundary to the other and receives the other's
+boundary back. Each step on ``component1`` therefore lines up with exactly one
+step on ``component2``: the timelines are *equivalent*, even though they are
+not the same.
 
 Both components have to send on their ``O_I`` port before either receives on
 ``S``. If both components take steps at exactly the same pace, this works in

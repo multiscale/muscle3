@@ -410,9 +410,66 @@ configuration is rejected.
 
 Filters can also be combined with
 :external+ymmsl:ref:`matching timelines <Matching timelines>`, which are taken
-into account after the filters have been applied.
+into account after the filters have been applied. See the yMMSL documentation
+on :external+ymmsl:ref:`Conduit filters` for how to declare ``repeat``,
+``pad`` and ``last`` filters in a yMMSL file.
 
-.. seealso::
 
-    yMMSL documentation on :external+ymmsl:ref:`Conduit filters` for how to
-    declare ``repeat``, ``pad`` and ``last`` filters in a yMMSL file.
+Example: sending initial data to a nested component
+````````````````````````````````````````````````````
+
+A common use of conduit filters is a component that prepares the input for a
+simulation once, at the start. Here, ``init`` creates the initial state and
+dispatches it to ``macro``, which then calls ``micro`` in its loop. ``micro``
+also needs some data from ``init``, for example a description of the machine
+that doesn't change during the run, so ``init`` sends that to ``micro``
+directly, instead of via ``macro``:
+
+.. figure:: conduit_filters_init.svg
+   :align: center
+   :alt: init's O_F ports connect to macro's F_INIT port and, directly, to one
+         of micro's F_INIT ports. macro's O_I/S ports connect to micro's other
+         F_INIT port and its O_F port.
+
+.. code-block:: yaml
+    :caption: yMMSL for ``init`` sending data directly to ``micro``
+
+    ymmsl_version: v0.2
+
+    models:
+      init_macro_micro:
+        components:
+          init:
+            ports:
+              o_f: macro_out micro_out
+            description: Creates the initial state and the static input data
+          macro:
+            ports:
+              f_init: init_in
+              o_i: bc_out
+              s: bc_in
+            description: Macro model
+          micro:
+            ports:
+              f_init: init_in static_in
+              o_f: final_out
+            description: Micro model
+        conduits:
+          init.macro_out: macro.init_in
+          init.micro_out: repeat micro.static_in
+          macro.bc_out: micro.init_in
+          micro.final_out: macro.bc_in
+
+``init`` isn't called by anything, so its ``O_F`` messages live on the empty
+parent timeline. ``micro``'s ``F_INIT`` messages live on ``macro``, one level
+deeper, so the conduit from ``init`` to ``micro`` needs a single filter:
+
+- ``repeat`` if ``micro`` needs the data on every call, so that it receives the
+  same message each time.
+- ``pad`` if ``micro`` only needs it on its first call, for example because it
+  keeps the data itself. On every later call, ``micro`` then receives an empty
+  message on that port.
+
+If ``macro`` calls a ``meso`` model that in turn calls ``micro``, ``micro``'s
+``F_INIT`` messages live on ``macro:meso``, two levels deeper, and the conduit
+needs two filters, for example ``repeat repeat``.

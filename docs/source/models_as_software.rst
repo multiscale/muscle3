@@ -332,7 +332,7 @@ Python package Entry Points
 
 .. important:: This functionality requires the 0.16.0 release of ymmsl-python.
 
-.. seealso:: `Corresponding ymmsl-python documentation <https://ymmsl-python.readthedocs.io/en/stable/describing_models.html#python-entry-points>`__
+.. seealso:: :external+ymmsl:ref:`Corresponding ymmsl-python documentation <python entry points>`
 
 When distributing a model as a Python package, you can use Python's plugin mechanism
 (Entry Points) to make your model importable for users. You will need to:

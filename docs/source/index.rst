@@ -73,10 +73,11 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    distributed_execution
    nested_models
    models_as_software
-   yMMSL documentation <https://ymmsl-python.readthedocs.io/en/stable/>
+   yMMSL documentation <https://ymmsl-python.readthedocs.io/en/develop/>
    profiling
 
    coupling
+   timeline_bridges
 
    cplusplus
    fortran

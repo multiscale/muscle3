@@ -4,8 +4,9 @@ from ymmsl.v0_2 import Operator
 from libmuscle import Instance, Message
 from libmuscle.instance import InstanceFlags
 from libmuscle.manager.run_dir import RunDir
+from muscle3.test.conftest import run_manager_with_actors
 
-from .conftest import ls_snapshots, run_manager_with_actors, skip_if_python_only
+from .conftest import ls_snapshots, skip_if_python_only
 
 
 def macro() -> None:

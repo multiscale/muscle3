@@ -8,8 +8,9 @@ from ymmsl.v0_2 import Operator
 
 from libmuscle import USES_CHECKPOINT_API, Instance, Message
 from libmuscle.manager.run_dir import RunDir
+from muscle3.test.conftest import run_manager_with_actors
 
-from .conftest import ls_snapshots, run_manager_with_actors
+from .conftest import ls_snapshots
 
 # Make interact_coupling.py available (from docs/sources/examples)
 sys.path.append(

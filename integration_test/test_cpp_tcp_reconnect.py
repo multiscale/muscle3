@@ -1,4 +1,6 @@
-from .conftest import run_manager_with_actors, skip_if_python_only
+from muscle3.test.conftest import run_manager_with_actors
+
+from .conftest import skip_if_python_only
 
 CONFIG = """
 ymmsl_version: v0.2

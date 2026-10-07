@@ -4,8 +4,9 @@ from ymmsl.v0_2 import Operator
 
 from libmuscle import USES_CHECKPOINT_API, Instance, Message
 from libmuscle.manager.run_dir import RunDir
+from muscle3.test.conftest import run_manager_with_actors
 
-from .conftest import ls_snapshots, run_manager_with_actors
+from .conftest import ls_snapshots
 
 _LOG_LEVEL = "INFO"  # set to DEBUG for additional debug info
 

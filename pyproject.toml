@@ -72,7 +72,7 @@ source = [
 output = "cobertura.xml"
 
 [tool.pytest.ini_options]
-testpaths = ["src/python/libmuscle", "integration_test"]
+testpaths = ["src/python/libmuscle", "src/python/muscle3", "integration_test"]
 pythonpath = ["src/python"]
 addopts = "-s"
 filterwarnings = [

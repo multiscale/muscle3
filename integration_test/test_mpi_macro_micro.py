@@ -1,8 +1,9 @@
 from ymmsl.v0_2 import Operator
 
 from libmuscle import Instance, Message
+from muscle3.test.conftest import run_manager_with_actors
 
-from .conftest import run_manager_with_actors, skip_if_no_mpi_cpp, skip_if_python_only
+from .conftest import skip_if_no_mpi_cpp, skip_if_python_only
 
 
 def macro():
@@ -29,4 +30,5 @@ def test_mpi_macro_micro(tmpdir, mmp_server_config_simple):
         "macro": ("python", macro),
         "micro": ("mpicpp", "mpi_micro_model_test", "2"),
     }  # 2 processes
+    print(type(tmpdir))
     run_manager_with_actors(mmp_server_config_simple, tmpdir, actors)

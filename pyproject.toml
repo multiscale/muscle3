@@ -53,6 +53,9 @@ muscle3 = "muscle3.muscle3:muscle3"
 [project.entry-points."pytest11"]
 muscle3 = "libmuscle.pytest"
 
+[project.entry-points."ymmsl.module"]
+"muscle3.actors.bridges" = "muscle3.actors.bridges:YMMSL_CONFIG"
+
 [tool.setuptools]
 include-package-data = true
 

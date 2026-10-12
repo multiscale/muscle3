@@ -1,13 +1,16 @@
 import logging
 import os
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
 import yatiml
 import ymmsl
-from ymmsl.v0_2 import resolve_timelines
+from ymmsl.v0_2 import Configuration, Reference, resolve_timelines
 
 from libmuscle.manager.manager import Manager
+from libmuscle.manager.mmp_server import MMPServer
+from libmuscle.manager.run_dir import RunDir
 from libmuscle.pytest.muscle_tester import make_server_process
 from muscle3.test.conftest import mpi_is_intel
 
@@ -25,7 +28,7 @@ skip_if_no_mpi_cpp = pytest.mark.skipif(
 
 
 @pytest.fixture
-def yatiml_log_warning():
+def yatiml_log_warning() -> None:
     yatiml.logger.setLevel(logging.WARNING)
 
 
@@ -39,7 +42,7 @@ def codes_path() -> str:
     return str(Path(__file__).parent / "codes")
 
 
-def ls_snapshots(run_dir, instance=None):
+def ls_snapshots(run_dir: RunDir, instance: Reference | None = None) -> list[Path]:
     """List all snapshots of the instance or workflow"""
     return sorted(
         run_dir.snapshot_dir(instance).iterdir(),
@@ -48,7 +51,7 @@ def ls_snapshots(run_dir, instance=None):
 
 
 @pytest.fixture
-def mmp_server_config(yatiml_log_warning):
+def mmp_server_config(yatiml_log_warning: None) -> str:
     return (
         "ymmsl_version: v0.2\n"
         "description: A less simple configuration for integration tests\n"
@@ -92,7 +95,9 @@ def mmp_server_config(yatiml_log_warning):
 
 
 @pytest.fixture
-def mmp_server_process(mmp_server_config, tmpdir):
+def mmp_server_process(
+    mmp_server_config: str, tmpdir: str
+) -> Generator[str, None, None]:
     ymmsl_doc = ymmsl.load_as(ymmsl.v0_2.Configuration, mmp_server_config)
     for model in ymmsl_doc.models.values():
         resolve_timelines(model)
@@ -102,7 +107,7 @@ def mmp_server_process(mmp_server_config, tmpdir):
 
 
 @pytest.fixture
-def mmp_server_config_simple(yatiml_log_warning):
+def mmp_server_config_simple(yatiml_log_warning: None) -> str:
     return (
         "ymmsl_version: v0.2\n"
         "description: A simple configuration for integration tests\n"
@@ -139,18 +144,20 @@ def mmp_server_config_simple(yatiml_log_warning):
 
 
 @pytest.fixture
-def mmp_server_config_simple_nopython(mmp_server_config_simple):
+def mmp_server_config_simple_nopython(mmp_server_config_simple: str) -> str:
     return mmp_server_config_simple + "  python_compat: false\n"
 
 
 @pytest.fixture
-def mmp_server_config_simple_python(mmp_server_config_simple):
+def mmp_server_config_simple_python(mmp_server_config_simple: str) -> str:
     return mmp_server_config_simple + "  python_compat: true\n"
 
 
 @pytest.fixture
-def mmp_server_process_simple(mmp_server_config_simple, tmpdir):
-    ymmsl_doc = ymmsl.load(mmp_server_config_simple)
+def mmp_server_process_simple(
+    mmp_server_config_simple: str, tmpdir: str
+) -> Generator[str, None, None]:
+    ymmsl_doc = ymmsl.load_as(Configuration, mmp_server_config_simple)
     for model in ymmsl_doc.models.values():
         resolve_timelines(model)
 
@@ -159,7 +166,9 @@ def mmp_server_process_simple(mmp_server_config_simple, tmpdir):
 
 
 @pytest.fixture
-def mmp_server(mmp_server_config_simple, yatiml_log_warning):
+def mmp_server(
+    mmp_server_config_simple: str, yatiml_log_warning: None
+) -> Generator[MMPServer, None, None]:
     ymmsl_doc = ymmsl.load_as(ymmsl.v0_2.Configuration, mmp_server_config_simple)
     for model in ymmsl_doc.models.values():
         resolve_timelines(model)
@@ -170,7 +179,7 @@ def mmp_server(mmp_server_config_simple, yatiml_log_warning):
 
 
 @pytest.fixture
-def log_file_in_tmpdir(tmpdir):
+def log_file_in_tmpdir(tmpdir: str) -> Generator[None, None, None]:
     old_workdir = os.getcwd()
     os.chdir(tmpdir)
 
@@ -180,7 +189,7 @@ def log_file_in_tmpdir(tmpdir):
 
 
 @pytest.fixture
-def mpi_exec_model():
+def mpi_exec_model() -> str:
     if mpi_is_intel():
         return "intelmpi"
     else:

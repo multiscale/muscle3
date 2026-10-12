@@ -47,7 +47,7 @@ def _python_wrapper(
                 raise
 
 
-def mpi_is_intel():
+def mpi_is_intel() -> bool | None:
     if "MUSCLE_ENABLE_CPP_MPI" not in os.environ:
         return None
 

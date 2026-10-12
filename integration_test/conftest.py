@@ -44,9 +44,10 @@ def codes_path() -> str:
 
 def ls_snapshots(run_dir: RunDir, instance: Reference | None = None) -> list[Path]:
     """List all snapshots of the instance or workflow"""
+    n = str(instance).count("_") + 1 if instance is not None else 1
     return sorted(
         run_dir.snapshot_dir(instance).iterdir(),
-        key=lambda path: tuple(map(int, path.stem.split("_")[1:])),
+        key=lambda path: tuple(map(int, path.stem.split("_")[n:])),
     )
 
 

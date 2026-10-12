@@ -127,7 +127,8 @@ def bridge_tester() -> None:
                 snd.sent_msgs[-1].timestamp if snd.sent_msgs else None,
             )
             if all_in_window:
-                assert msg.timestamp == recv_t_next
+                assert msg.timestamp == recv_t_cur
+                assert msg.next_timestamp == recv_t_next
                 exp_msgs = snd.sent_in_window(recv_t_cur, recv_t_next)
                 for i, exp_msg in enumerate(exp_msgs):
                     assert msg.data[i] == [exp_msg.timestamp, exp_msg.data]

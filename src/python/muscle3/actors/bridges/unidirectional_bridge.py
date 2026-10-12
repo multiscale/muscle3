@@ -285,12 +285,19 @@ def main() -> None:
                 # Send selected data to the receiver
                 if all_in_window:
                     data = buffer.get_messages_in_range(recv_cur, recv_next)
+                    data_ts = recv_cur
                 else:
                     data = buffer.get_messages_near(recv_until)
+                    data_ts = None
 
                 for chn in data_channels:
                     instance.send(
-                        chn + "data_out", Message(data[chn][0], recv_next, data[chn][1])
+                        chn + "data_out",
+                        Message(
+                            data_ts if data_ts else data[chn][0],
+                            recv_next,
+                            data[chn][1],
+                        ),
                     )
 
             # Get unused sent messages, so any next pass doesn't get them

@@ -476,7 +476,8 @@ def test_reuse_set_overlay(
 
 
 def test_reuse_closed_port(instance, communicator):
-    assert instance.reuse_instance() is True  # First iteration: should always reuse
+    communicator.pre_receive.return_value = {("in", None): Message(1)}
+    assert instance.reuse_instance() is True
     communicator.pre_receive.side_effect = PortClosed()
     assert instance.reuse_instance() is False
 
@@ -490,6 +491,7 @@ def test_reuse_no_closed_port(instance, communicator):
 
 
 def test_reuse_no_f_init_ports(instance, connected_port_manager, communicator):
+    connected_port_manager.has_f_init_connections.return_value = False
     communicator.pre_receive.side_effect = [{}, PortClosed()]
 
     assert instance.reuse_instance() is True

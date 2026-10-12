@@ -103,7 +103,7 @@ def make_data():
     }
 
 
-def macro():
+def macro(call_micro: bool = True):
     instance = Instance({Operator.O_I: ["out"], Operator.S: ["in"]})
 
     while instance.reuse_instance():
@@ -112,6 +112,9 @@ def macro():
         assert instance.get_setting("test1") == 13
 
         for i in range(2):
+            if not call_micro:
+                continue
+
             # o_i
             data = make_data()
             instance.send("out", Message(i * 10.0, (i + 1) * 10.0, data))
@@ -177,6 +180,15 @@ def test_python_macro_micro(mmp_server_config_simple_python, tmp_path):
     )
 
     check_profile_output(tmp_path)
+
+
+def test_python_macro_micro_not_called(mmp_server_config_simple_python, tmp_path):
+    # micro is part of the coupling, but this run macro never calls it
+    run_manager_with_actors(
+        mmp_server_config_simple_python,
+        tmp_path,
+        {"micro": ("python", micro), "macro": ("python", macro, False)},
+    )
 
 
 @skip_if_python_only

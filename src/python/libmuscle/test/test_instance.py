@@ -1,5 +1,6 @@
 import logging
 from contextlib import nullcontext as does_not_raise
+from threading import Thread
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -7,7 +8,7 @@ from ymmsl.v0_2 import Checkpoints, Operator, Settings
 from ymmsl.v0_2 import Reference as Ref
 
 from libmuscle.communicator import Message, PortClosed
-from libmuscle.instance import Instance, InstanceFlags
+from libmuscle.instance import Instance, InstanceFlags, _thread_instance_name
 from libmuscle.peer_info import PeerInfo
 
 
@@ -200,6 +201,41 @@ def test_create_instance_manager_location_envvar(
     instance.error_shutdown("")  # ensure all threads and resources are cleaned up
 
     MMPClient.assert_called_once_with(Ref("component[13]"), "tcp:localhost:9002")
+
+
+def test_create_instance_thread_instance_name(
+    manager_location_argv,
+    instance_argv,
+    instance_envvar,
+    MMPClient,
+    declared_ports,
+):
+
+    _thread_instance_name.value = "other[2]"
+    try:
+        instance = Instance(declared_ports)
+    finally:
+        _thread_instance_name.value = None
+    instance.error_shutdown("")  # ensure all threads and resources are cleaned up
+
+    MMPClient.assert_called_once_with(Ref("other[2]"), "tcp:localhost:9001")
+
+
+def test_create_instance_thread_instance_name_other_thread(
+    instance_argv,
+    MMPClient,
+    declared_ports,
+):
+
+    thread = Thread(target=setattr, args=(_thread_instance_name, "value", "other"))
+    thread.start()
+    thread.join()
+
+    assert getattr(_thread_instance_name, "value", None) is None
+    instance = Instance(declared_ports)
+    instance.error_shutdown("")  # ensure all threads and resources are cleaned up
+
+    MMPClient.assert_called_once_with(Ref("component"), "tcp:localhost:9000")
 
 
 def test_create_instance_registration(

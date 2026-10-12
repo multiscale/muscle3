@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import threading
 from copy import copy
 from enum import Flag, auto
 from typing import Literal, cast, overload
@@ -22,6 +23,13 @@ from libmuscle.snapshot_manager import SnapshotManager
 from libmuscle.util import extract_log_file_location
 
 _logger = logging.getLogger(__name__)
+
+
+# For internal use only. If its value is set in a thread, then Instances created in
+# that thread take their name from it instead of from the command line or the
+# environment, which are shared by all threads. This lets the implementation tester
+# create several Instances with different names concurrently.
+_thread_instance_name = threading.local()
 
 
 class InstanceFlags(Flag):
@@ -989,8 +997,10 @@ class Instance:
     def __make_full_name(self) -> tuple[Reference, list[int]]:
         """Returns instance name and index.
 
-        This takes the argument to the --muscle-instance= command-line
-        option and splits it into a component name and an index.
+        This takes the instance name set for the current thread in
+        _thread_instance_name or, if there is none, the argument
+        to the --muscle-instance= command-line option or the MUSCLE_INSTANCE
+        environment variable, and splits it into a component name and an index.
         """
 
         def split_reference(ref: Reference) -> tuple[Reference, list[int]]:
@@ -1005,6 +1015,10 @@ class Instance:
                 i += 1
 
             return name, index
+
+        thread_instance_name = getattr(_thread_instance_name, "value", None)
+        if thread_instance_name is not None:
+            return split_reference(Reference(thread_instance_name))
 
         # Neither getopt, optparse, or argparse will let me pick out
         # just one option from the command line and ignore the rest.

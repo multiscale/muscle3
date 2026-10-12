@@ -7,7 +7,7 @@ from ymmsl.v0_2 import ConduitFilter, Operator, Reference, Settings
 
 from libmuscle.communicator_state import CommunicatorState
 from libmuscle.endpoint import Endpoint
-from libmuscle.mcp.tcp_util import SocketClosed
+from libmuscle.mcp.tcp_util import is_disconnect
 from libmuscle.mmp_client import MMPClient
 from libmuscle.mpp_client import MPPClient
 from libmuscle.mpp_message import Milestone, MPPMessage
@@ -530,11 +530,6 @@ class Communicator:
             mpp_message_bytes, profile = client.receive(
                 recv_endpoint.ref(), timeout_handler
             )
-        except (ConnectionError, SocketClosed) as exc:
-            raise RuntimeError(
-                "Error while receiving a message: connection with peer"
-                f" '{snd_endpoint.kernel}' was lost. Did the peer crash?"
-            ) from exc
         except Deadlock:
             # Profiler messages may be used for debugging the deadlock
             self._profiler.shutdown()
@@ -542,6 +537,13 @@ class Communicator:
                 "Deadlock detected while receiving a message on "
                 f"port '{port_and_slot}'. See manager logs for more detail."
             ) from None
+        except Exception as exc:
+            if not is_disconnect(exc):
+                raise
+            raise RuntimeError(
+                "Error while receiving a message: connection with peer"
+                f" '{snd_endpoint.kernel}' was lost. Did the peer crash?"
+            ) from exc
 
         recv_decode_event = ProfileEvent(
             ProfileEventType.RECEIVE_DECODE,

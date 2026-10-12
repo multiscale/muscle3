@@ -30,5 +30,4 @@ def test_mpi_macro_micro(tmpdir, mmp_server_config_simple):
         "macro": ("python", macro),
         "micro": ("mpicpp", "mpi_micro_model_test", "2"),
     }  # 2 processes
-    print(type(tmpdir))
     run_manager_with_actors(mmp_server_config_simple, tmpdir, actors)

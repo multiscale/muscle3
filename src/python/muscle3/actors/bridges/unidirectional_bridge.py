@@ -320,10 +320,10 @@ def main() -> None:
     instance = Instance(flags=InstanceFlags.USES_CHECKPOINT_API)
 
     try:
-        data_channels = get_data_channels(instance)
-        buffer = Buffer(data_channels)
-
         while instance.reuse_instance():
+            data_channels = get_data_channels(instance)
+            buffer = Buffer(data_channels)
+
             theta = instance.get_setting("theta", "float", default=0.0)
             strict = instance.get_setting("strict_causality", "bool", default=True)
             all_in_window = instance.get_setting("all_in_window", "bool", default=False)

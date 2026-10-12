@@ -3,11 +3,13 @@ from logging import Logger
 from pathlib import Path
 from random import uniform
 from textwrap import dedent
+from unittest.mock import MagicMock
 
 import pytest
 from ymmsl import Operator
 
 from libmuscle import Instance, Message
+from muscle3.actors.bridges.unidirectional_bridge import ConfigError, get_data_channels
 from muscle3.actors.bridges.unidirectional_bridge import main as bridge
 from muscle3.test.conftest import run_manager_with_actors
 
@@ -217,3 +219,58 @@ def test_uni_bridge_all(tmp_path: Path, strict: bool) -> None:
         tmp_path,
         {"bridge_tester": ("python", bridge_tester), "bridge": ("python", bridge)},
     )
+
+
+def test_get_data_channels() -> None:
+    instance = MagicMock()
+
+    instance.list_ports.return_value = {}
+    with pytest.raises(ConfigError, match="needs a clock_in input"):
+        get_data_channels(instance)
+
+    instance.list_ports.return_value = {Operator.S: ["clock_in"]}
+    instance.is_connected.return_value = False
+    with pytest.raises(ConfigError, match="needs a clock_in input"):
+        get_data_channels(instance)
+
+    instance.is_connected.return_value = True
+    with pytest.raises(ConfigError, match="No data ports specified"):
+        get_data_channels(instance)
+
+    instance.list_ports.return_value = {Operator.S: ["clock_in", "dat_in"]}
+    with pytest.raises(ConfigError, match="named differently"):
+        get_data_channels(instance)
+
+    instance.list_ports.return_value = {
+        Operator.S: ["clock_in", "data_in"],
+        Operator.O_I: ["dat_out"],
+    }
+    with pytest.raises(ConfigError, match="named differently"):
+        get_data_channels(instance)
+
+    instance.list_ports.return_value = {
+        Operator.S: ["clock_in", "data_in"],
+        Operator.O_I: ["my_data_out"],
+    }
+    with pytest.raises(
+        ConfigError,
+        match="corresponding output.*data_in.*corresponding input.*my_data_out",
+    ):
+        get_data_channels(instance)
+
+    instance.list_ports.return_value = {
+        Operator.S: ["clock_in"],
+        Operator.O_I: ["my_data_out"],
+    }
+    with pytest.raises(
+        ConfigError, match="do not have a corresponding input.*my_data_out"
+    ):
+        get_data_channels(instance)
+
+    instance.is_connected = lambda name: True if name != "my_data_in" else False
+    instance.list_ports.return_value = {
+        Operator.S: ["clock_in", "my_data_in"],
+        Operator.O_I: ["my_data_out"],
+    }
+    with pytest.raises(ConfigError, match="are not connected.*my_data_in"):
+        get_data_channels(instance)

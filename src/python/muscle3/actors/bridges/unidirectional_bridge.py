@@ -39,10 +39,10 @@ def get_data_channels(instance: Instance) -> list[str]:
             is a data input port without a corresponding data output port, or vice
             versa.
     """
-    in_ports = instance.list_ports()[Operator.S]
-    data_out_ports = instance.list_ports()[Operator.O_I]
+    in_ports = instance.list_ports().get(Operator.S, [])
+    data_out_ports = instance.list_ports().get(Operator.O_I, [])
 
-    if "clock_in" not in in_ports:
+    if "clock_in" not in in_ports or not instance.is_connected("clock_in"):
         raise ConfigError(
             "This time bridge needs a clock_in input. Please declare an S port with"
             " that name on the receiver's timeline, and connect it to an O_I port"
@@ -82,13 +82,25 @@ def get_data_channels(instance: Instance) -> list[str]:
         msg = "The configured data ports do not match."
         if missing_outputs:
             msg += " The following input ports do not have a corresponding output: "
-            msg += ", ".join(sorted([f"{o}_in" for o in missing_outputs])) + "."
+            msg += ", ".join(sorted([f"{o}data_in" for o in missing_outputs])) + "."
         if missing_inputs:
             msg += " The following output ports do not have a corresponding input: "
-            msg += ", ".join(sorted([f"{o}_out" for o in missing_outputs])) + "."
+            msg += ", ".join(sorted([f"{i}data_out" for i in missing_inputs])) + "."
         raise ConfigError(msg)
 
-    return sorted(in_prefixes)
+    missing_conns = [
+        p
+        for p in in_prefixes
+        if instance.is_connected(f"{p}data_out")
+        and not instance.is_connected(f"{p}data_in")
+    ]
+    if missing_conns:
+        msg = "The following inputs are not connected, while their corresponding"
+        msg += " outputs are: "
+        msg += ", ".join(sorted([f"{m}data_in" for m in missing_conns]))
+        raise ConfigError(msg)
+
+    return sorted(out_prefixes)
 
 
 class Buffer:

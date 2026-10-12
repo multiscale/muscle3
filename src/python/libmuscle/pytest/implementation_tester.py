@@ -161,14 +161,12 @@ class ImplementationTester:
 
         try:
             if port_name in self._parent_ports:
-                send = self._send_f_init
+                self._send_f_init(port_name, message, slot)
             elif self._sibling is not None and port_name in self._sibling_ports:
                 self._check_round_started(port_name)
-                send = self._sibling.send
+                self._sibling.send(port_name, message, slot)
             else:
                 raise self._unknown_port_error(port_name)
-
-            send(port_name, message, slot)
         except (RuntimeError, ValueError) as exc:
             _logger.error(
                 "ImplementationTester: error on port '%s'. Shutting down.", port_name

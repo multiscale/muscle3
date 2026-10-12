@@ -18,9 +18,7 @@ from typing import Any, Generic, TypeVar
 
 from ymmsl import Operator
 
-from libmuscle import Instance, Message
-
-logger = logging.getLogger()
+from libmuscle import Instance, InstanceFlags, Message
 
 
 class ConfigError(RuntimeError):
@@ -108,15 +106,42 @@ class Buffer:
                 item.
         """
         self._data: dict[str, list[tuple[float, Any]]] = {chn: [] for chn in channels}
-        self._rdata = self._data[channels[0]]
+        if channels:
+            self._rdata = self._data[channels[0]]
         """Used whenever we need a reference list."""
+
+    @staticmethod
+    def from_state(state: dict[str, list[list[Any]]]) -> "Buffer":
+        """Create a Buffer from a saved state.
+
+        Args:
+            state: A state object previously returned by get_state()
+        """
+        new = Buffer([])
+        new._data = {
+            chn: [(msg_ts, msg_data) for msg_ts, msg_data in msgs]
+            for chn, msgs in state.items()
+        }
+        new._rdata = next(iter(new._data.values()))
+        return new
+
+    def get_state(self) -> dict[str, list[list[Any]]]:
+        """Serialise the Buffer's state to a dictionary.
+
+        The result contains only types MUSCLE3 can serialise; we replace the tuples with
+        lists to achieve that.
+        """
+        return {
+            chn: [[msg_ts, msg_data] for msg_ts, msg_data in msgs]
+            for chn, msgs in self._data.items()
+        }
 
     def get_messages_in_range(
         self, begin: float, end: float | None
     ) -> dict[str, tuple[float, list[tuple[float, Any]]]]:
         """Return all messages with a timestamp between (inclusive) begin and end.
 
-        Returns a list of timestamp, message tuples for each channel. If end is None,
+        Returns a list of (timestamp, message) tuples for each channel. If end is None,
         returns all messages after begin.
 
         Returns:
@@ -228,6 +253,40 @@ class ConsensusTimestamp(Generic[_T]):
                 )
 
 
+def make_state(
+    buffer: Buffer,
+    recv_cur: float,
+    recv_next: float | None,
+    snd_cur: float,
+    snd_next: float | None,
+) -> dict[str, Any]:
+    return {
+        "buffer": buffer.get_state(),
+        "recv_cur": recv_cur,
+        "recv_next": recv_next,
+        "snd_cur": snd_cur,
+        "snd_next": snd_next,
+    }
+
+
+def try_snapshot(
+    instance: Instance,
+    buffer: Buffer,
+    recv_cur: float,
+    recv_next: float | None,
+    snd_cur: float,
+    snd_next: float | None,
+) -> None:
+    """Save an intermediate snapshot if MUSCLE3 says we should."""
+    t_cur = max(recv_cur, snd_cur)
+    if instance.should_save_snapshot(t_cur):
+        instance.save_snapshot(
+            Message(
+                t_cur, data=make_state(buffer, recv_cur, recv_next, snd_cur, snd_next)
+            )
+        )
+
+
 def receive_data(
     instance: Instance,
     buffer: Buffer,
@@ -246,7 +305,7 @@ def receive_data(
 
 
 def main() -> None:
-    instance = Instance()
+    instance = Instance(flags=InstanceFlags.USES_CHECKPOINT_API)
 
     try:
         data_channels = get_data_channels(instance)
@@ -257,14 +316,34 @@ def main() -> None:
             strict = instance.get_setting("strict_causality", "bool", default=True)
             all_in_window = instance.get_setting("all_in_window", "bool", default=False)
 
-            recv_next: float | None = float("-inf")
-            snd_cur: float = float("-inf")
-            snd_next: float | None = float("-inf")
+            resuming = instance.resuming()
+            if resuming:
+                resuming = True
+                msg = instance.load_snapshot()
+                buffer = Buffer.from_state(msg.data["buffer"])
+                recv_cur: float = msg.data["recv_cur"]
+                recv_next: float | None = msg.data["recv_next"]
+                snd_cur: float = msg.data["snd_cur"]
+                snd_next: float | None = msg.data["snd_next"]
+
+            if instance.should_init():
+                recv_cur = float("-inf")
+                recv_next = float("-inf")
+                snd_cur = float("-inf")
+                snd_next = float("-inf")
+
             while recv_next is not None:
                 # Receive clock data from receiver
-                clock_msg = instance.receive("clock_in")
-                recv_cur = clock_msg.timestamp
-                recv_next = clock_msg.next_timestamp
+                # Snapshots are written after this point, so when we resume we must not
+                # try to receive this message again.
+                if not resuming:
+                    clock_msg = instance.receive("clock_in")
+                    recv_cur = clock_msg.timestamp
+                    recv_next = clock_msg.next_timestamp
+                    try_snapshot(
+                        instance, buffer, recv_cur, recv_next, snd_cur, snd_next
+                    )
+                resuming = False
 
                 # Receive any additional data we need from sender
                 if recv_next is None:
@@ -279,6 +358,9 @@ def main() -> None:
                     (snd_next if strict else snd_cur) < recv_until
                 ):
                     snd_cur, snd_next = receive_data(instance, buffer, data_channels)
+                    try_snapshot(
+                        instance, buffer, recv_cur, recv_next, snd_cur, snd_next
+                    )
 
                 buffer.remove_before_almost(recv_cur)
 
@@ -303,6 +385,11 @@ def main() -> None:
             # Get unused sent messages, so any next pass doesn't get them
             while snd_next is not None:
                 snd_cur, snd_next = receive_data(instance, buffer, data_channels)
+
+            if instance.should_save_final_snapshot():
+                t_cur = max(recv_cur, snd_cur)
+                state = make_state(buffer, recv_cur, recv_next, snd_cur, snd_next)
+                instance.save_final_snapshot(Message(t_cur, data=state))
 
     except RuntimeError as e:
         instance.error_shutdown(str(e))

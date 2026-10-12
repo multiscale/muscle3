@@ -2,6 +2,7 @@ import logging
 from logging import Logger
 from pathlib import Path
 from random import uniform
+from textwrap import dedent
 
 import pytest
 from ymmsl import Operator
@@ -154,49 +155,49 @@ def bridge_tester() -> None:
             recv_t_cur = recv_t_next
 
 
-CONFIG = """
-ymmsl_version: v0.2
+CONFIG = dedent("""
+    ymmsl_version: v0.2
 
-imports:
-- from muscle3.actors.bridges import implementation unidirectional_bridge
+    imports:
+    - from muscle3.actors.bridges import implementation unidirectional_bridge
 
-models:
-  test_unidir_bridge:
-    description: Test setup for the unidirectional bridge
-    components:
-      bridge_tester:
-        ports:
-          timeline sender:
-            o_i: data_out
-          timeline receiver:
-            o_i: clock_out
-            s: data_in
-        description: Tester component
-        implementation: bridge_tester
-      bridge:
-        ports:
-          timeline sender:
-            s: data_in
-          timeline receiver:
-            o_i: data_out
-            s: clock_in
-        description: Bridge component to be tested
-        implementation: unidirectional_bridge
+    models:
+      test_unidir_bridge:
+        description: Test setup for the unidirectional bridge
+        components:
+          bridge_tester:
+            ports:
+              timeline sender:
+                o_i: data_out
+              timeline receiver:
+                o_i: clock_out
+                s: data_in
+            description: Tester component
+            implementation: bridge_tester
+          bridge:
+            ports:
+              timeline sender:
+                s: data_in
+              timeline receiver:
+                o_i: data_out
+                s: clock_in
+            description: Bridge component to be tested
+            implementation: unidirectional_bridge
 
-    matching_timelines:
-      bridge_tester.sender: bridge.sender
-      bridge_tester.receiver: bridge.receiver
+        matching_timelines:
+          bridge_tester.sender: bridge.sender
+          bridge_tester.receiver: bridge.receiver
 
-    conduits:
-      bridge_tester.data_out: bridge.data_in
-      bridge_tester.clock_out: bridge.clock_in
-      bridge.data_out: bridge_tester.data_in
+        conduits:
+          bridge_tester.data_out: bridge.data_in
+          bridge_tester.clock_out: bridge.clock_in
+          bridge.data_out: bridge_tester.data_in
 
-settings:
-  theta: {theta}
-  strict_causality: {strict}
-  all_in_window: {all_in_window}
-"""
+    settings:
+      theta: {theta}
+      strict_causality: {strict}
+      all_in_window: {all_in_window}
+""")
 
 
 @pytest.mark.parametrize("theta", [0.0, 0.5, 1.0])

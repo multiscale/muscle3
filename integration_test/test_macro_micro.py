@@ -103,18 +103,16 @@ def make_data():
     }
 
 
-def macro(call_micro: bool = True):
+def macro():
     instance = Instance({Operator.O_I: ["out"], Operator.S: ["in"]})
 
     while instance.reuse_instance():
         # f_init
         python_compat = instance.get_setting("python_compat")
         assert instance.get_setting("test1") == 13
+        num_steps = instance.get_setting("num_steps", "int", default=2)
 
-        for i in range(2):
-            if not call_micro:
-                continue
-
+        for i in range(num_steps):
             # o_i
             data = make_data()
             instance.send("out", Message(i * 10.0, (i + 1) * 10.0, data))
@@ -183,11 +181,11 @@ def test_python_macro_micro(mmp_server_config_simple_python, tmp_path):
 
 
 def test_python_macro_micro_not_called(mmp_server_config_simple_python, tmp_path):
-    # micro is part of the coupling, but this run macro never calls it
+    # micro is part of the coupling, but with zero steps macro never calls it
     run_manager_with_actors(
-        mmp_server_config_simple_python,
+        mmp_server_config_simple_python + "  macro.num_steps: 0\n",
         tmp_path,
-        {"micro": ("python", micro), "macro": ("python", macro, False)},
+        {"micro": ("python", micro), "macro": ("python", macro)},
     )
 
 

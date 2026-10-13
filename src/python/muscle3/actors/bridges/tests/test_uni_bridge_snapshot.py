@@ -119,7 +119,7 @@ _YMMSL_CONFIG = dedent("""
                 s: clock_in
                 o_i: data_out
             description: Bridge that passes data from right to left
-            implementation: undirectional_bridge
+            implementation: unidirectional_bridge
 
         matching_timelines:
           left: ltr_bridge.sender rtl_bridge.receiver

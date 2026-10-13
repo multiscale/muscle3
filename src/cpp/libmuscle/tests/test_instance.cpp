@@ -428,7 +428,10 @@ TEST_F(libmuscle_instance, reuse_set_overlay) {
 }
 
 TEST_F(libmuscle_instance, reuse_closed_port) {
-    ASSERT_TRUE(instance_.reuse_instance());  // First iteration: should always reuse
+    Message mock_msg(0.0, Settings());
+    MockCommunicator::FInitCacheType cache = {{"in", mock_msg}};
+    communicator_.pre_receive.return_value = cache;
+    ASSERT_TRUE(instance_.reuse_instance());
     communicator_.pre_receive.side_effect = [](
         ) -> MockCommunicator::FInitCacheType {
             throw PortClosed();

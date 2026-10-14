@@ -87,7 +87,7 @@ Messages sent on O_I by the sender and the receiver to the bridge must have
 ``timestamp`` set to their current time point, and the ``next_timestamp`` attribute must
 be set to the next time point the instance will step to, except for on the last message
 when ``None`` must be used instead to signal to the timeline bridge that no more
-messages will be coming.[#f1]_
+messages will be coming. [#f1]_
 
 If multiple data channels are used, then the timestamps on their messages must be
 identical (i.e. they have to be on the same timeline).

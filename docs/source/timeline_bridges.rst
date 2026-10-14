@@ -143,6 +143,9 @@ message. This is sent as a list of lists, where the inner lists contain a timest
 the data, i.e. ``[[ts_0, data_0], [ts_1, data_1], ..., [ts_n, data_n]]`` where each
 ``ts_<i>`` is in the range ``[t_r_cur, t_r_next)``.
 
+If ``strict_causality`` is enabled, then any message exactly at the end of the window
+will be omitted, while with ``strict_causality`` disabled, it will be included.
+
 Note that if the time step of the receiver is smaller than that of the sender, or if the
 receiver starts its simulation before the sender starts, then there may not be any
 messages with timestamps between ``t_r_cur`` and ``t_r_next``, and the receiver may

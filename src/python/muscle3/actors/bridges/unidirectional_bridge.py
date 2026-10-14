@@ -153,6 +153,10 @@ class Buffer:
     ) -> dict[str, tuple[float, list[tuple[float, Any]]]]:
         """Return all messages with a timestamp between (inclusive) begin and end.
 
+        The end here is inclusive, but note that if strict_causality is enabled we don't
+        receive any message exactly at the end of the window, so it will still be
+        excluded from what the receiver receives.
+
         Returns a list of (timestamp, message) tuples for each channel. If end is None,
         returns all messages after begin.
 

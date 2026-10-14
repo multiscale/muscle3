@@ -275,7 +275,10 @@ class Instance:
                 self._do_reuse = None
             else:
                 has_messages = self._pre_receive()
-                do_reuse = self._first_run or has_messages
+                # Without F_INIT ports there is nothing to wait for, so run once.
+                do_reuse = has_messages or (
+                    self._first_run and not self._port_manager.has_f_init_connections()
+                )
 
             if do_implicit_checkpoint:
                 if self._trigger_manager.should_save_final_snapshot(

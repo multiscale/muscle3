@@ -308,7 +308,9 @@ bool Instance::Impl::reuse_instance() {
             do_reuse_ = {};
         } else {
             bool has_messages = pre_receive_();
-            do_reuse = first_run_ || has_messages;
+            // Without F_INIT ports there is nothing to wait for, so run once.
+            do_reuse = has_messages || (
+                    first_run_ && !port_manager_->has_f_init_connections());
         }
 
         if (do_implicit_checkpoint) {

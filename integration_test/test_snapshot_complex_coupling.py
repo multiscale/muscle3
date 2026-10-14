@@ -12,8 +12,9 @@ from libmuscle import (
     Message,
 )
 from libmuscle.manager.run_dir import RunDir
+from muscle3.test.conftest import run_manager_with_actors
 
-from .conftest import ls_snapshots, run_manager_with_actors
+from .conftest import ls_snapshots
 
 _LOG_LEVEL = "INFO"  # set to DEBUG for additional debug info
 

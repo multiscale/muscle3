@@ -1,0 +1,78 @@
+ymmsl_version: v0.2
+
+imports:
+- from muscle3.actors.bridges import implementation unidirectional_bridge
+
+models:
+  interact_uni_bridges:
+    description: |
+      Two components communicating in both directions, using two unidirectional bridges.
+
+    components:
+      left:
+        ports:
+          o_i: data_out
+          s: data_in
+        description: One of the components
+        implementation: interactor
+
+      right:
+        ports:
+          o_i: data_out
+          s: data_in
+        description: The other component
+        implementation: interactor
+
+      ltr_bridge:
+        ports:
+          timeline sender:
+            s: data_in
+          timeline receiver:
+            s: clock_in
+            o_i: data_out
+        description: Bridge that passes data from left to right
+        implementation: unidirectional_bridge
+
+      rtl_bridge:
+        ports:
+          timeline sender:
+            s: data_in
+          timeline receiver:
+            s: clock_in
+            o_i: data_out
+        description: Bridge that passes data from right to left
+        implementation: unidirectional_bridge
+
+    matching_timelines:
+      left:
+        - ltr_bridge.sender
+        - rtl_bridge.receiver
+      right:
+        - ltr_bridge.receiver
+        - rtl_bridge.sender
+
+    conduits:
+      rtl_bridge.data_out: left.data_in
+      left.data_out:
+        - rtl_bridge.clock_in
+        - ltr_bridge.data_in
+
+      ltr_bridge.data_out: right.data_in
+      right.data_out:
+        - ltr_bridge.clock_in
+        - rtl_bridge.data_in
+
+settings:
+  muscle_remote_log_level: DEBUG
+  muscle_local_log_level: DEBUG
+
+  left.t_start: 0.0
+  left.dt: 1.0
+  left.t_end: 10.0
+  right.t_start: 1.0
+  right.dt: 0.7
+  right.t_end: 12.0
+
+  ltr_bridge.theta: 0.5
+  rtl_bridge.all_in_window: true
+

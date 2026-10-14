@@ -245,7 +245,7 @@ that you can always pick a value close to ``t_cur + dt`` from the list, or inter
 while trying to find a ``dt`` for which the solver converges.
 
 If the implicit integrator is connected to a timeline bridge as a sender, then the only
-way for the sender to know for sure what the last message before the receiver's
+way for the bridge to know for sure what the last message before the receiver's
 ``t_cur`` or ``t_next`` is, is to receive the sender's first message past that point.
 This will work if there's a one way connection, because then the sender can simply run
 ahead a little bit of the receiver.
@@ -289,7 +289,7 @@ it needs control input valid until that time.
 This may seem impossible at first, because the control input is based on the
 measurement, but causality dictates that the control input is based on a *past*
 measurement, not a simultaneous one. In practice, what happens is that the physics model
-runs past the end of the measument window, its state is sent to the sensor simulation
+runs past the end of the measurement window, its state is sent to the sensor simulation
 which produces a simulated measurement, which is sent to the next run of the
 controller's control loop. This produces a feedback, which is sent to the actuator
 model, which produces a description of the actuator's response over the time period

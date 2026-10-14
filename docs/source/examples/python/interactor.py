@@ -1,8 +1,8 @@
 import logging
 
-from ymmsl import Operator
+from ymmsl.v0_2 import Operator
 
-from libmuscle import Instance, InstanceFlags, Message
+from libmuscle import Instance, Message
 
 logger = logging.getLogger("program")
 

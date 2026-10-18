@@ -1,0 +1,145 @@
+#include <libmuscle/peer_info.hpp>
+
+#include <algorithm>
+#include <sstream>
+#include "peer_info.hpp"
+
+using ymmsl::Conduit;
+using ymmsl::Identifier;
+using ymmsl::Reference;
+
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
+PeerInfo::PeerInfo(
+        Reference const & kernel,
+        std::vector<int> const & index,
+        std::vector<Conduit> const & conduits,
+        PeerDims const & peer_dims,
+        PeerLocations const & peer_locations,
+        std::vector<::ymmsl::Port> const & ymmsl_ports
+        )
+    : kernel_(kernel)
+    , index_(index)
+    , peers_()                          // peer port ids, indexed by local kernel.port
+    , filters_per_receiver_()           // conduit filters per receiving kernel.port
+    , peer_dims_(peer_dims)             // indexed by peer kernel id
+    , peer_locations_(peer_locations)   // indexed by peer instance id
+    , ymmsl_ports_(ymmsl_ports)
+{
+    for (auto const & conduit : conduits) {
+        if (conduit.sending_component() == kernel_) {
+            // we send on the port this conduit attaches to
+            auto search = peers_.find(conduit.sender);
+            if (search == peers_.end())
+                search = peers_.emplace(
+                        conduit.sender, std::vector<Reference>()).first;
+            search->second.push_back(conduit.receiver);
+        }
+
+        if (conduit.receiving_component() == kernel_) {
+            // we receive on the port this conduit attaches to
+            if (peers_.count(conduit.receiver)) {
+                std::stringstream ss;
+                ss << "Receiving port \"" << conduit.receiving_port();
+                ss << "\" is connected by multiple conduits, but at most one";
+                ss << " is allowed.";
+                throw std::runtime_error(ss.str());
+            }
+            std::vector<Reference> vec = {conduit.sender};
+            peers_.emplace(conduit.receiver, vec);
+        }
+
+        filters_per_receiver_.emplace(conduit.receiver, conduit.filters);
+    }
+}
+
+std::vector<::ymmsl::Port> const & PeerInfo::list_ymmsl_ports() const {
+    return ymmsl_ports_;
+}
+
+bool PeerInfo::is_connected(Identifier const & port) const {
+    return peers_.count(kernel_ + port);
+}
+
+std::vector<ymmsl::ConduitFilter> const & PeerInfo::get_filters_for_receiver(
+        Reference const & receiver) {
+    return filters_per_receiver_.at(receiver);
+}
+
+ std::vector<ymmsl::Reference> const & PeerInfo::get_peer_ports(
+            Identifier const & port) const {
+    return peers_.at(kernel_ + port);
+}
+
+std::vector<int> PeerInfo::get_peer_dims(
+        Reference const & peer_kernel) const {
+    return peer_dims_.at(peer_kernel);
+}
+
+std::vector<std::string> PeerInfo::get_peer_locations(
+        Reference const & peer_instance) const {
+    return peer_locations_.at(peer_instance);
+}
+
+std::vector<Endpoint> PeerInfo::get_peer_endpoints(
+        Identifier const & port,
+        Optional<int> const & slot
+        ) const
+{
+    auto peers = peers_.at(kernel_ + port);
+    std::vector<Endpoint> endpoints;
+    
+    std::vector<int> total_index = index_;
+    if (slot.is_set())
+        total_index.push_back(slot.get());
+
+    for (auto peer : peers) {
+        Reference peer_kernel(peer.cbegin(), std::prev(peer.cend()));
+        Identifier peer_port = std::prev(peer.cend())->identifier();
+
+        // rebalance the indices
+        int peer_dim = peer_dims_.at(peer_kernel).size();
+        auto peer_dim_it = std::next(total_index.cbegin(), peer_dim);
+        std::vector<int> peer_index(total_index.cbegin(), peer_dim_it);
+        Optional<int> peer_slot;
+        if (peer_dim_it != total_index.cend())
+            peer_slot = *peer_dim_it;
+        endpoints.emplace_back(peer_kernel, peer_index, peer_port, peer_slot);
+    }
+
+    return endpoints;
+}
+
+std::vector<int> PeerInfo::check_peer_dimensions(ymmsl::Identifier port_id) const {
+    if (!is_connected(port_id)) return {};
+
+    auto peer_ports = get_peer_ports(port_id);
+    Reference peer_port = peer_ports.at(0);
+    Reference peer_component(peer_port.cbegin(), std::prev(peer_port.cend()));
+    auto port_peer_dims = get_peer_dims(peer_component);
+    for (std::size_t i = 1; i < peer_ports.size(); i++) {
+        peer_port = peer_ports.at(i);
+        peer_component = Reference(peer_port.cbegin(), std::prev(peer_port.cend()));
+        if (port_peer_dims != get_peer_dims(peer_component)) {
+            std::stringstream ss;
+            ss << "Multicast port \"" << port_id;
+            ss << "\" is connected to peers with different";
+            ss << " dimensions. All peer components that this";
+            ss << " port is connected to must have the same";
+            ss << " multiplicity. Connected to ports: ";
+            bool first = true;
+            for (auto port : peer_ports) {
+                if (first)
+                    first = false;
+                else
+                    ss << ", ";
+                ss << port;
+            }
+            throw std::runtime_error(ss.str());
+        }
+    }
+    return port_peer_dims;
+}
+
+} }

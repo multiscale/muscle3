@@ -67,6 +67,11 @@ def diffusion() -> None:
             Operator.O_F: ['final_state_out']})
 
     while instance.reuse_instance():
+        if instance.get_setting('skip', 'bool', default=False):
+            # The load balancer has no work for us this iteration
+            instance.send('final_state_out', Message(-1))
+            continue
+
         # F_INIT
         t_max = instance.get_setting('t_max', 'float')
         dt = instance.get_setting('dt', 'float')
@@ -134,22 +139,27 @@ def load_balancer() -> None:
             DONT_APPLY_OVERLAY)
 
     while instance.reuse_instance():
-        # F_INIT
-        started = 0     # number started and index of next to start
-        done = 0        # number done and index of next to return
+        started = 0  # number started and index of next to start
+        result: list[Message] = []
 
-        num_calls = instance.get_port_length('front_in')
-        num_workers = instance.get_port_length('back_out')
+        num_calls = instance.get_port_length("front_in")
+        num_workers = instance.get_port_length("back_out")
 
-        instance.set_port_length('front_out', num_calls)
-        while done < num_calls:
-            while started - done < num_workers and started < num_calls:
-                msg = instance.receive_with_settings('front_in', started)
-                instance.send('back_out', msg, started % num_workers)
+        instance.set_port_length("front_out", num_calls)
+        while len(result) < num_calls:
+            for i in range(num_workers):
+                if started < num_calls:
+                    msg = instance.receive_with_settings("front_in", started)
+                else:
+                    # Send a message indicating nothing left to do:
+                    msg = Message(float("-inf"), data=Settings(dict(skip=True)))
+                instance.send("back_out", msg, i)
                 started += 1
-            msg = instance.receive_with_settings('back_in', done % num_workers)
-            instance.send('front_out', msg, done)
-            done += 1
+            for i in range(num_workers):
+                result.append(instance.receive_with_settings("back_in", i))
+
+        for i in range(num_calls):
+            instance.send("front_out", result[i], i)
 
 
 def qmc_driver() -> None:
@@ -295,7 +305,7 @@ if __name__ == '__main__':
         'k_max': -3.645e4,
         'd_min': 0.03645,
         'd_max': 0.04455,
-        'n_samples': 100
+        'n_samples': 105
         })
 
     configuration = Configuration(

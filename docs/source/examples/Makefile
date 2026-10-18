@@ -72,14 +72,15 @@ endif
 
 .PHONY: base
 base: python rd_programs.ymmsl rd_manual_programs.ymmsl benchmark_programs.ymmsl \
-      dispatch_programs.ymmsl eca_programs.ymmsl combiner.ymmsl
+      dispatch_programs.ymmsl eca_programs.ymmsl combiner.ymmsl \
+      uni_bridge_programs.ymmsl
 
 
 
 # Specific targets
 
 .PHONY: python
-python: rd_programs.ymmsl
+python: rd_programs.ymmsl uni_bridge_programs.ymmsl
 	$(MAKE) -C python all
 
 .PHONY: cpp
@@ -113,6 +114,7 @@ clean:
 	rm -f rd_manual_programs.ymmsl
 	rm -f benchmark_programs.ymmsl
 	rm -f dispatch_programs.ymmsl
+	rm -f uni_bridge_programs.ymmsl
 	rm -rf run_*/
 
 
@@ -130,6 +132,7 @@ test_python: base
 	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. ./rd_manual.sh
 	. python/build/venv/bin/activate && muscle_manager --start-all combiner.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all combiner.ymmsl combiner_3_sources.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. muscle_manager --start-all unidirectional_bridge.ymmsl uni_bridge_programs.ymmsl
 	make -C python test
 
 .PHONY: test_cpp

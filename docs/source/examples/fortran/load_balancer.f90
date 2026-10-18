@@ -16,9 +16,11 @@ program load_balancer
     type(LIBMUSCLE_Instance) :: instance
 
     type(LIBMUSCLE_Message) :: rmsg
-    type(LIBMUSCLE_DataConstRef) :: rdata
+    type(LIBMUSCLE_Message), allocatable :: result(:)
+    type(LIBMUSCLE_Data) :: rdata
+    type(YMMSL_Settings) :: settings
 
-    integer :: started, done, num_calls, num_workers
+    integer :: started, done, num_calls, num_workers, i
 
 
     ports = LIBMUSCLE_PortsDescription()
@@ -36,22 +38,43 @@ program load_balancer
 
         num_calls = instance%get_port_length('front_in')
         num_workers = instance%get_port_length('back_out')
+        allocate(result(num_calls))
 
         call instance%set_port_length('front_out', num_calls)
 
         do while (done < num_calls)
-            do while ((started - done < num_workers) .and. (started < num_calls))
-                rmsg = instance%receive_with_settings_on_slot('front_in', started)
-                call instance%send('back_out', rmsg, mod(started, num_workers))
+            do i = 0, num_workers-1
+                if (started < num_calls) then
+                    rmsg = instance%receive_with_settings_on_slot('front_in', started)
+                else
+                    ! Send a message indicating nothing left to do:
+                    settings = YMMSL_Settings()
+                    call settings%set('skip', .true.)
+                    rdata = LIBMUSCLE_Data(settings)
+                    rmsg = LIBMUSCLE_Message(-1d40, rdata)
+                    call LIBMUSCLE_Data_free(rdata)
+                    call YMMSL_Settings_free(settings)
+                end if
+                call instance%send('back_out', rmsg, i)
                 call LIBMUSCLE_Message_free(rmsg)
                 started = started + 1
             end do
-
-            rmsg = instance%receive_with_settings_on_slot('back_in', mod(done, num_workers))
-            call instance%send('front_out', rmsg, done)
-            call LIBMUSCLE_Message_free(rmsg)
-            done = done + 1
+            do i = 0, num_workers-1
+                rmsg = instance%receive_with_settings_on_slot('back_in', i)
+                if (done < num_calls) then
+                    done = done + 1
+                    result(done) = rmsg
+                else
+                    call LIBMUSCLE_Message_free(rmsg)
+                end if
+            end do
         end do
+
+        do i = 1, num_calls
+            call instance%send('front_out', result(i), i-1)
+            call LIBMUSCLE_Message_free(result(i))
+        end do
+        deallocate(result)
     end do
 
     call LIBMUSCLE_Instance_free(instance)

@@ -1,0 +1,16 @@
+ymmsl_version: v0.2
+
+description: |
+  This file describes how to start programs for the unidirectional timeline bridges
+  example
+
+programs:
+  interactor:
+    ports:
+      o_i: data_out
+      s: data_in
+    description: Simple interacting component in Python
+    executable: python
+    args:
+    - MUSCLE3_EXAMPLES/python/interactor.py
+

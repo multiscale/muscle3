@@ -2,28 +2,33 @@ import random
 import time
 
 import pytest
+from ymmsl import dump, load
 from ymmsl.v0_2 import Operator
-from ymmsl import load, dump
 
 from libmuscle import (
-        Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API,
-        SKIP_MMSF_SEQUENCE_CHECKS)
+    KEEPS_NO_STATE_FOR_NEXT_USE,
+    USES_CHECKPOINT_API,
+    Instance,
+    Message,
+)
 from libmuscle.manager.run_dir import RunDir
+from muscle3.test.conftest import run_manager_with_actors
 
-from .conftest import run_manager_with_actors, ls_snapshots
+from .conftest import ls_snapshots
 
-
-_LOG_LEVEL = 'INFO'  # set to DEBUG for additional debug info
+_LOG_LEVEL = "INFO"  # set to DEBUG for additional debug info
 
 
 def cache_component(max_channels=2):
-    ports = {Operator.F_INIT: [f'in{i+1}' for i in range(max_channels)],
-             Operator.O_I: [f'sub_out{i+1}' for i in range(max_channels)],
-             Operator.S: [f'sub_in{i+1}' for i in range(max_channels)],
-             Operator.O_F: [f'out{i+1}' for i in range(max_channels)]}
+    ports = {
+        Operator.F_INIT: [f"in{i + 1}" for i in range(max_channels)],
+        Operator.O_I: [f"sub_out{i + 1}" for i in range(max_channels)],
+        Operator.S: [f"sub_in{i + 1}" for i in range(max_channels)],
+        Operator.O_F: [f"out{i + 1}" for i in range(max_channels)],
+    }
     instance = Instance(ports, USES_CHECKPOINT_API)
 
-    cache_t = float('-inf')
+    cache_t = float("-inf")
     cache_data = []
     max_cache_age = None
     nil_msg = Message(0.0)
@@ -33,24 +38,28 @@ def cache_component(max_channels=2):
             instance.load_snapshot()
 
         if instance.should_init():
-            cache_valid_range = instance.get_setting('cache_valid', '[float]')
+            cache_valid_range = instance.get_setting("cache_valid", "[float]")
             if max_cache_age is None:
                 max_cache_age = random.uniform(*cache_valid_range)
 
-            msgs = [instance.receive(port, default=nil_msg)
-                    for port in ports[Operator.F_INIT]]
+            msgs = [
+                instance.receive(port, default=nil_msg)
+                for port in ports[Operator.F_INIT]
+            ]
             cur_t = msgs[0].timestamp
 
         if cur_t - cache_t >= max_cache_age:
             # Cached value is no longer valid, run submodel for updated data
-            for msg, port in zip(msgs, ports[Operator.O_I]):
+            for msg, port in zip(msgs, ports[Operator.O_I], strict=True):
                 instance.send(port, Message(cur_t, data=msg.data))
-            cache_data = [instance.receive(port, default=nil_msg).data
-                          for port in ports[Operator.S]]
+            cache_data = [
+                instance.receive(port, default=nil_msg).data
+                for port in ports[Operator.S]
+            ]
             cache_t = cur_t
             max_cache_age = random.uniform(*cache_valid_range)
 
-        for data, port in zip(cache_data, ports[Operator.O_F]):
+        for data, port in zip(cache_data, ports[Operator.O_F], strict=True):
             instance.send(port, Message(cur_t, data=data))
 
         if instance.should_save_final_snapshot():
@@ -58,25 +67,33 @@ def cache_component(max_channels=2):
 
 
 def echo_component(max_channels=2):
-    ports = {Operator.F_INIT: [f'in{i+1}' for i in range(max_channels)],
-             Operator.O_F: [f'out{i+1}' for i in range(max_channels)]}
-    instance = Instance(ports, KEEPS_NO_STATE_FOR_NEXT_USE | SKIP_MMSF_SEQUENCE_CHECKS)
+    ports = {
+        Operator.F_INIT: [f"in{i + 1}" for i in range(max_channels)],
+        Operator.O_F: [f"out{i + 1}" for i in range(max_channels)],
+    }
+    instance = Instance(ports, KEEPS_NO_STATE_FOR_NEXT_USE)
 
     while instance.reuse_instance():
-        for p_in, p_out in zip(ports[Operator.F_INIT], ports[Operator.O_F]):
+        for p_in, p_out in zip(
+            ports[Operator.F_INIT], ports[Operator.O_F], strict=True
+        ):
             if instance.is_connected(p_in):
                 instance.send(p_out, instance.receive(p_in))
 
 
 def main_component():
-    instance = Instance({
-            Operator.O_I: ['state_out'],
-            Operator.S: ['Ai', 'Bi', 'Ci', 'Di'],
-            Operator.O_F: ['o_f']}, USES_CHECKPOINT_API)
+    instance = Instance(
+        {
+            Operator.O_I: ["state_out"],
+            Operator.S: ["Ai", "Bi", "Ci", "Di"],
+            Operator.O_F: ["o_f"],
+        },
+        USES_CHECKPOINT_API,
+    )
 
     while instance.reuse_instance():
-        dt = instance.get_setting('dt', 'float')
-        t_max = instance.get_setting('t_max', 'float')
+        dt = instance.get_setting("dt", "float")
+        t_max = instance.get_setting("t_max", "float")
 
         if instance.resuming():
             msg = instance.load_snapshot()
@@ -90,8 +107,8 @@ def main_component():
             i = 0
 
         while time.monotonic() < monotonic_end:
-            instance.send('state_out', Message(t_cur, data=i))
-            for port in ('Ai', 'Bi', 'Ci', 'Di'):
+            instance.send("state_out", Message(t_cur, data=i))
+            for port in ("Ai", "Bi", "Ci", "Di"):
                 instance.receive(port)
 
             t_cur += dt
@@ -99,10 +116,11 @@ def main_component():
             time.sleep(0.05)
 
             if instance.should_save_snapshot(t_cur):
-                instance.save_snapshot(Message(
-                        t_cur, data=[i, monotonic_end - time.monotonic()]))
+                instance.save_snapshot(
+                    Message(t_cur, data=[i, monotonic_end - time.monotonic()])
+                )
 
-        instance.send('o_f', Message(t_cur, data=i))
+        instance.send("o_f", Message(t_cur, data=i))
 
         if instance.should_save_final_snapshot():
             instance.save_final_snapshot(Message(t_cur, data=[i, 0]))
@@ -124,7 +142,7 @@ models:
       implementation: main_component
     cacheA:
       ports:
-        f_init: in1
+        f_init: in1 in2
         o_i: sub_out1 sub_out2
         s: sub_in1 sub_in2
         o_f: out1 out2
@@ -140,7 +158,7 @@ models:
       implementation: cache_component
     cacheC:
       ports:
-        f_init: in1
+        f_init: in1 in2
         o_i: sub_out1 sub_out2
         s: sub_in1
         o_f: out1
@@ -211,27 +229,27 @@ checkpoints:
 
 
 def test_snapshot_complex_coupling(tmp_path, config):
-    actors = {'main': ('python', main_component)}
-    for c in 'ABC':
-        actors['cache' + c] = ('python', cache_component)
-    for c in 'ABCD':
-        actors['calc' + c] = ('python', echo_component)
+    actors = {"main": ("python", main_component)}
+    for c in "ABC":
+        actors["cache" + c] = ("python", cache_component)
+    for c in "ABCD":
+        actors["calc" + c] = ("python", echo_component)
 
-    run_dir1 = RunDir(tmp_path / 'run1')
+    run_dir1 = RunDir(tmp_path / "run1")
     run_manager_with_actors(dump(config), run_dir1.path, actors)
 
     # Note: snapshotting based on wallclock time is less reliable, and depending on
     # many factors (OS load, machine speed, etc.) different amounts of snapshots may be
     # created with each run of this test. Asserts only check that at least 1 exists,
     # even though we expect more
-    assert len(ls_snapshots(run_dir1, 'main')) >= 1
-    assert len(ls_snapshots(run_dir1, 'cacheA')) >= 1
-    assert len(ls_snapshots(run_dir1, 'cacheB')) >= 1
-    assert len(ls_snapshots(run_dir1, 'cacheC')) >= 1
-    assert len(ls_snapshots(run_dir1, 'calcA')) >= 1
-    assert len(ls_snapshots(run_dir1, 'calcB')) >= 1
-    assert len(ls_snapshots(run_dir1, 'calcC')) >= 1
-    assert len(ls_snapshots(run_dir1, 'calcD')) >= 1
+    assert len(ls_snapshots(run_dir1, "main")) >= 1
+    assert len(ls_snapshots(run_dir1, "cacheA")) >= 1
+    assert len(ls_snapshots(run_dir1, "cacheB")) >= 1
+    assert len(ls_snapshots(run_dir1, "cacheC")) >= 1
+    assert len(ls_snapshots(run_dir1, "calcA")) >= 1
+    assert len(ls_snapshots(run_dir1, "calcB")) >= 1
+    assert len(ls_snapshots(run_dir1, "calcC")) >= 1
+    assert len(ls_snapshots(run_dir1, "calcD")) >= 1
 
     snapshots_ymmsl = ls_snapshots(run_dir1)
     snapshot_docs = list(map(load, snapshots_ymmsl))

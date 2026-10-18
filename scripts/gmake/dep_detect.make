@@ -6,6 +6,9 @@
 # $(dep_name)_AVAILABLE to 1, $(dep_name)_ROOT to the prefix and
 # $(dep_name)_VERSION to the version if the dependency is found on the system
 
+# Optionally define $(dep_header) to detect a header-only dependency that does
+# not ship a pkg-config file by looking for $($(dep_name)_ROOT)/$(dep_header).
+
 ifneq ($(MAKECMDGOALS),clean)
 
 $(info )
@@ -16,8 +19,13 @@ _pkg_config := export PKG_CONFIG_PATH=$($(dep_name)_ROOT)/lib/pkgconfig:$(PKG_CO
 _pkg = '$(dep_pkgconfig_name) $(dep_version_constraint)'
 
 _exists_new_enough := $(shell $(_pkg_config) --exists $(_pkg) || echo NOTFOUND)
+_header_found := $(if $(dep_header),$(wildcard $($(dep_name)_ROOT)/$(dep_header)))
 
-ifneq ($(_exists_new_enough), NOTFOUND)
+ifneq ($(_header_found),)
+    $(info - $(dep_name) found at $($(dep_name)_ROOT) via $(dep_header))
+    export $(dep_name)_AVAILABLE := 1
+    export $(dep_name)_VERSION := $(dep_version)
+else ifneq ($(_exists_new_enough), NOTFOUND)
     _modversion = $(shell $(_pkg_config) --modversion $(dep_pkgconfig_name))
     _prefix = $(shell $(_pkg_config) --variable=prefix $(_pkg))
     $(info - $(dep_name) $(_modversion) found at $(_prefix))
@@ -33,6 +41,9 @@ else
         $(info - $(dep_name) not found on the system.)
     endif
 endif
+
+# clear, so that it does not leak into the detection of the next dependency
+dep_header :=
 
 endif
 

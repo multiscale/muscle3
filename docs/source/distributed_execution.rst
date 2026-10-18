@@ -88,10 +88,8 @@ This is because there are some examples that mix languages as well.
 
 As you can see, this has all the same terms we saw in the Python version, but it's
 written in YAML format. You can load a yMMSL file from Python using
-`ymmsl.load
-<https://ymmsl-python.readthedocs.io/en/stable/overview.html#reading-ymmsl-files>`_ and
-save it back using `ymmsl.save
-<https://ymmsl-python.readthedocs.io/en/stable/overview.html#writing-ymmsl-files>`_.
+:external+ymmsl:ref:`ymmsl.load <reading ymmsl files>` and
+save it back using :external+ymmsl:ref:`ymmsl.save <writing ymmsl files>`.
 
 Let's have a look at this file:
 
@@ -282,9 +280,8 @@ executable.
 The scripts have some dependencies, which will be installed in a virtual
 environment in which we'll run the whole simulation, so we don't need to do any
 other environment setup here, but MUSCLE3 is capable of running each
-program in a separate environment if needed. See `the yMMSL
-documentation on programs
-<https://ymmsl-python.readthedocs.io/en/stable/api.html#ymmsl.v0_2.Program>`_
+program in a separate environment if needed. See the yMMSL
+documentation on :external:py:class:`programs <ymmsl.v0_2.Program>`
 for more information on how to specify a virtual environment, set environment variables,
 load environment modules, and more.
 
@@ -300,9 +297,8 @@ given. This information is contained in ``rd_resources.ymmsl``:
 
 
 In this case, the implementations are single-threaded Python
-scripts, so we specify one thread each. See `the yMMSL documentation on
-resources
-<https://ymmsl-python.readthedocs.io/en/master/ymmsl_python.html#resources>`_
+scripts, so we specify one thread each. See :external+ymmsl:ref:`the yMMSL documentation on
+resources <resources>`
 for other options, including for OpenMP and MPI.
 
 

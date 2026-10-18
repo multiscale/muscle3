@@ -16,15 +16,15 @@ def component() -> None:
     """
     instance = Instance()
 
-    print(os.environ.get('PROFILE_LOADED', '0'))
-    print(os.environ.get('BASHRC_LOADED', '0'))
-    print(os.environ.get('MANAGER_SHELL', '0'))
-    print('1' if 'slurm' in os.environ['PATH'] else '0')
-    print(os.environ.get('VIRTUAL_ENV', ''))
+    print(os.environ.get("PROFILE_LOADED", "0"))
+    print(os.environ.get("BASHRC_LOADED", "0"))
+    print(os.environ.get("MANAGER_SHELL", "0"))
+    print("1" if "slurm" in os.environ["PATH"] else "0")
+    print(os.environ.get("VIRTUAL_ENV", ""))
 
     while instance.reuse_instance():
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     component()

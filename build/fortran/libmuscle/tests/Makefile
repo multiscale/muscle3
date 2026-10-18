@@ -1,0 +1,78 @@
+src_dir := $(realpath $(CURDIR)/../../../../src/fortran)
+libmuscle_testdir := $(src_dir)/libmuscle/tests
+VPATH := $(libmuscle_testdir)
+
+unit_tests := $(wildcard $(libmuscle_testdir)/test*.f90)
+integration_tests := $(wildcard $(libmuscle_testdir)/*test.f90)
+all_sources := $(wildcard $(libmuscle_testdir)/*.f90)
+
+unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.f90=%)
+integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.f90=%)
+objects := $(all_sources:$(libmuscle_testdir)/%.f90=%.o)
+
+ifndef MUSCLE_ENABLE_FORTRAN_MPI
+integration_tests := $(filter-out mpi%,$(integration_tests))
+integration_test_bins := $(filter-out mpi%,$(integration_test_bins))
+endif
+
+all_tests := $(unit_test_bins) $(integration_test_bins)
+
+
+.PHONY: test
+test: $(foreach bin,$(unit_test_bins),run_$(bin))
+
+.PHONY: tests
+tests: $(all_tests)
+
+.PHONY: clean
+clean:
+	rm -f *.o *.mod
+	rm -f $(all_tests)
+
+.PHONY: distclean
+distclean: clean
+
+cleantargets := clean distclean
+ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
+
+FFLAGS += -g -I. -I.. -I../../ymmsl
+ifdef MUSCLE_FC_INTEL
+    FFLAGS += -e03
+else ifdef MUSCLE_FC_GNU
+    FFLAGS += -std=f2003
+else ifdef MUSCLE_FC_CLANG
+    FFLAGS += -std=f2003
+else ifdef MUSCLE_FC_CRAY
+    FFLAGS += -em -ef
+endif
+
+
+CPP_BUILD_DIR := $(realpath $(CURDIR)/../../../cpp)
+
+LDFLAGS2 := $(LDFLAGS)
+
+LDFLAGS2 += -pthread $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
+LDFLAGS2 += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
+LDFLAGS2 += $(EXTRA_LINK_DIRS) $(MUSCLE_CXX_STDLIB)
+
+LINK_DEPS = $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
+LINK_DEPS += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
+
+endif
+
+assert.o: $(libmuscle_testdir)/assert.f90
+	$(FC) $(FFLAGS) $(DEBUGFLAGS) -c $< -o $@
+
+%.o: $(libmuscle_testdir)/%.f90 assert.o
+	$(FC) $(FFLAGS) $(DEBUGFLAGS) -c $< -o $@
+
+test_%: test_%.o assert.o $(LINK_DEPS)
+	$(FC) $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
+
+%_test: %_test.o assert.o $(LINK_DEPS)
+	$(FC) $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
+
+
+.PHONY: run_test%
+run_test%: test%
+	$(LEAK_DETECTOR) ./$<

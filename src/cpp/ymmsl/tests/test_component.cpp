@@ -1,0 +1,24 @@
+#include <gtest/gtest.h>
+
+#include "ymmsl/component.hpp"
+
+
+using ymmsl::impl::Operator;
+
+
+TEST(ymmsl_component, operator_allows_sending) {
+    Operator f_init = Operator::F_INIT;
+    Operator o_i = Operator::O_I;
+
+    ASSERT_EQ(allows_sending(f_init), false);
+    ASSERT_EQ(allows_sending(o_i), true);
+}
+
+TEST(ymmsl_component, operator_allows_receiving) {
+    Operator s = Operator::S;
+    Operator o_f = Operator::O_F;
+
+    ASSERT_EQ(allows_receiving(s), true);
+    ASSERT_EQ(allows_receiving(o_f), false);
+}
+

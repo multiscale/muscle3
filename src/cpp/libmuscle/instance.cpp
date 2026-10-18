@@ -1,0 +1,1401 @@
+#include <libmuscle/instance.hpp>
+
+#include <libmuscle/api_guard.hpp>
+#include <libmuscle/communicator_state.hpp>
+#include <libmuscle/communicator.hpp>
+#include <libmuscle/data.hpp>
+#include <libmuscle/mcp/data_pack.hpp>
+#include <libmuscle/logger.hpp>
+#include <libmuscle/mmp_client.hpp>
+#include <libmuscle/peer_info.hpp>
+#include <libmuscle/port_manager.hpp>
+#include <libmuscle/profiler.hpp>
+#include <libmuscle/profiling.hpp>
+#include <libmuscle/settings_manager.hpp>
+#include <libmuscle/snapshot_manager.hpp>
+#include <libmuscle/test_support.hpp>
+#include <libmuscle/checkpoint_triggers.hpp>
+#include <libmuscle/util.hpp>
+
+#include <ymmsl/ymmsl.hpp>
+
+#include <cstdint>
+#include <cstdlib>
+#include <sstream>
+#include <stdexcept>
+#include <utility>
+
+#ifdef MUSCLE_ENABLE_MPI
+#include <mpi.h>
+#include <libmuscle/mpi_tcp_barrier.hpp>
+#endif
+
+
+using ymmsl::Operator;
+using ymmsl::Reference;
+using ymmsl::Settings;
+
+using libmuscle::_MUSCLE_IMPL_NS::LogLevel;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileEvent;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileEventType;
+
+
+namespace {
+
+/* Converts a user-input string to a log level.
+ *
+ * The input is case-insensitive.
+ */
+LogLevel string_to_level(std::string const & log_level_str) {
+    // convert to upper case (ASCII/UTF-8 only, which is fine here)
+    std::string log_level(log_level_str);
+    for (char & c : log_level)
+        if (('a' <= c) && (c <= 'z')) c += ('A' - 'a');
+
+    // convert to LogLevel
+    LogLevel level;
+    if (log_level == "DISABLE") level = LogLevel::DISABLE;
+    else if (log_level == "CRITICAL") level = LogLevel::CRITICAL;
+    else if (log_level == "ERROR") level = LogLevel::ERROR;
+    else if (log_level == "WARNING") level = LogLevel::WARNING;
+    else if (log_level == "INFO") level = LogLevel::INFO;
+    else if (log_level == "DEBUG") level = LogLevel::DEBUG;
+    else if (log_level == "LOCAL") level = LogLevel::LOCAL;
+    else {
+        throw std::runtime_error("Invalid log level " + log_level_str);
+    }
+    return level;
+}
+
+}
+
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
+class Instance::Impl {
+    public:
+        Impl(
+                int argc, char const * const argv[],
+                Optional<PortsDescription> const & ports,
+                InstanceFlags flags
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator
+                , int root
+#endif
+                );
+        ~Impl();
+
+        bool reuse_instance();
+        void error_shutdown(std::string const & message);
+        std::vector<std::string> list_settings() const;
+        ::ymmsl::SettingValue get_setting(
+                std::string const & name,
+                Optional<::ymmsl::SettingValue> const & default_value) const;
+        template <typename ValueType>
+        ValueType get_setting_as(
+                std::string const & name,
+                Optional<ValueType> const & default_value) const;
+        std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
+        list_ports() const;
+        bool is_connected(std::string const & port) const;
+        bool is_vector_port(std::string const & port) const;
+        bool is_resizable(std::string const & port) const;
+        int get_port_length(std::string const & port) const;
+        void set_port_length(std::string const & port, int length);
+        void send(std::string const & port_name, Message const & message);
+        void send(std::string const & port_name, Message const & message,
+                int slot);
+        Message receive_message(
+                std::string const & port_name,
+                Optional<int> slot,
+                Optional<Message> default_msg,
+                bool with_settings);
+        bool resuming();
+        bool should_init();
+        Message load_snapshot();
+        bool should_save_snapshot(double timestamp);
+        void save_snapshot(Message message);
+        bool should_save_final_snapshot();
+        void save_final_snapshot(Message message);
+
+    PRIVATE:
+        ::ymmsl::Reference instance_name_;
+        std::unique_ptr<MMPClient> manager_;
+        std::unique_ptr<APIGuard> api_guard_;
+        std::unique_ptr<Profiler> profiler_;
+        std::unique_ptr<PortManager> port_manager_;
+        std::unique_ptr<Communicator> communicator_;
+        Optional<CommunicatorState> communicator_state_;
+#ifdef MUSCLE_ENABLE_MPI
+        int mpi_root_;
+        MPI_Comm mpi_comm_;
+        MPITcpBarrier mpi_barrier_;
+#endif
+        Optional<PortsDescription> declared_ports_;
+        SettingsManager settings_manager_;
+        std::unique_ptr<SnapshotManager> snapshot_manager_;
+        std::unique_ptr<TriggerManager> trigger_manager_;
+        bool first_run_;
+        Optional<bool> do_reuse_;
+        bool do_resume_;
+        bool do_init_;
+        std::unordered_map<::ymmsl::Reference, Message> f_init_cache_;
+        bool is_shut_down_;
+        InstanceFlags flags_;
+
+        void register_();
+        void connect_();
+        void deregister_();
+        void setup_checkpointing_();
+        void setup_profiling_();
+        void setup_receive_timeout_();
+
+        ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
+        std::string extract_manager_location_(int argc, char const * const argv[]) const;
+
+        std::vector<::ymmsl::Port> list_declared_ports_() const;
+        void check_port_(
+                std::string const & port_name, Optional<int> slot,
+                bool is_send, bool allow_slot_out_of_range = false);
+
+        void handle_receive_settings_();
+        bool pre_receive_();
+        Optional<double> f_init_max_timestamp_();
+        void save_snapshot_(
+                Optional<Message> message, bool final,
+                Optional<double> f_init_max_timestamp);
+
+        void set_local_log_level_();
+        void set_remote_log_level_();
+
+        void apply_overlay_(Message const & message);
+
+        void check_compatibility_(
+                std::string const & port_name,
+                Optional<::ymmsl::Settings> const & overlay);
+
+        void shutdown_(Optional<std::string> const & message = {});
+        void shutdown_and_throw_if_error_(Error const & error);
+};
+
+Instance::Impl::Impl(
+        int argc, char const * const argv[],
+        Optional<PortsDescription> const & ports,
+        InstanceFlags flags
+#ifdef MUSCLE_ENABLE_MPI
+        , MPI_Comm const & communicator
+        , int root
+#endif
+        )
+    : instance_name_(make_full_name_(argc, argv))
+#ifdef MUSCLE_ENABLE_MPI
+    , mpi_root_(root)
+    , mpi_barrier_(communicator, root)
+#endif
+    , declared_ports_(ports)
+    , settings_manager_()
+    , first_run_(true)
+    , do_reuse_()
+    , do_resume_(false)
+    , do_init_(true)
+    , f_init_cache_()
+    , is_shut_down_(false)
+    , flags_(flags)
+{
+    api_guard_.reset(new APIGuard(
+            !!(flags_ & InstanceFlags::USES_CHECKPOINT_API),
+#ifdef MUSCLE_ENABLE_MPI
+            mpi_barrier_.is_root()
+#else
+            true
+#endif
+            ));
+#ifdef MUSCLE_ENABLE_MPI
+    MPI_Comm_dup(communicator, &mpi_comm_);
+    if (mpi_barrier_.is_root()) {
+#endif
+        manager_.reset(
+                new MMPClient(instance_name_, extract_manager_location_(argc, argv)));
+
+        std::string instance_id = static_cast<std::string>(instance_name_);
+        std::string default_logfile = "muscle_" + instance_id + ".log";
+        std::string log_file = extract_log_file_location(argc, argv, default_logfile);
+        Logger::instance().init(instance_id, log_file, manager_.get());
+        profiler_.reset(new Profiler(*manager_));
+
+        Reference name = instance_to_component(instance_id);
+        std::vector<int> index = instance_indices(instance_id);
+
+        port_manager_.reset(new PortManager(index, ports));
+        communicator_.reset(
+                new Communicator(
+                    name, index, *port_manager_, *profiler_, *manager_));
+        snapshot_manager_.reset(new SnapshotManager(
+                instance_name_, *manager_, *communicator_));
+        trigger_manager_.reset(new TriggerManager());
+
+        register_();
+        connect_();
+        // Note: setup_checkpointing_() needs to have the ports initialized
+        // so it comes after connect_()
+        setup_checkpointing_();
+        set_local_log_level_();
+        set_remote_log_level_();
+        setup_profiling_();
+        setup_receive_timeout_();
+#ifdef MUSCLE_ENABLE_MPI
+        auto sbase_data = Data(settings_manager_.base);
+        msgpack::sbuffer sbuf;
+        msgpack::pack(sbuf, sbase_data);
+        int size = sbuf.size();
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        MPI_Bcast(sbuf.data(), size, MPI_CHAR, mpi_root_, mpi_comm_);
+    }
+    else {
+        int size;
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        std::vector<char> buf(size);
+        MPI_Bcast(&buf[0], size, MPI_CHAR, mpi_root_, mpi_comm_);
+        auto zone = std::make_shared<msgpack::zone>();
+        DataConstRef sbase_data = mcp::unpack_data(zone, &buf[0], size);
+        settings_manager_.base = sbase_data.as<Settings>();
+    }
+#endif
+}
+
+Instance::Impl::~Impl() {
+    // This communicates if we did not shut down cleanly, and therefore risks
+    // an exception and a crash. Since we're already going down abnormally,
+    // trying to not hurt the rest of the simulation seems worth it.
+    shutdown_();
+    Logger::instance().close();
+}
+
+bool Instance::Impl::reuse_instance() {
+    api_guard_->verify_reuse_instance();
+
+    bool do_reuse;
+    Error error;
+
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+        try {
+#endif
+    if (first_run_ && snapshot_manager_->resuming_from_intermediate()) {
+        do_resume_ = true;
+        do_init_ = false;
+        do_reuse = true;
+    } else {
+        bool do_implicit_checkpoint;
+        if (first_run_ && snapshot_manager_->resuming_from_final()) {
+            do_resume_ = true;
+            do_init_ = true;
+            first_run_ = false;
+            do_implicit_checkpoint = false;
+        } else {
+            do_resume_ = false;
+            do_init_ = true;
+            do_implicit_checkpoint = (
+                !first_run_ &&
+                !(InstanceFlags::USES_CHECKPOINT_API & flags_) &&
+                (!!(InstanceFlags::STATE_NOT_REQUIRED_FOR_NEXT_USE & flags_) or
+                 !!(InstanceFlags::KEEPS_NO_STATE_FOR_NEXT_USE & flags_)));
+        }
+
+        if (do_reuse_.is_set()) {
+            // thank you, should_save_final_snapshot, for running this already
+            do_reuse = do_reuse_.get();
+            do_reuse_ = {};
+        } else {
+            bool has_messages = pre_receive_();
+            // Without F_INIT ports there is nothing to wait for, so run once.
+            do_reuse = has_messages || (
+                    first_run_ && !port_manager_->has_f_init_connections());
+        }
+
+        if (do_implicit_checkpoint) {
+            if (trigger_manager_->should_save_final_snapshot(
+                    do_reuse, f_init_max_timestamp_()))
+                save_snapshot_({}, true, f_init_max_timestamp_());
+        }
+    }
+
+#ifdef MUSCLE_ENABLE_MPI
+        } catch (std::exception const & exc) {
+            error = exc;
+        }
+        mpi_barrier_.signal();
+        error.bcast(mpi_comm_, mpi_root_);
+        error.throw_if_error();
+
+        int do_reuse_mpi[3] = {do_reuse, do_resume_, do_init_};
+        MPI_Bcast(do_reuse_mpi, 3, MPI_INT, mpi_root_, mpi_comm_);
+
+        // Broadcast settings overlay
+        auto soverlay_data = Data(settings_manager_.overlay);
+        msgpack::sbuffer sbuf;
+        msgpack::pack(sbuf, soverlay_data);
+        int size = sbuf.size();
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        MPI_Bcast(sbuf.data(), size, MPI_CHAR, mpi_root_, mpi_comm_);
+    } else {
+        mpi_barrier_.wait();
+        error.bcast(mpi_comm_, mpi_root_);
+        error.throw_if_error();
+
+        int do_reuse_mpi[3];
+        MPI_Bcast(do_reuse_mpi, 3, MPI_INT, mpi_root_, mpi_comm_);
+        do_reuse = do_reuse_mpi[0];
+        do_resume_ = do_reuse_mpi[1];
+        do_init_ = do_reuse_mpi[2];
+
+        // Apply settings overlay
+        int size = 0;
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        std::vector<char> buf(size);
+        MPI_Bcast(&buf[0], size, MPI_CHAR, mpi_root_, mpi_comm_);
+        auto zone = std::make_shared<msgpack::zone>();
+        DataConstRef soverlay_data = mcp::unpack_data(zone, &buf[0], size);
+        settings_manager_.overlay = soverlay_data.as<Settings>();
+    }
+#endif
+
+    communicator_state_ = {};
+    first_run_ = false;
+    if (!do_reuse) {
+        shutdown_();
+    }
+
+    api_guard_->reuse_instance_done(do_reuse);
+    return do_reuse;
+}
+
+void Instance::Impl::error_shutdown(std::string const & message) {
+    shutdown_(message);
+}
+
+std::vector<std::string> Instance::Impl::list_settings() const {
+    return settings_manager_.list_settings(instance_name_);
+}
+
+
+::ymmsl::SettingValue Instance::Impl::get_setting(
+        std::string const & name,
+        Optional<::ymmsl::SettingValue> const & default_value) const {
+    try {
+        return settings_manager_.get_setting(instance_name_, name);
+    }
+    catch (std::out_of_range const & e) {
+        if (default_value.is_set())
+            return default_value.get();
+        throw;
+    }
+}
+
+/* This is a template, but it's only ever instantiated in this file,
+ * namely below in the public version that calls this. So it doesn't need
+ * to be in a .tpp file.
+ */
+template <typename ValueType>
+ValueType Instance::Impl::get_setting_as(
+        std::string const & name,
+        Optional<ValueType> const & default_value) const {
+    try {
+        return settings_manager_.get_setting(instance_name_, name).template as<ValueType>();
+    }
+    catch (std::out_of_range const & e) {
+        if (default_value.is_set())
+            return default_value.get();
+        throw;
+    }
+}
+
+std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
+Instance::Impl::list_ports() const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+    return port_manager_->list_ports();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("list_ports can only be called from the MPI root process");
+#endif
+}
+
+bool Instance::Impl::is_connected(std::string const & port) const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+    return port_manager_->get_port(port).is_connected();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("is_connected can only be called from the MPI root process");
+#endif
+}
+
+bool Instance::Impl::is_vector_port(std::string const & port) const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+    return port_manager_->get_port(port).is_vector();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("is_vector_port can only be called from the MPI root process");
+#endif
+}
+
+bool Instance::Impl::is_resizable(std::string const & port) const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+    return port_manager_->get_port(port).is_resizable();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("is_resizable can only be called from the MPI root process");
+#endif
+}
+
+int Instance::Impl::get_port_length(std::string const & port) const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+    return port_manager_->get_port(port).get_length();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("get_port_length can only be called from the MPI root process");
+#endif
+}
+
+void Instance::Impl::set_port_length(std::string const & port, int length) {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+    return port_manager_->get_port(port).set_length(length);
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("set_port_length can only be called from the MPI root process");
+#endif
+}
+
+void Instance::Impl::send(std::string const & port_name, Message const & message) {
+    // This may be called either on all ranks or only on the root, so we
+    // don't catch and broadcast errors. If there's a problem, we'll throw
+    // in the root process only and then either the user catches it, or more
+    // likely the program crashes and mpirun cleans up the other ranks.
+
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+
+        check_port_(port_name, {}, true);
+        if (!message.has_settings()) {
+            Message msg(message);
+            msg.set_settings(settings_manager_.overlay);
+            communicator_->send_message(port_name, msg);
+        }
+        else
+            communicator_->send_message(port_name, message);
+
+#ifdef MUSCLE_ENABLE_MPI
+    }
+#endif
+}
+
+void Instance::Impl::send(
+        std::string const & port_name, Message const & message, int slot)
+{
+    Error error;
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+        try {
+#endif
+
+    check_port_(port_name, slot, true);
+    if (!message.has_settings()) {
+        Message msg(message);
+        msg.set_settings(settings_manager_.overlay);
+        communicator_->send_message(port_name, msg, slot);
+    }
+    else
+        communicator_->send_message(port_name, message, slot);
+
+#ifdef MUSCLE_ENABLE_MPI
+        }
+        catch (std::exception const & exc) {
+            error = exc;
+        }
+    }
+#endif
+
+    shutdown_and_throw_if_error_(error);
+}
+
+/* Register this instance with the manager.
+ */
+void Instance::Impl::register_() {
+    ProfileEvent register_event(ProfileEventType::register_, ProfileTimestamp());
+    auto locations = communicator_->get_locations();
+    auto port_list = list_declared_ports_();
+    manager_->register_instance(locations, port_list);
+    profiler_->record_event(std::move(register_event));
+    log_info("Registered with the manager");
+}
+
+/* Connect this instance to the given peers / conduits.
+ */
+void Instance::Impl::connect_() {
+    ProfileEvent connect_event(ProfileEventType::connect, ProfileTimestamp());
+
+    auto peer_info = manager_->request_peers();
+    port_manager_->connect_ports(peer_info);
+    communicator_->set_peer_info(peer_info);
+
+    settings_manager_.base = manager_->get_settings();
+
+    profiler_->record_event(std::move(connect_event));
+    log_info("Received peer locations and base settings");
+}
+
+/* Deregister this instance from the manager.
+ */
+void Instance::Impl::deregister_() {
+    // Make sure we record this even if profiling is disabled, so that we
+    // always have register, connect and deregister at least.
+    profiler_->set_level("all");
+
+    ProfileEvent deregister_event(ProfileEventType::deregister, ProfileTimestamp());
+    manager_->deregister_instance();
+    profiler_->record_event(std::move(deregister_event));
+
+    // This is the last thing we'll profile, so flush messages
+    profiler_->shutdown();
+    log_info("Deregistered from the manager");
+}
+
+void Instance::Impl::setup_checkpointing_() {
+    auto checkpoint_info = manager_->get_checkpoint_info();
+
+    auto elapsed_time = std::get<0>(checkpoint_info);
+    auto checkpoints = std::get<1>(checkpoint_info);
+    trigger_manager_->set_checkpoint_info(elapsed_time, checkpoints);
+
+    auto checkpoint_support_mask = (
+            InstanceFlags::USES_CHECKPOINT_API |
+            InstanceFlags::KEEPS_NO_STATE_FOR_NEXT_USE |
+            InstanceFlags::STATE_NOT_REQUIRED_FOR_NEXT_USE);
+    if (trigger_manager_->has_checkpoints() && !(flags_ & checkpoint_support_mask)) {
+        std::string msg(
+                "The workflow has requested checkpoints, but this instance"
+                " does not support checkpointing. Please consult the"
+                " MUSCLE3 checkpointing documentation on how to add"
+                " checkpointing support.");
+        shutdown_(msg);
+        throw std::runtime_error(msg);
+    }
+
+    auto resume_snapshot = std::get<2>(checkpoint_info);
+    auto snapshot_dir = std::get<3>(checkpoint_info);
+    auto saved_at = snapshot_manager_->prepare_resume(resume_snapshot, snapshot_dir);
+    // resume settings overlay
+    settings_manager_.overlay = snapshot_manager_->resume_overlay();
+
+    if (saved_at.is_set())
+        trigger_manager_->update_checkpoints(saved_at.get());
+}
+
+void Instance::Impl::setup_profiling_() {
+    std::string profile_level_str("all");
+    try {
+        profile_level_str = settings_manager_.get_setting(
+               instance_name_, "muscle_profile_level").as<std::string>();
+    }
+    catch (std::runtime_error const & e) {
+        log_error(e.what() + std::string(" in muscle_profile_level"));
+    }
+    catch (std::out_of_range const &) {
+        // muscle_profile_level not set, do nothing and keep the default
+    }
+
+    if (profile_level_str != "none" && profile_level_str != "all") {
+        std::string msg = "Invalid value for muscle_profile_level:";
+        msg += profile_level_str;
+        msg += ". Please specify \"none\" or \"all\". Using default value";
+        msg += " \"all\"";
+        log_warning(msg);
+
+        profile_level_str = "all";
+    }
+    profiler_->set_level(profile_level_str);
+}
+
+void Instance::Impl::setup_receive_timeout_() {
+    double timeout;
+    try {
+        timeout = settings_manager_.get_setting(
+               instance_name_, "muscle_deadlock_receive_timeout").as<double>();
+        if (timeout >= 0 && timeout < 0.1) {
+            log_info(
+                    "Provided muscle_deadlock_receive_timeout (", timeout,
+                    ") was less than the minimum of 0.1 seconds, setting it to 0.1.");
+            timeout = 0.1;
+        }
+        communicator_->set_receive_timeout(timeout);
+    }
+    catch (std::runtime_error const & e) {
+        log_error(e.what() + std::string(" in muscle_deadlock_receive_timeout"));
+    }
+    catch (std::out_of_range const &) {
+        // muscle_deadlock_receive_timeout not set, do nothing and keep the default
+    }
+    log_debug(
+            "Timeout on receiving messages set to ",
+            communicator_->get_receive_timeout());
+}
+
+Message Instance::Impl::receive_message(
+                std::string const & port_name,
+                Optional<int> slot,
+                Optional<Message> default_msg,
+                bool with_settings)
+{
+    Message result(-1.0, Data());
+    Error error;
+
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+        try {
+#endif
+
+    check_port_(port_name, slot, false, true);
+
+    Reference port_ref(port_name);
+    auto const & port = port_manager_->get_port(port_name);
+    if (!port.is_connected()) {
+        if (default_msg.is_set()) {
+            log_debug("No message received on port ", port_ref, " as it is not connected.");
+            result = default_msg.get();
+        }
+        else {
+            std::ostringstream oss;
+            oss << "Tried to receive on port \"" << port_ref << "\" which is";
+            oss << " disconnected, and no default value was given. Either";
+            oss << " specify a default, or connect a sending port to this port.";
+            error = Error(std::logic_error(oss.str()));
+        }
+    }
+    else if (port.oper == Operator::F_INIT) {
+        if (slot.is_set())
+            port_ref += slot.get();
+
+        if (f_init_cache_.count(port_ref) == 1) {
+            result = f_init_cache_.at(port_ref);
+            f_init_cache_.erase(port_ref);
+
+            if (with_settings && !result.has_settings()) {
+                error = Error(std::logic_error(
+                        "If you use receive_with_settings() on an F_INIT port, then you"
+                        " have to set the flag 'InstanceFlag::DONT_APPLY_OVERLAY' when"
+                        " creating the Instance, otherwise the settings will already"
+                        " have been applied by MUSCLE."));
+            }
+        }
+        else {
+            std::ostringstream oss;
+            oss << "Tried to receive twice on the same port \"" << port_ref;
+            oss << "\", that's not possible. Did you forget to call reuse_instance()";
+            oss << " in your reuse loop?";
+            error = Error(std::logic_error(oss.str()));
+        }
+    }
+    else {
+        try {
+            result = communicator_->receive_s_message(port_name, slot);
+            if (!with_settings) {
+                check_compatibility_(port_name, result.settings());
+                result.unset_settings();
+            }
+        } catch (PortClosed &err) {
+            std::ostringstream oss;
+            oss << "Port \"" << port_ref << "\" is closed, but we're trying";
+            oss << " to receive on it. Did the peer crash?";
+            error = Error(std::runtime_error(oss.str()));
+        }
+    }
+
+#ifdef MUSCLE_ENABLE_MPI
+        }
+        catch (std::exception const & exc) {
+            error = exc;
+        }
+        mpi_barrier_.signal();
+    }
+    else {
+        mpi_barrier_.wait();
+    }
+#endif
+
+    shutdown_and_throw_if_error_(error);
+    return result;
+}
+
+bool Instance::Impl::resuming() {
+    api_guard_->verify_resuming();
+    api_guard_->resuming_done(do_resume_);
+    return do_resume_;
+}
+
+bool Instance::Impl::should_init() {
+    api_guard_->verify_should_init();
+    api_guard_->should_init_done();
+    return do_init_;
+}
+
+Message Instance::Impl::load_snapshot() {
+    api_guard_->verify_load_snapshot();
+    auto result = snapshot_manager_->load_snapshot();
+    api_guard_->load_snapshot_done();
+    return result;
+}
+
+bool Instance::Impl::should_save_snapshot(double timestamp) {
+    api_guard_->verify_should_save_snapshot();
+    bool result;
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        result = trigger_manager_->should_save_snapshot(timestamp);
+#ifdef MUSCLE_ENABLE_MPI
+        mpi_barrier_.signal();
+        int result_mpi = result;
+        MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+    } else {
+        mpi_barrier_.wait();
+        int result_mpi;
+        MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+        result = result_mpi;
+    }
+#endif
+    api_guard_->should_save_snapshot_done(result);
+    return result;
+}
+
+void Instance::Impl::save_snapshot(Message message) {
+    api_guard_->verify_save_snapshot();  // API guard verifies we are mpi_root
+    save_snapshot_(message, false, {});
+    api_guard_->save_snapshot_done();
+}
+
+bool Instance::Impl::should_save_final_snapshot() {
+    api_guard_->verify_should_save_final_snapshot();
+
+    bool result;
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        do_reuse_ = pre_receive_();
+        result = trigger_manager_->should_save_final_snapshot(
+                do_reuse_.get(), f_init_max_timestamp_());
+#ifdef MUSCLE_ENABLE_MPI
+        mpi_barrier_.signal();
+        int result_mpi = result;
+        MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+    } else {
+        mpi_barrier_.wait();
+        int result_mpi;
+        MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+        result = result_mpi;
+    }
+#endif
+
+    api_guard_->should_save_final_snapshot_done(result);
+    return result;
+}
+
+void Instance::Impl::save_final_snapshot(Message message) {
+    api_guard_->verify_save_final_snapshot();  // API guard verifies we are mpi_root
+    save_snapshot_(message, true, f_init_max_timestamp_());
+    api_guard_->save_final_snapshot_done();
+}
+
+/* Returns instance name.
+ *
+ * This takes the argument to the --muscle-instance= command-line option and
+ * returns it as a Reference.
+ */
+Reference Instance::Impl::make_full_name_(int argc, char const * const argv[]) const {
+    std::string prefix_tag("--muscle-instance=");
+    for (int i = 1; i < argc; ++i) {
+        if (strncmp(argv[i], prefix_tag.c_str(), prefix_tag.size()) == 0) {
+            std::string prefix_str(argv[i] + prefix_tag.size());
+            return Reference(prefix_str);
+        }
+    }
+    char * prefix_str = getenv("MUSCLE_INSTANCE");
+    if (prefix_str != nullptr)
+        return Reference(prefix_str);
+    throw std::runtime_error("A --muscle-instance command line argument or"
+            " MUSCLE_INSTANCE environment variable is required to"
+            " identify this instance. Please add one.");
+}
+
+/* Gets the manager network location from the command line.
+ *
+ * We use a --muscle-manager=<host:port> argument to tell the MUSCLE library
+ * how to connect to the manager. This function will extract this argument
+ * from the command line arguments, if it is present.
+ *
+ * If not, it will check the MUSCLE_MANAGER environment variable, and if that
+ * is not set, fall back to the default.
+ */
+std::string Instance::Impl::extract_manager_location_(
+        int argc, char const * const argv[]) const
+{
+    std::string prefix_tag("--muscle-manager=");
+    for (int i = 1; i < argc; ++i)
+        if (strncmp(argv[i], prefix_tag.c_str(), prefix_tag.size()) == 0)
+            return std::string(argv[i] + prefix_tag.size());
+
+    char * prefix = getenv("MUSCLE_MANAGER");
+    if (prefix != nullptr)
+        return std::string(prefix);
+
+    return "tcp:localhost:9000";
+}
+
+/* Returns a list of declared ports for this instance.
+ *
+ * This returns a list of ymmsl::Port objects, which have only the name and
+ * operator, not libmuscle::Port, which has more.
+ */
+std::vector<::ymmsl::Port> Instance::Impl::list_declared_ports_() const {
+    std::vector<::ymmsl::Port> result;
+    if (!declared_ports_.is_set()) return result;
+    for (auto const & oper_ports : declared_ports_.get()) {
+        for (auto const & fullname : oper_ports.second) {
+            std::string portname(fullname);
+            if (fullname.size() > 2 && fullname.substr(fullname.size() - 2) == "[]")
+                portname = fullname.substr(0, fullname.size() - 2);
+            result.push_back(::ymmsl::Port(portname, oper_ports.first));
+        }
+    }
+    return result;
+}
+
+/* Checks that the given port exists, error-exits if not.
+ *
+ * Call only on the root process.
+ *
+ * @param port_name The name of the port to check.
+ */
+void Instance::Impl::check_port_(
+        std::string const & port_name, Optional<int> slot,
+        bool is_send, bool allow_slot_out_of_range)
+{
+    if (!port_manager_->port_exists(port_name)) {
+        std::ostringstream oss;
+        oss << "Port '" << port_name << "' does not exist on '";
+        oss << instance_name_ << "'. Please check the name and the list of";
+        oss << " ports you gave for this component.";
+        throw std::logic_error(oss.str());
+    }
+
+    auto & port = port_manager_->get_port(port_name);
+    if (is_send) {
+        if (!::ymmsl::allows_sending(port.oper)) {
+            std::ostringstream oss;
+            oss << " Port "  << port_name << " does not allow sending messages.";
+            throw std::logic_error(oss.str());
+        }
+    } else {
+        if (!::ymmsl::allows_receiving(port.oper)) {
+            std::ostringstream oss;
+            oss << " Port "  << port_name << " does not allow receiving messages.";
+            throw std::logic_error(oss.str());
+        }
+    }
+
+    if (port.is_vector() and !slot.is_set()) {
+        std::ostringstream oss;
+        oss << "Port \"" << port_name << "\" is a vector port, but no slot was given.";
+        throw std::logic_error(oss.str());
+    }
+    if (slot.is_set()) {
+        if (!port.is_vector()) {
+            std::ostringstream oss;
+            oss << "Port \"" << port_name << "\" is not a vector port, but a slot was";
+            oss << " given. Please check your send call and your port declarations.";
+            throw std::logic_error(oss.str());
+        }
+
+        if (port.is_connected()) {
+            // this check needs to be revised for resizable instance sets
+            if (!(port.is_resizable() && allow_slot_out_of_range)) {
+                if (port.get_length() <= slot.get()) {
+                    std::ostringstream oss;
+                    oss << "Tried to send or receive on slot " << slot << " of port \"";
+                    oss << port_name << "\", which has length " << port.get_length() << ".";
+                    oss << " Please check your code and/or the multiplicities in the model";
+                    oss << " description.";
+                    throw std::runtime_error(oss.str());
+                }
+            }
+        }
+    }
+}
+
+/* Handle received settings on pre-received muscle_settings_in. */
+void Instance::Impl::handle_receive_settings_() {
+    Reference port_ref("muscle_settings_in");
+    auto msg = f_init_cache_.at(port_ref);
+    f_init_cache_.erase(port_ref);
+
+    if (!msg.data().is_a<Settings>()) {
+        std::ostringstream oss;
+        oss << "'" << instance_name_ << "' received a message on";
+        oss << " muscle_settings_in that is not a Settings. It seems that the";
+        oss << " simulation is miswired or the sending instance is broken.";
+        log_critical(oss.str());
+        shutdown_();
+        throw std::logic_error(oss.str());
+    }
+
+    Settings settings(msg.settings());
+    for (auto const & key_val : msg.data().as<Settings>())
+        settings[key_val.first] = key_val.second;
+    settings_manager_.overlay = settings;
+}
+
+/** Pre-receives on all ports.
+ *
+ * This includes muscle_settings_in and all user-defined ports.
+ *
+ * @return true iff no ports were closed.
+ */
+bool Instance::Impl::pre_receive_() {
+    communicator_state_ = communicator_->get_state();
+    ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
+
+    try {
+        f_init_cache_ = communicator_->pre_receive();
+    } catch (PortClosed &err) {
+        profiler_->record_event(std::move(sw_event));
+        f_init_cache_.clear();
+        return false;
+    } catch (std::runtime_error &err) {
+        shutdown_(err.what());
+        throw;
+    }
+    bool has_messages = !f_init_cache_.empty();
+
+    // Handle received settings
+    if (port_manager_->settings_in_connected())
+        handle_receive_settings_();
+    else
+        settings_manager_.overlay = Settings();
+    // Overlay settings from received messages
+    bool apply_overlay = !(flags_ & InstanceFlags::DONT_APPLY_OVERLAY);
+    if (apply_overlay) {
+        for (auto &item : f_init_cache_) {
+            apply_overlay_(item.second);
+            if (item.second.has_settings())
+                check_compatibility_(std::string(item.first), item.second.settings());
+            item.second.unset_settings();
+        }
+    }
+    return has_messages;
+}
+
+/** Return max timestamp of pre-received F_INIT messages
+ */
+Optional<double> Instance::Impl::f_init_max_timestamp_() {
+    Optional<double> result;
+    for (auto const & ref_msg : f_init_cache_) {
+        auto timestamp = ref_msg.second.timestamp();
+        if (!result.is_set() || result.get() < timestamp)
+            result = timestamp;
+    }
+    return result;
+}
+
+/** Save a snapshot to disk and notify manager.
+ *
+ * @param message The data to save.
+ * @param final Whether this is a final snapshot or an intermediate one.
+ * @param f_init_max_timestamp Timestamp for final snapshots.
+ */
+void Instance::Impl::save_snapshot_(
+        Optional<Message> message, bool final,
+        Optional<double> f_init_max_timestamp) {
+    CommunicatorState communicator_state;
+    if (final) {
+        assert(communicator_state_.is_set());
+        communicator_state = communicator_state_.get();
+    } else {
+        assert(!communicator_state_.is_set());
+        communicator_state = communicator_->get_state();
+    }
+    auto triggers = trigger_manager_->get_triggers();
+    auto walltime = trigger_manager_->elapsed_walltime();
+    auto timestamp = snapshot_manager_->save_snapshot(
+            message, final, triggers, walltime,
+            f_init_max_timestamp, settings_manager_.overlay,
+            communicator_state);
+    trigger_manager_->update_checkpoints(timestamp);
+}
+
+/* Sets the level a log message must have to be printed locally.
+ *
+ * It gets this from the muscle_local_log_level setting.
+ */
+void Instance::Impl::set_local_log_level_() {
+    try {
+        std::string log_level_str = settings_manager_.get_setting(
+               instance_name_, "muscle_local_log_level").as<std::string>();
+
+        LogLevel level = string_to_level(log_level_str);
+        Logger::instance().set_local_level(level);
+    }
+    catch (std::runtime_error const & e) {
+        log_error(e.what() + std::string(" in muscle_local_log_level"));
+    }
+    catch (std::out_of_range const &) {
+        // muscle_local_log_level not set, do nothing and keep the default
+    }
+}
+
+/* Sets the level a log message must have to be sent to the manager.
+ *
+ * It gets this from the muscle_remote_log_level setting.
+ */
+void Instance::Impl::set_remote_log_level_() {
+    try {
+        std::string log_level_str = settings_manager_.get_setting(
+               instance_name_, "muscle_remote_log_level").as<std::string>();
+
+        LogLevel level = string_to_level(log_level_str);
+        Logger::instance().set_remote_level(level);
+    }
+    catch (std::runtime_error const & e) {
+        log_error(e.what() + std::string(" in muscle_remote_log_level"));
+    }
+    catch (std::out_of_range const &) {
+        // muscle_remote_log_level not set, do nothing and keep the default
+    }
+}
+
+/* Sets local overlay if we don't already have one.
+ *
+ * @param message The message to apply the overlay from.
+ */
+void Instance::Impl::apply_overlay_(Message const & message) {
+    if (settings_manager_.overlay.empty())
+        if (message.has_settings())
+            settings_manager_.overlay = message.settings();
+}
+
+/* Checks whether a received overlay matches the current one.
+ *
+ * @param port_name Name of the port on which the overlay was received.
+ * @param overlay The received overlay.
+ */
+void Instance::Impl::check_compatibility_(
+        std::string const & port_name,
+        Optional<Settings> const & overlay)
+{
+    if (!overlay.is_set())
+        return;
+    if (settings_manager_.overlay != overlay.get()) {
+        std::ostringstream oss;
+        oss << "Unexpectedly received data from a parallel universe on port";
+        oss << " '" << port_name << "'. My settings are '";
+        oss << settings_manager_.overlay << "' and I received from a";
+        oss << " universe with '" << overlay << "'.";
+        log_critical(oss.str());
+        shutdown_();
+        throw std::logic_error(oss.str());
+    }
+}
+
+
+/* Shuts down the simulation.
+ *
+ * This logs the given error message, if any, communicates to the peers that we're
+ * shutting down, and deregisters from the manager.
+ */
+void Instance::Impl::shutdown_(Optional<std::string> const & message) {
+    if (!is_shut_down_) {
+#ifdef MUSCLE_ENABLE_MPI
+        if (mpi_barrier_.is_root()) {
+#endif
+            if (message.is_set())
+                log_critical(message.get());
+            communicator_->shutdown();
+            deregister_();
+            manager_->close();
+#ifdef MUSCLE_ENABLE_MPI
+        }
+        mpi_barrier_.shutdown();
+        MPI_Comm_free(&mpi_comm_);
+#endif
+        is_shut_down_ = true;
+    }
+}
+
+
+void Instance::Impl::shutdown_and_throw_if_error_(Error const & error) {
+#ifdef MUSCLE_ENABLE_MPI
+    error.bcast(mpi_comm_, mpi_root_);
+#endif
+    if (error.is_error())
+        shutdown_(error.get_message());
+    error.throw_if_error();
+}
+
+
+
+/* Below is the implementation of the public interface.
+ *
+ * These just forward to the hidden implementations above.
+ */
+
+#ifdef MUSCLE_ENABLE_MPI
+#define MPI_ARGS_DECL , MPI_Comm const & communicator, int root
+#define MPI_ARGS_CALL , communicator, root
+#else
+#define MPI_ARGS_DECL
+#define MPI_ARGS_CALL
+#endif
+
+Instance::Instance(
+        int argc, char const * const argv[]
+        MPI_ARGS_DECL)
+    : pimpl_(new Impl(argc, argv, {}, InstanceFlags::NONE MPI_ARGS_CALL))
+{}
+
+Instance::Instance(
+        int argc, char const * const argv[],
+        PortsDescription const & ports
+        MPI_ARGS_DECL)
+    : pimpl_(new Impl(argc, argv, ports, InstanceFlags::NONE MPI_ARGS_CALL))
+{}
+
+Instance::Instance(
+        int argc, char const * const argv[],
+        InstanceFlags flags
+        MPI_ARGS_DECL)
+    : pimpl_(new Impl(argc, argv, {}, flags MPI_ARGS_CALL))
+{}
+
+Instance::Instance(
+        int argc, char const * const argv[],
+        PortsDescription const & ports,
+        InstanceFlags flags
+        MPI_ARGS_DECL)
+    : pimpl_(new Impl(argc, argv, ports, flags MPI_ARGS_CALL))
+{}
+
+Instance::~Instance() = default;
+
+bool Instance::reuse_instance() {
+    return impl_()->reuse_instance();
+}
+
+void Instance::error_shutdown(std::string const & message) {
+    impl_()->error_shutdown(message);
+}
+
+std::vector<std::string> Instance::list_settings() const {
+    return impl_()->list_settings();
+}
+
+::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {
+    return impl_()->get_setting(name, {});
+}
+
+::ymmsl::SettingValue Instance::get_setting(
+        std::string const & name,
+        ::ymmsl::SettingValue const & default_value) const {
+    return impl_()->get_setting(name, default_value);
+}
+
+/* This is instantiated explicitly, it's the only way to do this with a
+ * pImpl. Fortunately, we don't allow arbitrary types for settings, so it
+ * works this way.
+ */
+template <typename ValueType>
+ValueType Instance::get_setting_as(std::string const & name) const {
+    return impl_()->get_setting_as<ValueType>(name, Optional<ValueType>());
+}
+
+template <typename ValueType>
+ValueType Instance::get_setting_as(
+        std::string const & name,
+        ValueType const & default_value) const {
+    return impl_()->get_setting_as<ValueType>(name, default_value);
+}
+
+/** This keeps Doxygen from getting confused.
+ * \cond
+ */
+template std::string Instance::get_setting_as<std::string>(
+        std::string const & name) const;
+template int64_t Instance::get_setting_as<int64_t>(
+        std::string const & name) const;
+template double Instance::get_setting_as<double>(
+        std::string const & name) const;
+template bool Instance::get_setting_as<bool>(
+        std::string const & name) const;
+template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
+        std::string const & name) const;
+template std::vector<double> Instance::get_setting_as<std::vector<double>>(
+        std::string const & name) const;
+template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
+        std::string const & name) const;
+
+template std::string Instance::get_setting_as<std::string>(
+        std::string const & name, std::string const & default_value) const;
+template int64_t Instance::get_setting_as<int64_t>(
+        std::string const & name, int64_t const & default_value) const;
+template double Instance::get_setting_as<double>(
+        std::string const & name, double const & default_value) const;
+template bool Instance::get_setting_as<bool>(
+        std::string const & name, bool const & default_value) const;
+template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
+        std::string const & name, std::vector<int64_t> const & default_value) const;
+template std::vector<double> Instance::get_setting_as<std::vector<double>>(
+        std::string const & name, std::vector<double> const & default_value) const;
+template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
+        std::string const & name, std::vector<std::vector<double>> const & default_value) const;
+/** \endcond
+ */
+
+std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
+Instance::list_ports() const {
+    return impl_()->list_ports();
+}
+
+bool Instance::is_connected(std::string const & port) const {
+    return impl_()->is_connected(port);
+}
+
+bool Instance::is_vector_port(std::string const & port) const {
+    return impl_()->is_vector_port(port);
+}
+
+bool Instance::is_resizable(std::string const & port) const {
+    return impl_()->is_resizable(port);
+}
+
+int Instance::get_port_length(std::string const & port) const {
+    return impl_()->get_port_length(port);
+}
+
+void Instance::set_port_length(std::string const & port, int length) {
+    impl_()->set_port_length(port, length);
+}
+
+void Instance::send(std::string const & port_name, Message const & message) {
+    impl_()->send(port_name, message);
+}
+
+void Instance::send(
+        std::string const & port_name, Message const & message, int slot)
+{
+    impl_()->send(port_name, message, slot);
+}
+
+Message Instance::receive(std::string const & port_name) {
+    return impl_()->receive_message(port_name, {}, {}, false);
+}
+
+Message Instance::receive(
+        std::string const & port_name,
+        int slot)
+{
+    return impl_()->receive_message(port_name, slot, {}, false);
+}
+
+Message Instance::receive(
+        std::string const & port_name, Message const & default_msg)
+{
+    return impl_()->receive_message(port_name, {}, default_msg, false);
+}
+
+Message Instance::receive(
+        std::string const & port_name,
+        int slot,
+        Message const & default_msg)
+{
+    return impl_()->receive_message(port_name, slot, default_msg, false);
+}
+
+Message Instance::receive_with_settings(std::string const & port_name) {
+    return impl_()->receive_message(port_name, {}, {}, true);
+}
+
+Message Instance::receive_with_settings(
+        std::string const & port_name,
+        int slot)
+{
+    return impl_()->receive_message(port_name, slot, {}, true);
+}
+
+Message Instance::receive_with_settings(
+        std::string const & port_name, Message const & default_msg)
+{
+    return impl_()->receive_message(port_name, {}, default_msg, true);
+}
+
+
+Message Instance::receive_with_settings(
+        std::string const & port_name,
+        int slot,
+        Message const & default_msg)
+{
+    return impl_()->receive_message(port_name, slot, default_msg, true);
+}
+
+bool Instance::resuming() {
+    return impl_()->resuming();
+}
+
+bool Instance::should_init() {
+    return impl_()->should_init();
+}
+
+Message Instance::load_snapshot() {
+    return impl_()->load_snapshot();
+}
+
+bool Instance::should_save_snapshot(double timestamp) {
+    return impl_()->should_save_snapshot(timestamp);
+}
+
+void Instance::save_snapshot(Message message) {
+    impl_()->save_snapshot(message);
+}
+
+bool Instance::should_save_final_snapshot() {
+    return impl_()->should_save_final_snapshot();
+}
+
+void Instance::save_final_snapshot(Message message) {
+    impl_()->save_final_snapshot(message);
+}
+
+Instance::Impl const * Instance::impl_() const {
+    return pimpl_.get();
+}
+
+Instance::Impl * Instance::impl_() {
+    return pimpl_.get();
+}
+
+} }
+

@@ -35,8 +35,9 @@ This work was supported by the Netherlands eScience Center and NWO under grant n
 27015G01.
 
 We would like to acknowledge the contribution by The ITER Organization of results of
-work carried out within the framework of ITER contract IO/22/CT/4300002587. The views
-and opinions expressed herein do not necessarily reflect those of the ITER Organization.
+work carried out within the framework of ITER contracts IO/22/CT/4300002587 and
+IO/26/CT/4300003541. The views and opinions expressed herein do not necessarily reflect
+those of the ITER Organization.
 
 Academic collaboration
 ----------------------
@@ -73,15 +74,18 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    distributed_execution
    nested_models
    models_as_software
+   yMMSL documentation <https://ymmsl-python.readthedocs.io/en/develop/>
    profiling
 
    coupling
+   timeline_bridges
 
    cplusplus
    fortran
    mpi
 
    containers
+   time_bridges
    uncertainty_quantification
    cache
    checkpointing

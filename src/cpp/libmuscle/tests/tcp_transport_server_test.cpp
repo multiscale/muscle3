@@ -1,0 +1,57 @@
+/* This is a part of the integration test suite, and is run from a Python
+ * test in /integration_test. It is not a unit test.
+ */
+#include <libmuscle/data.hpp>
+#include <libmuscle/mcp/data_pack.hpp>
+#include <libmuscle/mpp_message.hpp>
+#include <libmuscle/mpp_server.hpp>
+#include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/namespace.hpp>
+#include <libmuscle/post_office.hpp>
+#include <ymmsl/ymmsl.hpp>
+
+#include <cassert>
+#include <iostream>
+#include <ostream>
+#include <memory>
+
+#include <msgpack.hpp>
+
+
+using libmuscle::_MUSCLE_IMPL_NS::PostOffice;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::MPPRequestHandler;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
+using ymmsl::Reference;
+using ymmsl::Settings;
+
+
+int main(int argc, char *argv[]) {
+    PostOffice post_office;
+    MPPRequestHandler handler(post_office);
+    Reference receiver("test_receiver.port");
+
+    Settings overlay_settings;
+    overlay_settings["par1"] = 13;
+
+    auto data_dict = Data::dict("var1", 1, "var2", 2.0, "var3", "3");
+
+    MPPMessage msg(
+            "test_sender.port", receiver, 10,
+            0.0, 1.0,
+            overlay_settings,
+            0,
+            data_dict, {});
+    post_office.deposit(receiver, std::move(msg.encoded()));
+
+    TcpTransportServer server(handler);
+    std::cout << server.get_location() << std::endl;
+
+    post_office.wait_for_receivers();
+
+    server.close();
+    return 0;
+}
+

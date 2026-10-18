@@ -13,7 +13,7 @@ program diffusion
     type(LIBMUSCLE_Instance) :: instance
 
     type(LIBMUSCLE_Message) :: rmsg
-    type(LIBMUSCLE_DataConstRef) :: rdata, item
+    type(LIBMUSCLE_DataConstRef) :: rdata
 
 
     type(LIBMUSCLE_Message) :: smsg
@@ -33,6 +33,14 @@ program diffusion
     call LIBMUSCLE_PortsDescription_free(ports)
 
     do while (instance%reuse_instance())
+        if (instance%get_setting_as_logical('skip', .false.)) then
+            ! The load balancer has no work for us this iteration
+            smsg = LIBMUSCLE_Message(-1.0d0)
+            call instance%send('final_state_out', smsg)
+            call LIBMUSCLE_Message_free(smsg)
+            cycle
+        end if
+
         ! F_INIT
         t_max = instance%get_setting_as_real8('t_max')
         dt = instance%get_setting_as_real8('dt')

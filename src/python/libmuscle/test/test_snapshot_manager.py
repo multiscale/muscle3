@@ -1,0 +1,163 @@
+from pathlib import Path
+from unittest.mock import MagicMock
+
+import msgpack
+import pytest
+from ymmsl.v0_2 import Reference, Settings
+
+from libmuscle.communicator import Message
+from libmuscle.communicator_state import CommunicatorState
+from libmuscle.snapshot import SnapshotMetadata
+from libmuscle.snapshot_manager import SnapshotManager
+
+
+def test_no_checkpointing(tmp_path: Path) -> None:
+    manager = MagicMock()
+    communicator = MagicMock()
+    snapshot_manager = SnapshotManager(Reference("test"), manager, communicator)
+
+    snapshot_manager.prepare_resume(None, tmp_path)
+    assert not snapshot_manager.resuming_from_intermediate()
+    assert not snapshot_manager.resuming_from_final()
+
+
+def test_save_load_snapshot(
+    tmp_path: Path, communicator_state: CommunicatorState
+) -> None:
+    manager = MagicMock()
+
+    instance_id = Reference("test[1]")
+    communicator = MagicMock()
+    snapshot_manager = SnapshotManager(instance_id, manager, communicator)
+
+    snapshot_manager.prepare_resume(None, tmp_path)
+    assert not snapshot_manager.resuming_from_intermediate()
+    assert not snapshot_manager.resuming_from_final()
+
+    snapshot_manager.save_snapshot(
+        Message(0.2, None, "test data"),
+        False,
+        ["test"],
+        13.0,
+        None,
+        Settings(),
+        communicator_state,
+    )
+
+    manager.submit_snapshot_metadata.assert_called()
+    (metadata,) = manager.submit_snapshot_metadata.call_args[0]
+    assert isinstance(metadata, SnapshotMetadata)
+    assert metadata.triggers == ["test"]
+    assert metadata.wallclock_time == 13.0
+    assert metadata.timestamp == 0.2
+    assert metadata.next_timestamp is None
+    assert metadata.port_message_counts == communicator_state.port_message_counts
+    assert not metadata.is_final_snapshot
+    snapshot_path = Path(metadata.snapshot_filename)
+    assert snapshot_path.parent == tmp_path
+    assert snapshot_path.name == "test-1_1.pack"
+
+    snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
+
+    snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
+    communicator.restore_state.assert_called_once_with(communicator_state)
+
+    assert snapshot_manager2.resuming_from_intermediate()
+    assert not snapshot_manager2.resuming_from_final()
+    msg = snapshot_manager2.load_snapshot()
+    assert msg.timestamp == 0.2
+    assert msg.next_timestamp is None
+    assert msg.data == "test data"
+
+    snapshot_manager2.save_snapshot(
+        Message(0.6, None, "test data2"),
+        True,
+        ["test"],
+        42.2,
+        1.2,
+        Settings(),
+        communicator_state,
+    )
+
+    (metadata,) = manager.submit_snapshot_metadata.call_args[0]
+    assert isinstance(metadata, SnapshotMetadata)
+    assert metadata.triggers == ["test"]
+    assert metadata.wallclock_time == 42.2
+    assert metadata.timestamp == 0.6
+    assert metadata.next_timestamp is None
+    assert metadata.port_message_counts == communicator_state.port_message_counts
+    assert metadata.is_final_snapshot
+    snapshot_path = Path(metadata.snapshot_filename)
+    assert snapshot_path.parent == tmp_path
+    assert snapshot_path.name == "test-1_3.pack"
+
+    communicator.restore_state.reset_mock()
+    snapshot_manager3 = SnapshotManager(instance_id, manager, communicator)
+    snapshot_manager3.prepare_resume(snapshot_path, tmp_path)
+    communicator.restore_state.assert_called_once_with(communicator_state)
+    assert snapshot_manager3.resuming_from_final()
+
+
+def test_save_load_implicit_snapshot(
+    tmp_path: Path, communicator_state: CommunicatorState
+) -> None:
+    manager = MagicMock()
+    instance_id = Reference("test[1]")
+    communicator = MagicMock()
+    snapshot_manager = SnapshotManager(instance_id, manager, communicator)
+
+    snapshot_manager.prepare_resume(None, tmp_path)
+
+    assert not snapshot_manager.resuming_from_intermediate()
+    assert not snapshot_manager.resuming_from_final()
+    # save implicit snapshot
+    snapshot_manager.save_snapshot(
+        None, True, ["implicit"], 1.0, 1.5, Settings(), communicator_state
+    )
+
+    manager.submit_snapshot_metadata.assert_called_once()
+    (metadata,) = manager.submit_snapshot_metadata.call_args[0]
+    assert isinstance(metadata, SnapshotMetadata)
+    snapshot_path = Path(metadata.snapshot_filename)
+    manager.submit_snapshot_metadata.reset_mock()
+
+    snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
+
+    snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
+    communicator.restore_state.assert_called_with(communicator_state)
+    manager.submit_snapshot_metadata.assert_called_once()
+    manager.submit_snapshot_metadata.reset_mock()
+
+    assert not snapshot_manager2.resuming_from_intermediate()
+    assert not snapshot_manager2.resuming_from_final()
+
+    snapshot_manager2.save_snapshot(
+        None, True, ["implicit"], 12.3, 2.5, Settings(), communicator_state
+    )
+    manager.submit_snapshot_metadata.assert_called_once()
+
+
+def test_load_snapshot_from_file_with_unknown_version_raises(tmp_path: Path) -> None:
+    snapshot_path = tmp_path / "unknown_version.pack"
+    snapshot_path.write_bytes(b"\x99some data")
+
+    with pytest.raises(RuntimeError, match="unknown version"):
+        SnapshotManager.load_snapshot_from_file(snapshot_path)
+
+
+def test_load_old_version_snapshot_raises(tmp_path: Path) -> None:
+    snapshot_path = tmp_path / "old_version.pack"
+    old_format_payload = msgpack.dumps(
+        {
+            "triggers": ["test"],
+            "wallclock_time": 1.0,
+            "port_message_counts": {},
+            "is_final_snapshot": False,
+            "message": b"",
+            "settings_overlay": {},
+        }
+    )
+    snapshot_path.write_bytes(b"1" + old_format_payload)
+
+    with pytest.raises(RuntimeError, match="unknown version"):
+        SnapshotManager.load_snapshot_from_file(snapshot_path)

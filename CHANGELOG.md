@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.11.0
+
+### Added
+
+- Timeline support for safer O_I/S connections. This feature allows describing the way
+  in which components communicate in more detail, which in turn allows MUSCLE3 to detect
+  mistakes in more complex models and give helpful error messages.
+- Conduit filters for communicating across nested timelines. This allows initialising
+  components that are called many times once, as well as communication between
+  components and components that are called by components they call.
+- New unidirectional time bridge for connecting components that run on similar but
+  different, and possibly dynamic, timelines.
+- Detect msgpack dependency from the system if present, so MUSCLE3 can be built off-line
+
+### Fixed
+
+- Deadlock detection now detects Q-shaped deadlocks correctly
+- Connecting an O_I port to an S port on the same component now works
+
+### Removed
+
+- Support for Python 3.9
+
+### Thanks
+
+- Simon at IO for msgpack build improvements
+- Iris and Maarten at Ignition for timeline support
+
+### Funding
+
+- The ITER Organization
+
+
 ## 0.10.0
 
 ### Added

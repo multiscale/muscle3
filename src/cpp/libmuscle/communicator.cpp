@@ -115,7 +115,10 @@ void Communicator::restore_state(CommunicatorState const & state) {
     assert(timeline_manager_);
     port_manager_.restore_message_counts(state.port_message_counts);
     timeline_manager_->restore_state(state.timeline_state);
-    message_cache_ = state.message_cache;
+    // message_cache_ = state.message_cache;
+    MPPMessage m("x", "y", {}, 0.0, {}, DataConstRef(), 0, DataConstRef(), {});
+    MPPMessage m2("x", "y", {}, 0.0, {}, DataConstRef(), 0, DataConstRef(), {});
+    m2 = std::move(m);
 }
 
 void Communicator::send_message(

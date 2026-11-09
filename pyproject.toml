@@ -121,6 +121,8 @@ indent-width = 4
 line-length = 88
 
 [tool.ruff.lint]
+preview = true
+explicit-preview-rules = true
 select = [
   # pycodestyle
   "E",
@@ -132,6 +134,8 @@ select = [
   "B",
   # isort
   "I",
+  # missing-f-string-syntax (preview rule)
+  "RUF027",
   # TODO: enable these at some point?
   # flake8-simplify
   #"SIM",

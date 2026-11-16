@@ -1,14 +1,18 @@
 #pragma once
 
-#ifdef MUSCLE_ENABLE_MPI
 
 #include <memory>
 
+#ifdef MUSCLE_ENABLE_MPI
+
 #include <mpi.h>
+
+#endif
 
 #include <libmuscle/mpp_client.hpp>
 #include <libmuscle/mpp_server.hpp>
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/util.hpp>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -61,6 +65,4 @@ class MPITcpBarrier {
 
 
 } }
-
-#endif
 

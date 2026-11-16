@@ -7,6 +7,7 @@
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
+#include <libmuscle/mpi_tcp_barrier.hpp>
 #include <libmuscle/peer_info.hpp>
 #include <libmuscle/port_manager.hpp>
 #include <libmuscle/profiler.hpp>
@@ -27,7 +28,6 @@
 
 #ifdef MUSCLE_ENABLE_MPI
 #include <mpi.h>
-#include <libmuscle/mpi_tcp_barrier.hpp>
 #endif
 
 
@@ -126,11 +126,11 @@ class Instance::Impl {
         std::unique_ptr<PortManager> port_manager_;
         std::unique_ptr<Communicator> communicator_;
         Optional<CommunicatorState> communicator_state_;
-#ifdef MUSCLE_ENABLE_MPI
+
         int mpi_root_;
         MPI_Comm mpi_comm_;
         MPITcpBarrier mpi_barrier_;
-#endif
+
         Optional<PortsDescription> declared_ports_;
         SettingsManager settings_manager_;
         std::unique_ptr<SnapshotManager> snapshot_manager_;
@@ -191,6 +191,9 @@ Instance::Impl::Impl(
 #ifdef MUSCLE_ENABLE_MPI
     , mpi_root_(root)
     , mpi_barrier_(communicator, root)
+#else
+    , mpi_root_(-1)
+    , mpi_barrier_(-1, -1)
 #endif
     , declared_ports_(ports)
     , settings_manager_()
@@ -412,75 +415,51 @@ ValueType Instance::Impl::get_setting_as(
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
 Instance::Impl::list_ports() const {
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
-    return port_manager_->list_ports();
-#ifdef MUSCLE_ENABLE_MPI
+        return port_manager_->list_ports();
     }
     else
         throw std::runtime_error("list_ports can only be called from the MPI root process");
-#endif
 }
 
 bool Instance::Impl::is_connected(std::string const & port) const {
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
-    return port_manager_->get_port(port).is_connected();
-#ifdef MUSCLE_ENABLE_MPI
+        return port_manager_->get_port(port).is_connected();
     }
     else
         throw std::runtime_error("is_connected can only be called from the MPI root process");
-#endif
 }
 
 bool Instance::Impl::is_vector_port(std::string const & port) const {
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
-    return port_manager_->get_port(port).is_vector();
-#ifdef MUSCLE_ENABLE_MPI
+        return port_manager_->get_port(port).is_vector();
     }
     else
         throw std::runtime_error("is_vector_port can only be called from the MPI root process");
-#endif
 }
 
 bool Instance::Impl::is_resizable(std::string const & port) const {
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
-    return port_manager_->get_port(port).is_resizable();
-#ifdef MUSCLE_ENABLE_MPI
+        return port_manager_->get_port(port).is_resizable();
     }
     else
         throw std::runtime_error("is_resizable can only be called from the MPI root process");
-#endif
 }
 
 int Instance::Impl::get_port_length(std::string const & port) const {
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
-    return port_manager_->get_port(port).get_length();
-#ifdef MUSCLE_ENABLE_MPI
+        return port_manager_->get_port(port).get_length();
     }
     else
         throw std::runtime_error("get_port_length can only be called from the MPI root process");
-#endif
 }
 
 void Instance::Impl::set_port_length(std::string const & port, int length) {
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
-    return port_manager_->get_port(port).set_length(length);
-#ifdef MUSCLE_ENABLE_MPI
+        return port_manager_->get_port(port).set_length(length);
     }
     else
         throw std::runtime_error("set_port_length can only be called from the MPI root process");
-#endif
 }
 
 void Instance::Impl::send(std::string const & port_name, Message const & message) {
@@ -489,10 +468,7 @@ void Instance::Impl::send(std::string const & port_name, Message const & message
     // in the root process only and then either the user catches it, or more
     // likely the program crashes and mpirun cleans up the other ranks.
 
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
-
         check_port_(port_name, {}, true);
         if (!message.has_settings()) {
             Message msg(message);
@@ -501,10 +477,7 @@ void Instance::Impl::send(std::string const & port_name, Message const & message
         }
         else
             communicator_->send_message(port_name, message);
-
-#ifdef MUSCLE_ENABLE_MPI
     }
-#endif
 }
 
 void Instance::Impl::send(
@@ -667,68 +640,63 @@ Message Instance::Impl::receive_message(
     Message result(-1.0, Data());
     Error error;
 
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
         try {
-#endif
+            check_port_(port_name, slot, false, true);
 
-    check_port_(port_name, slot, false, true);
-
-    Reference port_ref(port_name);
-    auto const & port = port_manager_->get_port(port_name);
-    if (!port.is_connected()) {
-        if (default_msg.is_set()) {
-            log_debug("No message received on port ", port_ref, " as it is not connected.");
-            result = default_msg.get();
-        }
-        else {
-            std::ostringstream oss;
-            oss << "Tried to receive on port \"" << port_ref << "\" which is";
-            oss << " disconnected, and no default value was given. Either";
-            oss << " specify a default, or connect a sending port to this port.";
-            error = Error(std::logic_error(oss.str()));
-        }
-    }
-    else if (port.oper == Operator::F_INIT) {
-        if (slot.is_set())
-            port_ref += slot.get();
-
-        if (f_init_cache_.count(port_ref) == 1) {
-            result = f_init_cache_.at(port_ref);
-            f_init_cache_.erase(port_ref);
-
-            if (with_settings && !result.has_settings()) {
-                error = Error(std::logic_error(
-                        "If you use receive_with_settings() on an F_INIT port, then you"
-                        " have to set the flag 'InstanceFlag::DONT_APPLY_OVERLAY' when"
-                        " creating the Instance, otherwise the settings will already"
-                        " have been applied by MUSCLE."));
+            Reference port_ref(port_name);
+            auto const & port = port_manager_->get_port(port_name);
+            if (!port.is_connected()) {
+                if (default_msg.is_set()) {
+                    log_debug("No message received on port ", port_ref, " as it is not connected.");
+                    result = default_msg.get();
+                }
+                else {
+                    std::ostringstream oss;
+                    oss << "Tried to receive on port \"" << port_ref << "\" which is";
+                    oss << " disconnected, and no default value was given. Either";
+                    oss << " specify a default, or connect a sending port to this port.";
+                    error = Error(std::logic_error(oss.str()));
+                }
             }
-        }
-        else {
-            std::ostringstream oss;
-            oss << "Tried to receive twice on the same port \"" << port_ref;
-            oss << "\", that's not possible. Did you forget to call reuse_instance()";
-            oss << " in your reuse loop?";
-            error = Error(std::logic_error(oss.str()));
-        }
-    }
-    else {
-        try {
-            result = communicator_->receive_s_message(port_name, slot);
-            if (!with_settings) {
-                check_compatibility_(port_name, result.settings());
-                result.unset_settings();
-            }
-        } catch (PortClosed &err) {
-            std::ostringstream oss;
-            oss << "Port \"" << port_ref << "\" is closed, but we're trying";
-            oss << " to receive on it. Did the peer crash?";
-            error = Error(std::runtime_error(oss.str()));
-        }
-    }
+            else if (port.oper == Operator::F_INIT) {
+                if (slot.is_set())
+                    port_ref += slot.get();
 
-#ifdef MUSCLE_ENABLE_MPI
+                if (f_init_cache_.count(port_ref) == 1) {
+                    result = f_init_cache_.at(port_ref);
+                    f_init_cache_.erase(port_ref);
+
+                    if (with_settings && !result.has_settings()) {
+                        error = Error(std::logic_error(
+                                "If you use receive_with_settings() on an F_INIT port, then you"
+                                " have to set the flag 'InstanceFlag::DONT_APPLY_OVERLAY' when"
+                                " creating the Instance, otherwise the settings will already"
+                                " have been applied by MUSCLE."));
+                    }
+                }
+                else {
+                    std::ostringstream oss;
+                    oss << "Tried to receive twice on the same port \"" << port_ref;
+                    oss << "\", that's not possible. Did you forget to call reuse_instance()";
+                    oss << " in your reuse loop?";
+                    error = Error(std::logic_error(oss.str()));
+                }
+            }
+            else {
+                try {
+                    result = communicator_->receive_s_message(port_name, slot);
+                    if (!with_settings) {
+                        check_compatibility_(port_name, result.settings());
+                        result.unset_settings();
+                    }
+                } catch (PortClosed &err) {
+                    std::ostringstream oss;
+                    oss << "Port \"" << port_ref << "\" is closed, but we're trying";
+                    oss << " to receive on it. Did the peer crash?";
+                    error = Error(std::runtime_error(oss.str()));
+                }
+            }
         }
         catch (std::exception const & exc) {
             error = exc;
@@ -738,7 +706,6 @@ Message Instance::Impl::receive_message(
     else {
         mpi_barrier_.wait();
     }
-#endif
 
     shutdown_and_throw_if_error_(error);
     return result;
@@ -766,9 +733,7 @@ Message Instance::Impl::load_snapshot() {
 bool Instance::Impl::should_save_snapshot(double timestamp) {
     api_guard_->verify_should_save_snapshot();
     bool result;
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
         result = trigger_manager_->should_save_snapshot(timestamp);
 #ifdef MUSCLE_ENABLE_MPI
         mpi_barrier_.signal();
@@ -779,8 +744,8 @@ bool Instance::Impl::should_save_snapshot(double timestamp) {
         int result_mpi;
         MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
         result = result_mpi;
-    }
 #endif
+    }
     api_guard_->should_save_snapshot_done(result);
     return result;
 }
@@ -795,9 +760,7 @@ bool Instance::Impl::should_save_final_snapshot() {
     api_guard_->verify_should_save_final_snapshot();
 
     bool result;
-#ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
-#endif
         do_reuse_ = pre_receive_();
         result = trigger_manager_->should_save_final_snapshot(
                 do_reuse_.get(), f_init_max_timestamp_());
@@ -810,8 +773,8 @@ bool Instance::Impl::should_save_final_snapshot() {
         int result_mpi;
         MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
         result = result_mpi;
-    }
 #endif
+    }
 
     api_guard_->should_save_final_snapshot_done(result);
     return result;
@@ -1130,16 +1093,14 @@ void Instance::Impl::check_compatibility_(
  */
 void Instance::Impl::shutdown_(Optional<std::string> const & message) {
     if (!is_shut_down_) {
-#ifdef MUSCLE_ENABLE_MPI
         if (mpi_barrier_.is_root()) {
-#endif
             if (message.is_set())
                 log_critical(message.get());
             communicator_->shutdown();
             deregister_();
             manager_->close();
-#ifdef MUSCLE_ENABLE_MPI
         }
+#ifdef MUSCLE_ENABLE_MPI
         mpi_barrier_.shutdown();
         MPI_Comm_free(&mpi_comm_);
 #endif

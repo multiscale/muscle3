@@ -1,11 +1,13 @@
-#ifdef MUSCLE_ENABLE_MPI
-
 #include <libmuscle/mpi_tcp_barrier.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/post_office.hpp>
 
+#ifdef MUSCLE_ENABLE_MPI
+
 #include <mpi.h>
+
+#endif
 
 #include <memory>
 #include <sstream>
@@ -22,6 +24,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 MPITcpBarrier::MPITcpBarrier(MPI_Comm const & communicator, int root)
     : root_(root)
 {
+#ifdef MUSCLE_ENABLE_MPI
     MPI_Comm_dup(communicator, &mpi_comm_);
 
     if (is_root()) {
@@ -40,31 +43,41 @@ MPITcpBarrier::MPITcpBarrier(MPI_Comm const & communicator, int root)
         std::vector<std::string> addrs = {addr};
         client_ = std::make_unique<MPPClient>(addrs);
     }
+#endif
 }
 
 void MPITcpBarrier::shutdown() {
+#ifdef MUSCLE_ENABLE_MPI
     if (is_root())
         server_->shutdown();
     else
         client_->close();
     MPI_Comm_free(&mpi_comm_);
+#endif
 }
 
 bool MPITcpBarrier::is_root() const {
+#ifdef MUSCLE_ENABLE_MPI
     int rank;
     MPI_Comm_rank(mpi_comm_, &rank);
     return rank == root_;
+#else
+    return true;
+#endif
 }
 
 void MPITcpBarrier::wait() {
+#ifdef MUSCLE_ENABLE_MPI
     int rank;
     MPI_Comm_rank(mpi_comm_, &rank);
     std::ostringstream oss;
     oss << "rank[" << rank << "]";
     client_->receive(oss.str());
+#endif
 }
 
 void MPITcpBarrier::signal() {
+#ifdef MUSCLE_ENABLE_MPI
     int num_ranks;
     MPI_Comm_size(mpi_comm_, &num_ranks);
     for (int i = 0; i < num_ranks; ++i)
@@ -74,9 +87,8 @@ void MPITcpBarrier::signal() {
             std::vector<char> msg;
             server_->deposit(oss.str(), std::move(msg));
         }
+#endif
 }
 
 } }
-
-#endif
 

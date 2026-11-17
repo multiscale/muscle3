@@ -70,11 +70,11 @@ Error::Error(std::exception const & exc) {
     }
 }
 
-#ifdef MUSCLE_ENABLE_MPI
 void Error::bcast(MPI_Comm & comm, int root) const {
+#ifdef MUSCLE_ENABLE_MPI
     MPI_Bcast(const_cast<int *>(&type_), 1, MPI_INT, root, comm);
-}
 #endif
+}
 
 bool Error::is_error() const {
     return type_ != 0;

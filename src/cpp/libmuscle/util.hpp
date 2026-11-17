@@ -82,7 +82,6 @@ class Error {
          */
         Error(std::exception const & exc);
 
-#ifdef MUSCLE_ENABLE_MPI
         /* Broadcast the error to all MPI processes.
          *
          * There's no way to broadcast the message, as it will only get logged on the
@@ -92,7 +91,6 @@ class Error {
          * @param root Rank of the process holding the value.
          */
         void bcast(MPI_Comm & comm, int root = 0) const;
-#endif
 
         /* Returns whether this object represents an error condition.
          *

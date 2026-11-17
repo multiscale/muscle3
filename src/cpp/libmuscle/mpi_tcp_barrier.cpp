@@ -27,7 +27,7 @@ MPITcpBarrier::MPITcpBarrier(MPI_Comm const & communicator, int root)
 #ifdef MUSCLE_ENABLE_MPI
     MPI_Comm_dup(communicator, &mpi_comm_);
 
-    if (is_root()) {
+    if (is_root_()) {
         server_ = std::make_unique<MPPServer>();
 
         std::string addr = server_->get_locations().front();
@@ -46,9 +46,34 @@ MPITcpBarrier::MPITcpBarrier(MPI_Comm const & communicator, int root)
 #endif
 }
 
+
+void MPITcpBarrier::operator()() {
+#ifdef MUSCLE_ENABLE_MPI
+    int rank;
+    MPI_Comm_rank(mpi_comm_, &rank);
+    if (rank == root_) {
+        int num_ranks;
+        MPI_Comm_size(mpi_comm_, &num_ranks);
+        for (int i = 0; i < num_ranks; ++i)
+            if (i != root_) {
+                std::ostringstream oss;
+                oss << "rank[" << i << "]";
+                std::vector<char> msg;
+                server_->deposit(oss.str(), std::move(msg));
+            }
+    }
+    else {
+        std::ostringstream oss;
+        oss << "rank[" << rank << "]";
+        client_->receive(oss.str());
+    }
+#endif
+}
+
+
 void MPITcpBarrier::shutdown() {
 #ifdef MUSCLE_ENABLE_MPI
-    if (is_root())
+    if (is_root_())
         server_->shutdown();
     else
         client_->close();
@@ -56,37 +81,14 @@ void MPITcpBarrier::shutdown() {
 #endif
 }
 
-bool MPITcpBarrier::is_root() const {
+
+bool MPITcpBarrier::is_root_() const {
 #ifdef MUSCLE_ENABLE_MPI
     int rank;
     MPI_Comm_rank(mpi_comm_, &rank);
     return rank == root_;
 #else
     return true;
-#endif
-}
-
-void MPITcpBarrier::wait() {
-#ifdef MUSCLE_ENABLE_MPI
-    int rank;
-    MPI_Comm_rank(mpi_comm_, &rank);
-    std::ostringstream oss;
-    oss << "rank[" << rank << "]";
-    client_->receive(oss.str());
-#endif
-}
-
-void MPITcpBarrier::signal() {
-#ifdef MUSCLE_ENABLE_MPI
-    int num_ranks;
-    MPI_Comm_size(mpi_comm_, &num_ranks);
-    for (int i = 0; i < num_ranks; ++i)
-        if (i != root_) {
-            std::ostringstream oss;
-            oss << "rank[" << i << "]";
-            std::vector<char> msg;
-            server_->deposit(oss.str(), std::move(msg));
-        }
 #endif
 }
 

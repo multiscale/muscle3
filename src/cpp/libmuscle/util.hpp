@@ -16,7 +16,21 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-/* Check for unexpected errors.
+
+/* Dummy MPI declarations for when we don't have MPI.
+ *
+ * These help to share as much code as possible between the MPI and non-MPI libraries.
+ */
+#ifndef MUSCLE_ENABLE_MPI
+
+typedef int MPI_Comm;
+
+extern const MPI_Comm MPI_COMM_WORLD;
+
+#endif
+
+
+/** Check for unexpected errors.
  *
  * This takes a return value from a function and throws if it equals -1. Used in places
  * where an error is almost impossible but the compiler still complains if I don't check
@@ -29,7 +43,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 int throw_on_error(int ret_val);
 
 
-/* Gets the log file location from the command line.
+/** Gets the log file location from the command line.
  *
  * Extracts the --muscle-log-file=<path> argument to tell the
  * MUSCLE library where to write the local log file. This
@@ -47,7 +61,7 @@ std::string extract_log_file_location(
         int argc, char const * const argv[], std::string const & filename);
 
 
-/* Helper for errors and MPI.
+/** Helper for errors and MPI.
  *
  * When running with MPI, we sometimes do things only on the root process. If a
  * fatal error occurs in that case, then we need to propagate at least the fact that
@@ -68,7 +82,6 @@ class Error {
          */
         Error(std::exception const & exc);
 
-#ifdef MUSCLE_ENABLE_MPI
         /* Broadcast the error to all MPI processes.
          *
          * There's no way to broadcast the message, as it will only get logged on the
@@ -78,7 +91,6 @@ class Error {
          * @param root Rank of the process holding the value.
          */
         void bcast(MPI_Comm & comm, int root = 0) const;
-#endif
 
         /* Returns whether this object represents an error condition.
          *
@@ -116,7 +128,7 @@ class Error {
 };
 
 
-/* An optional type template.
+/** An optional type template.
  *
  * Since we're not doing C++17, we can't use std::optional. This is a simple
  * replacement.
@@ -221,7 +233,7 @@ template <typename T>
 std::ostream & operator<<(std::ostream & os, Optional<T> const & t);
 
 
-/* Return time in seconds as a double.
+/** Return time in seconds as a double.
  *
  * The epoch of this clock is arbitrary, but doesn't get adjusted, so it's suitable for
  * measuring intervals. Wraps std::chrono::steady_clock.
@@ -229,7 +241,7 @@ std::ostream & operator<<(std::ostream & os, Optional<T> const & t);
 double time_monotonic();
 
 
-/* Helper class for retrying things with a delay and timeout.
+/** Helper class for retrying things with a delay and timeout.
  *
  * This backs off exponentially, immediately retrying on the first attempt, then
  * waiting 2**tries * base_delay seconds between tries.
@@ -265,15 +277,15 @@ class Retrier {
         int tries_;
 };
 
-/* Return a human-readable label for a port, including its slot if given.
+/** Return a human-readable label for a port, including its slot if given.
  */
 std::string port_desc(std::string const & port_name, Optional<int> slot);
 
-/* Returns the component name of this instance, i.e. without the index.
+/** Returns the component name of this instance, i.e. without the index.
  */
 ::ymmsl::Reference instance_to_component(::ymmsl::Reference const & instance_name);
 
-/* Returns the index of this instance, i.e. without the component.
+/** Returns the index of this instance, i.e. without the component.
  */
 std::vector<int> instance_indices(::ymmsl::Reference const & instance_name);
 

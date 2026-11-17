@@ -17,6 +17,14 @@ using std::chrono::steady_clock;
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+
+#ifndef MUSCLE_ENABLE_MPI
+
+const MPI_Comm MPI_COMM_WORLD = -1;
+
+#endif
+
+
 int throw_on_error(int ret_val) {
     if (ret_val == -1)
         throw std::runtime_error("An unexpected error occurred");
@@ -62,11 +70,11 @@ Error::Error(std::exception const & exc) {
     }
 }
 
-#ifdef MUSCLE_ENABLE_MPI
 void Error::bcast(MPI_Comm & comm, int root) const {
+#ifdef MUSCLE_ENABLE_MPI
     MPI_Bcast(const_cast<int *>(&type_), 1, MPI_INT, root, comm);
-}
 #endif
+}
 
 bool Error::is_error() const {
     return type_ != 0;

@@ -31,6 +31,7 @@ void inject_fault(int socket_fd);
 #include <libmuscle/logger.cpp>
 #include <libmuscle/logging.cpp>
 #include <libmuscle/mark.cpp>
+#include <libmuscle/mpi_tcp_barrier.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/mmp_client.cpp>
 #include <libmuscle/mpp_client.cpp>

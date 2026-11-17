@@ -1,14 +1,18 @@
 #pragma once
 
-#ifdef MUSCLE_ENABLE_MPI
 
 #include <memory>
 
+#ifdef MUSCLE_ENABLE_MPI
+
 #include <mpi.h>
+
+#endif
 
 #include <libmuscle/mpp_client.hpp>
 #include <libmuscle/mpp_server.hpp>
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/util.hpp>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -28,28 +32,15 @@ class MPITcpBarrier {
          */
         MPITcpBarrier(MPI_Comm const & communicator = MPI_COMM_WORLD, int root = 0);
 
+        /** Apply the barrier.
+         *
+         * This signals on the root process and waits on all other processes.
+         */
+        void operator()();
+
         /** Shuts down the barrier, closing connections.
          */
         void shutdown();
-
-        /** Whether this process is the root process, according to this barrier.
-         *
-         * @returns True if we're the root process.
-         */
-        bool is_root() const;
-
-        /** Waits for the barrier to clear.
-         *
-         * Only call if you're not the root process!
-         */
-        void wait();
-
-        /** Signals the blocked processes to continue.
-         *
-         * Only call from the root process!
-         */
-        void signal();
-
 
     private:
         int root_;
@@ -57,10 +48,10 @@ class MPITcpBarrier {
 
         std::unique_ptr<MPPServer> server_;
         std::unique_ptr<MPPClient> client_;
+
+        bool is_root_() const;
 };
 
 
 } }
-
-#endif
 
